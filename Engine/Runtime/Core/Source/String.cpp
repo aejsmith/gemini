@@ -14,11 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "String.h"
+
 #include <cstdio>
 
-int main(const int          argc,
-         const char* const* argv)
+std::string StringUtils::VFormat(const char* const inFormat,
+                                 va_list           inArgs)
 {
-    LogInfo("Hello, World");
-    return 0;
+    char buf[8192];
+    vsnprintf(buf, 8192, inFormat, inArgs);
+    return std::string(buf);
+}
+
+std::string StringUtils::Format(const char* inFormat,
+                                ...)
+{
+    char buf[8192];
+    va_list args;
+
+    va_start(args, inFormat);
+    vsnprintf(buf, 8192, inFormat, args);
+    va_end(args);
+
+    return std::string(buf);
 }

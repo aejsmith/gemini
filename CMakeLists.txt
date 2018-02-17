@@ -38,6 +38,9 @@ else ()
     message(FATAL_ERROR "Unsupported compiler")
 endif ()
 
+set(DEBUG_FLAGS             "${DEBUG_FLAGS} -DORION_BUILD_DEBUG=1")
+set(RELEASE_FLAGS           "${RELEASE_FLAGS} -DORION_BUILD_RELEASE=1")
+
 set(CMAKE_C_FLAGS           "${CMAKE_C_FLAGS} ${COMMON_FLAGS} ${GENERATOR_FLAGS} ${C_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG     "${DEBUG_FLAGS}")
 set(CMAKE_C_FLAGS_RELEASE   "${RELEASE_FLAGS}")
@@ -47,6 +50,15 @@ set(CMAKE_CXX_FLAGS_DEBUG   "${DEBUG_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_FLAGS}")
 set(CMAKE_CXX_STANDARD      14)
 
+include_directories(
+    "Engine/Runtime/Core/Include"
+    "Engine/Runtime/Engine/Include"
+)
+
 add_executable(Test
+    "Engine/Runtime/Core/Source/Log.cpp"
+    "Engine/Runtime/Core/Source/Path.cpp"
+    "Engine/Runtime/Core/Source/String.cpp"
+
     "Engine/Runtime/Engine/Source/Main.cpp"
 )
