@@ -23,7 +23,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
     )
 
     string(CONCAT CXX_FLAGS
-        "-Wsign-promo"
+        "-Wsign-promo -Wno-undefined-var-template "
     )
 
     # Running under Ninja we don't get colour diagnostics by default since it
