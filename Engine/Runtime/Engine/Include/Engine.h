@@ -14,12 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine.h"
+#pragma once
 
-int main(const int          argc,
-         const char* const* argv)
+#include "Singleton.h"
+
+/**
+ * Main class of the engine.
+ */
+class Engine : public Singleton<Engine>
 {
-    Engine engine;
-    engine.Run();
-    return 0;
-}
+public:
+                            Engine();
+                            ~Engine();
+
+public:
+    void                    Run();
+
+};

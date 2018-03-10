@@ -16,10 +16,22 @@
 
 #include "Engine.h"
 
-int main(const int          argc,
-         const char* const* argv)
+SINGLETON_IMPL(Engine);
+
+Engine::Engine()
 {
-    Engine engine;
-    engine.Run();
-    return 0;
+    LogInfo("Hello, World!");
+}
+
+Engine::~Engine()
+{
+    /*
+     * TODO: Automatically destroy all singletons in the order in which they
+     * were created.
+     */
+}
+
+void Engine::Run()
+{
+    Fatal("TODO");
 }

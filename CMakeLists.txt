@@ -60,5 +60,6 @@ add_executable(Test
     "Engine/Runtime/Core/Source/Path.cpp"
     "Engine/Runtime/Core/Source/String.cpp"
 
+    "Engine/Runtime/Engine/Source/Engine.cpp"
     "Engine/Runtime/Engine/Source/Main.cpp"
 )
