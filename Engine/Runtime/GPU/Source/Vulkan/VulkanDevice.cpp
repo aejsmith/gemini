@@ -14,28 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine.h"
+#include "VulkanDevice.h"
 
-#include "GPUDevice.h"
-
-SINGLETON_IMPL(Engine);
-
-Engine::Engine()
+VulkanDevice::VulkanDevice() :
+    mHandle (VK_NULL_HANDLE)
 {
-    LogInfo("Hello, World!");
+    if (!VulkanInstance::HasInstance())
+    {
+        /* Create the global Vulkan instance. */
+        new VulkanInstance();
+    }
 
-    GPUDevice::Create();
+    mInstance = &VulkanInstance::Get();
 }
 
-Engine::~Engine()
+VulkanDevice::~VulkanDevice()
 {
-    /*
-     * TODO: Automatically destroy all singletons in the order in which they
-     * were created.
-     */
-}
 
-void Engine::Run()
-{
-    Fatal("TODO");
 }

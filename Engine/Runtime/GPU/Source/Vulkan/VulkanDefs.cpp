@@ -14,28 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine.h"
+#include "VulkanDefs.h"
 
-#include "GPUDevice.h"
-
-SINGLETON_IMPL(Engine);
-
-Engine::Engine()
+namespace VulkanFuncs
 {
-    LogInfo("Hello, World!");
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
 
-    GPUDevice::Create();
-}
+    #define DEFINE_VULKAN_FUNC(name) \
+        PFN_##name name;
 
-Engine::~Engine()
-{
-    /*
-     * TODO: Automatically destroy all singletons in the order in which they
-     * were created.
-     */
-}
-
-void Engine::Run()
-{
-    Fatal("TODO");
+    ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
+    ENUMERATE_VULKAN_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
 }

@@ -14,28 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine.h"
+#pragma once
 
-#include "GPUDevice.h"
+#include "Singleton.h"
 
-SINGLETON_IMPL(Engine);
-
-Engine::Engine()
+/**
+ * This class is the main class of the low-level rendering API abstraction
+ * layer. It provides an interface to create GPU resources and record
+ * commands.
+ */
+class GPUDevice : public Singleton<GPUDevice>
 {
-    LogInfo("Hello, World!");
+protected:
+                                GPUDevice();
+                                ~GPUDevice();
 
-    GPUDevice::Create();
-}
+public:
+    static void                 Create();
 
-Engine::~Engine()
-{
-    /*
-     * TODO: Automatically destroy all singletons in the order in which they
-     * were created.
-     */
-}
-
-void Engine::Run()
-{
-    Fatal("TODO");
-}
+};

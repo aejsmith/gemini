@@ -38,6 +38,8 @@ else ()
     message(FATAL_ERROR "Unsupported compiler")
 endif ()
 
+set(ENGINE_LIBS             ${CMAKE_DL_LIBS})
+
 set(DEBUG_FLAGS             "${DEBUG_FLAGS} -DORION_BUILD_DEBUG=1")
 set(RELEASE_FLAGS           "${RELEASE_FLAGS} -DORION_BUILD_RELEASE=1")
 
@@ -53,6 +55,7 @@ set(CMAKE_CXX_STANDARD      14)
 include_directories(
     "Engine/Runtime/Core/Include"
     "Engine/Runtime/Engine/Include"
+    "Engine/Runtime/GPU/Include"
 )
 
 add_executable(Test
@@ -62,4 +65,12 @@ add_executable(Test
 
     "Engine/Runtime/Engine/Source/Engine.cpp"
     "Engine/Runtime/Engine/Source/Main.cpp"
+
+    "Engine/Runtime/GPU/Source/GPUDevice.cpp"
+
+    "Engine/Runtime/GPU/Source/Vulkan/VulkanDefs.cpp"
+    "Engine/Runtime/GPU/Source/Vulkan/VulkanDevice.cpp"
+    "Engine/Runtime/GPU/Source/Vulkan/VulkanInstance.cpp"
 )
+
+target_link_libraries(Test ${ENGINE_LIBS})

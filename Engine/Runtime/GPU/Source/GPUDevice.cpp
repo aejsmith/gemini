@@ -14,28 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine.h"
-
 #include "GPUDevice.h"
 
-SINGLETON_IMPL(Engine);
+#include "Vulkan/VulkanDevice.h"
 
-Engine::Engine()
+SINGLETON_IMPL(GPUDevice);
+
+GPUDevice::GPUDevice()
 {
-    LogInfo("Hello, World!");
-
-    GPUDevice::Create();
 }
 
-Engine::~Engine()
+GPUDevice::~GPUDevice()
 {
-    /*
-     * TODO: Automatically destroy all singletons in the order in which they
-     * were created.
-     */
 }
 
-void Engine::Run()
+void GPUDevice::Create()
 {
-    Fatal("TODO");
+    /* For now, only Vulkan. This will initialise the Singleton pointer. */
+    new VulkanDevice();
 }
