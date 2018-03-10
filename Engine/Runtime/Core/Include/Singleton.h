@@ -42,7 +42,7 @@ private:
 };
 
 #define SINGLETON_IMPL(T) \
-    T* Singleton<T>::sInstance = nullptr
+    template <> T* Singleton<T>::sInstance = nullptr
 
 template <typename T>
 Singleton<T>::Singleton()
