@@ -21,6 +21,7 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 #if defined(__GNUC__)
     #define NORETURN                __attribute__((noreturn))
