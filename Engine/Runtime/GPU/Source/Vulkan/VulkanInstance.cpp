@@ -18,6 +18,7 @@
 
 #include "Utility.h"
 
+#include <string>
 #include <vector>
 #include <unordered_set>
 
