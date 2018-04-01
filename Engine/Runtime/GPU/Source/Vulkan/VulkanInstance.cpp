@@ -24,7 +24,13 @@
 
 #include <dlfcn.h>
 
-static constexpr char kLoaderLibraryName[] = "libvulkan.so.1";
+#if ORION_PLATFORM_LINUX
+    static constexpr char kLoaderLibraryName[] = "libvulkan.so.1";
+#elif ORION_PLATFORM_MACOS
+    static constexpr char kLoaderLibraryName[] = "libvulkan.1.dylib";
+#else
+    #error "Unknown platform"
+#endif
 
 static const char* kRequiredInstanceExtensions[] =
 {
