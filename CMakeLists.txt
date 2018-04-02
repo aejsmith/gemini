@@ -29,7 +29,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
     # Running under Ninja we don't get colour diagnostics by default since it
     # buffers output.
     if (${CMAKE_GENERATOR} STREQUAL "Ninja")
-        set(GENERATOR_FLAGS "-fcolor-diagnostics")
+        if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(GENERATOR_FLAGS "-fcolor-diagnostics")
+        else ()
+            set(GENERATOR_FLAGS "-fdiagnostics-color=always")
+        endif ()
     endif ()
 
     set(DEBUG_FLAGS          "-Og -g")
