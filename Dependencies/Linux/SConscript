@@ -1,0 +1,20 @@
+import os
+
+Import('manager')
+
+dummyEnv = Environment(ENV = os.environ)
+dummyEnv['CPPPATH'] = []
+dummyEnv['LIBPATH'] = []
+dummyEnv['LIBS'] = []
+
+def AddExternalComponent(name, env):
+    manager.AddComponent(
+        name = name,
+        includePath = env['CPPPATH'],
+        libPath = env['LIBPATH'],
+        libs = env['LIBS'])
+
+# SDL.
+sdlEnv = dummyEnv.Clone()
+sdlEnv.ParseConfig('sdl2-config --cflags --libs')
+AddExternalComponent('External/SDL', sdlEnv)

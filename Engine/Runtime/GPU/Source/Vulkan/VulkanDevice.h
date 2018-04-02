@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "GPUDevice.h"
+#include "GPU/GPUDevice.h"
 
 #include "VulkanInstance.h"
 

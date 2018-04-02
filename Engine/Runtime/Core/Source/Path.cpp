@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Path.h"
+#include "Core/Path.h"
 
 static const char kPlatformPathSeparator = '/';
 

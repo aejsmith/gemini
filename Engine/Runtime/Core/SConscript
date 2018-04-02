@@ -1,0 +1,21 @@
+import os
+
+Import('manager')
+
+depends = [
+    'External/SDL',
+]
+
+env = manager.CreateEnvironment(depends = depends)
+Export('env')
+
+objects = map(env.Object, [
+    'Source/Log.cpp',
+    'Source/Path.cpp',
+    'Source/String.cpp',
+])
+
+manager.AddComponent(
+    name = 'Engine/Core',
+    depends = depends,
+    objects = objects)

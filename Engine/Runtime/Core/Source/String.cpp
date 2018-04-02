@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "String.h"
+#include "Core/String.h"
 
 #include <cstdio>
 

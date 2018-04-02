@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "String.h"
+#include "Core/String.h"
 
 #include <algorithm>
 #include <cstring>

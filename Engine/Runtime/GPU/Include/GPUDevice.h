@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Singleton.h"
+#include "Core/Singleton.h"
 
 /**
  * This class is the main class of the low-level rendering API abstraction

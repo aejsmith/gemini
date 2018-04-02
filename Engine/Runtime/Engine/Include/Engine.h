@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Singleton.h"
+#include "Core/Singleton.h"
 
 /**
  * Main class of the engine.

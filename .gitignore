@@ -1,4 +1,7 @@
 *~
 *.sublime-workspace
+*.pyc
 .DS_Store
 /Build
+/.options.cache
+/.sconsign.dblite

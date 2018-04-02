@@ -1,0 +1,13 @@
+import os
+
+Import('env')
+
+objects = map(env.Object, [
+    'Source/GPUDevice.cpp',
+
+    'Source/Vulkan/VulkanInstance.cpp',
+    'Source/Vulkan/VulkanDefs.cpp',
+    'Source/Vulkan/VulkanDevice.cpp',
+])
+
+Return('objects')

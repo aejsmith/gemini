@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "CoreDefs.h"
+#include "Core/CoreDefs.h"
 
 /**
  * Helper functions.

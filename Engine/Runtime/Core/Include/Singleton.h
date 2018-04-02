@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "CoreDefs.h"
+#include "Core/CoreDefs.h"
 
 /**
  * Template base for a singleton class. Users must add the implementation in

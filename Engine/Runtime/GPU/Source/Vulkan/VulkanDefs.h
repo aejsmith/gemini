@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "CoreDefs.h"
+#include "Core/CoreDefs.h"
 
 /* We load function pointers ourselves. */
 #define VK_NO_PROTOTYPES

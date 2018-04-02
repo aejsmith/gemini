@@ -13,28 +13,3 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#pragma once
-
-#include "VulkanDefs.h"
-
-#include "Core/Singleton.h"
-
-class VulkanInstance : public Singleton<VulkanInstance>
-{
-public:
-                                VulkanInstance();
-                                ~VulkanInstance();
-
-public:
-    VkInstance                  GetHandle() const       { return mHandle; }
-
-private:
-    void                        OpenLoader();
-    void                        CreateInstance();
-
-private:
-    void*                       mLoaderHandle;
-    VkInstance                  mHandle;
-
-};

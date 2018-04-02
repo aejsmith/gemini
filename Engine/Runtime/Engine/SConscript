@@ -1,0 +1,20 @@
+import VCS
+
+Import('env')
+
+objects = map(env.Object, [
+    'Source/Engine.cpp',
+    'Source/Main.cpp',
+    'Source/Version.cpp',
+])
+
+# Generate the version information file.
+def GenerateVersionCPP(target, source, env):
+    version = VCS.RevisionID()
+
+    f = open(str(target[0]), 'w')
+    f.write('const char *gVersionString = "%s";\n' % (version))
+    f.close()
+AlwaysBuild(env.Command('Source/Version.cpp', [], env.Action(GenerateVersionCPP, None)))
+
+Return('objects')

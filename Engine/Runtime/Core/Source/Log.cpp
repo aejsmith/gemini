@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "CoreDefs.h"
+#include "Core/CoreDefs.h"
 
-#include "Path.h"
+#include "Core/Path.h"
 
 #include <sys/ioctl.h>
 

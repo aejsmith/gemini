@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "GPUDevice.h"
+#include "GPU/GPUDevice.h"
 
 #include "Vulkan/VulkanDevice.h"
 

@@ -1,0 +1,10 @@
+Import('manager')
+
+env = manager.CreateEnvironment(depends = ['Engine/Base'])
+
+objects = map(env.Object, [
+    'Source/Test.cpp',
+])
+
+target = env.OrionApplication(name = 'Test', sources = objects)
+Return('target')

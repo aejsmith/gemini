@@ -1,0 +1,77 @@
+import os
+
+Import('manager')
+
+# Base engine. Currently these parts of the engine have inter-dependencies which
+# means they can't be built individually, so we build them all into 1 "base"
+# component.
+baseComponents = [
+    'Engine',
+    'GPU',
+]
+
+# Remaining components making up the full engine.
+extraComponents = [
+]
+
+allComponents = ['Core'] + baseComponents + extraComponents
+
+# We want to be able to include files by "<component name>/<header>.h", but this
+# doesn't match the directory structure. Make a virtual include directory so we
+# get the behaviour we want. TODO: In future I want only the components depended
+# on to have their includes available, which is partly why the source directory
+# structure is like it is.
+for component in allComponents:
+    VariantDir('Include/%s' % (component), '#Engine/Runtime/%s/Include' % (component))
+
+# Always have the engine include directory available.
+manager.baseEnv['CPPPATH'] += [Dir('Include')]
+
+# Add all 3rd party library components.
+#SConscript(dirs = ['3rdParty'])
+
+################
+# Core library #
+################
+
+SConscript(dirs = ['Runtime/Core'])
+
+#############
+# Utilities #
+#############
+
+#SConscript(dirs = ['Utilities'])
+
+###############
+# Base engine #
+###############
+
+depends = [
+    'Engine/Core',
+]
+
+env = manager.CreateEnvironment(depends = depends)
+Export('env')
+
+manager.AddComponent(
+    name = 'Engine/Base',
+    depends = depends,
+    objects = SConscript(dirs = [os.path.join('Runtime', c) for c in baseComponents]))
+
+#########################
+# Additional components #
+#########################
+
+depends = [
+    'Engine/Base',
+]
+
+env = manager.CreateEnvironment(depends = depends)
+Export('env')
+
+# TODO: These should all be built independently eventually.
+manager.AddComponent(
+    name = 'Engine',
+    depends = depends,
+    objects = [])
+# SConscript(dirs = [os.path.join('runtime', c) for c in extraComponents]))

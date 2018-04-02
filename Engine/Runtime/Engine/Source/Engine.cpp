@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine.h"
+#include "Engine/Engine.h"
 
-#include "GPUDevice.h"
+#include "GPU/GPUDevice.h"
 
 SINGLETON_IMPL(Engine);
 
