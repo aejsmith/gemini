@@ -6,6 +6,7 @@ objects = map(env.Object, [
     'Source/Engine.cpp',
     'Source/Main.cpp',
     'Source/Version.cpp',
+    'Source/Window.cpp',
 ])
 
 # Generate the version information file.

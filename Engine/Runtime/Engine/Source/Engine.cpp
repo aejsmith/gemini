@@ -16,13 +16,25 @@
 
 #include "Engine/Engine.h"
 
+#include "Engine/Window.h"
+
 #include "GPU/GPUDevice.h"
+
+#include <SDL.h>
 
 SINGLETON_IMPL(Engine);
 
 Engine::Engine()
 {
     LogInfo("Hello, World!");
+
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    {
+        Fatal("Failed to initialize SDL: %s", SDL_GetError());
+    }
+
+    /* TODO: Make parameters configurable. */
+    new MainWindow(glm::ivec2(1600, 900), 0);
 
     GPUDevice::Create();
 }
