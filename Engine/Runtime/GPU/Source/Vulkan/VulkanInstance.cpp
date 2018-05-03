@@ -74,6 +74,8 @@ void VulkanInstance::OpenLoader()
 
 void VulkanInstance::CreateInstance()
 {
+    VkResult result;
+
     #define LOAD_VULKAN_INSTANCE_FUNC(name) \
         name = reinterpret_cast<PFN_##name>(vkGetInstanceProcAddr(mHandle, #name)); \
         if (!name) \
@@ -87,12 +89,24 @@ void VulkanInstance::CreateInstance()
      */
     ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);
 
+    /* Vulkan 1.1 is required. */
+    uint32_t apiVersion;
+    result = vkEnumerateInstanceVersion(&apiVersion);
+    if (result != VK_SUCCESS)
+    {
+        Fatal("Failed to get Vulkan instance version: %d", result);
+    }
+    else if (apiVersion < VK_API_VERSION_1_1)
+    {
+        Fatal("Vulkan API version 1.1 is not supported");
+    }
+
     /*
      * Determine the instance layers/extensions to use.
      */
 
     uint32_t count  = 0;
-    VkResult result = vkEnumerateInstanceLayerProperties(&count, nullptr);
+    result = vkEnumerateInstanceLayerProperties(&count, nullptr);
     if (result != VK_SUCCESS)
     {
         Fatal("Failed to enumerate Vulkan instance layers (1): %d", result);
@@ -180,7 +194,7 @@ void VulkanInstance::CreateInstance()
     applicationInfo.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.pApplicationName = "Orion";
     applicationInfo.pEngineName      = "Orion";
-    applicationInfo.apiVersion       = VK_API_VERSION_1_0;
+    applicationInfo.apiVersion       = VK_API_VERSION_1_1;
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

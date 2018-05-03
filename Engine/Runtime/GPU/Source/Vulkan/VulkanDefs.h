@@ -29,6 +29,7 @@
 #define ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(macro) \
     macro(vkEnumerateInstanceExtensionProperties) \
     macro(vkEnumerateInstanceLayerProperties) \
+    macro(vkEnumerateInstanceVersion) \
     macro(vkCreateInstance)
 
 /**
