@@ -98,3 +98,21 @@ ScopeGuard<Function> MakeScopeGuard(Function inFunction)
 {
     return ScopeGuard<Function>(std::move(inFunction));
 }
+
+/**
+ * Helper to restrict a method to only be called by a given class. For example:
+ *
+ *     void Foo(OnlyCalledBy<Bar>);
+ *
+ * restricts Foo to only be called by the class Bar. The class can only be
+ * constructed by Bar, so no other classes can construct the parameter
+ * necessary to call the method.
+ */
+template <typename T>
+class OnlyCalledBy
+{
+private:
+                                OnlyCalledBy() {}
+
+    friend T;
+};
