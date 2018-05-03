@@ -13,6 +13,7 @@ Export('env')
 objects = map(env.Object, [
     'Source/Log.cpp',
     'Source/Path.cpp',
+    'Source/PixelFormat.cpp',
     'Source/String.cpp',
 ])
 
