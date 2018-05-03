@@ -24,7 +24,6 @@
 #include <utility>
 
 #if defined(__GNUC__)
-    #define NORETURN                __attribute__((noreturn))
     #define FORCEINLINE             __attribute__((always_inline))
     #define NOINLINE                __attribute__((noinline))
     #define Likely(x)               __builtin_expect(!!(x), 1)
@@ -34,10 +33,10 @@
     #error "Compiler is not supported"
 #endif
 
-NORETURN extern void FatalImpl(const char* const inFile,
-                               const int         inLine,
-                               const char* const inFormat,
-                               ...);
+[[noreturn]] extern void FatalImpl(const char* const inFile,
+                                   const int         inLine,
+                                   const char* const inFormat,
+                                   ...);
 
 /**
  * This function should be called to indicate that an unrecoverable error has
