@@ -200,6 +200,17 @@ void VulkanDevice::CreateDevice()
                                    nullptr,
                                    &mHandle));
 
+        #define LOAD_VULKAN_DEVICE_FUNC(name) \
+            name = reinterpret_cast<PFN_##name>(vkGetDeviceProcAddr(mHandle, #name)); \
+            if (!name) \
+            { \
+                Fatal("Failed to load Vulkan function '%s'", #name); \
+            }
+
+        ENUMERATE_VULKAN_DEVICE_FUNCS(LOAD_VULKAN_DEVICE_FUNC);
+
+        #undef LOAD_VULKAN_DEVICE_FUNC
+
         break;
     }
 

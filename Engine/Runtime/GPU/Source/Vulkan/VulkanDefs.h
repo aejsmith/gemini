@@ -49,7 +49,142 @@
     macro(vkEnumerateDeviceLayerProperties) \
     macro(vkCreateDevice) \
     macro(vkDestroyDevice) \
-    macro(vkGetDeviceProcAddr)
+    macro(vkGetDeviceProcAddr) \
+    macro(vkDestroySurfaceKHR) \
+    macro(vkGetPhysicalDeviceSurfaceSupportKHR) \
+    macro(vkGetPhysicalDeviceSurfaceCapabilitiesKHR) \
+    macro(vkGetPhysicalDeviceSurfaceFormatsKHR) \
+    macro(vkGetPhysicalDeviceSurfacePresentModesKHR)
+
+/**
+ * Device-specific functions obtained from vkGetDeviceProcAddr.
+ */
+#define ENUMERATE_VULKAN_DEVICE_FUNCS(macro) \
+    macro(vkGetDeviceQueue) \
+    macro(vkQueueSubmit) \
+    macro(vkQueueWaitIdle) \
+    macro(vkDeviceWaitIdle) \
+    macro(vkAllocateMemory) \
+    macro(vkFreeMemory) \
+    macro(vkMapMemory) \
+    macro(vkUnmapMemory) \
+    macro(vkFlushMappedMemoryRanges) \
+    macro(vkInvalidateMappedMemoryRanges) \
+    macro(vkGetDeviceMemoryCommitment) \
+    macro(vkBindBufferMemory) \
+    macro(vkBindImageMemory) \
+    macro(vkGetBufferMemoryRequirements) \
+    macro(vkGetImageMemoryRequirements) \
+    macro(vkGetImageSparseMemoryRequirements) \
+    macro(vkGetPhysicalDeviceSparseImageFormatProperties) \
+    macro(vkQueueBindSparse) \
+    macro(vkCreateFence) \
+    macro(vkDestroyFence) \
+    macro(vkResetFences) \
+    macro(vkGetFenceStatus) \
+    macro(vkWaitForFences) \
+    macro(vkCreateSemaphore) \
+    macro(vkDestroySemaphore) \
+    macro(vkCreateEvent) \
+    macro(vkDestroyEvent) \
+    macro(vkGetEventStatus) \
+    macro(vkSetEvent) \
+    macro(vkResetEvent) \
+    macro(vkCreateQueryPool) \
+    macro(vkDestroyQueryPool) \
+    macro(vkGetQueryPoolResults) \
+    macro(vkCreateBuffer) \
+    macro(vkDestroyBuffer) \
+    macro(vkCreateBufferView) \
+    macro(vkDestroyBufferView) \
+    macro(vkCreateImage) \
+    macro(vkDestroyImage) \
+    macro(vkGetImageSubresourceLayout) \
+    macro(vkCreateImageView) \
+    macro(vkDestroyImageView) \
+    macro(vkCreateShaderModule) \
+    macro(vkDestroyShaderModule) \
+    macro(vkCreatePipelineCache) \
+    macro(vkDestroyPipelineCache) \
+    macro(vkGetPipelineCacheData) \
+    macro(vkMergePipelineCaches) \
+    macro(vkCreateGraphicsPipelines) \
+    macro(vkCreateComputePipelines) \
+    macro(vkDestroyPipeline) \
+    macro(vkCreatePipelineLayout) \
+    macro(vkDestroyPipelineLayout) \
+    macro(vkCreateSampler) \
+    macro(vkDestroySampler) \
+    macro(vkCreateDescriptorSetLayout) \
+    macro(vkDestroyDescriptorSetLayout) \
+    macro(vkCreateDescriptorPool) \
+    macro(vkDestroyDescriptorPool) \
+    macro(vkResetDescriptorPool) \
+    macro(vkAllocateDescriptorSets) \
+    macro(vkFreeDescriptorSets) \
+    macro(vkUpdateDescriptorSets) \
+    macro(vkCreateFramebuffer) \
+    macro(vkDestroyFramebuffer) \
+    macro(vkCreateRenderPass) \
+    macro(vkDestroyRenderPass) \
+    macro(vkGetRenderAreaGranularity) \
+    macro(vkCreateCommandPool) \
+    macro(vkDestroyCommandPool) \
+    macro(vkResetCommandPool) \
+    macro(vkAllocateCommandBuffers) \
+    macro(vkFreeCommandBuffers) \
+    macro(vkBeginCommandBuffer) \
+    macro(vkEndCommandBuffer) \
+    macro(vkResetCommandBuffer) \
+    macro(vkCmdBindPipeline) \
+    macro(vkCmdSetViewport) \
+    macro(vkCmdSetScissor) \
+    macro(vkCmdSetLineWidth) \
+    macro(vkCmdSetDepthBias) \
+    macro(vkCmdSetBlendConstants) \
+    macro(vkCmdSetDepthBounds) \
+    macro(vkCmdSetStencilCompareMask) \
+    macro(vkCmdSetStencilWriteMask) \
+    macro(vkCmdSetStencilReference) \
+    macro(vkCmdBindDescriptorSets) \
+    macro(vkCmdBindIndexBuffer) \
+    macro(vkCmdBindVertexBuffers) \
+    macro(vkCmdDraw) \
+    macro(vkCmdDrawIndexed) \
+    macro(vkCmdDrawIndirect) \
+    macro(vkCmdDrawIndexedIndirect) \
+    macro(vkCmdDispatch) \
+    macro(vkCmdDispatchIndirect) \
+    macro(vkCmdCopyBuffer) \
+    macro(vkCmdCopyImage) \
+    macro(vkCmdBlitImage) \
+    macro(vkCmdCopyBufferToImage) \
+    macro(vkCmdCopyImageToBuffer) \
+    macro(vkCmdUpdateBuffer) \
+    macro(vkCmdFillBuffer) \
+    macro(vkCmdClearColorImage) \
+    macro(vkCmdClearDepthStencilImage) \
+    macro(vkCmdClearAttachments) \
+    macro(vkCmdResolveImage) \
+    macro(vkCmdSetEvent) \
+    macro(vkCmdResetEvent) \
+    macro(vkCmdWaitEvents) \
+    macro(vkCmdPipelineBarrier) \
+    macro(vkCmdBeginQuery) \
+    macro(vkCmdEndQuery) \
+    macro(vkCmdResetQueryPool) \
+    macro(vkCmdWriteTimestamp) \
+    macro(vkCmdCopyQueryPoolResults) \
+    macro(vkCmdPushConstants) \
+    macro(vkCmdBeginRenderPass) \
+    macro(vkCmdNextSubpass) \
+    macro(vkCmdEndRenderPass) \
+    macro(vkCmdExecuteCommands) \
+    macro(vkCreateSwapchainKHR) \
+    macro(vkDestroySwapchainKHR) \
+    macro(vkGetSwapchainImagesKHR) \
+    macro(vkAcquireNextImageKHR) \
+    macro(vkQueuePresentKHR)
 
 /**
  * Table of Vulkan function pointers loaded manually. These are made available
@@ -67,6 +202,7 @@ namespace VulkanFuncs
 
     ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(DECLARE_VULKAN_FUNC);
     ENUMERATE_VULKAN_INSTANCE_FUNCS(DECLARE_VULKAN_FUNC);
+    ENUMERATE_VULKAN_DEVICE_FUNCS(DECLARE_VULKAN_FUNC);
 
     #undef DECLARE_VULKAN_FUNC
 }
