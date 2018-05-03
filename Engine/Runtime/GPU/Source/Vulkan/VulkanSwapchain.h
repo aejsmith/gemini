@@ -20,6 +20,8 @@
 
 #include "VulkanDeviceChild.h"
 
+#include <vector>
+
 class VulkanSwapchain final : public GPUSwapchain,
                               public VulkanDeviceChild<VulkanSwapchain>
 {
@@ -35,7 +37,18 @@ public:
                                                          const uint32_t         inQueueFamily);
 
 private:
+    /* Implemented by platform-specific code. */
+    void                        CreateSurface();
+
+    void                        ChooseFormat();
+    void                        CreateSwapchain();
+
+private:
     VkSurfaceKHR                mSurfaceHandle;
     VkSwapchainKHR              mHandle;
+
+    VkSurfaceFormatKHR          mSurfaceFormat;
+
+    std::vector<VkImage>        mImages;
 
 };

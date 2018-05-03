@@ -33,14 +33,16 @@
 
 #include "../VulkanSwapchain.h"
 
+#include "../VulkanDevice.h"
 #include "../VulkanInstance.h"
 
 #include "Engine/Window.h"
 
-static void GetWMInfo(SDL_SysWMinfo& outWMInfo)
+static void GetWMInfo(const Window&  inWindow,
+                      SDL_SysWMinfo& outWMInfo)
 {
     SDL_VERSION(&outWMInfo.version);
-    if (!SDL_GetWindowWMInfo(MainWindow::Get().GetSDLWindow(), &outWMInfo))
+    if (!SDL_GetWindowWMInfo(inWindow.GetSDLWindow(), &outWMInfo))
     {
         Fatal("Failed to get SDL WM info: %s", SDL_GetError());
     }
@@ -49,7 +51,7 @@ static void GetWMInfo(SDL_SysWMinfo& outWMInfo)
 const char* VulkanSwapchain::GetSurfaceExtensionName()
 {
     SDL_SysWMinfo wmInfo;
-    GetWMInfo(wmInfo);
+    GetWMInfo(MainWindow::Get(), wmInfo);
 
     const char* extension = nullptr;
 
@@ -73,7 +75,7 @@ bool VulkanSwapchain::CheckPresentationSupport(const VkPhysicalDevice inDevice,
                                                const uint32_t         inQueueFamily)
 {
     SDL_SysWMinfo wmInfo;
-    GetWMInfo(wmInfo);
+    GetWMInfo(MainWindow::Get(), wmInfo);
 
     VkBool32 result = VK_FALSE;
 
@@ -119,4 +121,39 @@ bool VulkanSwapchain::CheckPresentationSupport(const VkPhysicalDevice inDevice,
     }
 
     return result;
+}
+
+void VulkanSwapchain::CreateSurface()
+{
+    SDL_SysWMinfo wmInfo;
+    GetWMInfo(GetWindow(), wmInfo);
+
+    switch (wmInfo.subsystem)
+    {
+        #ifdef SDL_VIDEO_DRIVER_X11
+            case SDL_SYSWM_X11:
+            {
+                VkXcbSurfaceCreateInfoKHR createInfo = {};
+                createInfo.sType      = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+                createInfo.connection = XGetXCBConnection(wmInfo.info.x11.display);
+                createInfo.window     = wmInfo.info.x11.window;
+
+                auto vkCreateXcbSurfaceKHR =
+                    VulkanInstance::Get().Load<PFN_vkCreateXcbSurfaceKHR>(
+                        "vkCreateXcbSurfaceKHR",
+                        true);
+
+                VulkanCheck(vkCreateXcbSurfaceKHR(GetVulkanInstance().GetHandle(),
+                                                  &createInfo,
+                                                  nullptr,
+                                                  &mSurfaceHandle));
+
+                break;
+            }
+        #endif
+
+        default:
+            Fatal("SDL video subsystem %d is not supported", wmInfo.subsystem);
+
+    }
 }

@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "Core/PixelFormat.h"
 #include "Core/Singleton.h"
 
 #include "GPU/GPUDeviceChild.h"
@@ -37,8 +38,10 @@ public:
 
 public:
     Window&                     GetWindow() const { return mWindow; }
+    PixelFormat                 GetFormat() const { return mFormat; }
 
-private:
+protected:
     Window&                     mWindow;
+    PixelFormat                 mFormat;
 
 };

@@ -19,6 +19,7 @@
 #include "VulkanDefs.h"
 
 class VulkanDevice;
+class VulkanInstance;
 
 /**
  * Mixin class for any class with a GetDevice() method returning a GPUDevice,
@@ -29,6 +30,7 @@ class VulkanDeviceChild
 {
 public:
     VulkanDevice&               GetVulkanDevice() const;
+    VulkanInstance&             GetVulkanInstance() const;
 
 };
 
@@ -36,4 +38,10 @@ template <typename T>
 inline VulkanDevice& VulkanDeviceChild<T>::GetVulkanDevice() const
 {
     return static_cast<VulkanDevice&>(static_cast<const T*>(this)->GetDevice());
+}
+
+template <typename T>
+inline VulkanInstance& VulkanDeviceChild<T>::GetVulkanInstance() const
+{
+    return GetVulkanDevice().GetInstance();
 }
