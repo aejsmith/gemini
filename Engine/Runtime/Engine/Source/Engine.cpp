@@ -35,8 +35,8 @@ Engine::Engine()
 
     /* TODO: Make parameters configurable. */
     new MainWindow(glm::ivec2(1600, 900), 0);
-
     GPUDevice::Create();
+    GPUDevice::Get().CreateSwapchain(MainWindow::Get());
 }
 
 Engine::~Engine()

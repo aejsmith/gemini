@@ -14,25 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "VulkanDefs.h"
+#include "GPU/GPUSwapchain.h"
 
-#include <string>
+#include "Engine/Window.h"
 
-namespace VulkanFuncs
+GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
+                           Window&    inWindow) :
+    GPUDeviceChild (inDevice),
+    mWindow        (inWindow)
 {
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
-
-    #define DEFINE_VULKAN_FUNC(name) \
-        PFN_##name name;
-
-    ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
-    ENUMERATE_VULKAN_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
+    mWindow.SetSwapchain(this, {});
 }
 
-void VulkanCheckFailed(const char*    inCall,
-                       const VkResult inResult)
+GPUSwapchain::~GPUSwapchain()
 {
-    std::string string(inCall);
-    string.erase(string.find('('));
-    Fatal("%s failed: %d", string.c_str(), inResult);
 }

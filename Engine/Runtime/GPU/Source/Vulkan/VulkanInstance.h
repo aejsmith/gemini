@@ -23,11 +23,26 @@
 class VulkanInstance : public Singleton<VulkanInstance>
 {
 public:
+    /** Instance capability flags. */
+    enum Caps : uint32_t
+    {
+        kCap_Validation  = (1 << 0),
+        kCap_DebugReport = (1 << 1),
+    };
+
+public:
                                 VulkanInstance();
                                 ~VulkanInstance();
 
 public:
     VkInstance                  GetHandle() const       { return mHandle; }
+
+    bool                        HasCap(const Caps inCap)
+                                    { return (mCaps & inCap) == inCap; }
+
+    template <typename Function>
+    Function                    Load(const char* inName,
+                                     const bool  inRequired);
 
 private:
     /* Implemented by platform-specific code. */
@@ -39,5 +54,20 @@ private:
 private:
     void*                       mLoaderHandle;
     VkInstance                  mHandle;
+    uint32_t                    mCaps;
 
 };
+
+template <typename Function>
+inline Function VulkanInstance::Load(const char* inName,
+                                     const bool  inRequired)
+{
+    auto func = reinterpret_cast<Function>(vkGetInstanceProcAddr(mHandle, inName));
+
+    if (!func && inRequired)
+    {
+        Fatal("Failed to load Vulkan function '%s'", inName);
+    }
+
+    return func;
+}

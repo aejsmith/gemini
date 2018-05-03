@@ -16,6 +16,8 @@
 
 #include "Engine/Window.h"
 
+#include "GPU/GPUSwapchain.h"
+
 #include <SDL.h>
 
 SINGLETON_IMPL(MainWindow);
@@ -24,6 +26,7 @@ Window::Window(std::string       inTitle,
                const glm::ivec2& inSize,
                const uint32_t    inFlags) :
     mSDLWindow (nullptr),
+    mSwapchain (nullptr),
     mTitle     (std::move(inTitle)),
     mSize      (inSize),
     mFlags     (inFlags)
@@ -45,7 +48,16 @@ Window::Window(std::string       inTitle,
 
 Window::~Window()
 {
+    delete mSwapchain;
+
     SDL_DestroyWindow(mSDLWindow);
+}
+
+void Window::SetSwapchain(GPUSwapchain* const inSwapchain,
+                          OnlyCalledBy<GPUSwapchain>)
+{
+    Assert(!mSwapchain);
+    mSwapchain = inSwapchain;
 }
 
 MainWindow::MainWindow(const glm::ivec2& inSize,

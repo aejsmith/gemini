@@ -4,12 +4,15 @@ Import('env')
 
 objects = map(env.Object, [
     'Source/GPUDevice.cpp',
+    'Source/GPUSwapchain.cpp',
 
     'Source/Vulkan/VulkanInstance.cpp',
     'Source/Vulkan/VulkanDefs.cpp',
     'Source/Vulkan/VulkanDevice.cpp',
+    'Source/Vulkan/VulkanSwapchain.cpp',
 
     'Source/Vulkan/${PLATFORM}/${PLATFORM}VulkanInstance.cpp',
+    'Source/Vulkan/${PLATFORM}/${PLATFORM}VulkanSwapchain.cpp',
 ])
 
 Return('objects')

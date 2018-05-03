@@ -18,10 +18,13 @@
 
 #include "Core/Math.h"
 #include "Core/Singleton.h"
+#include "Core/Utility.h"
 
 #include <string>
 
 struct SDL_Window;
+
+class GPUSwapchain;
 
 class Window
 {
@@ -41,13 +44,18 @@ public:
 
 public:
     SDL_Window*             GetSDLWindow() const    { return mSDLWindow; }
+    GPUSwapchain*           GetSwapchain() const    { return mSwapchain; }
 
     const glm::ivec2&       GetSize() const         { return mSize; }
     bool                    IsFullscreen() const    { return mFlags & kWindow_Fullscreen; }
     bool                    IsHidden() const        { return mFlags & kWindow_Hidden; }
 
+    void                    SetSwapchain(GPUSwapchain* const inSwapchain,
+                                         OnlyCalledBy<GPUSwapchain>);
+
 private:
     SDL_Window*             mSDLWindow;
+    GPUSwapchain*           mSwapchain;
 
     std::string             mTitle;
     glm::ivec2              mSize;

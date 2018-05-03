@@ -16,29 +16,26 @@
 
 #pragma once
 
-#include "Core/Singleton.h"
+#include "GPU/GPUSwapchain.h"
 
-class Window;
+#include "VulkanDeviceChild.h"
 
-/**
- * This class is the main class of the low-level rendering API abstraction
- * layer. It provides an interface to create GPU resources and record
- * commands.
- */
-class GPUDevice : public Singleton<GPUDevice>
+class VulkanSwapchain final : public GPUSwapchain,
+                              public VulkanDeviceChild<VulkanSwapchain>
 {
-protected:
-                                GPUDevice();
-                                ~GPUDevice();
+public:
+                                VulkanSwapchain(VulkanDevice& inDevice,
+                                                Window&       inWindow);
+                                ~VulkanSwapchain();
 
 public:
-    /**
-     * Create and attach a swapchain to the specified window so that it can be
-     * rendered to. The swapchain will be permanently associated with the
-     * window.
-     */
-    virtual void                CreateSwapchain(Window& inWindow) = 0;
+    /* Implemented by platform-specific code. */
+    static const char*          GetSurfaceExtensionName();
+    static bool                 CheckPresentationSupport(const VkPhysicalDevice inDevice,
+                                                         const uint32_t         inQueueFamily);
 
-    static void                 Create();
+private:
+    VkSurfaceKHR                mSurfaceHandle;
+    VkSwapchainKHR              mHandle;
 
 };

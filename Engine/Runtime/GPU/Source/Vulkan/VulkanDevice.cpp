@@ -16,6 +16,19 @@
 
 #include "VulkanDevice.h"
 
+#include "VulkanSwapchain.h"
+
+#include "Core/Utility.h"
+
+#include <unordered_set>
+#include <limits>
+#include <vector>
+
+static const char* kRequiredDeviceExtensions[] =
+{
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+};
+
 VulkanDevice::VulkanDevice() :
     mHandle (VK_NULL_HANDLE)
 {
@@ -26,9 +39,177 @@ VulkanDevice::VulkanDevice() :
     }
 
     mInstance = &VulkanInstance::Get();
+
+    CreateDevice();
 }
 
 VulkanDevice::~VulkanDevice()
 {
+    vkDestroyDevice(mHandle, nullptr);
+}
 
+void VulkanDevice::CreateDevice()
+{
+    uint32_t count;
+    VulkanCheck(vkEnumeratePhysicalDevices(GetInstance().GetHandle(), &count, nullptr));
+
+    if (count == 0)
+    {
+        Fatal("No Vulkan physical devices available");
+    }
+
+    std::vector<VkPhysicalDevice> devices(count);
+    VulkanCheck(vkEnumeratePhysicalDevices(GetInstance().GetHandle(), &count, devices.data()));
+
+    mPhysicalDevice = VK_NULL_HANDLE;
+
+    for (size_t i = 0; i < devices.size(); i++)
+    {
+        VkPhysicalDevice device = devices[i];
+
+        vkGetPhysicalDeviceProperties(device, &mProperties);
+        vkGetPhysicalDeviceFeatures(device, &mFeatures);
+
+        LogInfo("Checking device %zu (%s)", i, mProperties.deviceName);
+
+        if (mProperties.apiVersion < VK_API_VERSION_1_1)
+        {
+            LogWarning("  Vulkan 1.1 is not supported");
+            continue;
+        }
+
+        std::unordered_set<std::string> availableExtensions;
+
+        VulkanCheck(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, nullptr));
+        std::vector<VkExtensionProperties> extensionProps(count);
+        VulkanCheck(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, extensionProps.data()));
+
+        for (const VkExtensionProperties& extension : extensionProps)
+        {
+            availableExtensions.insert(extension.extensionName);
+        }
+
+        bool found = true;
+
+        for (const char* extension : kRequiredDeviceExtensions)
+        {
+            found = availableExtensions.find(extension) != availableExtensions.end();
+            if (!found)
+            {
+                LogWarning("  Required device extension '%s' not available", extension);
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            continue;
+        }
+
+        /* Find suitable queue families. We need to support both graphics
+         * operations and presentation. */
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);
+
+        mGraphicsQueueFamily = std::numeric_limits<uint32_t>::max();
+
+        if (count > 0)
+        {
+            std::vector<VkQueueFamilyProperties> familyProps(count);
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &count, familyProps.data());
+
+            for (uint32_t family = 0; family < familyProps.size(); family++)
+            {
+                const bool graphicsSupported = familyProps[family].queueCount > 0 &&
+                                               familyProps[family].queueFlags & VK_QUEUE_GRAPHICS_BIT &&
+                                               familyProps[family].queueFlags & VK_QUEUE_COMPUTE_BIT;
+
+                const bool presentSupported  = VulkanSwapchain::CheckPresentationSupport(device, i);
+
+                if (graphicsSupported && presentSupported)
+                {
+                    mGraphicsQueueFamily = family;
+                    break;
+                }
+            }
+        }
+
+        if (mGraphicsQueueFamily == std::numeric_limits<uint32_t>::max())
+        {
+            LogWarning("  No suitable queue families");
+            continue;
+        }
+
+        /* This device is good. */
+        mPhysicalDevice = device;
+
+        LogInfo("  API version: %u.%u.%u",
+                VK_VERSION_MAJOR(mProperties.apiVersion),
+                VK_VERSION_MINOR(mProperties.apiVersion),
+                VK_VERSION_PATCH(mProperties.apiVersion));
+        LogInfo("  IDs:         0x%x / 0x%x",
+                mProperties.vendorID,
+                mProperties.deviceID);
+
+        LogInfo("  Extensions:");
+
+        for (const VkExtensionProperties& extension : extensionProps)
+        {
+            LogInfo("    %s (revision %u)",
+                    extension.extensionName,
+                    extension.specVersion);
+        }
+
+        std::vector<const char*> enabledLayers;
+        std::vector<const char*> enabledExtensions;
+
+        if (GetInstance().HasCap(VulkanInstance::kCap_Validation))
+        {
+            /* Assume that if the instance has validation then the device does
+             * too. */
+            enabledLayers.emplace_back("VK_LAYER_LUNARG_standard_validation");
+        }
+
+        enabledExtensions.assign(&kRequiredDeviceExtensions[0],
+                                 &kRequiredDeviceExtensions[ArraySize(kRequiredDeviceExtensions)]);
+
+        /* Enable all supported features, aside from robustBufferAccess - we
+         * should behave properly without it, and it can have a performance
+         * impact. */
+        mFeatures.robustBufferAccess = false;
+
+        const float queuePriority = 1.0f;
+
+        VkDeviceQueueCreateInfo queueCreateInfo = {};
+        queueCreateInfo.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = mGraphicsQueueFamily;
+        queueCreateInfo.queueCount       = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+
+        VkDeviceCreateInfo deviceCreateInfo = {};
+        deviceCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        deviceCreateInfo.queueCreateInfoCount    = 1;
+        deviceCreateInfo.pQueueCreateInfos       = &queueCreateInfo;
+        deviceCreateInfo.enabledLayerCount       = enabledLayers.size();
+        deviceCreateInfo.ppEnabledLayerNames     = enabledLayers.data();
+        deviceCreateInfo.enabledExtensionCount   = enabledExtensions.size();
+        deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
+        deviceCreateInfo.pEnabledFeatures        = &mFeatures;;
+
+        VulkanCheck(vkCreateDevice(mPhysicalDevice,
+                                   &deviceCreateInfo,
+                                   nullptr,
+                                   &mHandle));
+
+        break;
+    }
+
+    if (mPhysicalDevice == VK_NULL_HANDLE)
+    {
+        Fatal("No suitable Vulkan devices found");
+    }
+}
+
+void VulkanDevice::CreateSwapchain(Window& inWindow)
+{
+    new VulkanSwapchain(*this, inWindow);
 }

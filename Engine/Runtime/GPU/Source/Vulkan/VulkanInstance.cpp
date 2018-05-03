@@ -16,6 +16,8 @@
 
 #include "VulkanInstance.h"
 
+#include "VulkanSwapchain.h"
+
 #include "Core/Utility.h"
 
 #include <string>
@@ -31,7 +33,8 @@ SINGLETON_IMPL(VulkanInstance);
 
 VulkanInstance::VulkanInstance() :
     mLoaderHandle   (nullptr),
-    mHandle         (VK_NULL_HANDLE)
+    mHandle         (VK_NULL_HANDLE),
+    mCaps           (0)
 {
     OpenLoader();
     CreateInstance();
@@ -49,14 +52,8 @@ VulkanInstance::~VulkanInstance()
 
 void VulkanInstance::CreateInstance()
 {
-    VkResult result;
-
     #define LOAD_VULKAN_INSTANCE_FUNC(name) \
-        name = reinterpret_cast<PFN_##name>(vkGetInstanceProcAddr(mHandle, #name)); \
-        if (!name) \
-        { \
-            Fatal("Failed to load Vulkan function '" #name "'"); \
-        }
+        name = Load<PFN_##name>(#name, true);
 
     /*
      * Load all functions we need to create the instance. mHandle is null
@@ -66,12 +63,8 @@ void VulkanInstance::CreateInstance()
 
     /* Vulkan 1.1 is required. */
     uint32_t apiVersion;
-    result = vkEnumerateInstanceVersion(&apiVersion);
-    if (result != VK_SUCCESS)
-    {
-        Fatal("Failed to get Vulkan instance version: %d", result);
-    }
-    else if (apiVersion < VK_API_VERSION_1_1)
+    VulkanCheck(vkEnumerateInstanceVersion(&apiVersion));
+    if (apiVersion < VK_API_VERSION_1_1)
     {
         Fatal("Vulkan API version 1.1 is not supported");
     }
@@ -81,21 +74,13 @@ void VulkanInstance::CreateInstance()
      */
 
     uint32_t count  = 0;
-    result = vkEnumerateInstanceLayerProperties(&count, nullptr);
-    if (result != VK_SUCCESS)
-    {
-        Fatal("Failed to enumerate Vulkan instance layers (1): %d", result);
-    }
 
+    VulkanCheck(vkEnumerateInstanceLayerProperties(&count, nullptr));
     std::vector<VkLayerProperties> layerProps(count);
-    result = vkEnumerateInstanceLayerProperties(&count, &layerProps[0]);
-    if (result != VK_SUCCESS)
-    {
-        Fatal("Failed to enumerate Vulkan instance layers (2): %d", result);
-    }
+    VulkanCheck(vkEnumerateInstanceLayerProperties(&count, &layerProps[0]));
 
     std::unordered_set<std::string> availableLayers;
-    LogInfo("Vulkan instance layers:");
+    LogInfo("Instance layers:");
     for (const auto& layer : layerProps)
     {
         LogInfo("  %s (spec version %u.%u.%u, revision %u)",
@@ -108,21 +93,12 @@ void VulkanInstance::CreateInstance()
         availableLayers.insert(layer.layerName);
     }
 
-    result = vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
-    if (result != VK_SUCCESS)
-    {
-        Fatal("Failed to enumerate Vulkan instance extensions (1): %d", result);
-    }
-
+    VulkanCheck(vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr));
     std::vector<VkExtensionProperties> extensionProps(count);
-    result = vkEnumerateInstanceExtensionProperties(nullptr, &count, &extensionProps[0]);
-    if (result != VK_SUCCESS)
-    {
-        Fatal("Failed to enumerate Vulkan instance extensions (2): %d", result);
-    }
+    VulkanCheck(vkEnumerateInstanceExtensionProperties(nullptr, &count, extensionProps.data()));
 
     std::unordered_set<std::string> availableExtensions;
-    LogInfo("Vulkan instance extensions:");
+    LogInfo("Instance extensions:");
     for (const auto& extension : extensionProps)
     {
         LogInfo("  %s (revision %u)",
@@ -135,9 +111,10 @@ void VulkanInstance::CreateInstance()
     std::vector<const char*> enabledLayers;
     std::vector<const char*> enabledExtensions;
 
-    /* TODO: Check for platform surface extension. */
     enabledExtensions.assign(&kRequiredInstanceExtensions[0],
                              &kRequiredInstanceExtensions[ArraySize(kRequiredInstanceExtensions)]);
+
+    enabledExtensions.emplace_back(VulkanSwapchain::GetSurfaceExtensionName());
 
     for (const char* extension : enabledExtensions)
     {
@@ -157,6 +134,8 @@ void VulkanInstance::CreateInstance()
             LogInfo("Enabling Vulkan validation layers");
             enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
             enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+
+            mCaps |= kCap_Validation | kCap_DebugReport;
         }
         else
         {
@@ -179,11 +158,7 @@ void VulkanInstance::CreateInstance()
     createInfo.enabledExtensionCount   = enabledExtensions.size();
     createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
-    result = vkCreateInstance(&createInfo, nullptr, &mHandle);
-    if (result != VK_SUCCESS)
-    {
-        Fatal("Failed to create Vulkan instance: %d", result);
-    }
+    VulkanCheck(vkCreateInstance(&createInfo, nullptr, &mHandle));
 
     /* Get instance function pointers. */
     ENUMERATE_VULKAN_INSTANCE_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);

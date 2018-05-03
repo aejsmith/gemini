@@ -14,25 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "VulkanDefs.h"
+#pragma once
 
-#include <string>
+#include "Core/Singleton.h"
 
-namespace VulkanFuncs
+#include "GPU/GPUDeviceChild.h"
+
+class Window;
+
+/**
+ * Interface between the GPU layer and Window. A window needs to have a
+ * GPUSwapchain to be able to render to it.
+ */
+class GPUSwapchain : public GPUDeviceChild
 {
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+protected:
+                                GPUSwapchain(GPUDevice& inDevice,
+                                             Window&    inWindow);
 
-    #define DEFINE_VULKAN_FUNC(name) \
-        PFN_##name name;
+public:
+    virtual                     ~GPUSwapchain();
 
-    ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
-    ENUMERATE_VULKAN_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
-}
+public:
+    Window&                     GetWindow() const { return mWindow; }
 
-void VulkanCheckFailed(const char*    inCall,
-                       const VkResult inResult)
-{
-    std::string string(inCall);
-    string.erase(string.find('('));
-    Fatal("%s failed: %d", string.c_str(), inResult);
-}
+private:
+    Window&                     mWindow;
+
+};

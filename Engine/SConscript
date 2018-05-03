@@ -50,6 +50,9 @@ depends = [
     'Engine/Core',
 ]
 
+if manager.baseEnv['PLATFORM'] == 'Linux':
+    depends += ['External/XCB']
+
 env = manager.CreateEnvironment(depends = depends)
 Export('env')
 

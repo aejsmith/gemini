@@ -18,3 +18,8 @@ def AddExternalComponent(name, env):
 sdlEnv = dummyEnv.Clone()
 sdlEnv.ParseConfig('sdl2-config --cflags --libs')
 AddExternalComponent('External/SDL', sdlEnv)
+
+# XCB.
+xcbEnv = dummyEnv.Clone()
+xcbEnv.ParseConfig('pkg-config --cflags --libs x11-xcb')
+AddExternalComponent('External/XCB', xcbEnv)

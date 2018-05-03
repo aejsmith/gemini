@@ -75,3 +75,18 @@ using namespace VulkanFuncs;
 
 /** Whether to enable the Vulkan validation layers. */
 #define ORION_VULKAN_VALIDATION     ORION_BUILD_DEBUG
+
+[[noreturn]] extern void VulkanCheckFailed(const char*    inCall,
+                                           const VkResult inResult);
+
+/** Handle failure of a Vulkan call. */
+#define VulkanCheck(_call) \
+    do \
+    { \
+        VkResult _result = _call; \
+        if (_result != VK_SUCCESS) \
+        { \
+            VulkanCheckFailed(#_call, _result); \
+        } \
+    } \
+    while (0)

@@ -14,25 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "VulkanDefs.h"
+#include "VulkanSwapchain.h"
 
-#include <string>
+#include "VulkanDevice.h"
 
-namespace VulkanFuncs
+VulkanSwapchain::VulkanSwapchain(VulkanDevice& inDevice,
+                                 Window&       inWindow) :
+    GPUSwapchain   (inDevice, inWindow),
+    mSurfaceHandle (VK_NULL_HANDLE),
+    mHandle        (VK_NULL_HANDLE)
 {
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
-
-    #define DEFINE_VULKAN_FUNC(name) \
-        PFN_##name name;
-
-    ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
-    ENUMERATE_VULKAN_INSTANCE_FUNCS(DEFINE_VULKAN_FUNC);
 }
 
-void VulkanCheckFailed(const char*    inCall,
-                       const VkResult inResult)
+VulkanSwapchain::~VulkanSwapchain()
 {
-    std::string string(inCall);
-    string.erase(string.find('('));
-    Fatal("%s failed: %d", string.c_str(), inResult);
 }
