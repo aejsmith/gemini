@@ -14,30 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "../VulkanInstance.h"
 
-#include "VulkanDefs.h"
+#include <dlfcn.h>
 
-#include "Core/Singleton.h"
+static constexpr char kLoaderLibraryName[] = "libvulkan.so.1";
 
-class VulkanInstance : public Singleton<VulkanInstance>
+void VulkanInstance::OpenLoader()
 {
-public:
-                                VulkanInstance();
-                                ~VulkanInstance();
+    /* TODO: Make this platform-specific code. */
+    mLoaderHandle = dlopen(kLoaderLibraryName, RTLD_LAZY);
+    if (!mLoaderHandle)
+    {
+        Fatal("Failed to open '%s': %s", kLoaderLibraryName, dlerror());
+    }
 
-public:
-    VkInstance                  GetHandle() const       { return mHandle; }
+    vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(mLoaderHandle,
+                                                                              "vkGetInstanceProcAddr"));
+    if (!vkGetInstanceProcAddr)
+    {
+        Fatal("'%s' does not provide vkGetInstanceProcAddr", kLoaderLibraryName);
+    }
+}
 
-private:
-    /* Implemented by platform-specific code. */
-    void                        OpenLoader();
-    void                        CloseLoader();
-
-    void                        CreateInstance();
-
-private:
-    void*                       mLoaderHandle;
-    VkInstance                  mHandle;
-
-};
+void VulkanInstance::CloseLoader()
+{
+    dlclose(mLoaderHandle);
+}

@@ -22,16 +22,6 @@
 #include <vector>
 #include <unordered_set>
 
-#include <dlfcn.h>
-
-#if ORION_PLATFORM_LINUX
-    static constexpr char kLoaderLibraryName[] = "libvulkan.so.1";
-#elif ORION_PLATFORM_MACOS
-    static constexpr char kLoaderLibraryName[] = "libvulkan.1.dylib";
-#else
-    #error "Unknown platform"
-#endif
-
 static const char* kRequiredInstanceExtensions[] =
 {
     VK_KHR_SURFACE_EXTENSION_NAME,
@@ -53,23 +43,8 @@ VulkanInstance::~VulkanInstance()
     {
         vkDestroyInstance(mHandle, nullptr);
     }
-}
 
-void VulkanInstance::OpenLoader()
-{
-    /* TODO: Make this platform-specific code. */
-    mLoaderHandle = dlopen(kLoaderLibraryName, RTLD_LAZY);
-    if (!mLoaderHandle)
-    {
-        Fatal("Failed to open '%s': %s", kLoaderLibraryName, dlerror());
-    }
-
-    vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(mLoaderHandle,
-                                                                              "vkGetInstanceProcAddr"));
-    if (!vkGetInstanceProcAddr)
-    {
-        Fatal("'%s' does not provide vkGetInstanceProcAddr", kLoaderLibraryName);
-    }
+    CloseLoader();
 }
 
 void VulkanInstance::CreateInstance()
@@ -209,4 +184,7 @@ void VulkanInstance::CreateInstance()
     {
         Fatal("Failed to create Vulkan instance: %d", result);
     }
+
+    /* Get instance function pointers. */
+    ENUMERATE_VULKAN_INSTANCE_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);
 }

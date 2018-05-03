@@ -8,6 +8,8 @@ objects = map(env.Object, [
     'Source/Vulkan/VulkanInstance.cpp',
     'Source/Vulkan/VulkanDefs.cpp',
     'Source/Vulkan/VulkanDevice.cpp',
+
+    'Source/Vulkan/${PLATFORM}/${PLATFORM}VulkanInstance.cpp',
 ])
 
 Return('objects')
