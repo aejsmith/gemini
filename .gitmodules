@@ -1,0 +1,3 @@
+[submodule "Engine/3rdParty/glm/Repo"]
+	path = Engine/3rdParty/glm/Repo
+	url = https://github.com/g-truc/glm

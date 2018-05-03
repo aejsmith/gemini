@@ -4,6 +4,7 @@ Import('manager')
 
 depends = [
     'External/SDL',
+    '3rdParty/glm',
 ]
 
 env = manager.CreateEnvironment(depends = depends)

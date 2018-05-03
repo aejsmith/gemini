@@ -28,7 +28,7 @@ for component in allComponents:
 manager.baseEnv['CPPPATH'] += [Dir('Include')]
 
 # Add all 3rd party library components.
-#SConscript(dirs = ['3rdParty'])
+SConscript(dirs = ['3rdParty'])
 
 ################
 # Core library #
