@@ -99,6 +99,19 @@ void VulkanSwapchain::ChooseFormat()
 
 void VulkanSwapchain::CreateSwapchain()
 {
+    /* We already checked for presentation support as part of device selection,
+     * however the validation layers require you to explicitly check the
+     * specific surface that you create. */
+    VkBool32 presentationSupported;
+    VulkanCheck(vkGetPhysicalDeviceSurfaceSupportKHR(GetVulkanDevice().GetPhysicalDevice(),
+                                                     GetVulkanDevice().GetGraphicsQueueFamily(),
+                                                     mSurfaceHandle,
+                                                     &presentationSupported));
+    if (!presentationSupported)
+    {
+        Fatal("Vulkan device does not support presentation to created surface");
+    }
+
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface          = mSurfaceHandle;
