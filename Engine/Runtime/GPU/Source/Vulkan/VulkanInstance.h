@@ -56,6 +56,10 @@ private:
     VkInstance                  mHandle;
     uint32_t                    mCaps;
 
+    #if ORION_VULKAN_VALIDATION
+    VkDebugReportCallbackEXT    mDebugReportCallback;
+    #endif
+
 };
 
 template <typename Function>

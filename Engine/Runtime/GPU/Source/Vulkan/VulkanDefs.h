@@ -187,6 +187,14 @@
     macro(vkQueuePresentKHR)
 
 /**
+ * VK_EXT_debug_report functions.
+ */
+#define ENUMERATE_VULKAN_DEBUG_REPORT_FUNCS(macro) \
+    macro(vkCreateDebugReportCallbackEXT) \
+    macro(vkDestroyDebugReportCallbackEXT) \
+    macro(vkDebugReportMessageEXT)
+
+/**
  * Table of Vulkan function pointers loaded manually. These are made available
  * under their usual name by the using statement below. We load all device
  * functions from our created device: our device is a singleton, so we can
@@ -203,6 +211,7 @@ namespace VulkanFuncs
     ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(DECLARE_VULKAN_FUNC);
     ENUMERATE_VULKAN_INSTANCE_FUNCS(DECLARE_VULKAN_FUNC);
     ENUMERATE_VULKAN_DEVICE_FUNCS(DECLARE_VULKAN_FUNC);
+    ENUMERATE_VULKAN_DEBUG_REPORT_FUNCS(DECLARE_VULKAN_FUNC);
 
     #undef DECLARE_VULKAN_FUNC
 }

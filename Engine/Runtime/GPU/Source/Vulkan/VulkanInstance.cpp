@@ -18,6 +18,7 @@
 
 #include "VulkanSwapchain.h"
 
+#include "Core/String.h"
 #include "Core/Utility.h"
 
 #include <string>
@@ -42,12 +43,77 @@ VulkanInstance::VulkanInstance() :
 
 VulkanInstance::~VulkanInstance()
 {
+    #if ORION_VULKAN_VALIDATION
+        if (mCaps & kCap_DebugReport)
+        {
+            vkDestroyDebugReportCallbackEXT(mHandle, mDebugReportCallback, nullptr);
+        }
+    #endif
+
     if (mHandle != VK_NULL_HANDLE)
     {
         vkDestroyInstance(mHandle, nullptr);
     }
 
     CloseLoader();
+}
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL
+DebugReportCallback(VkDebugReportFlagsEXT      flags,
+                    VkDebugReportObjectTypeEXT objectType,
+                    uint64_t                   object,
+                    size_t                     location,
+                    int32_t                    messageCode,
+                    const char*                pLayerPrefix,
+                    const char*                pMessage,
+                    void*                      pUserData)
+{
+    LogLevel level = kLogLevel_Debug;
+    std::string flagsString;
+
+    if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
+    {
+        flagsString += StringUtils::Format("%sDEBUG", (!flagsString.empty()) ? " | " : "");
+    }
+
+    if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
+    {
+        flagsString += StringUtils::Format("%sINFORMATION", (!flagsString.empty()) ? " | " : "");
+    }
+
+    if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
+    {
+        flagsString += StringUtils::Format("%sWARNING", (!flagsString.empty()) ? " | " : "");
+        level = kLogLevel_Warning;
+    }
+
+    if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
+    {
+        flagsString += StringUtils::Format("%sPERFORMANCE", (!flagsString.empty()) ? " | " : "");
+        level = kLogLevel_Warning;
+    }
+
+    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
+    {
+        flagsString += StringUtils::Format("%sERROR", (!flagsString.empty()) ? " | " : "");
+        level = kLogLevel_Error;
+    }
+
+    LogImpl(level,
+            __FILE__, __LINE__,
+            "Vulkan [layer = %s, flags = %s, object = 0x%" PRIx64 ", location = %zu, messageCode = %d]:",
+            pLayerPrefix, flagsString.c_str(), object, location, messageCode);
+    LogImpl(level,
+            nullptr, 0,
+            "%s",
+            pMessage);
+
+    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
+    {
+        Fatal("Vulkan validation error (see log for details)");
+    }
+
+    return VK_FALSE;
 }
 
 void VulkanInstance::CreateInstance()
@@ -162,4 +228,24 @@ void VulkanInstance::CreateInstance()
 
     /* Get instance function pointers. */
     ENUMERATE_VULKAN_INSTANCE_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);
+
+    /* Register a debug report callback. */
+    #if ORION_VULKAN_VALIDATION
+        if (mCaps & kCap_DebugReport)
+        {
+            ENUMERATE_VULKAN_DEBUG_REPORT_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);
+
+            VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+            callbackCreateInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+            callbackCreateInfo.flags       = VK_DEBUG_REPORT_ERROR_BIT_EXT |
+                                             VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                                             VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+            callbackCreateInfo.pfnCallback = DebugReportCallback;
+
+            vkCreateDebugReportCallbackEXT(mHandle,
+                                           &callbackCreateInfo,
+                                           nullptr,
+                                           &mDebugReportCallback);
+        }
+    #endif
 }

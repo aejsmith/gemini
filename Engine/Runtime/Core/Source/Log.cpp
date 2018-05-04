@@ -61,10 +61,14 @@ void LogVImpl(const LogLevel    inLevel,
             "%Y-%m-%d %H:%M:%S",
             &local);
 
-    Path path(inFile, Path::kUnnormalizedPlatform);
-    std::string fileDetails = StringUtils::Format("%s:%d",
-                                                  path.GetFileName().GetCString(),
-                                                  inLine);
+    std::string fileDetails;
+    if (inFile)
+    {
+        Path path(inFile, Path::kUnnormalizedPlatform);
+        fileDetails = StringUtils::Format("%s:%d",
+                                          path.GetFileName().GetCString(),
+                                          inLine);
+    }
 
     const char* levelString = "";
 
@@ -88,16 +92,28 @@ void LogVImpl(const LogLevel    inLevel,
 
     }
 
-    struct winsize w;
-    ioctl(0, TIOCGWINSZ, &w);
+    FILE* stream = (inLevel < kLogLevel_Error) ? stdout : stderr;
 
-    fprintf((inLevel < kLogLevel_Error) ? stdout : stderr,
-            "%s%s \033[0m%s\033[0;34m%*s\033[0m\n",
+    fprintf(stream,
+            "%s%s \033[0m%s",
             levelString,
             timeString,
-            message.c_str(),
-            w.ws_col - std::strlen(timeString) - message.length() - 2,
-            fileDetails.c_str());
+            message.c_str());
+
+    if (inFile)
+    {
+        struct winsize w;
+        ioctl(0, TIOCGWINSZ, &w);
+
+        fprintf(stream,
+                "\033[0;34m%*s\033[0m\n",
+                w.ws_col - std::strlen(timeString) - message.length() - 2,
+                fileDetails.c_str());
+    }
+    else
+    {
+        fprintf(stream, "\n");
+    }
 }
 
 void LogImpl(const LogLevel    inLevel,
