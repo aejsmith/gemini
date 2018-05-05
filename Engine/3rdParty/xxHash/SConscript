@@ -1,0 +1,16 @@
+import sys
+
+Import('manager')
+
+env = manager.CreateEnvironment()
+
+env['CPPDEFINES'].update({'XXH_NAMESPACE': 'Orion_'})
+
+objects = map(env.Object, [
+    'Repo/xxhash.c',
+])
+
+manager.AddComponent(
+    name = '3rdParty/xxHash',
+    includePath = Dir('Include'),
+    objects = objects)

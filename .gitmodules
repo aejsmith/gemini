@@ -1,3 +1,6 @@
 [submodule "Engine/3rdParty/glm/Repo"]
 	path = Engine/3rdParty/glm/Repo
 	url = https://github.com/g-truc/glm
+[submodule "Engine/3rdParty/xxHash/Repo"]
+	path = Engine/3rdParty/xxHash/Repo
+	url = https://github.com/Cyan4973/xxHash.git

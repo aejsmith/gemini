@@ -33,6 +33,10 @@
     #error "Compiler is not supported"
 #endif
 
+#if INTPTR_MAX != INT64_MAX
+    #error "Non-64-bit platforms are not supported"
+#endif
+
 [[noreturn]] extern void FatalImpl(const char* const inFile,
                                    const int         inLine,
                                    const char* const inFormat,

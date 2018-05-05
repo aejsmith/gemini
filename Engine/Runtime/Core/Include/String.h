@@ -16,27 +16,31 @@
 
 #pragma once
 
-#include "Core/CoreDefs.h"
+#include "Core/Hash.h"
 
 #include <string>
 
-class StringUtils
+inline size_t HashValue(const std::string& inValue)
 {
-public:
+    return HashData(inValue.c_str(), inValue.length());
+}
+
+namespace StringUtils
+{
     /** Splits a string into tokens. */
     template <typename Container>
-    static void                 Tokenize(const std::string& inString,
+    void                        Tokenize(const std::string& inString,
                                          Container&         outTokens,
                                          const char*        inDelimiters = " ",
                                          const int          inMaxTokens  = -1,
                                          const bool         inTrimEmpty  = true);
 
     /** Format a string as per printf(). */
-    static std::string          VFormat(const char* const inFormat,
+    std::string                 VFormat(const char* const inFormat,
                                         va_list           inArgs);
 
     /** Format a string as per printf(). */
-    static std::string          Format(const char* const inFormat,
+    std::string                 Format(const char* const inFormat,
                                        ...);
 
 };

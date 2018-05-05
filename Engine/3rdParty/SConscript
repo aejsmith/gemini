@@ -1,3 +1,4 @@
 SConscript(dirs = [
     'glm',
+    'xxHash',
 ])
