@@ -30,16 +30,16 @@ if not ARGUMENTS.get('V'):
             return '%8s %s' % (msg, var)
         else:
             return '\033[1;34m%8s\033[0m %s' % (msg, var)
-    env['ARCOMSTR']     = CompileString('AR',     '$TARGET')
-    env['CCCOMSTR']     = CompileString('CC',     '$SOURCE')
-    env['SHCCCOMSTR']   = CompileString('CC',     '$SOURCE')
-    env['CXXCOMSTR']    = CompileString('CXX',    '$SOURCE')
-    env['SHCXXCOMSTR']  = CompileString('CXX',    '$SOURCE')
-    env['LINKCOMSTR']   = CompileString('LINK',   '$TARGET')
-    env['SHLINKCOMSTR'] = CompileString('SHLINK', '$TARGET')
-    env['RANLIBCOMSTR'] = CompileString('RANLIB', '$TARGET')
-    env['GENCOMSTR']    = CompileString('GEN',    '$TARGET')
-    env['OBJGENCOMSTR'] = CompileString('OBJGEN', '$TARGET')
+    env['ARCOMSTR']        = CompileString('AR',     '$TARGET')
+    env['CCCOMSTR']        = CompileString('CC',     '$SOURCE')
+    env['SHCCCOMSTR']      = CompileString('CC',     '$SOURCE')
+    env['CXXCOMSTR']       = CompileString('CXX',    '$SOURCE')
+    env['SHCXXCOMSTR']     = CompileString('CXX',    '$SOURCE')
+    env['LINKCOMSTR']      = CompileString('LINK',   '$TARGET')
+    env['SHLINKCOMSTR']    = CompileString('SHLINK', '$TARGET')
+    env['RANLIBCOMSTR']    = CompileString('RANLIB', '$TARGET')
+    env['GENCOMSTR']       = CompileString('GEN',    '$TARGET')
+    env['OBJECTGENCOMSTR'] = CompileString('OBJGEN', '$TARGET')
 
 ##################
 # Compiler setup #

@@ -1,0 +1,97 @@
+import os
+import SCons.Scanner.C
+from subprocess import Popen, PIPE
+
+Import('manager')
+
+env = manager.CreateEnvironment(depends = [
+    'External/libclang',
+    '3rdParty/Mustache',
+    '3rdParty/RapidJSON',
+    'Engine/Core',
+])
+
+# Compile the Mustache template into the ObjectGen binary so we don't have to find
+# it at runtime.
+def GenMustacheHeader(target, source, env):
+    import json
+
+    # Read the source.
+    with open(str(source[0]), 'r') as sourceFile:
+        lines = sourceFile.readlines()
+
+    # Output the file.
+    with open(str(target[0]), 'w') as targetFile:
+        targetFile.write('const char *gObjectGenTemplate =')
+
+        for line in lines:
+            # Make the generated code slightly nicer by stripping the newline
+            # from lines that only contain a Mustache tag. Could do this in the
+            # template but then that is less readable.
+            if line[0:2] == '{{' and line[-3:-1] == '}}':
+                line = line[:-1]
+
+            # Format the strings appropriately for C++. JSON rules for strings
+            # are pretty much equivalent so we can use the json module to do
+            # this.
+            targetFile.write('\n    %s' % (json.dumps(line)))
+        targetFile.write(';\n')
+env.Command('ObjectGen.mustache.h', 'ObjectGen.mustache', Action(GenMustacheHeader, '$GENCOMSTR'))
+
+manager.baseEnv['OBJECTGEN'] = env.OrionInternalApplication(
+    name = 'ObjectGen',
+    sources = ['ObjectGen.cpp'])
+
+# libclang doesn't add the compiler's built-in include directory to the default
+# path. Therefore we must get this manually and pass it to ObjectGen.
+incdir = Popen([env['CC'], '-print-file-name=include'], stdout=PIPE).communicate()[0].strip()
+manager.baseEnv['OBJECTGENFLAGS'] = '$_CPPDEFFLAGS -I%s $_CPPINCFLAGS' % (incdir)
+
+#
+# Define builders to run ObjectGen.
+#  - ObjectGenHeader runs a header through ObjectGen and uses env.Object to
+#    build it, and returns that target.
+#  - ObjectGenSource runs a source file through ObjectGen in standalone mode,
+#    and returns the target for that. The result can be included in a source
+#    file.
+#
+
+# Emitter to add a dependency on ObjectGen for the generated files.
+def ObjectGenEmitter(target, source, env):
+    Depends(target, env['OBJECTGEN'])
+    return (target, source)
+
+manager.baseEnv['BUILDERS']['_ObjectGenHeader'] = Builder(
+    action = Action('$OBJECTGEN $OBJECTGENFLAGS -e $SOURCE $TARGET', '$OBJECTGENCOMSTR'),
+    emitter = ObjectGenEmitter,
+    suffix = '.obj.cc',
+    src_suffix = '.h',
+    source_scanner = SCons.Scanner.C.CScanner())
+
+# Wrapper method to compile the generated files.
+def ObjectGenHeaderMethod(env, source):
+    return env.Object(env._ObjectGenHeader(source))
+manager.baseEnv.AddMethod(ObjectGenHeaderMethod, 'ObjectGenHeader')
+
+# We need to filter out the include of the generated source file to prevent a
+# dependency cycle. ObjectGen will create the file before parsing it with clang to
+# ensure it doesn't error.
+class ObjectGenSourceScanner:
+    def __init__(self):
+        self.name = "ObjectGenSourceScanner"
+        self.path = SCons.Scanner.FindPathDirs("CPPPATH")
+    def __call__(self, node, env, path):
+        base = SCons.Scanner.C.CScanner()
+        deps = base(node, env, path)
+        return [dep for dep in deps if str(dep)[-7:] != '.obj.cc']
+    def recurse_nodes(self, nodes):
+        return nodes
+    def select(self, node):
+        return self
+
+manager.baseEnv['BUILDERS']['ObjectGenSource'] = Builder(
+    action = Action('$OBJECTGEN $OBJECTGENFLAGS -e -s $SOURCE $TARGET', '$OBJECTGENCOMSTR'),
+    emitter = ObjectGenEmitter,
+    suffix = '.obj.cc',
+    src_suffix = '.cc',
+    source_scanner = ObjectGenSourceScanner())

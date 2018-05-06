@@ -23,3 +23,9 @@ AddExternalComponent('External/SDL', sdlEnv)
 xcbEnv = dummyEnv.Clone()
 xcbEnv.ParseConfig('pkg-config --cflags --libs x11-xcb')
 AddExternalComponent('External/XCB', xcbEnv)
+
+# libclang.
+llvmEnv = dummyEnv.Clone()
+llvmEnv.ParseConfig('llvm-config --cflags --ldflags')
+llvmEnv['LIBS'] = ['clang']
+AddExternalComponent('External/libclang', llvmEnv)

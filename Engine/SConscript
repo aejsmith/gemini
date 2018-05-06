@@ -37,10 +37,10 @@ SConscript(dirs = ['3rdParty'])
 SConscript(dirs = ['Runtime/Core'])
 
 #############
-# Utilities #
+# Tools #
 #############
 
-#SConscript(dirs = ['Utilities'])
+SConscript(dirs = ['Tools'])
 
 ###############
 # Base engine #
@@ -48,6 +48,7 @@ SConscript(dirs = ['Runtime/Core'])
 
 depends = [
     'Engine/Core',
+    '3rdParty/RapidJSON',
 ]
 
 if manager.baseEnv['PLATFORM'] == 'Linux':

@@ -2,9 +2,16 @@ import VCS
 
 Import('env')
 
-objects = map(env.Object, [
+objects = map(env.ObjectGenHeader, [
+    'Include/Object.h',
+])
+
+objects += map(env.Object, [
     'Source/Engine.cpp',
+    'Source/JSONSerialiser.cpp',
     'Source/Main.cpp',
+    'Source/Object.cpp',
+    'Source/Serialiser.cpp',
     'Source/Version.cpp',
     'Source/Window.cpp',
 ])
