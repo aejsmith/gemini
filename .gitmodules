@@ -7,3 +7,6 @@
 [submodule "Engine/3rdParty/RapidJSON/Repo"]
 	path = Engine/3rdParty/RapidJSON/Repo
 	url = https://github.com/Tencent/rapidjson.git
+[submodule "Engine/3rdParty/Mustache/Repo"]
+	path = Engine/3rdParty/Mustache/Repo
+	url = https://github.com/kainjow/Mustache.git

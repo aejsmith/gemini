@@ -1,0 +1,7 @@
+Import('manager')
+
+env = manager.CreateEnvironment()
+
+manager.AddComponent(
+    name = '3rdParty/Mustache',
+    includePath = Dir('Include'))
