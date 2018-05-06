@@ -18,6 +18,25 @@
 
 #include "Core/CoreDefs.h"
 
+#include <type_traits>
+
+/**
+ * Helper macros.
+ */
+
+/** Define bitwise operators for an enum. */
+#define DEFINE_ENUM_BITWISE_OPS(Type) \
+    inline Type operator |(const Type a, const Type b) \
+    { \
+        using UnderlyingType = std::underlying_type<Type>::type; \
+        return static_cast<Type>(static_cast<UnderlyingType>(a) | static_cast<UnderlyingType>(b)); \
+    } \
+    inline Type operator &(const Type a, const Type b) \
+    { \
+        using UnderlyingType = std::underlying_type<Type>::type; \
+        return static_cast<Type>(static_cast<UnderlyingType>(a) & static_cast<UnderlyingType>(b)); \
+    }
+
 /**
  * Helper functions.
  */
@@ -115,4 +134,14 @@ private:
                                 OnlyCalledBy() {}
 
     friend T;
+};
+
+/** Base class ensuring derived classes are not copyable. */
+struct Uncopyable
+{
+                                Uncopyable()                    = default;
+                                Uncopyable(const Uncopyable&)   = delete;
+
+    Uncopyable&                 operator =(const Uncopyable&)   = delete;
+
 };

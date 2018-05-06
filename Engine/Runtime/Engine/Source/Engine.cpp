@@ -16,6 +16,9 @@
 
 #include "Engine/Engine.h"
 
+#include "Core/Filesystem.h"
+#include "Core/String.h"
+
 #include "Engine/Window.h"
 
 #include "GPU/GPUDevice.h"
@@ -33,7 +36,20 @@ Engine::Engine()
         Fatal("Failed to initialize SDL: %s", SDL_GetError());
     }
 
-    /* TODO: Make parameters configurable. */
+    /* Find the engine base directory and switch to it. */
+    char* const platformBasePath = SDL_GetBasePath();
+    Path basePath(platformBasePath, Path::kUnnormalizedPlatform);
+    basePath /= "../..";
+
+    if (!Filesystem::SetWorkingDirectory(basePath))
+    {
+        Fatal("Failed to change to engine directory '%s'", basePath.GetCString());
+    }
+
+    SDL_free(platformBasePath);
+
+    /* Set up the main window and graphics API. TODO: Make parameters
+     * configurable. */
     new MainWindow(glm::ivec2(1600, 900), 0);
     GPUDevice::Create();
     GPUDevice::Get().CreateSwapchain(MainWindow::Get());

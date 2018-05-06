@@ -21,6 +21,7 @@
 #include <xxHash.h>
 
 #include <type_traits>
+#include <string>
 
 inline size_t HashData(const void*    inData,
                        const size_t   inSize,
@@ -61,7 +62,12 @@ HashValue(const T inValue)
 template <typename T>
 inline size_t HashValue(T* const inValue)
 {
-    return static_cast<size_t>(inValue);
+    return reinterpret_cast<size_t>(inValue);
+}
+
+inline size_t HashValue(const std::string& inValue)
+{
+    return HashData(inValue.c_str(), inValue.length());
 }
 
 /**

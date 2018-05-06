@@ -1,0 +1,9 @@
+Import('env')
+
+objects = SConscript(dirs = [env['PLATFORM']])
+
+objects += map(env.Object, [
+    'Filesystem.cpp',
+])
+
+Return('objects')

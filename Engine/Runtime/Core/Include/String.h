@@ -18,13 +18,6 @@
 
 #include "Core/Hash.h"
 
-#include <string>
-
-inline size_t HashValue(const std::string& inValue)
-{
-    return HashData(inValue.c_str(), inValue.length());
-}
-
 namespace StringUtils
 {
     /** Splits a string into tokens. */

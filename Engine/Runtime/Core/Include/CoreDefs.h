@@ -23,6 +23,10 @@
 #include <cstdint>
 #include <utility>
 
+/**
+ * Compiler-specific macros.
+ */
+
 #if defined(__GNUC__)
     #define FORCEINLINE             __attribute__((always_inline))
     #define NOINLINE                __attribute__((noinline))
@@ -36,6 +40,10 @@
 #if INTPTR_MAX != INT64_MAX
     #error "Non-64-bit platforms are not supported"
 #endif
+
+/**
+ * Logging functions/macros.
+ */
 
 [[noreturn]] extern void FatalImpl(const char* const inFile,
                                    const int         inLine,
