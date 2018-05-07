@@ -64,7 +64,7 @@ def ObjectGenEmitter(target, source, env):
 manager.baseEnv['BUILDERS']['_ObjectGenHeader'] = Builder(
     action = Action('$OBJECTGEN $OBJECTGENFLAGS -e $SOURCE $TARGET', '$OBJECTGENCOMSTR'),
     emitter = ObjectGenEmitter,
-    suffix = '.obj.cc',
+    suffix = '.obj.cpp',
     src_suffix = '.h',
     source_scanner = SCons.Scanner.C.CScanner())
 
@@ -83,7 +83,7 @@ class ObjectGenSourceScanner:
     def __call__(self, node, env, path):
         base = SCons.Scanner.C.CScanner()
         deps = base(node, env, path)
-        return [dep for dep in deps if str(dep)[-7:] != '.obj.cc']
+        return [dep for dep in deps if str(dep)[-7:] != '.obj.cpp']
     def recurse_nodes(self, nodes):
         return nodes
     def select(self, node):
@@ -92,6 +92,6 @@ class ObjectGenSourceScanner:
 manager.baseEnv['BUILDERS']['ObjectGenSource'] = Builder(
     action = Action('$OBJECTGEN $OBJECTGENFLAGS -e -s $SOURCE $TARGET', '$OBJECTGENCOMSTR'),
     emitter = ObjectGenEmitter,
-    suffix = '.obj.cc',
-    src_suffix = '.cc',
+    suffix = '.obj.cpp',
+    src_suffix = '.cpp',
     source_scanner = ObjectGenSourceScanner())
