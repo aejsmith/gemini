@@ -49,10 +49,10 @@ using ObjectPtr = ReferencePtr<T>;
 
 /** Helper for CLASS() and base Object definition. */
 #define DECLARE_STATIC_METACLASS(...) \
+    public: \
         static const META_ATTRIBUTE("class", __VA_ARGS__) MetaClass staticMetaClass; \
     private: \
-        static ObjectPtr<> ClassConstruct(); \
-    public:
+        static ObjectPtr<> ClassConstruct();
 
 /**
  * This macro must be placed on every class which derives from Object (directly
@@ -74,14 +74,15 @@ using ObjectPtr = ReferencePtr<T>;
  *
  *   class Foobar : public Object
  *   {
- *   public:
  *       CLASS();
  *       ...
  *   };
  */
 #define CLASS(...) \
-    DECLARE_STATIC_METACLASS(__VA_ARGS__); \
-    virtual const MetaClass& GetMetaClass() const override;
+        DECLARE_STATIC_METACLASS(__VA_ARGS__); \
+    public: \
+        virtual const MetaClass& GetMetaClass() const override; \
+    private:
 
 /**
  * This macro marks a class member as a property. This means it can be accessed
@@ -94,9 +95,8 @@ using ObjectPtr = ReferencePtr<T>;
  *
  *   class Foo
  *   {
- *   public:
  *       CLASS();
- *
+ *   public:
  *       PROPERTY() int bar;
  *   };
  */
@@ -439,6 +439,9 @@ public:
      */
     ObjectPtr<>                     Construct() const;
 
+    template <typename T>
+    ObjectPtr<T>                    Construct() const;
+
     const MetaProperty*             LookupProperty(const char* const inName) const;
 
     static const MetaClass*         Lookup(const std::string &name);
@@ -511,7 +514,6 @@ inline bool MetaClass::IsConstructable() const
  */
 class Object : public RefCounted, Uncopyable
 {
-public:
     DECLARE_STATIC_METACLASS("constructable": false);
 
 public:
@@ -614,7 +616,17 @@ inline TargetPtr object_cast(Source* const inObject)
 
 /** Specialisation of object_cast for reference-counted pointers. */
 template <typename TargetPtr, typename Source>
-inline TargetPtr object_cast(const ReferencePtr<Source>& inObject)
+inline TargetPtr object_cast(const ObjectPtr<Source>& inObject)
 {
-    return object_cast<TargetPtr>(inObject.Get());
+    return object_cast<typename TargetPtr::ReferencedType*>(inObject.Get());
+}
+
+template <typename T>
+inline ObjectPtr<T> MetaClass::Construct() const
+{
+    ObjectPtr<> object = Construct();
+
+    auto result = object_cast<ObjectPtr<T>>(object);
+    Assert(result);
+    return result;
 }

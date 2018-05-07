@@ -2,8 +2,12 @@ Import('manager')
 
 env = manager.CreateEnvironment(depends = ['Engine/Base'])
 
-objects = map(env.Object, [
-    'Source/Test.cpp',
+objects = map(env.ObjectGenHeader, [
+    'Source/TestGame.h',
+])
+
+objects += map(env.Object, [
+    'Source/TestGame.cpp',
 ])
 
 target = env.OrionApplication(name = 'Test', sources = objects)

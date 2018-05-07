@@ -3,6 +3,7 @@ import VCS
 Import('env')
 
 objects = map(env.ObjectGenHeader, [
+    'Include/Game.h',
     'Include/Object.h',
 ])
 

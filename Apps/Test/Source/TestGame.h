@@ -13,3 +13,22 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#pragma once
+
+#include "Engine/Game.h"
+
+class TestGame final : public Game
+{
+    CLASS();
+
+public:
+                                TestGame();
+                                ~TestGame();
+
+public:
+    void                        Init() override;
+
+    const char*                 GetName() const override;
+
+};

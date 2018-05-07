@@ -21,6 +21,8 @@
 #include "Core/String.h"
 #include "Core/Utility.h"
 
+#include "Engine/Game.h"
+
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -212,7 +214,7 @@ void VulkanInstance::CreateInstance()
     /* Create the instance. TODO: Get application name from Engine. */
     VkApplicationInfo applicationInfo = {};
     applicationInfo.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    applicationInfo.pApplicationName = "Orion";
+    applicationInfo.pApplicationName = Game::Get().GetName();
     applicationInfo.pEngineName      = "Orion";
     applicationInfo.apiVersion       = VK_API_VERSION_1_1;
 

@@ -16,6 +16,8 @@
 
 #include "Engine/Window.h"
 
+#include "Engine/Game.h"
+
 #include "GPU/GPUSwapchain.h"
 
 #include <SDL.h>
@@ -62,8 +64,7 @@ void Window::SetSwapchain(GPUSwapchain* const inSwapchain,
 
 MainWindow::MainWindow(const glm::ivec2& inSize,
                        const uint32_t    inFlags) :
-    /* TODO: Get the application name for the window title. */
-    Window ("Orion",
+    Window (Game::Get().GetName(),
             inSize,
             inFlags)
 {

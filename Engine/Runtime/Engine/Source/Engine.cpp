@@ -19,6 +19,7 @@
 #include "Core/Filesystem.h"
 #include "Core/String.h"
 
+#include "Engine/Game.h"
 #include "Engine/Window.h"
 
 #include "GPU/GPUDevice.h"
@@ -26,10 +27,35 @@
 #include <SDL.h>
 
 SINGLETON_IMPL(Engine);
+SINGLETON_IMPL(Game);
 
 Engine::Engine()
 {
     LogInfo("Hello, World!");
+
+    /* Find the game class and get the engine configuration from it. */
+    const MetaClass* gameClass = nullptr;
+    MetaClass::Visit(
+        [&] (const MetaClass& inMetaClass)
+        {
+            if (&inMetaClass != &Game::staticMetaClass &&
+                Game::staticMetaClass.IsBaseOf(inMetaClass) &&
+                inMetaClass.IsConstructable())
+            {
+                AssertMsg(!gameClass, "Multiple Game classes found");
+                gameClass = &inMetaClass;
+            }
+        });
+
+    if (!gameClass)
+    {
+        Fatal("Failed to find game class");
+    }
+
+    /* Objects are reference counted, but Singleton will not create a reference.
+     * Manually add one here so that the instance stays alive. */
+    ObjectPtr<Game> game = gameClass->Construct<Game>();
+    game->Retain();
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
@@ -53,6 +79,8 @@ Engine::Engine()
     new MainWindow(glm::ivec2(1600, 900), 0);
     GPUDevice::Create();
     GPUDevice::Get().CreateSwapchain(MainWindow::Get());
+
+    Game::Get().Init();
 }
 
 Engine::~Engine()
