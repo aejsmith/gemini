@@ -20,21 +20,23 @@
 
 #include "VulkanInstance.h"
 
+class VulkanMemoryManager;
+
 class VulkanDevice final : public GPUDevice
 {
 public:
                                         VulkanDevice();
                                         ~VulkanDevice();
 
-    //
-    // GPUDevice methods.
-    //
+    /**
+     * GPUDevice methods.
+     */
 public:
     void                                CreateSwapchain(Window& inWindow) override;
 
-    //
-    // Internal methods.
-    //
+    /**
+     * Internal methods.
+     */
 public:
     VulkanInstance&                     GetInstance() const             { return *mInstance; }
 
@@ -44,6 +46,8 @@ public:
     const VkPhysicalDeviceProperties&   GetProperties() const           { return mProperties; }
     const VkPhysicalDeviceLimits&       GetLimits() const               { return mProperties.limits; }
     const VkPhysicalDeviceFeatures&     GetFeatures() const             { return mFeatures; }
+
+    VulkanMemoryManager&                GetMemoryManager() const        { return *mMemoryManager; }
 
 private:
     void                                CreateDevice();
@@ -56,5 +60,7 @@ private:
     uint32_t                            mGraphicsQueueFamily;
     VkPhysicalDeviceProperties          mProperties;
     VkPhysicalDeviceFeatures            mFeatures;
+
+    VulkanMemoryManager*                mMemoryManager;
 
 };

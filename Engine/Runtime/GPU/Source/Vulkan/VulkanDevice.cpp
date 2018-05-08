@@ -16,6 +16,7 @@
 
 #include "VulkanDevice.h"
 
+#include "VulkanMemoryManager.h"
 #include "VulkanSwapchain.h"
 
 #include "Core/Utility.h"
@@ -27,6 +28,12 @@
 static const char* kRequiredDeviceExtensions[] =
 {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+
+    /* We are targeting 1.1 and these extensions should be in core, however the
+     * VulkanMemoryAllocator library uses them under their KHR aliases so
+     * enable them explicitly. */
+    VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+    VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
 };
 
 VulkanDevice::VulkanDevice() :
@@ -45,6 +52,8 @@ VulkanDevice::VulkanDevice() :
 
 VulkanDevice::~VulkanDevice()
 {
+    delete mMemoryManager;
+
     vkDestroyDevice(mHandle, nullptr);
 }
 
@@ -63,6 +72,9 @@ void VulkanDevice::CreateDevice()
 
     mPhysicalDevice = VK_NULL_HANDLE;
 
+    std::unordered_set<std::string> availableExtensions;
+    std::vector<VkExtensionProperties> extensionProps;
+
     for (size_t i = 0; i < devices.size(); i++)
     {
         VkPhysicalDevice device = devices[i];
@@ -78,12 +90,11 @@ void VulkanDevice::CreateDevice()
             continue;
         }
 
-        std::unordered_set<std::string> availableExtensions;
-
         VulkanCheck(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, nullptr));
-        std::vector<VkExtensionProperties> extensionProps(count);
+        extensionProps.resize(count);
         VulkanCheck(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, extensionProps.data()));
 
+        availableExtensions.clear();
         for (const VkExtensionProperties& extension : extensionProps)
         {
             availableExtensions.insert(extension.extensionName);
@@ -141,76 +152,6 @@ void VulkanDevice::CreateDevice()
 
         /* This device is good. */
         mPhysicalDevice = device;
-
-        LogInfo("  API version: %u.%u.%u",
-                VK_VERSION_MAJOR(mProperties.apiVersion),
-                VK_VERSION_MINOR(mProperties.apiVersion),
-                VK_VERSION_PATCH(mProperties.apiVersion));
-        LogInfo("  IDs:         0x%x / 0x%x",
-                mProperties.vendorID,
-                mProperties.deviceID);
-
-        LogInfo("  Extensions:");
-
-        for (const VkExtensionProperties& extension : extensionProps)
-        {
-            LogInfo("    %s (revision %u)",
-                    extension.extensionName,
-                    extension.specVersion);
-        }
-
-        std::vector<const char*> enabledLayers;
-        std::vector<const char*> enabledExtensions;
-
-        if (GetInstance().HasCap(VulkanInstance::kCap_Validation))
-        {
-            /* Assume that if the instance has validation then the device does
-             * too. */
-            enabledLayers.emplace_back("VK_LAYER_LUNARG_standard_validation");
-        }
-
-        enabledExtensions.assign(&kRequiredDeviceExtensions[0],
-                                 &kRequiredDeviceExtensions[ArraySize(kRequiredDeviceExtensions)]);
-
-        /* Enable all supported features, aside from robustBufferAccess - we
-         * should behave properly without it, and it can have a performance
-         * impact. */
-        mFeatures.robustBufferAccess = false;
-
-        const float queuePriority = 1.0f;
-
-        VkDeviceQueueCreateInfo queueCreateInfo = {};
-        queueCreateInfo.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = mGraphicsQueueFamily;
-        queueCreateInfo.queueCount       = 1;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
-
-        VkDeviceCreateInfo deviceCreateInfo = {};
-        deviceCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceCreateInfo.queueCreateInfoCount    = 1;
-        deviceCreateInfo.pQueueCreateInfos       = &queueCreateInfo;
-        deviceCreateInfo.enabledLayerCount       = enabledLayers.size();
-        deviceCreateInfo.ppEnabledLayerNames     = enabledLayers.data();
-        deviceCreateInfo.enabledExtensionCount   = enabledExtensions.size();
-        deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
-        deviceCreateInfo.pEnabledFeatures        = &mFeatures;;
-
-        VulkanCheck(vkCreateDevice(mPhysicalDevice,
-                                   &deviceCreateInfo,
-                                   nullptr,
-                                   &mHandle));
-
-        #define LOAD_VULKAN_DEVICE_FUNC(name) \
-            name = reinterpret_cast<PFN_##name>(vkGetDeviceProcAddr(mHandle, #name)); \
-            if (!name) \
-            { \
-                Fatal("Failed to load Vulkan function '%s'", #name); \
-            }
-
-        ENUMERATE_VULKAN_DEVICE_FUNCS(LOAD_VULKAN_DEVICE_FUNC);
-
-        #undef LOAD_VULKAN_DEVICE_FUNC
-
         break;
     }
 
@@ -218,6 +159,77 @@ void VulkanDevice::CreateDevice()
     {
         Fatal("No suitable Vulkan devices found");
     }
+
+    LogInfo("  API version: %u.%u.%u",
+            VK_VERSION_MAJOR(mProperties.apiVersion),
+            VK_VERSION_MINOR(mProperties.apiVersion),
+            VK_VERSION_PATCH(mProperties.apiVersion));
+    LogInfo("  IDs:         0x%x / 0x%x",
+            mProperties.vendorID,
+            mProperties.deviceID);
+
+    LogInfo("  Extensions:");
+
+    for (const VkExtensionProperties& extension : extensionProps)
+    {
+        LogInfo("    %s (revision %u)",
+                extension.extensionName,
+                extension.specVersion);
+    }
+
+    std::vector<const char*> enabledLayers;
+    std::vector<const char*> enabledExtensions;
+
+    if (GetInstance().HasCap(VulkanInstance::kCap_Validation))
+    {
+        /* Assume that if the instance has validation then the device does
+         * too. */
+        enabledLayers.emplace_back("VK_LAYER_LUNARG_standard_validation");
+    }
+
+    enabledExtensions.assign(&kRequiredDeviceExtensions[0],
+                             &kRequiredDeviceExtensions[ArraySize(kRequiredDeviceExtensions)]);
+
+    /* Enable all supported features, aside from robustBufferAccess - we
+     * should behave properly without it, and it can have a performance
+     * impact. */
+    mFeatures.robustBufferAccess = false;
+
+    const float queuePriority = 1.0f;
+
+    VkDeviceQueueCreateInfo queueCreateInfo = {};
+    queueCreateInfo.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo.queueFamilyIndex = mGraphicsQueueFamily;
+    queueCreateInfo.queueCount       = 1;
+    queueCreateInfo.pQueuePriorities = &queuePriority;
+
+    VkDeviceCreateInfo deviceCreateInfo = {};
+    deviceCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    deviceCreateInfo.queueCreateInfoCount    = 1;
+    deviceCreateInfo.pQueueCreateInfos       = &queueCreateInfo;
+    deviceCreateInfo.enabledLayerCount       = enabledLayers.size();
+    deviceCreateInfo.ppEnabledLayerNames     = enabledLayers.data();
+    deviceCreateInfo.enabledExtensionCount   = enabledExtensions.size();
+    deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
+    deviceCreateInfo.pEnabledFeatures        = &mFeatures;;
+
+    VulkanCheck(vkCreateDevice(mPhysicalDevice,
+                               &deviceCreateInfo,
+                               nullptr,
+                               &mHandle));
+
+    #define LOAD_VULKAN_DEVICE_FUNC(name) \
+        name = reinterpret_cast<PFN_##name>(vkGetDeviceProcAddr(mHandle, #name)); \
+        if (!name) \
+        { \
+            Fatal("Failed to load Vulkan function '%s'", #name); \
+        }
+
+    ENUMERATE_VULKAN_DEVICE_FUNCS(LOAD_VULKAN_DEVICE_FUNC);
+
+    #undef LOAD_VULKAN_DEVICE_FUNC
+
+    mMemoryManager = new VulkanMemoryManager(*this);
 }
 
 void VulkanDevice::CreateSwapchain(Window& inWindow)

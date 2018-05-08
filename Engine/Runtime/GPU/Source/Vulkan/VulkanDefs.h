@@ -184,7 +184,9 @@
     macro(vkDestroySwapchainKHR) \
     macro(vkGetSwapchainImagesKHR) \
     macro(vkAcquireNextImageKHR) \
-    macro(vkQueuePresentKHR)
+    macro(vkQueuePresentKHR) \
+    macro(vkGetImageMemoryRequirements2) \
+    macro(vkGetBufferMemoryRequirements2)
 
 /**
  * VK_EXT_debug_report functions.

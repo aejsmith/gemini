@@ -10,6 +10,7 @@ objects = map(env.Object, [
     'Source/Vulkan/VulkanDefs.cpp',
     'Source/Vulkan/VulkanDevice.cpp',
     'Source/Vulkan/VulkanFormat.cpp',
+    'Source/Vulkan/VulkanMemoryManager.cpp',
     'Source/Vulkan/VulkanSwapchain.cpp',
 
     'Source/Vulkan/${PLATFORM}/${PLATFORM}VulkanInstance.cpp',

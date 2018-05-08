@@ -16,34 +16,18 @@
 
 #pragma once
 
-#include "GPU/GPUDeviceChild.h"
+#include "VulkanDeviceChild.h"
 
-#include "VulkanDefs.h"
+#include <vk_mem_alloc.h>
 
-class VulkanDevice;
-class VulkanInstance;
-
-/**
- * Mixin class for any class with a GetDevice() method returning a GPUDevice,
- * to cast it to a VulkanDevice.
- */
-template <typename T>
-class VulkanDeviceChild
+class VulkanMemoryManager : public GPUDeviceChild,
+                            public VulkanDeviceChild<VulkanMemoryManager>
 {
 public:
-    VulkanDevice&               GetVulkanDevice() const;
-    VulkanInstance&             GetVulkanInstance() const;
+                                VulkanMemoryManager(VulkanDevice& inDevice);
+                                ~VulkanMemoryManager();
+
+private:
+    VmaAllocator                mAllocator;
 
 };
-
-template <typename T>
-inline VulkanDevice& VulkanDeviceChild<T>::GetVulkanDevice() const
-{
-    return static_cast<VulkanDevice&>(static_cast<const T*>(this)->GetDevice());
-}
-
-template <typename T>
-inline VulkanInstance& VulkanDeviceChild<T>::GetVulkanInstance() const
-{
-    return GetVulkanDevice().GetInstance();
-}

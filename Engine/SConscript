@@ -49,6 +49,7 @@ SConscript(dirs = ['Tools'])
 depends = [
     'Engine/Core',
     '3rdParty/RapidJSON',
+    '3rdParty/VulkanMemoryAllocator',
 ]
 
 if manager.baseEnv['PLATFORM'] == 'Linux':
