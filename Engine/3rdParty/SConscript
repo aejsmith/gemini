@@ -2,5 +2,6 @@ SConscript(dirs = [
     'glm',
     'Mustache',
     'RapidJSON',
+    'VulkanMemoryAllocator',
     'xxHash',
 ])

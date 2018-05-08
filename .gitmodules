@@ -10,3 +10,6 @@
 [submodule "Engine/3rdParty/Mustache/Repo"]
 	path = Engine/3rdParty/Mustache/Repo
 	url = https://github.com/kainjow/Mustache.git
+[submodule "Engine/3rdParty/VulkanMemoryAllocator/Repo"]
+	path = Engine/3rdParty/VulkanMemoryAllocator/Repo
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git

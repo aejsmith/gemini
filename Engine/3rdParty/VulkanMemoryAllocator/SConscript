@@ -1,0 +1,10 @@
+import Util
+
+Import('manager')
+
+env = manager.CreateEnvironment()
+Util.Copy(env, 'Include/vk_mem_alloc.h', 'Repo/src/vk_mem_alloc.h')
+
+manager.AddComponent(
+    name = '3rdParty/VulkanMemoryAllocator',
+    includePath = Dir('Include'))
