@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "${workspaceFolder}/Build/Debug/Engine/Include",
+                "${workspaceFolder}/Build/Debug/Engine/3rdParty/xxHash/Include",
+                "${workspaceFolder}/Build/Debug/Engine/3rdParty/glm/Include",
+                "${workspaceFolder}/Build/Debug/Engine/3rdParty/Mustache/Include",
+                "${workspaceFolder}/Build/Debug/Engine/3rdParty/RapidJson/Repo/include",
+                "${workspaceFolder}/Build/Debug/Engine/3rdParty/VulkanMemoryAllocator/Include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
