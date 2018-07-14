@@ -2,4 +2,4 @@ Import('manager')
 
 manager.AddComponent(
     name = '3rdParty/RapidJSON',
-    includePath = Dir('Repo/include'))
+    includePath = 'Repo/include')

@@ -3,20 +3,20 @@ import os
 Import('env')
 
 objects = map(env.Object, [
-    'Source/GPUDevice.cpp',
-    'Source/GPUResourceView.cpp',
-    'Source/GPUSwapchain.cpp',
-    'Source/GPUTexture.cpp',
+    'GPUDevice.cpp',
+    'GPUResourceView.cpp',
+    'GPUSwapchain.cpp',
+    'GPUTexture.cpp',
 
-    'Source/Vulkan/VulkanInstance.cpp',
-    'Source/Vulkan/VulkanDefs.cpp',
-    'Source/Vulkan/VulkanDevice.cpp',
-    'Source/Vulkan/VulkanFormat.cpp',
-    'Source/Vulkan/VulkanMemoryManager.cpp',
-    'Source/Vulkan/VulkanSwapchain.cpp',
+    'Vulkan/VulkanInstance.cpp',
+    'Vulkan/VulkanDefs.cpp',
+    'Vulkan/VulkanDevice.cpp',
+    'Vulkan/VulkanFormat.cpp',
+    'Vulkan/VulkanMemoryManager.cpp',
+    'Vulkan/VulkanSwapchain.cpp',
 
-    'Source/Vulkan/${PLATFORM}/${PLATFORM}VulkanInstance.cpp',
-    'Source/Vulkan/${PLATFORM}/${PLATFORM}VulkanSwapchain.cpp',
+    'Vulkan/${PLATFORM}/${PLATFORM}VulkanInstance.cpp',
+    'Vulkan/${PLATFORM}/${PLATFORM}VulkanSwapchain.cpp',
 ])
 
 Return('objects')

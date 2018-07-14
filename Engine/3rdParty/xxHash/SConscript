@@ -12,5 +12,5 @@ objects = map(env.Object, [
 
 manager.AddComponent(
     name = '3rdParty/xxHash',
-    includePath = Dir('Include'),
+    includePath = 'Include',
     objects = objects)

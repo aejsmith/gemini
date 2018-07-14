@@ -1,7 +1,7 @@
 Import('manager')
 
-VariantDir('Include/glm', '#Engine/3rdParty/glm/Repo/glm')
+VariantDir('Repo/glm', manager.SourceDir('Repo/glm'))
 
 manager.AddComponent(
     name = '3rdParty/glm',
-    includePath = Dir('Include'))
+    includePath = ['Include', Dir('Repo')])

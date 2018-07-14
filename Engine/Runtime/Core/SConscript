@@ -12,12 +12,12 @@ env = manager.CreateEnvironment(depends = depends)
 Export('env')
 
 objects = map(env.Object, [
-    'Source/DataStream.cpp',
-    'Source/Log.cpp',
-    'Source/Path.cpp',
-    'Source/PixelFormat.cpp',
-    'Source/RefCounted.cpp',
-    'Source/String.cpp',
+    'DataStream.cpp',
+    'Log.cpp',
+    'Path.cpp',
+    'PixelFormat.cpp',
+    'RefCounted.cpp',
+    'String.cpp',
 ])
 
 manager.AddComponent(
@@ -26,8 +26,8 @@ manager.AddComponent(
     objects = objects)
 
 if env['PLATFORM'] in ['Linux']:
-    dir = os.path.join('Source', 'POSIX')
+    dir = 'POSIX'
 else:
-    dir = os.path.join('Source', env['PLATFORM'])
+    dir = env['PLATFORM']
 
 objects += SConscript(dirs = [dir])

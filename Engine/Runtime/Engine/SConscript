@@ -3,18 +3,18 @@ import VCS
 Import('env')
 
 objects = map(env.ObjectGenHeader, [
-    'Include/Game.h',
-    'Include/Object.h',
+    'Game.h',
+    'Object.h',
 ])
 
 objects += map(env.Object, [
-    'Source/Engine.cpp',
-    'Source/JSONSerialiser.cpp',
-    'Source/Main.cpp',
-    'Source/Object.cpp',
-    'Source/Serialiser.cpp',
-    'Source/Version.cpp',
-    'Source/Window.cpp',
+    'Engine.cpp',
+    'JSONSerialiser.cpp',
+    'Main.cpp',
+    'Object.cpp',
+    'Serialiser.cpp',
+    'Version.cpp',
+    'Window.cpp',
 ])
 
 # Generate the version information file.
@@ -24,6 +24,6 @@ def GenerateVersionCPP(target, source, env):
     f = open(str(target[0]), 'w')
     f.write('const char *gVersionString = "%s";\n' % (version))
     f.close()
-AlwaysBuild(env.Command('Source/Version.cpp', [], env.Action(GenerateVersionCPP, None)))
+AlwaysBuild(env.Command('Version.cpp', [], env.Action(GenerateVersionCPP, None)))
 
 Return('objects')

@@ -16,16 +16,7 @@ extraComponents = [
 
 allComponents = ['Core'] + baseComponents + extraComponents
 
-# We want to be able to include files by "<component name>/<header>.h", but this
-# doesn't match the directory structure. Make a virtual include directory so we
-# get the behaviour we want. TODO: In future I want only the components depended
-# on to have their includes available, which is partly why the source directory
-# structure is like it is.
-for component in allComponents:
-    VariantDir('Include/%s' % (component), '#Engine/Runtime/%s/Include' % (component))
-
-# Always have the engine include directory available.
-manager.baseEnv['CPPPATH'] += [Dir('Include')]
+manager.baseEnv['CPPPATH'] += [manager.SourceDir('Runtime')]
 
 # Add all 3rd party library components.
 SConscript(dirs = ['3rdParty'])

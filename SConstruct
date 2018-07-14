@@ -1,4 +1,5 @@
 import os, sys
+import SCons
 
 Decider('MD5-timestamp')
 
@@ -62,7 +63,7 @@ buildTypes = {
 if not env['BUILD'] in buildTypes:
     Util.StopError("Invalid build type '%s'." % (env['BUILD']))
 
-env['CPPPATH'] = []
+env['CPPPATH'] = ['${TARGET.dir}']
 env['LIBPATH'] = []
 env['LIBS'] = []
 
@@ -139,6 +140,8 @@ class BuildManager:
         if type(includePath) != list:
             includePath = [includePath]
 
+        includePath = [x if type(x) == SCons.Node.FS.Dir else self.SourceDir(x) for x in includePath]
+
         libPath = kwargs['libPath'] if 'libPath' in kwargs else []
         if type(libPath) != list:
             libPath = [libPath]
@@ -187,6 +190,9 @@ class BuildManager:
 
         return env
 
+    def SourceDir(self, path):
+        return Dir(path).srcnode()
+
 manager = BuildManager(env)
 Export('manager')
 
@@ -222,4 +228,4 @@ SConscript(dirs = [os.path.join('Dependencies', env['PLATFORM'])])
 # Main build #
 ##############
 
-SConscript('SConscript', variant_dir = os.path.join('Build', env['BUILD']))
+SConscript('SConscript', variant_dir = os.path.join('Build', env['BUILD']), duplicate = 0)
