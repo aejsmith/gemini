@@ -34,7 +34,7 @@ protected:
                                              Window&    inWindow);
 
 public:
-    virtual                     ~GPUSwapchain();
+                                ~GPUSwapchain();
 
 public:
     Window&                     GetWindow() const { return mWindow; }

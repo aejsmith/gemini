@@ -14,27 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "GPU/GPUTexture.h"
 
-#include "GPU/GPUDefs.h"
-
-class GPUDevice;
-
-class GPUDeviceChild
+GPUTexture::GPUTexture(GPUDevice&            inDevice,
+                       const GPUTextureDesc& inDesc) :
+    GPUResource     (inDevice,
+                     inDesc.type,
+                     inDesc.usage),
+    mFlags          (inDesc.flags),
+    mWidth          (inDesc.width),
+    mHeight         (inDesc.height),
+    mDepth          (inDesc.depth),
+    mArraySize      (inDesc.arraySize),
+    mNumMipLevels   (inDesc.numMipLevels),
+    mFormat         (inDesc.format)
 {
-protected:
-                                GPUDeviceChild(GPUDevice& inDevice);
-    virtual                     ~GPUDeviceChild() {}
 
-public:
-    GPUDevice&                  GetDevice() const { return mDevice; }
-
-private:
-    GPUDevice&                  mDevice;
-
-};
-
-inline GPUDeviceChild::GPUDeviceChild(GPUDevice& inDevice) :
-    mDevice (inDevice)
-{
 }

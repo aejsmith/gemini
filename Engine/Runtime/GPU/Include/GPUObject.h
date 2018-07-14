@@ -16,25 +16,23 @@
 
 #pragma once
 
-#include "GPU/GPUDefs.h"
+#include "GPU/GPUDeviceChild.h"
 
-class GPUDevice;
+#include "Core/RefCounted.h"
 
-class GPUDeviceChild
+/**
+ * A reference counted child object of a GPUDevice.
+ */
+class GPUObject : public GPUDeviceChild,
+                  public RefCounted
 {
 protected:
-                                GPUDeviceChild(GPUDevice& inDevice);
-    virtual                     ~GPUDeviceChild() {}
-
-public:
-    GPUDevice&                  GetDevice() const { return mDevice; }
-
-private:
-    GPUDevice&                  mDevice;
+                            GPUObject(GPUDevice& inDevice);
+                            ~GPUObject() {}
 
 };
 
-inline GPUDeviceChild::GPUDeviceChild(GPUDevice& inDevice) :
-    mDevice (inDevice)
+inline GPUObject::GPUObject(GPUDevice& inDevice) :
+    GPUDeviceChild (inDevice)
 {
 }

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "GPU/GPUDefs.h"
+
 #include "Core/Singleton.h"
 
 class Window;

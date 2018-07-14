@@ -4,7 +4,9 @@ Import('env')
 
 objects = map(env.Object, [
     'Source/GPUDevice.cpp',
+    'Source/GPUResourceView.cpp',
     'Source/GPUSwapchain.cpp',
+    'Source/GPUTexture.cpp',
 
     'Source/Vulkan/VulkanInstance.cpp',
     'Source/Vulkan/VulkanDefs.cpp',

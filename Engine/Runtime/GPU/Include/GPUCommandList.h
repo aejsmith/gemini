@@ -16,25 +16,18 @@
 
 #pragma once
 
-#include "GPU/GPUDefs.h"
+#include "GPU/GPUDeviceChild.h"
 
-class GPUDevice;
-
-class GPUDeviceChild
+/**
+ * This class provides the main interface for recording GPU commands. Command
+ * lists are recorded within a pass.
+ */
+class GPUCommandList : public GPUDeviceChild
 {
 protected:
-                                GPUDeviceChild(GPUDevice& inDevice);
-    virtual                     ~GPUDeviceChild() {}
+                            GPUCommandList(GPUDevice& inDevice);
 
 public:
-    GPUDevice&                  GetDevice() const { return mDevice; }
-
-private:
-    GPUDevice&                  mDevice;
+                            ~GPUCommandList();
 
 };
-
-inline GPUDeviceChild::GPUDeviceChild(GPUDevice& inDevice) :
-    mDevice (inDevice)
-{
-}

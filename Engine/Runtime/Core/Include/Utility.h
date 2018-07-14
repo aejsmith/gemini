@@ -48,6 +48,20 @@ constexpr size_t ArraySize(T (&array)[N])
     return N;
 }
 
+/** Test that only one bit is set in a value. */
+template <typename T>
+constexpr bool IsOnlyOneBitSet(const T& inValue)
+{
+    return inValue && !(inValue & (inValue - 1));
+}
+
+/** Test that a value is a power of 2. */
+template <typename T>
+constexpr bool IsPowerOf2(const T& inValue)
+{
+    return IsOnlyOneBitSet(inValue);
+}
+
 /**
  * Scope guard helper.
  */
