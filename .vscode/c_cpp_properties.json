@@ -16,7 +16,7 @@
                 "${workspaceFolder}/Build/Debug/Engine/3rdParty/RapidJson/Repo/include",
                 "${workspaceFolder}/Build/Debug/Engine/3rdParty/VulkanMemoryAllocator/Include"
             ],
-            "defines": [],
+            "defines": ["ORION_BUILD_DEBUG=1"],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++14",
