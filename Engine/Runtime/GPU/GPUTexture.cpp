@@ -22,12 +22,39 @@ GPUTexture::GPUTexture(GPUDevice&            inDevice,
                      inDesc.type,
                      inDesc.usage),
     mFlags          (inDesc.flags),
+    mFormat         (inDesc.format),
     mWidth          (inDesc.width),
     mHeight         (inDesc.height),
     mDepth          (inDesc.depth),
     mArraySize      (inDesc.arraySize),
-    mNumMipLevels   (inDesc.numMipLevels),
-    mFormat         (inDesc.format)
+    mNumMipLevels   (inDesc.numMipLevels)
 {
+    Assert(GetType() != kGPUResourceType_Buffer);
+    Assert(GetType() >= kGPUResourceType_Texture2D || GetWidth() == 1);
+    Assert(GetType() == kGPUResourceType_Texture3D || GetDepth() == 1);
+    Assert(!IsCubeCompatible() || GetType() == kGPUResourceType_Texture2D);
+    Assert(!IsCubeCompatible() || (GetArraySize() % 6) == 0);
 
+    /* Calculate the maximum mip level count. */
+    uint32_t width  = GetWidth();
+    uint32_t height = (GetType() >= kGPUResourceType_Texture2D) ? GetHeight() : 1;
+    uint32_t depth  = (GetType() == kGPUResourceType_Texture3D) ? GetDepth() : 1;
+
+    uint8_t maxMips = 1;
+
+    while (width > 1 || height > 1 || depth > 1)
+    {
+        if (width > 1)  width  >>= 1;
+        if (height > 1) height >>= 1;
+        if (depth > 1)  depth  >>= 1;
+
+        maxMips++;
+    }
+
+    Assert(GetNumMipLevels() <= maxMips);
+
+    if (GetNumMipLevels() == 0)
+    {
+        mNumMipLevels = maxMips;
+    }
 }

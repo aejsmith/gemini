@@ -34,6 +34,8 @@ public:
 public:
     void                                CreateSwapchain(Window& inWindow) override;
 
+    GPUTexturePtr                       CreateTexture(const GPUTextureDesc& inDesc) override;
+
     /**
      * Internal methods.
      */

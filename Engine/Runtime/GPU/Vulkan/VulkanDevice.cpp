@@ -18,6 +18,7 @@
 
 #include "VulkanMemoryManager.h"
 #include "VulkanSwapchain.h"
+#include "VulkanTexture.h"
 
 #include "Core/Utility.h"
 
@@ -235,4 +236,9 @@ void VulkanDevice::CreateDevice()
 void VulkanDevice::CreateSwapchain(Window& inWindow)
 {
     new VulkanSwapchain(*this, inWindow);
+}
+
+GPUTexturePtr VulkanDevice::CreateTexture(const GPUTextureDesc& inDesc)
+{
+    return new VulkanTexture(*this, inDesc);
 }

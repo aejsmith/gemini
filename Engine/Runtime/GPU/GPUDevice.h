@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "GPU/GPUDefs.h"
+#include "GPU/GPUTexture.h"
 
 #include "Core/Singleton.h"
 
@@ -40,6 +40,8 @@ public:
      * window.
      */
     virtual void                CreateSwapchain(Window& inWindow) = 0;
+
+    virtual GPUTexturePtr       CreateTexture(const GPUTextureDesc& inDesc) = 0;
 
     static void                 Create();
 

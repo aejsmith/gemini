@@ -18,6 +18,7 @@
 
 #include "VulkanDevice.h"
 #include "VulkanFormat.h"
+#include "VulkanTexture.h"
 
 #include "Engine/Window.h"
 
@@ -32,10 +33,13 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& inDevice,
     CreateSurface();
     ChooseFormat();
     CreateSwapchain();
+    CreateTexture();
 }
 
 VulkanSwapchain::~VulkanSwapchain()
 {
+    mTexture.Reset();
+
     if (mHandle != VK_NULL_HANDLE)
     {
         vkDestroySwapchainKHR(GetVulkanDevice().GetHandle(), mHandle, nullptr);
@@ -207,4 +211,20 @@ void VulkanSwapchain::CreateSwapchain()
                                         mHandle,
                                         &count,
                                         mImages.data()));
+}
+
+void VulkanSwapchain::CreateTexture()
+{
+    /* Craft a texture descriptor that matches our swapchain. */
+    GPUTextureDesc textureDesc = {};
+    textureDesc.type           = kGPUResourceType_Texture2D;
+    textureDesc.usage          = kGPUResourceUsage_RenderTarget;
+    textureDesc.format         = GetFormat();
+    textureDesc.width          = GetWindow().GetSize().x;
+    textureDesc.height         = GetWindow().GetSize().y;
+    textureDesc.depth          = 1;
+    textureDesc.arraySize      = 1;
+    textureDesc.numMipLevels   = 1;
+
+    mTexture = new VulkanTexture(*this, textureDesc, {});
 }

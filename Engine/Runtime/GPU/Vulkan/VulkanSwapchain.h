@@ -20,7 +20,11 @@
 
 #include "VulkanDeviceChild.h"
 
+#include "Core/RefCounted.h"
+
 #include <vector>
+
+class VulkanTexture;
 
 class VulkanSwapchain final : public GPUSwapchain,
                               public VulkanDeviceChild<VulkanSwapchain>
@@ -42,6 +46,7 @@ private:
 
     void                        ChooseFormat();
     void                        CreateSwapchain();
+    void                        CreateTexture();
 
 private:
     VkSurfaceKHR                mSurfaceHandle;
@@ -50,5 +55,7 @@ private:
     VkSurfaceFormatKHR          mSurfaceFormat;
 
     std::vector<VkImage>        mImages;
+
+    ReferencePtr<VulkanTexture> mTexture;
 
 };

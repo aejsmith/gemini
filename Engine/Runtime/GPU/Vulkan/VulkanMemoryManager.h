@@ -27,6 +27,13 @@ public:
                                 VulkanMemoryManager(VulkanDevice& inDevice);
                                 ~VulkanMemoryManager();
 
+    void                        AllocateImage(const VkImageCreateInfo&       inCreateInfo,
+                                              const VmaAllocationCreateInfo& inAllocationInfo,
+                                              VkImage&                       outImage,
+                                              VmaAllocation&                 outAllocation);
+
+    void                        Free(const VmaAllocation inAllocation);
+
 private:
     VmaAllocator                mAllocator;
 

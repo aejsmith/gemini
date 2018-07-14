@@ -62,3 +62,21 @@ VulkanMemoryManager::~VulkanMemoryManager()
 {
     vmaDestroyAllocator(mAllocator);
 }
+
+void VulkanMemoryManager::AllocateImage(const VkImageCreateInfo&       inCreateInfo,
+                                        const VmaAllocationCreateInfo& inAllocationInfo,
+                                        VkImage&                       outImage,
+                                        VmaAllocation&                 outAllocation)
+{
+    VulkanCheck(vmaCreateImage(mAllocator,
+                               &inCreateInfo,
+                               &inAllocationInfo,
+                               &outImage,
+                               &outAllocation,
+                               nullptr));
+}
+
+void VulkanMemoryManager::Free(const VmaAllocation inAllocation)
+{
+    vmaFreeMemory(mAllocator, inAllocation);
+}

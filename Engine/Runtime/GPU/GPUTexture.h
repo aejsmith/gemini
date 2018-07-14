@@ -23,12 +23,24 @@ struct GPUTextureDesc
     GPUResourceType         type;
     GPUResourceUsage        usage;
     GPUTextureFlags         flags;
+    PixelFormat             format;
+
     uint32_t                width;
     uint32_t                height;
     uint32_t                depth;
+
+    /**
+     * Array size. Must be 1 for 3D textures. Must be a multiple of 6 for cube
+     * compatible textures.
+     */
     uint16_t                arraySize;
-    uint16_t                numMipLevels;
-    PixelFormat             format;
+
+    /**
+     * Number of mip levels. Specifying 0 here will give the texture a full mip
+     * chain.
+     */
+    uint8_t                 numMipLevels;
+
 };
 
 class GPUTexture : public GPUResource
@@ -40,23 +52,44 @@ protected:
                             ~GPUTexture() {}
 
 public:
-    GPUTextureFlags         GetFlags() const        { return mFlags; }
-    uint32_t                GetWidth() const        { return mWidth; }
-    uint32_t                GetHeight() const       { return mHeight; }
-    uint32_t                GetDepth() const        { return mDepth; }
-    uint16_t                GetArraySize() const    { return mArraySize; }
-    uint16_t                GetNumMipLevels() const { return mNumMipLevels; }
-    PixelFormat             GetFormat() const       { return mFormat; }
+    GPUTextureFlags         GetFlags() const            { return mFlags; }
+    bool                    IsCubeCompatible() const    { return mFlags & kGPUTexture_CubeCompatible; }
+
+    PixelFormat             GetFormat() const           { return mFormat; }
+    uint32_t                GetWidth() const            { return mWidth; }
+    uint32_t                GetHeight() const           { return mHeight; }
+    uint32_t                GetDepth() const            { return mDepth; }
+    uint16_t                GetArraySize() const        { return mArraySize; }
+    uint8_t                 GetNumMipLevels() const     { return mNumMipLevels; }
+
+    uint32_t                GetMipWidth(const uint8_t inMip) const;
+    uint32_t                GetMipHeight(const uint8_t inMip) const;
+    uint32_t                GetMipDepth(const uint8_t inMip) const;
 
 protected:
     const GPUTextureFlags   mFlags;
+    const PixelFormat       mFormat;
     const uint32_t          mWidth;
     const uint32_t          mHeight;
     const uint32_t          mDepth;
     const uint16_t          mArraySize;
-    const uint16_t          mNumMipLevels;
-    const PixelFormat       mFormat;
+    uint8_t                 mNumMipLevels;
 
 };
 
 using GPUTexturePtr = ReferencePtr<GPUTexture>;
+
+inline uint32_t GPUTexture::GetMipWidth(const uint8_t inMip) const
+{
+    return std::max(mWidth >> inMip, 1u);
+}
+
+inline uint32_t GPUTexture::GetMipHeight(const uint8_t inMip) const
+{
+    return std::max(mHeight >> inMip, 1u);
+}
+
+inline uint32_t GPUTexture::GetMipDepth(const uint8_t inMip) const
+{
+    return std::max(mDepth >> inMip, 1u);
+}
