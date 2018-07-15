@@ -16,6 +16,7 @@
 
 #include "VulkanDevice.h"
 
+#include "VulkanContext.h"
 #include "VulkanMemoryManager.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
@@ -49,10 +50,14 @@ VulkanDevice::VulkanDevice() :
     mInstance = &VulkanInstance::Get();
 
     CreateDevice();
+
+    mMemoryManager   = new VulkanMemoryManager(*this);
+    mGraphicsContext = new VulkanContext(*this);
 }
 
 VulkanDevice::~VulkanDevice()
 {
+    delete mGraphicsContext;
     delete mMemoryManager;
 
     vkDestroyDevice(mHandle, nullptr);
@@ -229,8 +234,6 @@ void VulkanDevice::CreateDevice()
     ENUMERATE_VULKAN_DEVICE_FUNCS(LOAD_VULKAN_DEVICE_FUNC);
 
     #undef LOAD_VULKAN_DEVICE_FUNC
-
-    mMemoryManager = new VulkanMemoryManager(*this);
 }
 
 void VulkanDevice::CreateSwapchain(Window& inWindow)

@@ -14,23 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "GPU/GPUDevice.h"
+#include "VulkanContext.h"
 
-#include "Vulkan/VulkanDevice.h"
+#include "VulkanDevice.h"
 
-SINGLETON_IMPL(GPUDevice);
-
-GPUDevice::GPUDevice() :
-    mGraphicsContext (nullptr)
+VulkanContext::VulkanContext(VulkanDevice& inDevice) :
+    GPUGraphicsContext (inDevice)
 {
+
 }
 
-GPUDevice::~GPUDevice()
+VulkanContext::~VulkanContext()
 {
-}
 
-void GPUDevice::Create()
-{
-    /* For now, only Vulkan. This will initialise the Singleton pointer. */
-    new VulkanDevice();
 }

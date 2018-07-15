@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "GPU/GPUContext.h"
 #include "GPU/GPUTexture.h"
 
 #include "Core/Singleton.h"
@@ -34,6 +35,8 @@ protected:
                                 ~GPUDevice();
 
 public:
+    GPUContext*                 GetGraphicsContext() const  { return mGraphicsContext; }
+
     /**
      * Create and attach a swapchain to the specified window so that it can be
      * rendered to. The swapchain will be permanently associated with the
@@ -44,5 +47,8 @@ public:
     virtual GPUTexturePtr       CreateTexture(const GPUTextureDesc& inDesc) = 0;
 
     static void                 Create();
+
+protected:
+    GPUContext*                 mGraphicsContext;
 
 };

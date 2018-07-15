@@ -14,23 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "GPU/GPUDevice.h"
+#pragma once
 
-#include "Vulkan/VulkanDevice.h"
+#include "GPU/GPUContext.h"
 
-SINGLETON_IMPL(GPUDevice);
+#include "VulkanDeviceChild.h"
 
-GPUDevice::GPUDevice() :
-    mGraphicsContext (nullptr)
+/**
+ * Vulkan implementation of GPU*Context. We have just a single implementation
+ * of the most derived class and use this for all, to keep things a bit more
+ * simple.
+ */
+class VulkanContext : public GPUGraphicsContext,
+                      public VulkanDeviceChild<VulkanContext>
 {
-}
+public:
+                                VulkanContext(VulkanDevice& inDevice);
+                                ~VulkanContext();
 
-GPUDevice::~GPUDevice()
-{
-}
+public:
 
-void GPUDevice::Create()
-{
-    /* For now, only Vulkan. This will initialise the Singleton pointer. */
-    new VulkanDevice();
-}
+
+};

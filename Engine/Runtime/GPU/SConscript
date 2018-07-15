@@ -8,6 +8,7 @@ objects = map(env.Object, [
     'GPUSwapchain.cpp',
     'GPUTexture.cpp',
 
+    'Vulkan/VulkanContext.cpp',
     'Vulkan/VulkanInstance.cpp',
     'Vulkan/VulkanDefs.cpp',
     'Vulkan/VulkanDevice.cpp',
