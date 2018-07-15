@@ -45,10 +45,20 @@
  * Logging functions/macros.
  */
 
-[[noreturn]] extern void FatalImpl(const char* const inFile,
-                                   const int         inLine,
-                                   const char* const inFormat,
-                                   ...);
+/** Break into the debugger. */
+#if ORION_BUILD_DEBUG
+    #define DebugBreak() \
+        __asm__ volatile("int3")
+#else
+    #define DebugBreak()
+#endif
+
+extern void FatalLogImpl(const char* const inFile,
+                         const int         inLine,
+                         const char* const inFormat,
+                         ...);
+
+[[noreturn]] void FatalImpl();
 
 /**
  * This function should be called to indicate that an unrecoverable error has
@@ -58,7 +68,13 @@
  * does not return.
  */
 #define Fatal(inFormat, ...) \
-    FatalImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+    do \
+    { \
+        FatalLogImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__); \
+        DebugBreak(); \
+        FatalImpl(); \
+    } \
+    while (0)
 
 /**
  * Check that a condition is true. If it is not, the engine will abort with an
@@ -68,7 +84,11 @@
     do \
     { \
         if (Unlikely(!(inCondition))) \
-            FatalImpl(__FILE__, __LINE__, "Assertion failed: %s", #inCondition); \
+        { \
+            FatalLogImpl(__FILE__, __LINE__, "Assertion failed: %s", #inCondition); \
+            DebugBreak(); \
+            FatalImpl(); \
+        } \
     } \
     while (0)
 
@@ -81,7 +101,11 @@
     do \
     { \
         if (Unlikely(!(inCondition))) \
-            FatalImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__); \
+        { \
+            FatalLogImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__); \
+            DebugBreak(); \
+            FatalImpl(); \
+        } \
     } \
     while (0)
 

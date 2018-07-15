@@ -23,10 +23,10 @@
 #include <cstdio>
 #include <cstdlib>
 
-void FatalImpl(const char* const inFile,
-               const int         inLine,
-               const char* const inFormat,
-               ...)
+void FatalLogImpl(const char* const inFile,
+                  const int         inLine,
+                  const char* const inFormat,
+                  ...)
 {
     va_list args;
 
@@ -39,7 +39,10 @@ void FatalImpl(const char* const inFile,
             inLine,
             "%s",
             message.c_str());
+}
 
+void FatalImpl()
+{
     abort();
 }
 
