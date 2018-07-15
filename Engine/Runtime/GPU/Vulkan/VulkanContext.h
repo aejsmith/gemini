@@ -29,11 +29,27 @@ class VulkanContext final : public GPUGraphicsContext,
                             public VulkanDeviceChild<VulkanContext>
 {
 public:
-                            VulkanContext(VulkanDevice& inDevice);
+                            VulkanContext(VulkanDevice&  inDevice,
+                                          const uint32_t inQueueFamily);
+
                             ~VulkanContext();
 
+    /**
+     * GPUComputeContext methods.
+     */
 public:
     void                    BeginPresent(GPUSwapchain& inSwapchain) override;
     void                    EndPresent(GPUSwapchain& inSwapchain) override;
+
+    /**
+     * Internal methods.
+     */
+public:
+    VkQueue                 GetQueue() const            { return mQueue; }
+    uint32_t                GetQueueFamily() const      { return mQueueFamily; }
+
+private:
+    VkQueue                 mQueue;
+    uint32_t                mQueueFamily;
 
 };

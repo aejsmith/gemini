@@ -53,7 +53,7 @@ VulkanDevice::VulkanDevice() :
     CreateDevice();
 
     mMemoryManager   = new VulkanMemoryManager(*this);
-    mGraphicsContext = new VulkanContext(*this);
+    mGraphicsContext = new VulkanContext(*this, GetGraphicsQueueFamily());
 }
 
 VulkanDevice::~VulkanDevice()

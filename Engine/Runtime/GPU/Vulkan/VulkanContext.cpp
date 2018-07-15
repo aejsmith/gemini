@@ -18,15 +18,19 @@
 
 #include "VulkanDevice.h"
 
-VulkanContext::VulkanContext(VulkanDevice& inDevice) :
-    GPUGraphicsContext (inDevice)
+VulkanContext::VulkanContext(VulkanDevice&  inDevice,
+                             const uint32_t inQueueFamily) :
+    GPUGraphicsContext  (inDevice),
+    mQueueFamily        (inQueueFamily)
 {
-
+    vkGetDeviceQueue(GetVulkanDevice().GetHandle(),
+                     mQueueFamily,
+                     0,
+                     &mQueue);
 }
 
 VulkanContext::~VulkanContext()
 {
-
 }
 
 void VulkanContext::BeginPresent(GPUSwapchain& inSwapchain)
