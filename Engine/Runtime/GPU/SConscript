@@ -14,6 +14,7 @@ objects = map(env.Object, [
     'Vulkan/VulkanDevice.cpp',
     'Vulkan/VulkanFormat.cpp',
     'Vulkan/VulkanMemoryManager.cpp',
+    'Vulkan/VulkanResourceView.cpp',
     'Vulkan/VulkanSwapchain.cpp',
     'Vulkan/VulkanTexture.cpp',
 

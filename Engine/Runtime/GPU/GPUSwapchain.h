@@ -19,7 +19,8 @@
 #include "Core/PixelFormat.h"
 #include "Core/Singleton.h"
 
-#include "GPU/GPUDeviceChild.h"
+#include "GPU/GPUResourceView.h"
+#include "GPU/GPUTexture.h"
 
 class Window;
 
@@ -40,8 +41,30 @@ public:
     Window&                     GetWindow() const { return mWindow; }
     PixelFormat                 GetFormat() const { return mFormat; }
 
+    /**
+     * Get a texture referring to the swapchain. This is a special texture
+     * which has restricted usage.
+     *
+     * Firstly, it is not allowed to create arbitrary views of this texture: if
+     * you wish to render to it, you must use the view given by
+     * GetRenderTargetView().
+     *
+     * Secondly, it is only valid to use the texture (or the view) between calls
+     * to GPUComputeContext::BeginPresent() and GPUComputeContext::EndPresent().
+     * This is because the backend may need to explicitly acquire a new
+     * texture to use from the window system, and also insert synchronisation
+     * around its usage. This restriction therefore allows these steps to be
+     * done only around where they really need to be. Usage of the texture
+     * must then occur only on the context where BeginPresent() was called.
+     */
+    GPUTexture*                 GetTexture() const          { return mTexture; }
+    GPUResourceView*            GetRenderTargetView() const { return mRenderTargetView; }
+
 protected:
     Window&                     mWindow;
     PixelFormat                 mFormat;
+
+    GPUTexturePtr               mTexture;
+    GPUResourceViewPtr          mRenderTargetView;
 
 };

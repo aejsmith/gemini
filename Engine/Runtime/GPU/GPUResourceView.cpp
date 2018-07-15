@@ -24,12 +24,13 @@
 GPUResourceView::GPUResourceView(GPUResource&               inResource,
                                  const GPUResourceViewDesc& inDesc) :
     GPUObject   (inResource.GetDevice()),
-    mResource   (inResource),
+    mResource   (&inResource),
     mDesc       (inDesc)
 {
     #if ORION_BUILD_DEBUG
         /* Only one usage flag should be set. */
         Assert(IsOnlyOneBitSet(GetUsage()));
+        Assert(GetResource().GetUsage() & GetUsage());
 
         Assert(GetType() != kGPUResourceViewType_Buffer || GetFormat() == PixelFormat::kUnknown);
         Assert(GetType() == kGPUResourceViewType_Buffer || GetFormat() != PixelFormat::kUnknown);

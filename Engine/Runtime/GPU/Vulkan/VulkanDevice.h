@@ -36,6 +36,9 @@ public:
 
     GPUTexturePtr                       CreateTexture(const GPUTextureDesc& inDesc) override;
 
+    GPUResourceViewPtr                  CreateResourceView(GPUResource&               inResource,
+                                                           const GPUResourceViewDesc& inDesc) override;
+
     /**
      * Internal methods.
      */

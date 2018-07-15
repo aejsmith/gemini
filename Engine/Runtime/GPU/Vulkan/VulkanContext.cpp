@@ -28,3 +28,13 @@ VulkanContext::~VulkanContext()
 {
 
 }
+
+void VulkanContext::BeginPresent(GPUSwapchain& inSwapchain)
+{
+    Fatal("TODO");
+}
+
+void VulkanContext::EndPresent(GPUSwapchain& inSwapchain)
+{
+    Fatal("TODO");
+}

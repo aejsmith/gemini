@@ -25,14 +25,15 @@
  * of the most derived class and use this for all, to keep things a bit more
  * simple.
  */
-class VulkanContext : public GPUGraphicsContext,
-                      public VulkanDeviceChild<VulkanContext>
+class VulkanContext final : public GPUGraphicsContext,
+                            public VulkanDeviceChild<VulkanContext>
 {
 public:
-                                VulkanContext(VulkanDevice& inDevice);
-                                ~VulkanContext();
+                            VulkanContext(VulkanDevice& inDevice);
+                            ~VulkanContext();
 
 public:
-
+    void                    BeginPresent(GPUSwapchain& inSwapchain) override;
+    void                    EndPresent(GPUSwapchain& inSwapchain) override;
 
 };

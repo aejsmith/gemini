@@ -18,6 +18,7 @@
 
 #include "VulkanDevice.h"
 #include "VulkanFormat.h"
+#include "VulkanResourceView.h"
 #include "VulkanTexture.h"
 
 #include "Engine/Window.h"
@@ -215,16 +216,32 @@ void VulkanSwapchain::CreateSwapchain()
 
 void VulkanSwapchain::CreateTexture()
 {
-    /* Craft a texture descriptor that matches our swapchain. */
-    GPUTextureDesc textureDesc = {};
-    textureDesc.type           = kGPUResourceType_Texture2D;
-    textureDesc.usage          = kGPUResourceUsage_RenderTarget;
-    textureDesc.format         = GetFormat();
-    textureDesc.width          = GetWindow().GetSize().x;
-    textureDesc.height         = GetWindow().GetSize().y;
-    textureDesc.depth          = 1;
-    textureDesc.arraySize      = 1;
-    textureDesc.numMipLevels   = 1;
+    auto texture = new VulkanTexture(*this, {});
+    mTexture = texture;
 
-    mTexture = new VulkanTexture(*this, textureDesc, {});
+    /* Create the render target view object. This will not create a real image
+     * view to begin with due to this being a swapchain texture. */
+    GPUResourceViewDesc viewDesc = {};
+    viewDesc.type         = kGPUResourceViewType_Texture2D;
+    viewDesc.usage        = kGPUResourceUsage_RenderTarget;
+    viewDesc.format       = GetFormat();
+    viewDesc.mipCount     = 1;
+    viewDesc.elementCount = 1;
+
+    auto view = new VulkanResourceView(*texture, viewDesc);
+    mRenderTargetView = view;
+
+    /* For each image, create a corresponding view that we can use whenever we
+     * acquire that image index. */
+    mImageViews.resize(mImages.size());
+    for (size_t i = 0; i < mImages.size(); i++)
+    {
+        texture->SetImage(mImages[i], {});
+
+        view->CreateImageView({});
+        mImageViews[i] = view->GetImageView();
+    }
+
+    texture->SetImage(VK_NULL_HANDLE, {});
+    view->SetImageView(VK_NULL_HANDLE, {});
 }

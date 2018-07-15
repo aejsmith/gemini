@@ -25,8 +25,22 @@ VulkanTexture::VulkanTexture(VulkanDevice&         inDevice,
     GPUTexture  (inDevice, inDesc),
     mHandle     (VK_NULL_HANDLE),
     mAllocation (VK_NULL_HANDLE),
-    mSwapchain  (nullptr)
+    mAspectMask (0)
 {
+    if (PixelFormat::IsDepth(GetFormat()))
+    {
+        mAspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+
+        if (PixelFormat::IsDepthStencil(GetFormat()))
+        {
+            mAspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        }
+    }
+    else
+    {
+        mAspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+
     VkImageCreateInfo createInfo = {};
     createInfo.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     createInfo.format        = VulkanFormat::GetVulkanFormat(GetFormat());
@@ -91,19 +105,17 @@ VulkanTexture::VulkanTexture(VulkanDevice&         inDevice,
                                                        mAllocation);
 }
 
-VulkanTexture::VulkanTexture(VulkanSwapchain&      inSwapchain,
-                             const GPUTextureDesc& inDesc,
+VulkanTexture::VulkanTexture(VulkanSwapchain& inSwapchain,
                              OnlyCalledBy<VulkanSwapchain>) :
-    GPUTexture  (inSwapchain.GetVulkanDevice(), inDesc),
+    GPUTexture  (inSwapchain),
     mHandle     (VK_NULL_HANDLE),
-    mAllocation (VK_NULL_HANDLE),
-    mSwapchain  (&inSwapchain)
+    mAllocation (VK_NULL_HANDLE)
 {
 }
 
 VulkanTexture::~VulkanTexture()
 {
-    if (!IsSwapchainImage())
+    if (!IsSwapchain())
     {
         /* FIXME: Defer destruction until no longer used. */
         vkDestroyImage(GetVulkanDevice().GetHandle(), mHandle, nullptr);

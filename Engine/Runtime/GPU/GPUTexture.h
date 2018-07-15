@@ -18,6 +18,8 @@
 
 #include "GPU/GPUResource.h"
 
+class GPUSwapchain;
+
 struct GPUTextureDesc
 {
     GPUResourceType         type;
@@ -49,6 +51,8 @@ protected:
                             GPUTexture(GPUDevice&            inDevice,
                                        const GPUTextureDesc& inDesc);
 
+                            GPUTexture(GPUSwapchain& inSwapchain);
+
                             ~GPUTexture() {}
 
 public:
@@ -66,6 +70,15 @@ public:
     uint32_t                GetMipHeight(const uint8_t inMip) const;
     uint32_t                GetMipDepth(const uint8_t inMip) const;
 
+    /**
+     * Gets the swapchain, if any, that the texture refers to. Swapchain
+     * textures have special rules about when they safe to access - see
+     * GPUSwapchain for details. It is also not allowed to create arbitrary
+     * views of them: you can only use the view provided by the swapchain.
+     */
+    bool                    IsSwapchain() const         { return mSwapchain != nullptr; }
+    GPUSwapchain*           GetSwapchain() const        { return mSwapchain; }
+
 protected:
     const GPUTextureFlags   mFlags;
     const PixelFormat       mFormat;
@@ -74,6 +87,8 @@ protected:
     const uint32_t          mDepth;
     const uint16_t          mArraySize;
     uint8_t                 mNumMipLevels;
+
+    GPUSwapchain*           mSwapchain;
 
 };
 

@@ -46,12 +46,14 @@ enum GPUResourceType
 
 enum GPUTextureFlags : uint32_t
 {
+    kGPUTexture_None = 0,
+
     /**
      * Cube resource views can be created of the texture. When used, the type
      * must be kGPUResourceType_2D, and the array size must be specified as a
      * multiple of 6.
      */
-    kGPUTexture_CubeCompatible = (1 << 0),
+    kGPUTexture_CubeCompatible  = (1 << 0),
 };
 
 DEFINE_ENUM_BITWISE_OPS(GPUTextureFlags);

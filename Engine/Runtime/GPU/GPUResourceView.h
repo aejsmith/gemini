@@ -16,9 +16,7 @@
 
 #pragma once
 
-#include "GPU/GPUObject.h"
-
-class GPUResource;
+#include "GPU/GPUResource.h"
 
 struct GPUResourceViewDesc
 {
@@ -66,7 +64,7 @@ protected:
                                 ~GPUResourceView() {}
 
 public:
-    GPUResource&                GetResource() const         { return mResource; }
+    GPUResource&                GetResource() const         { return *mResource; }
 
     GPUResourceViewType         GetType() const             { return mDesc.type; }
     GPUResourceUsage            GetUsage() const            { return mDesc.usage; }
@@ -77,7 +75,9 @@ public:
     uint32_t                    GetElementCount() const     { return mDesc.elementCount; }
 
 protected:
-    GPUResource&                mResource;
+    ReferencePtr<GPUResource>   mResource;
     const GPUResourceViewDesc   mDesc;
 
 };
+
+using GPUResourceViewPtr = ReferencePtr<GPUResourceView>;

@@ -18,6 +18,7 @@
 
 #include "VulkanContext.h"
 #include "VulkanMemoryManager.h"
+#include "VulkanResourceView.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
 
@@ -244,4 +245,10 @@ void VulkanDevice::CreateSwapchain(Window& inWindow)
 GPUTexturePtr VulkanDevice::CreateTexture(const GPUTextureDesc& inDesc)
 {
     return new VulkanTexture(*this, inDesc);
+}
+
+GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource&               inResource,
+                                                    const GPUResourceViewDesc& inDesc)
+{
+    return new VulkanResourceView(inResource, inDesc);
 }

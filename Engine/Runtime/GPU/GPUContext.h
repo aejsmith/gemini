@@ -18,6 +18,8 @@
 
 #include "GPU/GPUDeviceChild.h"
 
+class GPUSwapchain;
+
 /**
  * Base class for a context used for submitting work to a GPU queue. A device
  * up to 3 contexts:
@@ -65,6 +67,15 @@ public:
                                 ~GPUComputeContext() {}
 
 public:
+    /**
+     * Interface for presenting to a swapchain. See GPUSwapchain for more
+     * details. BeginPresent() must be called before using a swapchain's
+     * texture. EndPresent() will present whatever has been rendered to the
+     * texture to the swapchain's window. The swapchain must not be used on
+     * any other thread, or any other context, between these calls.
+     */
+    virtual void                BeginPresent(GPUSwapchain& inSwapchain) = 0;
+    virtual void                EndPresent(GPUSwapchain& inSwapchain) = 0;
 
 };
 

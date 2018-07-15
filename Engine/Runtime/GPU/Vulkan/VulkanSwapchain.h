@@ -55,7 +55,6 @@ private:
     VkSurfaceFormatKHR          mSurfaceFormat;
 
     std::vector<VkImage>        mImages;
-
-    ReferencePtr<VulkanTexture> mTexture;
+    std::vector<VkImageView>    mImageViews;
 
 };

@@ -16,6 +16,10 @@
 
 #include "GPU/GPUTexture.h"
 
+#include "GPU/GPUSwapchain.h"
+
+#include "Engine/Window.h"
+
 GPUTexture::GPUTexture(GPUDevice&            inDevice,
                        const GPUTextureDesc& inDesc) :
     GPUResource     (inDevice,
@@ -27,11 +31,13 @@ GPUTexture::GPUTexture(GPUDevice&            inDevice,
     mHeight         (inDesc.height),
     mDepth          (inDesc.depth),
     mArraySize      (inDesc.arraySize),
-    mNumMipLevels   (inDesc.numMipLevels)
+    mNumMipLevels   (inDesc.numMipLevels),
+    mSwapchain      (nullptr)
 {
     Assert(GetType() != kGPUResourceType_Buffer);
     Assert(GetType() >= kGPUResourceType_Texture2D || GetWidth() == 1);
     Assert(GetType() == kGPUResourceType_Texture3D || GetDepth() == 1);
+    Assert(!IsSwapchain());
     Assert(!IsCubeCompatible() || GetType() == kGPUResourceType_Texture2D);
     Assert(!IsCubeCompatible() || (GetArraySize() % 6) == 0);
 
@@ -57,4 +63,19 @@ GPUTexture::GPUTexture(GPUDevice&            inDevice,
     {
         mNumMipLevels = maxMips;
     }
+}
+
+GPUTexture::GPUTexture(GPUSwapchain& inSwapchain) :
+    GPUResource     (inSwapchain.GetDevice(),
+                     kGPUResourceType_Texture2D,
+                     kGPUResourceUsage_RenderTarget),
+    mFlags          (kGPUTexture_None),
+    mFormat         (inSwapchain.GetFormat()),
+    mWidth          (inSwapchain.GetWindow().GetSize().x),
+    mHeight         (inSwapchain.GetWindow().GetSize().y),
+    mDepth          (1),
+    mArraySize      (1),
+    mNumMipLevels   (1),
+    mSwapchain      (&inSwapchain)
+{
 }

@@ -29,21 +29,27 @@ public:
                                 VulkanTexture(VulkanDevice&         inDevice,
                                               const GPUTextureDesc& inDesc);
 
-                                VulkanTexture(VulkanSwapchain&      inSwapchain,
-                                              const GPUTextureDesc& inDesc,
+                                VulkanTexture(VulkanSwapchain& inSwapchain,
                                               OnlyCalledBy<VulkanSwapchain>);
 
                                 ~VulkanTexture();
 
     VkImage                     GetHandle() const           { return mHandle; }
 
-    bool                        IsSwapchainImage() const    { return mSwapchain != nullptr; }
+    VkImageAspectFlags          GetAspectMask() const       { return mAspectMask; }
+
+    /**
+     * Interface with VulkanSwapchain for swapchain textures to set the current
+     * swapchain image that this refers to.
+     */
+    void                        SetImage(const VkImage inImage,
+                                         OnlyCalledBy<VulkanSwapchain>)
+                                    { Assert(IsSwapchain()); mHandle = inImage; }
 
 private:
     VkImage                     mHandle;
     VmaAllocation               mAllocation;
 
-    /** If not null, this texture is a bridge to a swapchain image. */
-    VulkanSwapchain*            mSwapchain;
+    VkImageAspectFlags          mAspectMask;
 
 };
