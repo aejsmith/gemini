@@ -220,8 +220,22 @@ namespace VulkanFuncs
 
 using namespace VulkanFuncs;
 
+/**
+ * Vulkan parameters.
+ */
+
 /** Whether to enable the Vulkan validation layers. */
 #define ORION_VULKAN_VALIDATION     ORION_BUILD_DEBUG
+
+/**
+ * Number of in-flight frames allowed. Currently 2: previous frame is left to
+ * complete on the GPU while we're preparing the next one on the CPU.
+ */
+static constexpr uint8_t kVulkanInFlightFrameCount = 2;
+
+/**
+ * Helper functions/macros.
+ */
 
 [[noreturn]] extern void VulkanCheckFailed(const char*    inCall,
                                            const VkResult inResult);

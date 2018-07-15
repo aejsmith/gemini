@@ -252,3 +252,13 @@ GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource&               i
 {
     return new VulkanResourceView(inResource, inDesc);
 }
+
+void VulkanDevice::EndFrame()
+{
+    // Submit outstanding work on all contexts.
+
+    mCurrentFrame = (mCurrentFrame + 1) % kVulkanInFlightFrameCount;
+    auto& frame = mFrames[mCurrentFrame];
+
+    // Wait for last submission of frame.
+}

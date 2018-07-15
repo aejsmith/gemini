@@ -36,7 +36,10 @@ protected:
                                 ~GPUDevice();
 
 public:
-    GPUContext*                 GetGraphicsContext() const  { return mGraphicsContext; }
+    static void                 Create();
+
+    /** Get the primary graphics context. This is always present. */
+    GPUGraphicsContext&         GetGraphicsContext() const  { return *mGraphicsContext; }
 
     /**
      * Create and attach a swapchain to the specified window so that it can be
@@ -50,9 +53,16 @@ public:
     virtual GPUResourceViewPtr  CreateResourceView(GPUResource&               inResource,
                                                    const GPUResourceViewDesc& inDesc) = 0;
 
-    static void                 Create();
+    /**
+     * Mark the end of a frame. Should be called after the last work submission
+     * in the frame (usually an EndPresent()). Any recorded work that has not
+     * yet been submitted to the device on each context will be submitted.
+     * This function can block waiting for GPU work from earlier frames to
+     * complete, so that the CPU does not get too far ahead of the GPU.
+     */
+    virtual void                EndFrame() = 0;
 
 protected:
-    GPUContext*                 mGraphicsContext;
+    GPUGraphicsContext*         mGraphicsContext;
 
 };

@@ -93,5 +93,23 @@ Engine::~Engine()
 
 void Engine::Run()
 {
-    Fatal("TODO");
+    /* Always present from graphics for now, but in future depending on
+     * workload we may wish to present from compute. Probably ought to be
+     * decided by the frame graph. */
+    GPUGraphicsContext& presentContext = GPUDevice::Get().GetGraphicsContext();
+
+    GPUSwapchain& swapchain = *MainWindow::Get().GetSwapchain();
+
+    while (true)
+    {
+        /* TODO: Do everything else! */
+
+        presentContext.BeginPresent(swapchain);
+
+        /* TODO: Do something. */
+
+        presentContext.EndPresent(swapchain);
+
+        GPUDevice::Get().EndFrame();
+    }
 }

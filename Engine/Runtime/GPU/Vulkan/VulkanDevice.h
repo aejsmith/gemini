@@ -39,6 +39,8 @@ public:
     GPUResourceViewPtr                  CreateResourceView(GPUResource&               inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 
+    void                                EndFrame() override;
+
     /**
      * Internal methods.
      */
@@ -54,6 +56,18 @@ public:
 
     VulkanMemoryManager&                GetMemoryManager() const        { return *mMemoryManager; }
 
+    /**
+     * Get the current frame index (between 0 and kVulkanInFlightFrameCount),
+     * for indexing data tracked for in-flight frames.
+     */
+    uint8_t                             GetCurrentFrame() const         { return mCurrentFrame; }
+
+private:
+    struct Frame
+    {
+        int dummy;
+    };
+
 private:
     void                                CreateDevice();
 
@@ -67,5 +81,12 @@ private:
     VkPhysicalDeviceFeatures            mFeatures;
 
     VulkanMemoryManager*                mMemoryManager;
+
+    /**
+     * Per-frame data. Indexed by mCurrentFrame, which is a value between 0
+     * and kVulkanInFlightFrameCount.
+     */
+    uint8_t                             mCurrentFrame;
+    Frame                               mFrames[kVulkanInFlightFrameCount];
 
 };
