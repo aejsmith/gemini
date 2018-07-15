@@ -17,6 +17,7 @@
 #include "GPU/GPUResourceView.h"
 
 #include "GPU/GPUResource.h"
+#include "GPU/GPUSwapchain.h"
 #include "GPU/GPUTexture.h"
 
 #include "Core/Utility.h"
@@ -45,9 +46,11 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
         }
         else
         {
+            Assert(GetResource().IsTexture());
+
             const auto& texture = static_cast<const GPUTexture&>(GetResource());
 
-            Assert(GetResource().IsTexture());
+            Assert(!texture.IsSwapchain() || !texture.GetSwapchain()->GetRenderTargetView());
             Assert(GetUsage() == kGPUResourceUsage_ShaderRead || GetMipCount() == 1);
             Assert(GetMipOffset() + GetMipCount() <= texture.GetNumMipLevels());
 
