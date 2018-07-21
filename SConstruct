@@ -92,7 +92,7 @@ if sys.platform.startswith('linux'):
     ]
     env['CXXFLAGS'] += [
         '-Wsign-promo', '-Wno-undefined-var-template',
-        '-std=c++14'
+        '-std=c++17'
     ]
     env['LINKFLAGS'] += ['-pthread']
     env['LIBS'] += ['dl']
