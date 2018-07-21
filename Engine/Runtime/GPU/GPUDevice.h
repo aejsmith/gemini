@@ -57,8 +57,12 @@ public:
      * Mark the end of a frame. Should be called after the last work submission
      * in the frame (usually an EndPresent()). Any recorded work that has not
      * yet been submitted to the device on each context will be submitted.
+     *
      * This function can block waiting for GPU work from earlier frames to
      * complete, so that the CPU does not get too far ahead of the GPU.
+     *
+     * No other threads must be recording work to any command lists at the
+     * point where this is called.
      */
     virtual void                EndFrame() = 0;
 

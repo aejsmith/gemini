@@ -20,6 +20,12 @@
 
 #include "VulkanDeviceChild.h"
 
+#include <list>
+#include <mutex>
+#include <vector>
+
+class VulkanCommandPool;
+
 /**
  * Vulkan implementation of GPU*Context. We have just a single implementation
  * of the most derived class and use this for all, to keep things a bit more
@@ -29,27 +35,87 @@ class VulkanContext final : public GPUGraphicsContext,
                             public VulkanDeviceChild<VulkanContext>
 {
 public:
-                            VulkanContext(VulkanDevice&  inDevice,
-                                          const uint32_t inQueueFamily);
+                                    VulkanContext(VulkanDevice&  inDevice,
+                                                  const uint8_t  inID,
+                                                  const uint32_t inQueueFamily);
 
-                            ~VulkanContext();
+                                    ~VulkanContext();
+
+    /**
+     * GPUContext methods.
+     */
+public:
+    void                            Wait(GPUContext& inOtherContext) override;
 
     /**
      * GPUComputeContext methods.
      */
 public:
-    void                    BeginPresent(GPUSwapchain& inSwapchain) override;
-    void                    EndPresent(GPUSwapchain& inSwapchain) override;
+    void                            BeginPresent(GPUSwapchain& inSwapchain) override;
+    void                            EndPresent(GPUSwapchain& inSwapchain) override;
 
     /**
      * Internal methods.
      */
 public:
-    VkQueue                 GetQueue() const            { return mQueue; }
-    uint32_t                GetQueueFamily() const      { return mQueueFamily; }
+    VkQueue                         GetQueue() const            { return mQueue; }
+    uint32_t                        GetQueueFamily() const      { return mQueueFamily; }
+
+    void                            BeginFrame();
+    void                            EndFrame();
 
 private:
-    VkQueue                 mQueue;
-    uint32_t                mQueueFamily;
+    /** Gets the command pool for the current thread on the current frame. */
+    VulkanCommandPool&              GetCommandPool();
+
+    /**
+     * Get the current primary command buffer. inAllocate specifies whether to
+     * allocate a new command buffer if one is not currently being recorded -
+     * this should only be done if we're actually going to record a command,
+     * to avoid submitting empty command buffers.
+     */
+    VkCommandBuffer                 GetCommandBuffer(const bool inAllocate = true);
+
+    bool                            HaveCommandBuffer() const   { return mCommandBuffer != VK_NULL_HANDLE; }
+
+    /**
+     * If we have a command buffer, submit it. If not null, the specified
+     * semaphore will be signalled (even if there is no current command buffer).
+     */
+    void                            Submit(const VkSemaphore inSignalSemaphore = VK_NULL_HANDLE);
+
+    /**
+     * Wait for a semaphore. Any subsequent GPU work on the context will wait
+     * until the semaphore has been signalled. If we currently have unsubmitted
+     * work, it will be submitted.
+     */
+    void                            Wait(const VkSemaphore inSemaphore);
+
+private:
+    uint8_t                         mID;
+    VkQueue                         mQueue;
+    uint32_t                        mQueueFamily;
+
+    /** Primary command buffer. This is only recorded by the main thread. */
+    VkCommandBuffer                 mCommandBuffer;
+
+    /**
+     * Semaphores to wait on in the next submission. Even though our Wait()
+     * function only takes a single semaphore, this is an array because multiple
+     * Wait() calls without any commands in between should make the next
+     * submission wait on all of those.
+     */
+    std::vector<VkSemaphore>        mWaitSemaphores;
+
+    /**
+     * Command pools created for this context, per-frame. There can be an
+     * arbitrary number of pools for a frame (for every thread which records
+     * command lists that will be submitted to the context). Note these are
+     * usually accessed through the thread-local sCommandPools array in
+     * VulkanContext.cpp - the purpose of this array is to be able to reset
+     * all command pools at end of frame.
+     */
+    std::mutex                      mCommandPoolsLock;
+    std::list<VulkanCommandPool*>   mCommandPools[kVulkanInFlightFrameCount];
 
 };

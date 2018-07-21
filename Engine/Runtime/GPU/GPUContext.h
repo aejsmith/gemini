@@ -33,8 +33,8 @@ class GPUSwapchain;
  *
  * Contexts should only be used from the main thread. Multithreaded command
  * recording is available within render/compute passes: these give you a
- * GPUCommandList to record to, which can be used from any thread, and can have
- * child command lists created to allow multithreading within a pass.
+ * GPUCommandList to record to, which can be used from other threads, and can
+ * have child command lists created to allow multithreading within a pass.
  */
 class GPUContext : public GPUDeviceChild
 {
@@ -43,6 +43,15 @@ protected:
 
 public:
                                 ~GPUContext() {}
+
+public:
+    /**
+     * Add a GPU-side dependency between this context and another. All work
+     * submitted to this context after a call to this function will not begin
+     * execution on the GPU until all work submitted to the other context prior
+     * to this call has completed.
+     */
+    virtual void                Wait(GPUContext& inOtherContext) = 0;
 
 };
 

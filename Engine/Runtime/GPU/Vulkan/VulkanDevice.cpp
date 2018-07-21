@@ -40,7 +40,9 @@ static const char* kRequiredDeviceExtensions[] =
 };
 
 VulkanDevice::VulkanDevice() :
-    mHandle (VK_NULL_HANDLE)
+    mHandle         (VK_NULL_HANDLE),
+    mCurrentFrame   (0),
+    mContexts       ()
 {
     if (!VulkanInstance::HasInstance())
     {
@@ -52,13 +54,48 @@ VulkanDevice::VulkanDevice() :
 
     CreateDevice();
 
-    mMemoryManager   = new VulkanMemoryManager(*this);
-    mGraphicsContext = new VulkanContext(*this, GetGraphicsQueueFamily());
+    uint8_t nextContextID = 0;
+    auto CreateContext =
+        [&] (const uint32_t inQueueFamily)
+        {
+            auto context = new VulkanContext(*this, nextContextID, inQueueFamily);
+            mContexts[nextContextID++] = context;
+            return context;
+        };
+
+    mGraphicsContext = CreateContext(GetGraphicsQueueFamily());
+    //mComputeContext  = CreateContext(GetComputeQueueFamily());
+    //mTransferContext = CreateContext(GetTransferQueueFamily());
+
+    mMemoryManager = new VulkanMemoryManager(*this);
 }
 
 VulkanDevice::~VulkanDevice()
 {
-    delete mGraphicsContext;
+    vkDeviceWaitIdle(mHandle);
+
+    for (size_t i = 0; i < ArraySize(mFrames); i++)
+    {
+        auto& frame = mFrames[i];
+        std::move(frame.semaphores.begin(), frame.semaphores.end(), std::back_inserter(mSemaphorePool));
+        std::move(frame.fences.begin(), frame.fences.end(), std::back_inserter(mFencePool));
+    }
+
+    for (VkSemaphore semaphore : mSemaphorePool)
+    {
+        vkDestroySemaphore(mHandle, semaphore, nullptr);
+    }
+
+    for (VkFence fence : mFencePool)
+    {
+        vkDestroyFence(mHandle, fence, nullptr);
+    }
+
+    for (auto context : mContexts)
+    {
+        delete context;
+    }
+
     delete mMemoryManager;
 
     vkDestroyDevice(mHandle, nullptr);
@@ -255,10 +292,88 @@ GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource&               i
 
 void VulkanDevice::EndFrame()
 {
-    // Submit outstanding work on all contexts.
+    /* Submit outstanding work on all contexts. */
+    for (auto context : mContexts)
+    {
+        if (context)
+        {
+            context->EndFrame();
+        }
+    }
 
+    // Advance to the next frame.
     mCurrentFrame = (mCurrentFrame + 1) % kVulkanInFlightFrameCount;
     auto& frame = mFrames[mCurrentFrame];
 
-    // Wait for last submission of frame.
+    /* Wait for all submissions in frame to complete. TODO: Would it be worth
+     * optimising this to only wait for the last fence in the frame (needs to
+     * be careful for multi-queue, may need multiple there)? Not sure whether
+     * there's much greater overhead for just passing all fences here. */
+    if (!frame.fences.empty())
+    {
+        VulkanCheck(vkWaitForFences(mHandle,
+                                    frame.fences.size(),
+                                    frame.fences.data(),
+                                    VK_TRUE,
+                                    std::numeric_limits<uint64_t>::max()));
+    }
+
+    /* Move all semaphores and fences back to the pool to be reused. */
+    std::move(frame.semaphores.begin(), frame.semaphores.end(), std::back_inserter(mSemaphorePool));
+    frame.semaphores.clear();
+    std::move(frame.fences.begin(), frame.fences.end(), std::back_inserter(mFencePool));
+    frame.fences.clear();
+
+    /* Reset command pools etc. on each context. */
+    for (auto context : mContexts)
+    {
+        if (context)
+        {
+            context->BeginFrame();
+        }
+    }
+}
+
+VkSemaphore VulkanDevice::AllocateSemaphore()
+{
+    VkSemaphore semaphore;
+
+    /* No locking required - this should only be used on the main thread. */
+    if (!mSemaphorePool.empty())
+    {
+        semaphore = mSemaphorePool.back();
+        mSemaphorePool.pop_back();
+    }
+    else
+    {
+        VkSemaphoreCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VulkanCheck(vkCreateSemaphore(mHandle, &createInfo, nullptr, &semaphore));
+    }
+
+    mFrames[mCurrentFrame].semaphores.emplace_back(semaphore);
+    return semaphore;
+}
+
+VkFence VulkanDevice::AllocateFence()
+{
+    VkFence fence;
+
+    /* No locking required - this should only be used on the main thread. */
+    if (!mFencePool.empty())
+    {
+        fence = mFencePool.back();
+        mFencePool.pop_back();
+    }
+    else
+    {
+        VkFenceCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+        VulkanCheck(vkCreateFence(mHandle, &createInfo, nullptr, &fence));
+    }
+
+    mFrames[mCurrentFrame].fences.emplace_back(fence);
+    return fence;
 }

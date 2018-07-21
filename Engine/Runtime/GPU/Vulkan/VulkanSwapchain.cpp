@@ -27,9 +27,10 @@ static const uint32_t kNumSwapchainImages = 3;
 
 VulkanSwapchain::VulkanSwapchain(VulkanDevice& inDevice,
                                  Window&       inWindow) :
-    GPUSwapchain   (inDevice, inWindow),
-    mSurfaceHandle (VK_NULL_HANDLE),
-    mHandle        (VK_NULL_HANDLE)
+    GPUSwapchain    (inDevice, inWindow),
+    mSurfaceHandle  (VK_NULL_HANDLE),
+    mHandle         (VK_NULL_HANDLE),
+    mCurrentImage   (std::numeric_limits<uint32_t>::max())
 {
     CreateSurface();
     ChooseFormat();
@@ -244,4 +245,86 @@ void VulkanSwapchain::CreateTexture()
 
     texture->SetImage(VK_NULL_HANDLE, {});
     view->SetImageView(VK_NULL_HANDLE, {});
+}
+
+void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
+{
+    Assert(mCurrentImage == std::numeric_limits<uint32_t>::max());
+
+    VkResult result = vkAcquireNextImageKHR(GetVulkanDevice().GetHandle(),
+                                            mHandle,
+                                            std::numeric_limits<uint64_t>::max(),
+                                            inAcquireSemaphore,
+                                            VK_NULL_HANDLE,
+                                            &mCurrentImage);
+
+    switch (result)
+    {
+        case VK_SUCCESS:
+            break;
+
+        case VK_SUBOPTIMAL_KHR:
+            /* Should recreate the swapchain when this happens. */
+            LogWarning("TODO: vkAcquireNextImageKHR returned VK_SUBOPTIMAL_KHR");
+            break;
+
+        case VK_ERROR_OUT_OF_DATE_KHR:
+        case VK_ERROR_SURFACE_LOST_KHR:
+            /* Must recreate. */
+            LogError("TODO: vkAcquireNextImageKHR returned VK_ERROR_OUT_OF_DATE_KHR / VK_ERROR_SURFACE_LOST_KHR");
+
+            /* Fallthrough. */
+        default:
+            VulkanCheckFailed("vkAcquireNextImageKHR", result);
+            break;
+
+    }
+
+    /* Update the texture and views to refer to the current image. */
+    auto& texture = static_cast<VulkanTexture&>(*mTexture);
+    texture.SetImage(mImages[mCurrentImage], {});
+
+    auto& view = static_cast<VulkanResourceView&>(*mRenderTargetView);
+    view.SetImageView(mImageViews[mCurrentImage], {});
+}
+
+void VulkanSwapchain::Present(const VkQueue     inQueue,
+                              const VkSemaphore inWaitSemaphore)
+{
+    Assert(mCurrentImage != std::numeric_limits<uint32_t>::max());
+    Assert(inWaitSemaphore != VK_NULL_HANDLE);
+
+    VkPresentInfoKHR presentInfo = {};
+    presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores    = &inWaitSemaphore;
+    presentInfo.swapchainCount     = 1;
+    presentInfo.pSwapchains        = &mHandle;
+    presentInfo.pImageIndices      = &mCurrentImage;
+
+    VkResult result = vkQueuePresentKHR(inQueue, &presentInfo);
+
+    switch (result)
+    {
+        case VK_SUCCESS:
+            break;
+
+        case VK_SUBOPTIMAL_KHR:
+            /* Should recreate the swapchain when this happens. */
+            LogWarning("TODO: vkQueuePresentKHR returned VK_SUBOPTIMAL_KHR");
+            break;
+
+        case VK_ERROR_OUT_OF_DATE_KHR:
+        case VK_ERROR_SURFACE_LOST_KHR:
+            /* Must recreate. */
+            LogError("TODO: vkQueuePresentKHR returned VK_ERROR_OUT_OF_DATE_KHR / VK_ERROR_SURFACE_LOST_KHR");
+
+            /* Fallthrough. */
+        default:
+            VulkanCheckFailed("vkQueuePresentKHR", result);
+            break;
+
+    }
+
+    mCurrentImage = std::numeric_limits<uint32_t>::max();
 }

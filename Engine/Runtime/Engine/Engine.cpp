@@ -102,6 +102,16 @@ void Engine::Run()
 
     while (true)
     {
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            // FIXME: Need an Engine::Quit() method.
+            if ((event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE) || event.type == SDL_QUIT)
+            {
+                return;
+            }
+        }
+
         /* TODO: Do everything else! */
 
         presentContext.BeginPresent(swapchain);

@@ -41,6 +41,10 @@
  * Helper functions.
  */
 
+/** Allocate an array of a given type on the stack. */
+#define AllocateStackArray(Type, inCount) \
+    reinterpret_cast<Type*>(alloca(sizeof(Type) * inCount))
+
 /** Get the size of an array. */
 template <typename T, size_t N>
 constexpr size_t ArraySize(T (&array)[N])

@@ -20,6 +20,9 @@
 
 #include "VulkanInstance.h"
 
+#include <vector>
+
+class VulkanContext;
 class VulkanMemoryManager;
 
 class VulkanDevice final : public GPUDevice
@@ -62,10 +65,36 @@ public:
      */
     uint8_t                             GetCurrentFrame() const         { return mCurrentFrame; }
 
+    /**
+     * Get a semaphore. This should be used within the current frame - once it
+     * has completed on the GPU, it will be returned to the free pool to be
+     * reused. If the semaphore is signalled within the frame, it must also
+     * be waited on - this is required to unsignal the semaphore so that it can
+     * be reused.
+     */
+    VkSemaphore                         AllocateSemaphore();
+
+    /**
+     * Get a fence for a submission. This should be used within the current
+     * frame - all fences allocated with this function will be waited on when
+     * waiting for the frame to complete.
+     */
+    VkFence                             AllocateFence();
+
 private:
     struct Frame
     {
-        int dummy;
+        /**
+         * Semaphores used in the frame. Returned to the pool once the frame
+         * is completed.
+         */
+        std::vector<VkSemaphore>        semaphores;
+
+        /**
+         * Fences for every submission in the frame. Used to determine when
+         * the frame is completed. Returned to the pool once completed.
+         */
+        std::vector<VkFence>            fences;
     };
 
 private:
@@ -88,5 +117,11 @@ private:
      */
     uint8_t                             mCurrentFrame;
     Frame                               mFrames[kVulkanInFlightFrameCount];
+
+    VulkanContext*                      mContexts[kVulkanMaxContexts];
+
+    /** Pool of free semaphores/fences. */
+    std::vector<VkSemaphore>            mSemaphorePool;
+    std::vector<VkFence>                mFencePool;
 
 };

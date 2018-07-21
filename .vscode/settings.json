@@ -1,12 +1,22 @@
 {
     "files.associations": {
         "*.h": "cpp",
+        "SConscript": "python",
+        "SConstruct": "python",
         "array": "cpp",
         "functional": "cpp",
         "istream": "cpp",
         "ostream": "cpp",
         "type_traits": "cpp",
         "tuple": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "limits": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "initializer_list": "cpp",
+        "string_view": "cpp"
     }
 }

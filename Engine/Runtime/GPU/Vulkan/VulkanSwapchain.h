@@ -35,6 +35,11 @@ public:
                                 ~VulkanSwapchain();
 
 public:
+    void                        Acquire(const VkSemaphore inAcquireSemaphore);
+
+    void                        Present(const VkQueue     inQueue,
+                                        const VkSemaphore inWaitSemaphore);
+
     /* Implemented by platform-specific code. */
     static const char*          GetSurfaceExtensionName();
     static bool                 CheckPresentationSupport(const VkPhysicalDevice inDevice,
@@ -56,5 +61,7 @@ private:
 
     std::vector<VkImage>        mImages;
     std::vector<VkImageView>    mImageViews;
+
+    uint32_t                    mCurrentImage;
 
 };

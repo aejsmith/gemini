@@ -234,6 +234,11 @@ using namespace VulkanFuncs;
 static constexpr uint8_t kVulkanInFlightFrameCount = 2;
 
 /**
+ * Maximum number of contexts (one graphics, one compute, one transfer).
+ */
+static constexpr uint8_t kVulkanMaxContexts = 3;
+
+/**
  * Helper functions/macros.
  */
 
