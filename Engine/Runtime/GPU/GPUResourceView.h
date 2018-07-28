@@ -44,7 +44,7 @@ struct GPUResourceViewDesc
     /**
      * Element offset and element count. For a buffer view, this specifies the
      * byte offset into the buffer and byte size to view. For texture views, it
-     * specifies the array offset and slice count. For cube views, these must
+     * specifies the array offset and layer count. For cube views, these must
      * be a multiple of 6.
      */
     uint32_t                    elementOffset;
@@ -74,6 +74,13 @@ public:
     uint32_t                    GetElementOffset() const    { return mDesc.elementOffset; }
     uint32_t                    GetElementCount() const     { return mDesc.elementCount; }
 
+    /**
+     * Get a GPUSubresourceRange structure corresponding to this view, suitable
+     * for use e.g. in a GPUResourceBarrier. If this view refers to a buffer,
+     * will return 0 for offsets and 1 for count.
+     */
+    GPUSubresourceRange         GetSubresourceRange() const;
+
 protected:
     ReferencePtr<GPUResource>   mResource;
     const GPUResourceViewDesc   mDesc;
@@ -81,3 +88,15 @@ protected:
 };
 
 using GPUResourceViewPtr = ReferencePtr<GPUResourceView>;
+
+inline GPUSubresourceRange GPUResourceView::GetSubresourceRange() const
+{
+    if (mResource->IsBuffer())
+    {
+        return { 0, 1, 0, 1 };
+    }
+    else
+    {
+        return { mDesc.mipOffset, mDesc.mipCount, mDesc.elementOffset, mDesc.elementCount };
+    }
+}

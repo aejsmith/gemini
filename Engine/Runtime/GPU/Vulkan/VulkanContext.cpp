@@ -18,6 +18,7 @@
 
 #include "VulkanCommandPool.h"
 #include "VulkanDevice.h"
+#include "VulkanTexture.h"
 #include "VulkanSwapchain.h"
 
 /**
@@ -96,6 +97,11 @@ void VulkanContext::Submit(const VkSemaphore inSignalSemaphore)
     if (!HaveCommandBuffer() && inSignalSemaphore == VK_NULL_HANDLE)
     {
         return;
+    }
+
+    if (HaveCommandBuffer())
+    {
+        VulkanCheck(vkEndCommandBuffer(mCommandBuffer));
     }
 
     /* Wait for all semaphores at top of pipe for now. TODO: Perhaps we can
@@ -198,4 +204,264 @@ void VulkanContext::EndPresent(GPUSwapchain& inSwapchain)
 
     /* Present it. */
     swapchain.Present(mQueue, completeSemaphore);
+}
+
+void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
+                                    const uint32_t                  inCount)
+{
+    Assert(inCount);
+
+    /* Determine how many barrier structures we're going to need. */
+    uint32_t imageBarrierCount  = 0;
+    uint32_t bufferBarrierCount = 0;
+
+    for (uint32_t i = 0; i < inCount; i++)
+    {
+        Assert(inBarriers[i].resource);
+        inBarriers[i].resource->ValidateBarrier(inBarriers[i]);
+
+        if (inBarriers[i].resource->IsTexture())
+        {
+            imageBarrierCount++;
+        }
+        else
+        {
+            bufferBarrierCount++;
+        }
+    }
+
+    auto imageBarriers  = AllocateZeroedStackArray(VkImageMemoryBarrier, imageBarrierCount);
+    auto bufferBarriers = AllocateZeroedStackArray(VkBufferMemoryBarrier, bufferBarrierCount);
+
+    imageBarrierCount  = 0;
+    bufferBarrierCount = 0;
+
+    VkPipelineStageFlags srcStageMask = 0;
+    VkPipelineStageFlags dstStageMask = 0;
+
+    for (uint32_t i = 0; i < inCount; i++)
+    {
+        VkAccessFlags srcAccessMask  = 0;
+        VkAccessFlags dstAccessMask  = 0;
+        VkImageLayout oldImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        VkImageLayout newImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        auto HandleState =
+            [&] (const GPUResourceState     inState,
+                 const VkPipelineStageFlags inStageMask,
+                 const VkAccessFlags        inAccessMask,
+                 const VkImageLayout        inLayout = VK_IMAGE_LAYOUT_UNDEFINED)
+            {
+                if (inBarriers[i].currentState & inState)
+                {
+                    srcStageMask  |= inStageMask;
+
+                    /* Only write bits are relevant in a source access mask. */
+                    srcAccessMask |= inAccessMask & kVkAccessFlagBits_AllWrite;
+
+                    /* Overwrite the image layout. The most preferential layout
+                     * is handled last below. The only case where this matters
+                     * is depth read-only states + shader read states, where we
+                     * want to use the depth/stencil layout as opposed to
+                     * SHADER_READ_ONLY. */
+                    oldImageLayout = inLayout;
+                }
+
+                if (inBarriers[i].newState & inState)
+                {
+                    dstStageMask  |= inStageMask;
+                    dstAccessMask |= inAccessMask;
+                    newImageLayout = inLayout;
+                }
+            };
+
+        HandleState(kGPUResourceState_VertexShaderRead,
+                    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+                    VK_ACCESS_SHADER_READ_BIT,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        HandleState(kGPUResourceState_FragmentShaderRead,
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    VK_ACCESS_SHADER_READ_BIT,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        HandleState(kGPUResourceState_ComputeShaderRead,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_ACCESS_SHADER_READ_BIT,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        HandleState(kGPUResourceState_VertexShaderWrite,
+                    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+                    VK_ACCESS_SHADER_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_GENERAL);
+        HandleState(kGPUResourceState_FragmentShaderWrite,
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    VK_ACCESS_SHADER_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_GENERAL);
+        HandleState(kGPUResourceState_ComputeShaderWrite,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_ACCESS_SHADER_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_GENERAL);
+        HandleState(kGPUResourceState_VertexShaderUniformRead,
+                    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+                    VK_ACCESS_UNIFORM_READ_BIT);
+        HandleState(kGPUResourceState_FragmentShaderUniformRead,
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    VK_ACCESS_UNIFORM_READ_BIT);
+        HandleState(kGPUResourceState_ComputeShaderUniformRead,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_ACCESS_UNIFORM_READ_BIT);
+        HandleState(kGPUResourceState_IndirectBufferRead,
+                    VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                    VK_ACCESS_INDIRECT_COMMAND_READ_BIT);
+        HandleState(kGPUResourceState_VertexBufferRead,
+                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                    VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT);
+        HandleState(kGPUResourceState_IndexBufferRead,
+                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                    VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT);
+        HandleState(kGPUResourceState_RenderTarget,
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        HandleState(kGPUResourceState_DepthStencilWrite,
+                    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        HandleState(kGPUResourceState_DepthReadStencilWrite,
+                    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL);
+        HandleState(kGPUResourceState_DepthWriteStencilRead,
+                    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL);
+        HandleState(kGPUResourceState_DepthStencilRead,
+                    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
+        HandleState(kGPUResourceState_TransferRead,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_ACCESS_TRANSFER_READ_BIT,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        HandleState(kGPUResourceState_TransferWrite,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_ACCESS_TRANSFER_WRITE_BIT,
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+        /* Present is a special case in that no synchronisation is required,
+         * only a layout transition. Additionally, we discard on transition
+         * away from present - we don't need to preserve existing content, and
+         * it avoids the problem that on first use the layout will be undefined. */
+        if (inBarriers[i].currentState & kGPUResourceState_Present)
+        {
+            srcStageMask  |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            oldImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        }
+
+        if (inBarriers[i].newState & kGPUResourceState_Present)
+        {
+            dstStageMask  |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            newImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        }
+
+        /* srcAccessMask can end up 0 e.g. for a read to write transition on a
+         * buffer, or on a texture where a layout transition is not necessary.
+         * If this happens we don't need a memory barrier, just an execution
+         * dependency is sufficient. */
+        if (srcAccessMask != 0 || oldImageLayout != newImageLayout)
+        {
+            if (inBarriers[i].resource->IsTexture())
+            {
+                auto& texture = static_cast<VulkanTexture&>(*inBarriers[i].resource);
+                auto range    = texture.GetExactSubresourceRange(inBarriers[i].range);
+
+                auto& imageBarrier = imageBarriers[imageBarrierCount++];
+                imageBarrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imageBarrier.srcAccessMask                   = srcAccessMask;
+                imageBarrier.dstAccessMask                   = dstAccessMask;
+                imageBarrier.oldLayout                       = oldImageLayout;
+                imageBarrier.newLayout                       = newImageLayout;
+                imageBarrier.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
+                imageBarrier.dstQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
+                imageBarrier.image                           = texture.GetHandle();
+                imageBarrier.subresourceRange.aspectMask     = texture.GetAspectMask();
+                imageBarrier.subresourceRange.baseArrayLayer = range.layerOffset;
+                imageBarrier.subresourceRange.layerCount     = range.layerCount;
+                imageBarrier.subresourceRange.baseMipLevel   = range.mipOffset;
+                imageBarrier.subresourceRange.levelCount     = range.mipCount;
+            }
+            else
+            {
+                Fatal("TODO: Buffers");
+            }
+        }
+    }
+
+    Assert(srcStageMask != 0);
+    Assert(dstStageMask != 0);
+
+    vkCmdPipelineBarrier(GetCommandBuffer(),
+                         srcStageMask,
+                         dstStageMask,
+                         0,
+                         0, nullptr,
+                         bufferBarrierCount,
+                         (bufferBarrierCount > 0) ? bufferBarriers : nullptr,
+                         imageBarrierCount,
+                         (imageBarrierCount > 0) ? imageBarriers : nullptr);
+}
+
+void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
+                                 const GPUTextureClearData& inData,
+                                 const GPUSubresourceRange& inRange)
+{
+    auto& texture = static_cast<VulkanTexture&>(*inTexture);
+    auto range    = texture.GetExactSubresourceRange(inRange);
+
+    VkImageSubresourceRange vkRange;
+    vkRange.aspectMask     = 0;
+    vkRange.baseArrayLayer = range.layerOffset;
+    vkRange.layerCount     = range.layerCount;
+    vkRange.baseMipLevel   = range.mipOffset;
+    vkRange.levelCount     = range.mipCount;
+
+    if (inData.type == GPUTextureClearData::kColour)
+    {
+        Assert(texture.GetAspectMask() == VK_IMAGE_ASPECT_COLOR_BIT);
+        vkRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+        VkClearColorValue value;
+        value.float32[0] = inData.colour.r;
+        value.float32[1] = inData.colour.g;
+        value.float32[2] = inData.colour.b;
+        value.float32[3] = inData.colour.a;
+
+        vkCmdClearColorImage(GetCommandBuffer(),
+                             texture.GetHandle(),
+                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                             &value,
+                             1, &vkRange);
+    }
+    else
+    {
+        if (inData.type == GPUTextureClearData::kDepth || inData.type == GPUTextureClearData::kDepthStencil)
+        {
+            Assert(texture.GetAspectMask() & VK_IMAGE_ASPECT_DEPTH_BIT);
+            vkRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+        }
+
+        if (inData.type == GPUTextureClearData::kStencil || inData.type == GPUTextureClearData::kDepthStencil)
+        {
+            Assert(texture.GetAspectMask() & VK_IMAGE_ASPECT_STENCIL_BIT);
+            vkRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        }
+
+        VkClearDepthStencilValue value;
+        value.depth   = inData.depth;
+        value.stencil = inData.stencil;
+
+        vkCmdClearDepthStencilImage(GetCommandBuffer(),
+                                    texture.GetHandle(),
+                                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                    &value,
+                                    1, &vkRange);
+    }
 }

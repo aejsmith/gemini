@@ -48,6 +48,17 @@ public:
     void                            Wait(GPUContext& inOtherContext) override;
 
     /**
+     * GPUTransferContext methods.
+     */
+public:
+    void                            ResourceBarrier(const GPUResourceBarrier* const inBarriers,
+                                                    const uint32_t                  inCount) override;
+
+    void                            ClearTexture(GPUTexture* const          inTexture,
+                                                 const GPUTextureClearData& inData,
+                                                 const GPUSubresourceRange& inRange) override;
+
+    /**
      * GPUComputeContext methods.
      */
 public:

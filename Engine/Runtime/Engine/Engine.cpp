@@ -23,6 +23,7 @@
 #include "Engine/Window.h"
 
 #include "GPU/GPUDevice.h"
+#include "GPU/GPUSwapchain.h"
 
 #include <SDL.h>
 
@@ -116,7 +117,15 @@ void Engine::Run()
 
         presentContext.BeginPresent(swapchain);
 
-        /* TODO: Do something. */
+        GPUTexture* const texture = swapchain.GetTexture();
+
+        GPUTextureClearData clearData;
+        clearData.type   = GPUTextureClearData::kColour;
+        clearData.colour = glm::vec4(0.0f, 0.2f, 0.4f, 1.0f);
+
+        presentContext.ResourceBarrier(texture, kGPUResourceState_Present, kGPUResourceState_TransferWrite);
+        presentContext.ClearTexture(texture, clearData);
+        presentContext.ResourceBarrier(texture, kGPUResourceState_TransferWrite, kGPUResourceState_Present);
 
         presentContext.EndPresent(swapchain);
 

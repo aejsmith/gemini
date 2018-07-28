@@ -18,6 +18,7 @@
 
 #include "Core/CoreDefs.h"
 
+#include <cstring>
 #include <type_traits>
 
 /**
@@ -44,6 +45,10 @@
 /** Allocate an array of a given type on the stack. */
 #define AllocateStackArray(Type, inCount) \
     reinterpret_cast<Type*>(alloca(sizeof(Type) * inCount))
+
+/** Allocate an array of a given type on the stack, cleared to zero. */
+#define AllocateZeroedStackArray(Type, inCount) \
+    reinterpret_cast<Type*>(memset(alloca(sizeof(Type) * inCount), 0, sizeof(Type) * inCount))
 
 /** Get the size of an array. */
 template <typename T, size_t N>

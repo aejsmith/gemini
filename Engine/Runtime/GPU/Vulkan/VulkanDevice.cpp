@@ -316,6 +316,10 @@ void VulkanDevice::EndFrame()
                                     frame.fences.data(),
                                     VK_TRUE,
                                     std::numeric_limits<uint64_t>::max()));
+
+        VulkanCheck(vkResetFences(mHandle,
+                                  frame.fences.size(),
+                                  frame.fences.data()));
     }
 
     /* Move all semaphores and fences back to the pool to be reused. */

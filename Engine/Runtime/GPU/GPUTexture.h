@@ -71,6 +71,13 @@ public:
     uint32_t                GetMipDepth(const uint8_t inMip) const;
 
     /**
+     * It is valid to specify 0 counts in a GPUSubresourceRange to specify the
+     * whole image. This is for internal use to replace this with the exact
+     * range.
+     */
+    GPUSubresourceRange     GetExactSubresourceRange(const GPUSubresourceRange& inRange) const;
+
+    /**
      * Gets the swapchain, if any, that the texture refers to. Swapchain
      * textures have special rules about when they safe to access - see
      * GPUSwapchain for details. It is also not allowed to create arbitrary
@@ -107,4 +114,16 @@ inline uint32_t GPUTexture::GetMipHeight(const uint8_t inMip) const
 inline uint32_t GPUTexture::GetMipDepth(const uint8_t inMip) const
 {
     return std::max(mDepth >> inMip, 1u);
+}
+
+inline GPUSubresourceRange GPUTexture::GetExactSubresourceRange(const GPUSubresourceRange& inRange) const
+{
+    if (inRange.layerCount != 0 || inRange.mipCount != 0)
+    {
+        return inRange;
+    }
+    else
+    {
+        return { 0, GetNumMipLevels(), 0, GetArraySize() };
+    }
 }

@@ -109,7 +109,8 @@ VulkanTexture::VulkanTexture(VulkanSwapchain& inSwapchain,
                              OnlyCalledBy<VulkanSwapchain>) :
     GPUTexture  (inSwapchain),
     mHandle     (VK_NULL_HANDLE),
-    mAllocation (VK_NULL_HANDLE)
+    mAllocation (VK_NULL_HANDLE),
+    mAspectMask (VK_IMAGE_ASPECT_COLOR_BIT)
 {
 }
 

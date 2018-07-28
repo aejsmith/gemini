@@ -19,6 +19,7 @@
 #include "GPU/GPUDeviceChild.h"
 
 class GPUSwapchain;
+class GPUTexture;
 
 /**
  * Base class for a context used for submitting work to a GPU queue. A device
@@ -64,6 +65,27 @@ public:
                                 ~GPUTransferContext() {}
 
 public:
+    /**
+     * Transition (sub)resources between states. See GPUResourceBarrier and
+     * GPUResourceState for more details. Barriers should be batched together
+     * into a single call to this wherever possible.
+     */
+    virtual void                ResourceBarrier(const GPUResourceBarrier* const inBarriers,
+                                                const uint32_t                  inCount) = 0;
+    void                        ResourceBarrier(GPUResource* const     inResource,
+                                                const GPUResourceState inCurrentState,
+                                                const GPUResourceState inNewState);
+
+    /**
+     * Clear a texture. This is a standalone clear, which requires the cleared
+     * range to be in the kGPUResourceState_TransferWrite state. It should be
+     * preferred to clear render target and depth/stencil textures as part of a
+     * render pass to them, as this is likely more efficient than doing an
+     * explicit clear outside the pass.
+     */
+    virtual void                ClearTexture(GPUTexture* const          inTexture,
+                                             const GPUTextureClearData& inData,
+                                             const GPUSubresourceRange& inRange = GPUSubresourceRange()) = 0;
 
 };
 
@@ -82,6 +104,10 @@ public:
      * texture. EndPresent() will present whatever has been rendered to the
      * texture to the swapchain's window. The swapchain must not be used on
      * any other thread, or any other context, between these calls.
+     *
+     * After BeginPresent() returns, the whole swapchain texture will be in
+     * the kGPUResourceState_Present state. It must be returned to this state
+     * before EndPresent() is called.
      */
     virtual void                BeginPresent(GPUSwapchain& inSwapchain) = 0;
     virtual void                EndPresent(GPUSwapchain& inSwapchain) = 0;
@@ -108,6 +134,18 @@ inline GPUContext::GPUContext(GPUDevice& inDevice) :
 inline GPUTransferContext::GPUTransferContext(GPUDevice& inDevice) :
     GPUContext          (inDevice)
 {
+}
+
+inline void GPUTransferContext::ResourceBarrier(GPUResource* const     inResource,
+                                                const GPUResourceState inCurrentState,
+                                                const GPUResourceState inNewState)
+{
+    GPUResourceBarrier barrier = {};
+    barrier.resource     = inResource;
+    barrier.currentState = inCurrentState;
+    barrier.newState     = inNewState;
+
+    ResourceBarrier(&barrier, 1);
 }
 
 inline GPUComputeContext::GPUComputeContext(GPUDevice& inDevice) :

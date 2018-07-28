@@ -37,6 +37,12 @@ public:
     bool                    IsTexture() const   { return mType != kGPUResourceType_Buffer; }
     bool                    IsBuffer() const    { return mType == kGPUResourceType_Buffer; }
 
+    /**
+     * Function called from GPUContext implementations to check that a barrier
+     * is valid for this resource. A no-op on non-debug builds.
+     */
+    void                    ValidateBarrier(const GPUResourceBarrier& inBarrier) const;
+
 private:
     const GPUResourceType   mType;
     const GPUResourceUsage  mUsage;
@@ -45,11 +51,10 @@ private:
 
 using GPUResourcePtr = ReferencePtr<GPUResource>;
 
-inline GPUResource::GPUResource(GPUDevice&             inDevice,
-                                const GPUResourceType  inType,
-                                const GPUResourceUsage inUsage) :
-    GPUObject (inDevice),
-    mType     (inType),
-    mUsage    (inUsage)
+#if !ORION_BUILD_DEBUG
+
+inline void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
 {
 }
+
+#endif
