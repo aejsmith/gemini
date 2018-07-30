@@ -19,6 +19,9 @@
 #include "GPU/GPUDevice.h"
 
 #include "VulkanInstance.h"
+#include "VulkanRenderPass.h"
+
+#include "Core/HashTable.h"
 
 #include <vector>
 
@@ -42,7 +45,8 @@ public:
     GPUResourceViewPtr                  CreateResourceView(GPUResource&               inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 
-    void                                EndFrame() override;
+protected:
+    void                                EndFrameImpl() override;
 
     /**
      * Internal methods.
@@ -81,6 +85,21 @@ public:
      */
     VkFence                             AllocateFence();
 
+    /**
+     * Get a Vulkan render pass and framebuffer object matching the given
+     * render pass description from a cache. If no matching objects are found,
+     * new ones will be created.
+     */
+    void                                GetRenderPass(const GPURenderPass& inPass,
+                                                      VkRenderPass&        outRenderPass,
+                                                      VkFramebuffer&       outFramebuffer);
+
+    /**
+     * Callback from VulkanResourceView and VulkanSwapchain to invalidate any
+     * framebuffers referring to a view.
+     */
+    void                                InvalidateFramebuffers(const VkImageView inView);
+
 private:
     struct Frame
     {
@@ -96,6 +115,9 @@ private:
          */
         std::vector<VkFence>            fences;
     };
+
+    using RenderPassCache             = HashMap<VulkanRenderPassKey, VkRenderPass>;
+    using FramebufferCache            = HashMap<VulkanFramebufferKey, VkFramebuffer>;
 
 private:
     void                                CreateDevice();
@@ -120,8 +142,10 @@ private:
 
     VulkanContext*                      mContexts[kVulkanMaxContexts];
 
-    /** Pool of free semaphores/fences. */
     std::vector<VkSemaphore>            mSemaphorePool;
     std::vector<VkFence>                mFencePool;
+
+    RenderPassCache                     mRenderPassCache;
+    FramebufferCache                    mFramebufferCache;
 
 };

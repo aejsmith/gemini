@@ -27,12 +27,12 @@
 
 /** Define bitwise operators for an enum. */
 #define DEFINE_ENUM_BITWISE_OPS(Type) \
-    inline Type operator |(const Type a, const Type b) \
+    inline constexpr Type operator |(const Type a, const Type b) \
     { \
         using UnderlyingType = std::underlying_type<Type>::type; \
         return static_cast<Type>(static_cast<UnderlyingType>(a) | static_cast<UnderlyingType>(b)); \
     } \
-    inline Type operator &(const Type a, const Type b) \
+    inline constexpr Type operator &(const Type a, const Type b) \
     { \
         using UnderlyingType = std::underlying_type<Type>::type; \
         return static_cast<Type>(static_cast<UnderlyingType>(a) & static_cast<UnderlyingType>(b)); \

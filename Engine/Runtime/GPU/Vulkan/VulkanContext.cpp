@@ -465,3 +465,13 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
                                     1, &vkRange);
     }
 }
+
+GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& inPass)
+{
+    return nullptr;
+}
+
+void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList)
+{
+
+}

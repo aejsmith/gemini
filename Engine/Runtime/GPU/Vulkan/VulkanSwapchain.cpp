@@ -44,6 +44,12 @@ VulkanSwapchain::~VulkanSwapchain()
 
     if (mHandle != VK_NULL_HANDLE)
     {
+        for (const VkImageView view : mImageViews)
+        {
+            GetVulkanDevice().InvalidateFramebuffers(view);
+            vkDestroyImageView(GetVulkanDevice().GetHandle(), view, nullptr);
+        }
+
         vkDestroySwapchainKHR(GetVulkanDevice().GetHandle(), mHandle, nullptr);
     }
 

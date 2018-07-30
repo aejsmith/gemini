@@ -106,3 +106,22 @@ struct Hash
 
     result_type                 operator()(const T& inValue) const { return HashValue(inValue); }
 };
+
+/**
+ * Define HashValue() and operator== for a type which will directly hash/compare
+ * the whole memory occupied by an object. Care must be taken to ensure that any
+ * padding within the object is zeroed (e.g. memset the whole object upon
+ * construction), so that hashing/comparison will always yield the same results
+ * for identical objects (without doing this, padding could have different
+ * content in different objects resulting in different results).
+ */
+#define DEFINE_HASH_MEM_OPS(T) \
+    inline size_t HashValue(const T& inValue) \
+    { \
+        return HashData(&inValue, sizeof(T)); \
+    } \
+    \
+    inline bool operator==(const T& inA, const T& inB) \
+    { \
+        return memcmp(&inA, &inB, sizeof(T)) == 0; \
+    }

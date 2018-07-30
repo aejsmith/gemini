@@ -51,6 +51,11 @@ VulkanResourceView::~VulkanResourceView()
     }
     else if (GetType() != kGPUResourceViewType_Buffer)
     {
+        if (GetUsage() & (kGPUResourceUsage_RenderTarget | kGPUResourceUsage_DepthStencil))
+        {
+            GetVulkanDevice().InvalidateFramebuffers(mImageView);
+        }
+
         vkDestroyImageView(GetVulkanDevice().GetHandle(), mImageView, nullptr);
     }
 }

@@ -66,6 +66,13 @@ public:
     void                            EndPresent(GPUSwapchain& inSwapchain) override;
 
     /**
+     * GPUGraphicsContext methods.
+     */
+protected:
+    GPUGraphicsCommandList*         CreateRenderPassImpl(const GPURenderPass& inPass) override;
+    void                            SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList) override;
+
+    /**
      * Internal methods.
      */
 public:

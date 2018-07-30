@@ -64,7 +64,10 @@ public:
      * No other threads must be recording work to any command lists at the
      * point where this is called.
      */
-    virtual void                EndFrame() = 0;
+    void                        EndFrame();
+
+protected:
+    virtual void                EndFrameImpl() = 0;
 
 protected:
     GPUGraphicsContext*         mGraphicsContext;

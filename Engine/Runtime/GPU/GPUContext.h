@@ -17,7 +17,8 @@
 #pragma once
 
 #include "GPU/GPUDevice.h"
-#include "GPU/GPUDeviceChild.h"
+#include "GPU/GPUCommandList.h"
+#include "GPU/GPURenderPass.h"
 
 class GPUSwapchain;
 class GPUTexture;
@@ -41,10 +42,10 @@ class GPUTexture;
 class GPUContext : public GPUDeviceChild
 {
 protected:
-                                GPUContext(GPUDevice& inDevice);
+                                    GPUContext(GPUDevice& inDevice);
 
 public:
-                                ~GPUContext() {}
+                                    ~GPUContext() {}
 
 public:
     /**
@@ -53,17 +54,17 @@ public:
      * execution on the GPU until all work submitted to the other context prior
      * to this call has completed.
      */
-    virtual void                Wait(GPUContext& inOtherContext) = 0;
+    virtual void                    Wait(GPUContext& inOtherContext) = 0;
 
 };
 
 class GPUTransferContext : public GPUContext
 {
 protected:
-                                GPUTransferContext(GPUDevice& inDevice);
+                                    GPUTransferContext(GPUDevice& inDevice);
 
 public:
-                                ~GPUTransferContext() {}
+                                    ~GPUTransferContext() {}
 
 public:
     /**
@@ -71,11 +72,11 @@ public:
      * GPUResourceState for more details. Barriers should be batched together
      * into a single call to this wherever possible.
      */
-    virtual void                ResourceBarrier(const GPUResourceBarrier* const inBarriers,
-                                                const uint32_t                  inCount) = 0;
-    void                        ResourceBarrier(GPUResource* const     inResource,
-                                                const GPUResourceState inCurrentState,
-                                                const GPUResourceState inNewState);
+    virtual void                    ResourceBarrier(const GPUResourceBarrier* const inBarriers,
+                                                    const uint32_t                  inCount) = 0;
+    void                            ResourceBarrier(GPUResource* const     inResource,
+                                                    const GPUResourceState inCurrentState,
+                                                    const GPUResourceState inNewState);
 
     /**
      * Clear a texture. This is a standalone clear, which requires the cleared
@@ -84,19 +85,19 @@ public:
      * render pass to them, as this is likely more efficient than doing an
      * explicit clear outside the pass.
      */
-    virtual void                ClearTexture(GPUTexture* const          inTexture,
-                                             const GPUTextureClearData& inData,
-                                             const GPUSubresourceRange& inRange = GPUSubresourceRange()) = 0;
+    virtual void                    ClearTexture(GPUTexture* const          inTexture,
+                                                 const GPUTextureClearData& inData,
+                                                 const GPUSubresourceRange& inRange = GPUSubresourceRange()) = 0;
 
 };
 
 class GPUComputeContext : public GPUTransferContext
 {
 protected:
-                                GPUComputeContext(GPUDevice& inDevice);
+                                    GPUComputeContext(GPUDevice& inDevice);
 
 public:
-                                ~GPUComputeContext() {}
+                                    ~GPUComputeContext() {}
 
 public:
     /**
@@ -110,21 +111,49 @@ public:
      * the kGPUResourceState_Present state. It must be returned to this state
      * before EndPresent() is called.
      */
-    virtual void                BeginPresent(GPUSwapchain& inSwapchain) = 0;
-    virtual void                EndPresent(GPUSwapchain& inSwapchain) = 0;
+    virtual void                    BeginPresent(GPUSwapchain& inSwapchain) = 0;
+    virtual void                    EndPresent(GPUSwapchain& inSwapchain) = 0;
 
+protected:
+    #if ORION_BUILD_DEBUG
+
+    /** Number of active passes (used to ensure command lists don't leak). */
+    uint32_t                        mActivePassCount;
+
+    #endif
+
+    friend class GPUDevice;
 };
 
 class GPUGraphicsContext : public GPUComputeContext
 {
 protected:
-                                GPUGraphicsContext(GPUDevice& inDevice);
+                                    GPUGraphicsContext(GPUDevice& inDevice);
 
 public:
-                                ~GPUGraphicsContext() {}
+                                    ~GPUGraphicsContext() {}
 
 public:
-    static GPUGraphicsContext&  Get()   { return GPUDevice::Get().GetGraphicsContext(); }
+    static GPUGraphicsContext&      Get()   { return GPUDevice::Get().GetGraphicsContext(); }
+
+    /**
+     * Create a render pass. This does not perform any work on the context,
+     * rather it returns a GPUGraphicsCommandList to record the commands for
+     * the pass on. Pass the command list to SubmitRenderPass() once all
+     * commands have been recorded.
+     */
+    GPUGraphicsCommandList*         CreateRenderPass(const GPURenderPass& inPass);
+
+    /**
+     * Submit a render pass. Passes need not be submitted in the same order
+     * they were created in, however they must be submitted within the same
+     * frame as they were created.
+     */
+    void                            SubmitRenderPass(GPUGraphicsCommandList* const inCmdList);
+
+protected:
+    virtual GPUGraphicsCommandList* CreateRenderPassImpl(const GPURenderPass& inPass) = 0;
+    virtual void                    SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList) = 0;
 
 };
 
@@ -158,4 +187,23 @@ inline GPUComputeContext::GPUComputeContext(GPUDevice& inDevice) :
 inline GPUGraphicsContext::GPUGraphicsContext(GPUDevice& inDevice) :
     GPUComputeContext  (inDevice)
 {
+}
+
+inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURenderPass& inPass)
+{
+    #if ORION_BUILD_DEBUG
+        mActivePassCount++;
+        inPass.Validate();
+    #endif
+
+    return CreateRenderPassImpl(inPass);
+}
+
+inline void GPUGraphicsContext::SubmitRenderPass(GPUGraphicsCommandList* const inCmdList)
+{
+    SubmitRenderPassImpl(inCmdList);
+
+    #if ORION_BUILD_DEBUG
+        mActivePassCount--;
+    #endif
 }

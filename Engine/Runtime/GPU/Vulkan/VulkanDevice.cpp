@@ -17,10 +17,13 @@
 #include "VulkanDevice.h"
 
 #include "VulkanContext.h"
+#include "VulkanFormat.h"
 #include "VulkanMemoryManager.h"
+#include "VulkanRenderPass.h"
 #include "VulkanResourceView.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
+#include "VulkanUtils.h"
 
 #include "Core/Utility.h"
 
@@ -73,6 +76,16 @@ VulkanDevice::VulkanDevice() :
 VulkanDevice::~VulkanDevice()
 {
     vkDeviceWaitIdle(mHandle);
+
+    for (const auto& it : mFramebufferCache)
+    {
+        vkDestroyFramebuffer(mHandle, it.second, nullptr);
+    }
+
+    for (const auto& it : mRenderPassCache)
+    {
+        vkDestroyRenderPass(mHandle, it.second, nullptr);
+    }
 
     for (size_t i = 0; i < ArraySize(mFrames); i++)
     {
@@ -290,7 +303,7 @@ GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource&               i
     return new VulkanResourceView(inResource, inDesc);
 }
 
-void VulkanDevice::EndFrame()
+void VulkanDevice::EndFrameImpl()
 {
     /* Submit outstanding work on all contexts. */
     for (auto context : mContexts)
@@ -301,7 +314,7 @@ void VulkanDevice::EndFrame()
         }
     }
 
-    // Advance to the next frame.
+    /* Advance to the next frame. */
     mCurrentFrame = (mCurrentFrame + 1) % kVulkanInFlightFrameCount;
     auto& frame = mFrames[mCurrentFrame];
 
@@ -380,4 +393,188 @@ VkFence VulkanDevice::AllocateFence()
 
     mFrames[mCurrentFrame].fences.emplace_back(fence);
     return fence;
+}
+
+void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
+                                 VkRenderPass&        outRenderPass,
+                                 VkFramebuffer&       outFramebuffer)
+{
+    VulkanRenderPassKey passKey(inPass);
+
+    VkRenderPass& cachedRenderPass = mRenderPassCache[passKey];
+    if (cachedRenderPass == VK_NULL_HANDLE)
+    {
+        /* VkRenderPassCreateInfo requires a tightly packed attachment array,
+         * which we map on to the correct indices in the subpass. */
+        VkRenderPassCreateInfo createInfo = {};
+        VkSubpassDescription subpass = {};
+        VkAttachmentDescription attachments[kMaxRenderPassColourAttachments + 1] = {{}};
+        VkAttachmentReference colourReferences[kMaxRenderPassColourAttachments];
+        VkAttachmentReference depthStencilReference;
+
+        auto AddAttachment =
+            [&] (const VulkanRenderPassKey::Attachment& inSrcAttachment,
+                 VkAttachmentReference&                 outReference) -> bool
+            {
+                const bool result = inSrcAttachment.format != PixelFormat::kUnknown;
+
+                if (result)
+                {
+                    VkImageLayout layout;
+
+                    switch (inSrcAttachment.state)
+                    {
+                        case kGPUResourceState_RenderTarget:
+                            layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                            break;
+
+                        case kGPUResourceState_DepthStencilWrite:
+                            layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                            break;
+
+                        case kGPUResourceState_DepthReadStencilWrite:
+                            layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+                            break;
+
+                        case kGPUResourceState_DepthWriteStencilRead:
+                            layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+                            break;
+
+                        case kGPUResourceState_DepthStencilRead:
+                            layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                            break;
+
+                        default:
+                            UnreachableMsg("Invalid GPUResourceState for attachment");
+
+                    }
+
+                    outReference.attachment = createInfo.attachmentCount;
+                    outReference.layout     = layout;
+
+                    auto& attachment = attachments[createInfo.attachmentCount++];
+
+                    attachment.format         = VulkanFormat::GetVulkanFormat(inSrcAttachment.format);
+                    attachment.samples        = VK_SAMPLE_COUNT_1_BIT; // TODO
+                    attachment.loadOp         = VulkanUtils::ConvertLoadOp(inSrcAttachment.loadOp);
+                    attachment.stencilLoadOp  = VulkanUtils::ConvertLoadOp(inSrcAttachment.stencilLoadOp);
+                    attachment.storeOp        = VulkanUtils::ConvertStoreOp(inSrcAttachment.storeOp);
+                    attachment.stencilStoreOp = VulkanUtils::ConvertStoreOp(inSrcAttachment.stencilStoreOp);
+                    attachment.initialLayout  = layout;
+                    attachment.finalLayout    = layout;
+                }
+                else
+                {
+                    outReference.attachment = VK_ATTACHMENT_UNUSED;
+                }
+
+                return result;
+            };
+
+        for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
+        {
+            if (AddAttachment(passKey.colour[i], colourReferences[i]))
+            {
+                subpass.colorAttachmentCount++;
+                subpass.pColorAttachments = colourReferences;
+            }
+        }
+
+        if (AddAttachment(passKey.depthStencil, depthStencilReference))
+        {
+            subpass.pDepthStencilAttachment = &depthStencilReference;
+        }
+
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+        createInfo.sType        = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        createInfo.subpassCount = 1;
+        createInfo.pSubpasses   = &subpass;
+
+        VulkanCheck(vkCreateRenderPass(GetHandle(),
+                                       &createInfo,
+                                       nullptr,
+                                       &cachedRenderPass));
+    }
+
+    VulkanFramebufferKey framebufferKey(inPass);
+
+    VkFramebuffer& cachedFramebuffer = mFramebufferCache[framebufferKey];
+    if (cachedFramebuffer == VK_NULL_HANDLE)
+    {
+        /* Same as above. The indices into the view array here must match up
+         * with the tightly packed attachment array in the render pass. */
+        VkFramebufferCreateInfo createInfo = {};
+        VkImageView imageViews[kMaxRenderPassColourAttachments + 1];
+
+        auto AddAttachment =
+            [&] (const GPUResourceView* const inView)
+            {
+                const auto view = static_cast<const VulkanResourceView*>(inView);
+
+                if (view)
+                {
+                    if (createInfo.attachmentCount == 0)
+                    {
+                        /* Get the dimensions. All attachments should match. */
+                        const auto& texture = static_cast<const GPUTexture&>(view->GetResource());
+
+                        createInfo.width = texture.GetMipWidth(view->GetMipOffset());
+                        createInfo.height = texture.GetMipHeight(view->GetMipOffset());
+                        createInfo.layers = view->GetElementCount();
+                    }
+
+                    imageViews[createInfo.attachmentCount++] = view->GetImageView();
+                }
+            };
+
+        for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
+        {
+            AddAttachment(inPass.colour[i].view);
+        }
+
+        AddAttachment(inPass.depthStencil.view);
+
+        createInfo.sType        = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        createInfo.renderPass   = cachedRenderPass;
+        createInfo.pAttachments = imageViews;
+
+        VulkanCheck(vkCreateFramebuffer(GetHandle(),
+                                        &createInfo,
+                                        nullptr,
+                                        &cachedFramebuffer));
+    }
+
+    outRenderPass  = cachedRenderPass;
+    outFramebuffer = cachedFramebuffer;
+}
+
+void VulkanDevice::InvalidateFramebuffers(const VkImageView inView)
+{
+    for (auto it = mFramebufferCache.begin(); it != mFramebufferCache.end(); )
+    {
+        bool isMatch = it->first.depthStencil == inView;
+
+        if (!isMatch)
+        {
+            for (VkImageView colourView : it->first.colour)
+            {
+                isMatch = colourView == inView;
+                if (isMatch)
+                {
+                    break;
+                }
+            }
+        }
+
+        if (isMatch)
+        {
+            vkDestroyFramebuffer(GetHandle(), it->second, nullptr);
+            it = mFramebufferCache.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }

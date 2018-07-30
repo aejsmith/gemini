@@ -22,6 +22,9 @@
 
 class GPUResource;
 
+/** Maximum number of colour attachments in a render pass. */
+static constexpr size_t kMaxRenderPassColourAttachments = 8;
+
 enum GPUResourceUsage : uint32_t
 {
     /** Resource will be bound as a read-only shader resource. */
@@ -228,9 +231,7 @@ struct GPUResourceBarrier
     // UNDEFINED as previous Vulkan layout).
 };
 
-/**
- * Data for clearing a texture.
- */
+/** Data for clearing a texture. */
 struct GPUTextureClearData
 {
     /** Type of the clear. This selects the aspect(s) of the texture to clear. */
@@ -247,4 +248,28 @@ struct GPUTextureClearData
     glm::vec4                   colour;
     float                       depth;
     uint32_t                    stencil;
+};
+
+/** How to load the contents of an attachment at the start of a render pass. */
+enum GPULoadOp : uint8_t
+{
+    /** Preserve the existing content of the attachment. */
+    kGPULoadOp_Load,
+
+    /** Clear the attachment to the value specified in the render pass. */
+    kGPULoadOp_Clear,
+};
+
+/** How to store the contents of an attachment at the end of a render pass. */
+enum GPUStoreOp : uint8_t
+{
+    /** Save the new content of the attachment to memory. */
+    kGPUStoreOp_Store,
+
+    /**
+     * Discard the output. This should be used e.g. for depth attachments which
+     * are only used for depth testing within the render pass, and the content
+     * is never needed again outside the pass.
+     */
+    kGPUStoreOp_Discard,
 };

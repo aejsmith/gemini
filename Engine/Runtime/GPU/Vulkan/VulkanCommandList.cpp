@@ -14,34 +14,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "GPU/GPUContext.h"
-#include "GPU/GPUDevice.h"
-
-#include "Vulkan/VulkanDevice.h"
-
-SINGLETON_IMPL(GPUDevice);
-
-GPUDevice::GPUDevice() :
-    mGraphicsContext (nullptr)
-{
-}
-
-GPUDevice::~GPUDevice()
-{
-}
-
-void GPUDevice::Create()
-{
-    /* For now, only Vulkan. This will initialise the Singleton pointer. */
-    new VulkanDevice();
-}
-
-void GPUDevice::EndFrame()
-{
-    #if ORION_BUILD_DEBUG
-        Assert(mGraphicsContext->mActivePassCount == 0);
-        //Assert(!mComputeContext || mComputeContext->mActivePassCount == 0);
-    #endif
-
-    EndFrameImpl();
-}
+#include "VulkanCommandList.h"
