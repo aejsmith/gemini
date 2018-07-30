@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "GPU/GPUDevice.h"
 #include "GPU/GPUDeviceChild.h"
 
 class GPUSwapchain;
@@ -123,6 +124,7 @@ public:
                                 ~GPUGraphicsContext() {}
 
 public:
+    static GPUGraphicsContext&  Get()   { return GPUDevice::Get().GetGraphicsContext(); }
 
 };
 

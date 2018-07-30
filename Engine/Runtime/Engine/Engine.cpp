@@ -22,6 +22,7 @@
 #include "Engine/Game.h"
 #include "Engine/Window.h"
 
+#include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
 #include "GPU/GPUSwapchain.h"
 
@@ -97,7 +98,7 @@ void Engine::Run()
     /* Always present from graphics for now, but in future depending on
      * workload we may wish to present from compute. Probably ought to be
      * decided by the frame graph. */
-    GPUGraphicsContext& presentContext = GPUDevice::Get().GetGraphicsContext();
+    GPUGraphicsContext& presentContext = GPUGraphicsContext::Get();
 
     GPUSwapchain& swapchain = *MainWindow::Get().GetSwapchain();
 

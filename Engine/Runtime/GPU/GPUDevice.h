@@ -16,12 +16,12 @@
 
 #pragma once
 
-#include "GPU/GPUContext.h"
 #include "GPU/GPUResourceView.h"
 #include "GPU/GPUTexture.h"
 
 #include "Core/Singleton.h"
 
+class GPUGraphicsContext;
 class Window;
 
 /**
