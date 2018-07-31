@@ -52,7 +52,7 @@ public:
      */
 public:
     void                            ResourceBarrier(const GPUResourceBarrier* const inBarriers,
-                                                    const uint32_t                  inCount) override;
+                                                    const size_t                    inCount) override;
 
     void                            ClearTexture(GPUTexture* const          inTexture,
                                                  const GPUTextureClearData& inData,
@@ -69,7 +69,7 @@ public:
      * GPUGraphicsContext methods.
      */
 protected:
-    GPUGraphicsCommandList*         CreateRenderPassImpl(const GPURenderPass& inPass) override;
+    GPUGraphicsCommandList*         CreateRenderPassImpl(const GPURenderPass& inRenderPass) override;
     void                            SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList) override;
 
     /**
@@ -79,13 +79,13 @@ public:
     VkQueue                         GetQueue() const            { return mQueue; }
     uint32_t                        GetQueueFamily() const      { return mQueueFamily; }
 
+    /** Gets the command pool for the current thread on the current frame. */
+    VulkanCommandPool&              GetCommandPool();
+
     void                            BeginFrame();
     void                            EndFrame();
 
 private:
-    /** Gets the command pool for the current thread on the current frame. */
-    VulkanCommandPool&              GetCommandPool();
-
     /**
      * Get the current primary command buffer. inAllocate specifies whether to
      * allocate a new command buffer if one is not currently being recorded -

@@ -118,7 +118,23 @@ void Engine::Run()
 
         presentContext.BeginPresent(swapchain);
 
-        GPUTexture* const texture = swapchain.GetTexture();
+        GPUResourceView* const view = swapchain.GetRenderTargetView();
+
+        presentContext.ResourceBarrier(view, kGPUResourceState_Present, kGPUResourceState_RenderTarget);
+
+        GPURenderPass renderPass;
+        renderPass.SetColour(0, view);
+        renderPass.ClearColour(0, glm::vec4(0.0f, 0.2f, 0.4f, 1.0f));
+
+        GPUGraphicsCommandList* cmdList = presentContext.CreateRenderPass(renderPass);
+        cmdList->Begin();
+        cmdList->End();
+        presentContext.SubmitRenderPass(cmdList);
+
+        presentContext.ResourceBarrier(view, kGPUResourceState_RenderTarget, kGPUResourceState_Present);
+
+#if 0
+        GPUTexture* const texture   = swapchain.GetTexture();
 
         GPUTextureClearData clearData;
         clearData.type   = GPUTextureClearData::kColour;
@@ -127,6 +143,7 @@ void Engine::Run()
         presentContext.ResourceBarrier(texture, kGPUResourceState_Present, kGPUResourceState_TransferWrite);
         presentContext.ClearTexture(texture, clearData);
         presentContext.ResourceBarrier(texture, kGPUResourceState_TransferWrite, kGPUResourceState_Present);
+#endif
 
         presentContext.EndPresent(swapchain);
 

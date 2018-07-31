@@ -25,6 +25,12 @@
  *
  * When using multiple attachments in a pass, the dimensions (width, height,
  * and layer count) must match between all of them.
+ *
+ * Note that setting a resource view on this structure does not cause the
+ * reference count of the view to be incremented (a non-reference-counting
+ * pointer is used). However, passing it to CreateRenderPass() will increment
+ * the reference counts, and they will be released when the pass is submitted
+ * with SubmitRenderPass().
  */
 struct GPURenderPass
 {
@@ -38,8 +44,9 @@ struct GPURenderPass
         GPUResourceView*        view;
 
         /**
-         * Resource state that the view will be in. For colour attachments,
-         * must be kGPUResourceState_RenderTarget.
+         * Resource state that the view will be in at the time where the pass
+         * is submitted. For colour attachments, must be
+         * kGPUResourceState_RenderTarget.
          *
          * For depth/stencil, can be any one of the depth states, specifying
          * which aspects, if any, will be written by the pass. For aspects that
@@ -91,6 +98,10 @@ public:
     void                        DiscardColour(const uint8_t inIndex);
     void                        DiscardDepth();
     void                        DiscardStencil();
+
+    void                        GetDimensions(uint32_t& outWidth,
+                                              uint32_t& outHeight,
+                                              uint32_t& outLayers) const;
 
     #if ORION_BUILD_DEBUG
 

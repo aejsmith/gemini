@@ -16,8 +16,13 @@
 
 #include "GPU/GPUCommandList.h"
 
-GPUCommandList::GPUCommandList(GPUDevice& inDevice) :
-    GPUDeviceChild  (inDevice),
+#include "GPU/GPUContext.h"
+
+GPUCommandList::GPUCommandList(GPUContext&                 inContext,
+                               const GPUCommandList* const inParent) :
+    GPUDeviceChild  (inContext.GetDevice()),
+    mContext        (inContext),
+    mParent         (inParent),
     mState          (kState_Created)
 {
     #if ORION_BUILD_DEBUG
@@ -25,12 +30,53 @@ GPUCommandList::GPUCommandList(GPUDevice& inDevice) :
     #endif
 }
 
-GPUGraphicsCommandList::GPUGraphicsCommandList(GPUDevice& inDevice) :
-    GPUCommandList (inDevice)
+GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
+                                               const GPUGraphicsCommandList* const inParent,
+                                               const GPURenderPass&                inRenderPass) :
+    GPUCommandList  (inContext, inParent),
+    mRenderPass     (inRenderPass)
 {
+    /* Add a reference to each view in the pass. Only the top level command
+     * list in a pass needs to do this - it will be alive as long as any
+     * children are. */
+    if (!mParent)
+    {
+        for (size_t i = 0; i < ArraySize(mRenderPass.colour); i++)
+        {
+            if (mRenderPass.colour[i].view)
+            {
+                mRenderPass.colour[i].view->Retain();
+            }
+        }
+
+        if (mRenderPass.depthStencil.view)
+        {
+            mRenderPass.depthStencil.view->Retain();
+        }
+    }
 }
 
-GPUComputeCommandList::GPUComputeCommandList(GPUDevice& inDevice) :
-    GPUCommandList (inDevice)
+GPUGraphicsCommandList::~GPUGraphicsCommandList()
+{
+    if (!mParent)
+    {
+        for (size_t i = 0; i < ArraySize(mRenderPass.colour); i++)
+        {
+            if (mRenderPass.colour[i].view)
+            {
+                mRenderPass.colour[i].view->Release();
+            }
+        }
+
+        if (mRenderPass.depthStencil.view)
+        {
+            mRenderPass.depthStencil.view->Release();
+        }
+    }
+}
+
+GPUComputeCommandList::GPUComputeCommandList(GPUComputeContext&                 inContext,
+                                             const GPUComputeCommandList* const inParent) :
+    GPUCommandList (inContext, inParent)
 {
 }

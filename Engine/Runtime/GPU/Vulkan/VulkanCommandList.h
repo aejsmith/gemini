@@ -17,3 +17,77 @@
 #pragma once
 
 #include "GPU/GPUCommandList.h"
+
+#include "VulkanDeviceChild.h"
+
+#include <vector>
+
+class VulkanContext;
+
+/** Shared implementation details between Vulkan command list classes. */
+template <typename T>
+class VulkanCommandList : public VulkanDeviceChild<T>
+{
+protected:
+                                    VulkanCommandList();
+
+protected:
+    VulkanContext&                  GetVulkanContext() const;
+
+    /**
+     * Get the handle for the current command buffer. If one is not currently
+     * in progress, a new one will be allocated and begun.
+     */
+    VkCommandBuffer                 GetCommandBuffer();
+
+    void                            SubmitImpl(const VkCommandBuffer inBuffer) const;
+
+    void                            EndImpl();
+    void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
+                                                       const size_t           inCount);
+
+private:
+    T&                              GetT()          { return static_cast<T&>(*this); }
+    const T&                        GetT() const    { return static_cast<const T&>(*this); }
+
+private:
+    VkCommandBuffer                 mCommandBuffer;
+
+    /** Flattened array of completed command buffers, in submission order. */
+    std::vector<VkCommandBuffer>    mCommandBuffers;
+
+};
+
+class VulkanGraphicsCommandList final : public GPUGraphicsCommandList,
+                                        public VulkanCommandList<VulkanGraphicsCommandList>
+{
+public:
+                                    VulkanGraphicsCommandList(VulkanContext&                      inContext,
+                                                              const GPUGraphicsCommandList* const inParent,
+                                                              const GPURenderPass&                inRenderPass);
+
+                                    ~VulkanGraphicsCommandList() {}
+
+public:
+    VkRenderPass                    GetVulkanRenderPass() const     { return mVulkanRenderPass; }
+    VkFramebuffer                   GetFramebuffer() const          { return mFramebuffer; }
+
+    void                            BeginCommandBuffer(const VkCommandBuffer inBuffer) const;
+
+    void                            Submit(const VkCommandBuffer inBuffer) const;
+
+protected:
+    GPUCommandList*                 CreateChildImpl() override;
+
+    void                            EndImpl() override
+                                        { VulkanCommandList::EndImpl(); }
+
+    void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
+                                                       const size_t           inCount) override
+                                        { VulkanCommandList::SubmitChildrenImpl(inChildren, inCount); }
+
+private:
+    VkRenderPass                    mVulkanRenderPass;
+    VkFramebuffer                   mFramebuffer;
+
+};

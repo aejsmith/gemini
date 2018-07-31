@@ -73,8 +73,11 @@ public:
      * into a single call to this wherever possible.
      */
     virtual void                    ResourceBarrier(const GPUResourceBarrier* const inBarriers,
-                                                    const uint32_t                  inCount) = 0;
+                                                    const size_t                    inCount) = 0;
     void                            ResourceBarrier(GPUResource* const     inResource,
+                                                    const GPUResourceState inCurrentState,
+                                                    const GPUResourceState inNewState);
+    void                            ResourceBarrier(GPUResourceView* const inView,
                                                     const GPUResourceState inCurrentState,
                                                     const GPUResourceState inNewState);
 
@@ -140,19 +143,19 @@ public:
      * Create a render pass. This does not perform any work on the context,
      * rather it returns a GPUGraphicsCommandList to record the commands for
      * the pass on. Pass the command list to SubmitRenderPass() once all
-     * commands have been recorded.
+     * commands have been recorded. This will retain all views in the pass.
      */
-    GPUGraphicsCommandList*         CreateRenderPass(const GPURenderPass& inPass);
+    GPUGraphicsCommandList*         CreateRenderPass(const GPURenderPass& inRenderPass);
 
     /**
      * Submit a render pass. Passes need not be submitted in the same order
      * they were created in, however they must be submitted within the same
-     * frame as they were created.
+     * frame as they were created. This will release all views in the pass.
      */
     void                            SubmitRenderPass(GPUGraphicsCommandList* const inCmdList);
 
 protected:
-    virtual GPUGraphicsCommandList* CreateRenderPassImpl(const GPURenderPass& inPass) = 0;
+    virtual GPUGraphicsCommandList* CreateRenderPassImpl(const GPURenderPass& inRenderPass) = 0;
     virtual void                    SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList) = 0;
 
 };
@@ -179,9 +182,25 @@ inline void GPUTransferContext::ResourceBarrier(GPUResource* const     inResourc
     ResourceBarrier(&barrier, 1);
 }
 
+inline void GPUTransferContext::ResourceBarrier(GPUResourceView* const inView,
+                                                const GPUResourceState inCurrentState,
+                                                const GPUResourceState inNewState)
+{
+    GPUResourceBarrier barrier = {};
+    barrier.resource     = &inView->GetResource();
+    barrier.range        = inView->GetSubresourceRange();
+    barrier.currentState = inCurrentState;
+    barrier.newState     = inNewState;
+
+    ResourceBarrier(&barrier, 1);
+}
+
 inline GPUComputeContext::GPUComputeContext(GPUDevice& inDevice) :
     GPUTransferContext  (inDevice)
 {
+    #if ORION_BUILD_DEBUG
+        mActivePassCount = 0;
+    #endif
 }
 
 inline GPUGraphicsContext::GPUGraphicsContext(GPUDevice& inDevice) :
@@ -189,18 +208,21 @@ inline GPUGraphicsContext::GPUGraphicsContext(GPUDevice& inDevice) :
 {
 }
 
-inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURenderPass& inPass)
+inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURenderPass& inRenderPass)
 {
     #if ORION_BUILD_DEBUG
         mActivePassCount++;
-        inPass.Validate();
+        inRenderPass.Validate();
     #endif
 
-    return CreateRenderPassImpl(inPass);
+    return CreateRenderPassImpl(inRenderPass);
 }
 
 inline void GPUGraphicsContext::SubmitRenderPass(GPUGraphicsCommandList* const inCmdList)
 {
+    Assert(!inCmdList->GetParent());
+    Assert(inCmdList->GetState() == GPUCommandList::kState_Ended);
+
     SubmitRenderPassImpl(inCmdList);
 
     #if ORION_BUILD_DEBUG

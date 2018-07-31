@@ -20,8 +20,8 @@
 
 #include <deque>
 
-class VulkanCommandPool : public GPUDeviceChild,
-                          public VulkanDeviceChild<VulkanCommandPool>
+class VulkanCommandPool final : public GPUDeviceChild,
+                                public VulkanDeviceChild<VulkanCommandPool>
 {
 public:
                                 VulkanCommandPool(VulkanDevice&  inDevice,

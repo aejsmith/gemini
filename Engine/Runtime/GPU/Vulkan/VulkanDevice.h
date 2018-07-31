@@ -88,10 +88,10 @@ public:
     /**
      * Get a Vulkan render pass and framebuffer object matching the given
      * render pass description from a cache. If no matching objects are found,
-     * new ones will be created.
+     * new ones will be created. Must be called from the main thread.
      */
-    void                                GetRenderPass(const GPURenderPass& inPass,
-                                                      VkRenderPass&        outRenderPass,
+    void                                GetRenderPass(const GPURenderPass& inRenderPass,
+                                                      VkRenderPass&        outVulkanRenderPass,
                                                       VkFramebuffer&       outFramebuffer);
 
     /**

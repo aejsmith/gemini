@@ -396,7 +396,7 @@ VkFence VulkanDevice::AllocateFence()
 }
 
 void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
-                                 VkRenderPass&        outRenderPass,
+                                 VkRenderPass&        outVulkanRenderPass,
                                  VkFramebuffer&       outFramebuffer)
 {
     VulkanRenderPassKey passKey(inPass);
@@ -420,6 +420,8 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
 
                 if (result)
                 {
+                    createInfo.pAttachments = attachments;
+
                     VkImageLayout layout;
 
                     switch (inSrcAttachment.state)
@@ -507,33 +509,26 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
         VkFramebufferCreateInfo createInfo = {};
         VkImageView imageViews[kMaxRenderPassColourAttachments + 1];
 
-        auto AddAttachment =
-            [&] (const GPUResourceView* const inView)
-            {
-                const auto view = static_cast<const VulkanResourceView*>(inView);
-
-                if (view)
-                {
-                    if (createInfo.attachmentCount == 0)
-                    {
-                        /* Get the dimensions. All attachments should match. */
-                        const auto& texture = static_cast<const GPUTexture&>(view->GetResource());
-
-                        createInfo.width = texture.GetMipWidth(view->GetMipOffset());
-                        createInfo.height = texture.GetMipHeight(view->GetMipOffset());
-                        createInfo.layers = view->GetElementCount();
-                    }
-
-                    imageViews[createInfo.attachmentCount++] = view->GetImageView();
-                }
-            };
-
         for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
         {
-            AddAttachment(inPass.colour[i].view);
+            const auto view = static_cast<const VulkanResourceView*>(inPass.colour[i].view);
+
+            if (view)
+            {
+                imageViews[createInfo.attachmentCount++] = view->GetImageView();
+            }
         }
 
-        AddAttachment(inPass.depthStencil.view);
+        const auto view = static_cast<const VulkanResourceView*>(inPass.depthStencil.view);
+
+        if (view)
+        {
+            imageViews[createInfo.attachmentCount++] = view->GetImageView();
+        }
+
+        inPass.GetDimensions(createInfo.width,
+                             createInfo.height,
+                             createInfo.layers);
 
         createInfo.sType        = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         createInfo.renderPass   = cachedRenderPass;
@@ -545,8 +540,8 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
                                         &cachedFramebuffer));
     }
 
-    outRenderPass  = cachedRenderPass;
-    outFramebuffer = cachedFramebuffer;
+    outVulkanRenderPass = cachedRenderPass;
+    outFramebuffer      = cachedFramebuffer;
 }
 
 void VulkanDevice::InvalidateFramebuffers(const VkImageView inView)

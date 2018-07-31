@@ -16,6 +16,7 @@
 
 #include "VulkanContext.h"
 
+#include "VulkanCommandList.h"
 #include "VulkanCommandPool.h"
 #include "VulkanDevice.h"
 #include "VulkanTexture.h"
@@ -207,15 +208,15 @@ void VulkanContext::EndPresent(GPUSwapchain& inSwapchain)
 }
 
 void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
-                                    const uint32_t                  inCount)
+                                    const size_t                    inCount)
 {
-    Assert(inCount);
+    Assert(inCount > 0);
 
     /* Determine how many barrier structures we're going to need. */
     uint32_t imageBarrierCount  = 0;
     uint32_t bufferBarrierCount = 0;
 
-    for (uint32_t i = 0; i < inCount; i++)
+    for (size_t i = 0; i < inCount; i++)
     {
         Assert(inBarriers[i].resource);
         inBarriers[i].resource->ValidateBarrier(inBarriers[i]);
@@ -239,7 +240,7 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
     VkPipelineStageFlags srcStageMask = 0;
     VkPipelineStageFlags dstStageMask = 0;
 
-    for (uint32_t i = 0; i < inCount; i++)
+    for (size_t i = 0; i < inCount; i++)
     {
         VkAccessFlags srcAccessMask  = 0;
         VkAccessFlags dstAccessMask  = 0;
@@ -466,12 +467,18 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
     }
 }
 
-GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& inPass)
+GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& inRenderPass)
 {
-    return nullptr;
+    // TODO: Command lists should be allocated with a temporary frame allocator
+    // that just gets cleared in one go at the end of frame. Need to make sure
+    // destruction gets done properly to release the views. Also should be
+    // used for storage within the command lists e.g. mCommandBuffers.
+    return new VulkanGraphicsCommandList(*this, nullptr, inRenderPass);
 }
 
 void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList)
 {
-
+    auto cmdList = static_cast<VulkanGraphicsCommandList*>(inCmdList);
+    cmdList->Submit(GetCommandBuffer());
+    delete cmdList;
 }

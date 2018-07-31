@@ -18,6 +18,26 @@
 
 #include "GPU/GPUTexture.h"
 
+void GPURenderPass::GetDimensions(uint32_t& outWidth,
+                                  uint32_t& outHeight,
+                                  uint32_t& outLayers) const
+{
+    /* All dimensions should match so just use the first attachment we find. */
+    GPUResourceView* view = this->depthStencil.view;
+    for (size_t i = 0; !view && i < kMaxRenderPassColourAttachments; i++)
+    {
+        view = this->colour[i].view;
+    }
+
+    Assert(view);
+
+    const auto& texture = static_cast<const GPUTexture&>(view->GetResource());
+
+    outWidth  = texture.GetMipWidth(view->GetMipOffset());
+    outHeight = texture.GetMipHeight(view->GetMipOffset());
+    outLayers = view->GetElementCount();
+}
+
 #if ORION_BUILD_DEBUG
 
 void GPURenderPass::Validate() const

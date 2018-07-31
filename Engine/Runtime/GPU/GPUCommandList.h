@@ -22,6 +22,10 @@
 #include <atomic>
 #include <thread>
 
+class GPUContext;
+class GPUComputeContext;
+class GPUGraphicsContext;
+
 /**
  * This class and its derived classes provide the interface for recording
  * commands within a render or compute pass (i.e. draw/dispatch calls). Usage
@@ -76,10 +80,23 @@
 class GPUCommandList : public GPUDeviceChild
 {
 protected:
-                                GPUCommandList(GPUDevice& inDevice);
+                                GPUCommandList(GPUContext&                 inContext,
+                                               const GPUCommandList* const inParent);
                                 ~GPUCommandList() {}
 
 public:
+    enum State
+    {
+        kState_Created,
+        kState_Begun,
+        kState_Ended,
+    };
+
+public:
+    GPUContext&                 GetContext() const  { return mContext; }
+    const GPUCommandList*       GetParent() const   { return mParent; }
+    State                       GetState() const    { return mState; }
+
     /**
      * Begin the command list. This must be called before recording any
      * commands. This ties the command list to the calling thread. The reason
@@ -115,39 +132,34 @@ public:
      * found in the array.
      */
     void                        SubmitChildren(GPUCommandList** const inChildren,
-                                               const uint32_t         inCount);
+                                               const size_t           inCount);
 
-protected:
-    enum State
-    {
-        kState_Created,
-        kState_Begun,
-        kState_Ended,
-    };
-
-protected:
     /**
      * Validate that the command list is in the correct state and that it is
      * being used from the correct thread.
      */
     void                        ValidateCommand() const;
 
+protected:
     virtual void                BeginImpl() {}
     virtual void                EndImpl() {}
 
     virtual GPUCommandList*     CreateChildImpl() = 0;
 
     virtual void                SubmitChildrenImpl(GPUCommandList** const inChildren,
-                                                   const uint32_t         inCount) = 0;
+                                                   const size_t           inCount) = 0;
 
 protected:
+    GPUContext&                 mContext;
+    const GPUCommandList* const mParent;
+
     /** State of the command list. */
     State                       mState;
 
     #if ORION_BUILD_DEBUG
 
     std::thread::id             mOwningThread;
-    std::atomic<uint32_t>       mActiveChildCount;
+    std::atomic<size_t>         mActiveChildCount;
 
     #endif
 };
@@ -155,10 +167,18 @@ protected:
 class GPUGraphicsCommandList : public GPUCommandList
 {
 protected:
-                                GPUGraphicsCommandList(GPUDevice& inDevice);
-                                ~GPUGraphicsCommandList() {}
+                                GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
+                                                       const GPUGraphicsCommandList* const inParent,
+                                                       const GPURenderPass&                inRenderPass);
+                                ~GPUGraphicsCommandList();
 
 public:
+    const GPURenderPass&        GetRenderPass() const   { return mRenderPass; }
+    GPUResourceView*            GetColourView(const uint32_t inIndex) const
+                                    { return mRenderPass.colour[inIndex].view; }
+    GPUResourceView*            GetDepthStencilView() const
+                                    { return mRenderPass.depthStencil.view; }
+
     /**
      * See GPUCommandList::CreateChild(). This is the same but returns a
      * GPUGraphicsCommandList instead.
@@ -166,12 +186,16 @@ public:
     GPUGraphicsCommandList*     CreateChild()
                                     { return static_cast<GPUGraphicsCommandList*>(GPUCommandList::CreateChild()); }
 
+protected:
+    const GPURenderPass         mRenderPass;
+
 };
 
 class GPUComputeCommandList : public GPUCommandList
 {
 protected:
-                                GPUComputeCommandList(GPUDevice& inDevice);
+                                GPUComputeCommandList(GPUComputeContext&                 inContext,
+                                                      const GPUComputeCommandList* const inParent);
                                 ~GPUComputeCommandList() {}
 
 public:
@@ -190,11 +214,15 @@ inline void GPUCommandList::Begin()
 
     BeginImpl();
     mState = kState_Begun;
+
+    #if ORION_BUILD_DEBUG
+        mOwningThread = std::this_thread::get_id();
+    #endif
 }
 
 inline void GPUCommandList::End()
 {
-    Assert(mState == kState_Begun);
+    ValidateCommand();
     Assert(mActiveChildCount.load(std::memory_order_relaxed) == 0);
 
     EndImpl();
@@ -217,9 +245,14 @@ inline GPUCommandList* GPUCommandList::CreateChild()
 }
 
 inline void GPUCommandList::SubmitChildren(GPUCommandList** const inChildren,
-                                           const uint32_t         inCount)
+                                           const size_t           inCount)
 {
     #if ORION_BUILD_DEBUG
+        for (size_t i = 0; i < inCount; i++)
+        {
+            Assert(inChildren[i]->GetState() == GPUCommandList::kState_Ended);
+        }
+
         mActiveChildCount.fetch_sub(inCount, std::memory_order_relaxed);
     #endif
 
