@@ -1,0 +1,7 @@
+Import('env')
+
+objects = map(env.Object, [
+    'ShaderCompiler.cpp',
+])
+
+Return('objects')

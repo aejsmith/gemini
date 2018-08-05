@@ -26,6 +26,8 @@
 #include "GPU/GPUDevice.h"
 #include "GPU/GPUSwapchain.h"
 
+#include "Render/ShaderCompiler.h"
+
 #include <SDL.h>
 
 SINGLETON_IMPL(Engine);
@@ -101,6 +103,20 @@ void Engine::Run()
     GPUGraphicsContext& presentContext = GPUGraphicsContext::Get();
 
     GPUSwapchain& swapchain = *MainWindow::Get().GetSwapchain();
+
+    bool isCompiled;
+
+    SPIRVCode vertexShader;
+    isCompiled = ShaderCompiler::CompileFile("Engine/Shaders/TestVert.glsl",
+                                             kGPUShaderStage_Vertex,
+                                             vertexShader);
+    Assert(isCompiled);
+
+    SPIRVCode fragmentShader;
+    isCompiled = ShaderCompiler::CompileFile("Engine/Shaders/TestFrag.glsl",
+                                             kGPUShaderStage_Fragment,
+                                             fragmentShader);
+    Assert(isCompiled);
 
     while (true)
     {

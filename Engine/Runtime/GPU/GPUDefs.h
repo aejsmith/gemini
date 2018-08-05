@@ -42,7 +42,7 @@ enum GPUResourceUsage : uint32_t
 
 DEFINE_ENUM_BITWISE_OPS(GPUResourceUsage);
 
-enum GPUResourceType
+enum GPUResourceType : uint8_t
 {
     kGPUResourceType_Buffer,
     kGPUResourceType_Texture1D,
@@ -64,7 +64,7 @@ enum GPUTextureFlags : uint32_t
 
 DEFINE_ENUM_BITWISE_OPS(GPUTextureFlags);
 
-enum GPUResourceViewType
+enum GPUResourceViewType : uint8_t
 {
     /** Untyped view of a buffer. */
     kGPUResourceViewType_Buffer,
@@ -272,4 +272,11 @@ enum GPUStoreOp : uint8_t
      * is never needed again outside the pass.
      */
     kGPUStoreOp_Discard,
+};
+
+enum GPUShaderStage : uint8_t
+{
+    kGPUShaderStage_Vertex,
+    kGPUShaderStage_Fragment,
+    kGPUShaderStage_Compute,
 };

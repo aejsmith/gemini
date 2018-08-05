@@ -157,3 +157,6 @@ extern void LogImpl(const LogLevel    inLevel,
 
 #define LogError(inFormat, ...) \
     LogImpl(kLogLevel_Error, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+
+#define LogMessage(inLevel, inFormat, ...) \
+    LogImpl(inLevel, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
