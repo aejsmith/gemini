@@ -1,0 +1,76 @@
+import sys
+
+Import('manager')
+
+env = manager.CreateEnvironment()
+
+env['CPPPATH'].append('Repo')
+
+if env['PLATFORM'] == 'Linux':
+    env['CCFLAGS'] += [
+        '-Wno-reorder',
+        '-Wno-logical-op-parentheses',
+        '-Wno-unused-variable',
+        '-Wno-tautological-constant-out-of-range-compare',
+        '-Wno-unknown-pragmas',
+        '-Wno-missing-field-initializers',
+        '-Wno-sign-compare',
+        '-Wno-ignored-qualifiers',
+    ]
+
+objects = []
+
+if env['PLATFORM'] == 'Win32':
+    objects += map(env.Object, [
+        'Repo/glslang/OSDependent/Windows/ossource.cpp',
+    ])
+else:
+    objects += map(env.Object, [
+        'Repo/glslang/OSDependent/Unix/ossource.cpp',
+    ])
+
+objects += map(env.Object, [
+    'Repo/glslang/MachineIndependent/Constant.cpp',
+    'Repo/glslang/MachineIndependent/InfoSink.cpp',
+    'Repo/glslang/MachineIndependent/Initialize.cpp',
+    'Repo/glslang/MachineIndependent/IntermTraverse.cpp',
+    'Repo/glslang/MachineIndependent/Intermediate.cpp',
+    'Repo/glslang/MachineIndependent/ParseHelper.cpp',
+    'Repo/glslang/MachineIndependent/ParseContextBase.cpp',
+    'Repo/glslang/MachineIndependent/PoolAlloc.cpp',
+    'Repo/glslang/MachineIndependent/RemoveTree.cpp',
+    'Repo/glslang/MachineIndependent/Scan.cpp',
+    'Repo/glslang/MachineIndependent/ShaderLang.cpp',
+    'Repo/glslang/MachineIndependent/SymbolTable.cpp',
+    'Repo/glslang/MachineIndependent/Versions.cpp',
+    'Repo/glslang/MachineIndependent/attribute.cpp',
+    'Repo/glslang/MachineIndependent/glslang_tab.cpp',
+    'Repo/glslang/MachineIndependent/intermOut.cpp',
+    'Repo/glslang/MachineIndependent/iomapper.cpp',
+    'Repo/glslang/MachineIndependent/limits.cpp',
+    'Repo/glslang/MachineIndependent/linkValidate.cpp',
+    'Repo/glslang/MachineIndependent/parseConst.cpp',
+    'Repo/glslang/MachineIndependent/reflection.cpp',
+    'Repo/glslang/MachineIndependent/preprocessor/Pp.cpp',
+    'Repo/glslang/MachineIndependent/preprocessor/PpAtom.cpp',
+    'Repo/glslang/MachineIndependent/preprocessor/PpContext.cpp',
+    'Repo/glslang/MachineIndependent/preprocessor/PpScanner.cpp',
+    'Repo/glslang/MachineIndependent/preprocessor/PpTokens.cpp',
+    'Repo/glslang/MachineIndependent/propagateNoContraction.cpp',
+    'Repo/glslang/GenericCodeGen/CodeGen.cpp',
+    'Repo/glslang/GenericCodeGen/Link.cpp',
+    'Repo/OGLCompilersDLL/InitializeDll.cpp',
+    'Repo/SPIRV/GlslangToSpv.cpp',
+    'Repo/SPIRV/InReadableOrder.cpp',
+    'Repo/SPIRV/Logger.cpp',
+    'Repo/SPIRV/SpvBuilder.cpp',
+    'Repo/SPIRV/SPVRemapper.cpp',
+    'Repo/SPIRV/doc.cpp',
+    'Repo/SPIRV/disassemble.cpp',
+    'Repo/StandAlone/ResourceLimits.cpp',
+])
+
+manager.AddComponent(
+    name = '3rdParty/glslang',
+    includePath = 'Include',
+    objects = objects)

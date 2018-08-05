@@ -13,6 +13,7 @@
                 "${workspaceFolder}/Engine/3rdParty/xxHash/Include",
                 "${workspaceFolder}/Engine/3rdParty/glm/Include",
                 "${workspaceFolder}/Engine/3rdParty/glm/Repo",
+                "${workspaceFolder}/Engine/3rdParty/glslang/Include",
                 "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
                 "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
                 "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",

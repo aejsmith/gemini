@@ -39,6 +39,7 @@ SConscript(dirs = ['Tools'])
 
 depends = [
     'Engine/Core',
+    '3rdParty/glslang',
     '3rdParty/RapidJSON',
     '3rdParty/VulkanMemoryAllocator',
 ]

@@ -1,5 +1,6 @@
 SConscript(dirs = [
     'glm',
+    'glslang',
     'Mustache',
     'RapidJSON',
     'VulkanMemoryAllocator',
