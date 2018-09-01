@@ -104,19 +104,19 @@ void Engine::Run()
 
     GPUSwapchain& swapchain = *MainWindow::Get().GetSwapchain();
 
-    bool isCompiled;
+    auto CreateShader =
+        [] (Path inPath, const GPUShaderStage inStage) -> GPUShaderPtr
+        {
+            GPUShaderCode code;
+            bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
 
-    SPIRVCode vertexShader;
-    isCompiled = ShaderCompiler::CompileFile("Engine/Shaders/TestVert.glsl",
-                                             kGPUShaderStage_Vertex,
-                                             vertexShader);
-    Assert(isCompiled);
+            Assert(isCompiled);
 
-    SPIRVCode fragmentShader;
-    isCompiled = ShaderCompiler::CompileFile("Engine/Shaders/TestFrag.glsl",
-                                             kGPUShaderStage_Fragment,
-                                             fragmentShader);
-    Assert(isCompiled);
+            return GPUDevice::Get().CreateShader(inStage, std::move(code));
+        };
+
+    GPUShaderPtr vertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
+    GPUShaderPtr fragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
 
     while (true)
     {

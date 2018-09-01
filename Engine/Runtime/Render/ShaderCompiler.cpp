@@ -266,17 +266,17 @@ void ShaderCompiler::Compile()
     Assert(intermediate);
 
     spv::SpvBuildLogger logger;
-    glslang::GlslangToSpv(*intermediate, mSPIRV, &logger);
+    glslang::GlslangToSpv(*intermediate, mCode, &logger);
 
     if (!LogSPIRVMessages(sourcePath, logger))
     {
-        mSPIRV.clear();
+        mCode.clear();
     }
 }
 
 bool ShaderCompiler::CompileFile(Path                 inPath,
                                  const GPUShaderStage inStage,
-                                 SPIRVCode&           outSPIRV)
+                                 GPUShaderCode&       outCode)
 {
     ShaderCompiler::Options options;
     options.path  = std::move(inPath);
@@ -287,7 +287,7 @@ bool ShaderCompiler::CompileFile(Path                 inPath,
 
     if (compiler.IsCompiled())
     {
-        outSPIRV = compiler.MoveSPIRV();
+        outCode = compiler.MoveCode();
         return true;
     }
     else
@@ -298,7 +298,7 @@ bool ShaderCompiler::CompileFile(Path                 inPath,
 
 bool ShaderCompiler::CompileString(std::string          inSource,
                                    const GPUShaderStage inStage,
-                                   SPIRVCode&           outSPIRV)
+                                   GPUShaderCode&       outCode)
 {
     ShaderCompiler::Options options;
     options.source = std::move(inSource);
@@ -309,7 +309,7 @@ bool ShaderCompiler::CompileString(std::string          inSource,
 
     if (compiler.IsCompiled())
     {
-        outSPIRV = compiler.MoveSPIRV();
+        outCode = compiler.MoveCode();
         return true;
     }
     else

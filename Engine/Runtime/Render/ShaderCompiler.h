@@ -57,22 +57,22 @@ public:
     /** Compile the shader. Use IsCompiled() to check the result. */
     void                        Compile();
 
-    bool                        IsCompiled() const      { return !mSPIRV.empty(); }
+    bool                        IsCompiled() const      { return !mCode.empty(); }
 
     /** After compilation, gets the generated SPIR-V code. */
-    const SPIRVCode&            GetSPIRV() const        { Assert(IsCompiled()); return mSPIRV; }
-    SPIRVCode                   MoveSPIRV() const       { Assert(IsCompiled()); return std::move(mSPIRV); }
+    const GPUShaderCode&        GetCode() const         { Assert(IsCompiled()); return mCode; }
+    GPUShaderCode               MoveCode() const        { Assert(IsCompiled()); return std::move(mCode); }
 
     /** After compilation, gets a list of source files referenced by the shader. */
     const SourceList&           GetSourceFiles() const  { return mSourceFiles; }
 
     static bool                 CompileFile(Path                 inPath,
                                             const GPUShaderStage inStage,
-                                            SPIRVCode&           outSPIRV);
+                                            GPUShaderCode&       outCode);
 
     static bool                 CompileString(std::string          inSource,
                                               const GPUShaderStage inStage,
-                                              SPIRVCode&           outSPIRV);
+                                              GPUShaderCode&       outCode);
 
 private:
     class SourceIncluder;
@@ -83,7 +83,7 @@ private:
 
 private:
     Options                     mOptions;
-    SPIRVCode                   mSPIRV;
+    GPUShaderCode               mCode;
     SourceList                  mSourceFiles;
 
 };

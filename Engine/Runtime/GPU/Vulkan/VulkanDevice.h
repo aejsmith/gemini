@@ -45,6 +45,9 @@ public:
     GPUResourceViewPtr                  CreateResourceView(GPUResource&               inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 
+    GPUShaderPtr                        CreateShader(const GPUShaderStage inStage,
+                                                     GPUShaderCode        inCode) override;
+
 protected:
     void                                EndFrameImpl() override;
 

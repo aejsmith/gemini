@@ -14,6 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "GPU/GPUShader.h"
 
-#include "GPU/GPUDefs.h"
+GPUShader::GPUShader(GPUDevice&           inDevice,
+                     const GPUShaderStage inStage,
+                     GPUShaderCode        inCode) :
+    GPUObject   (inDevice),
+    mStage      (inStage),
+    mCode       (std::move(inCode))
+{
+}
+
+GPUShader::~GPUShader()
+{
+}

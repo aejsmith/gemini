@@ -21,6 +21,7 @@
 #include "VulkanMemoryManager.h"
 #include "VulkanRenderPass.h"
 #include "VulkanResourceView.h"
+#include "VulkanShader.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
 #include "VulkanUtils.h"
@@ -301,6 +302,12 @@ GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource&               i
                                                     const GPUResourceViewDesc& inDesc)
 {
     return new VulkanResourceView(inResource, inDesc);
+}
+
+GPUShaderPtr VulkanDevice::CreateShader(const GPUShaderStage inStage,
+                                        GPUShaderCode        inCode)
+{
+    return new VulkanShader(*this, inStage, std::move(inCode));
 }
 
 void VulkanDevice::EndFrameImpl()

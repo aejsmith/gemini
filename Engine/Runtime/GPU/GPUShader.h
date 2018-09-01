@@ -16,4 +16,27 @@
 
 #pragma once
 
-#include "GPU/GPUDefs.h"
+#include "Core/String.h"
+
+#include "GPU/GPUObject.h"
+
+class GPUShader : public GPUObject
+{
+protected:
+                                GPUShader(GPUDevice&           inDevice,
+                                          const GPUShaderStage inStage,
+                                          GPUShaderCode        inCode);
+
+                                ~GPUShader();
+
+public:
+    GPUShaderStage              GetStage() const    { return mStage; }
+    const GPUShaderCode&        GetCode() const     { return mCode; }
+
+private:
+    const GPUShaderStage        mStage;
+    const GPUShaderCode         mCode;
+
+};
+
+using GPUShaderPtr = ReferencePtr<GPUShader>;

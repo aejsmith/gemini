@@ -8,6 +8,7 @@ objects = map(env.Object, [
     'GPURenderPass.cpp',
     'GPUResource.cpp',
     'GPUResourceView.cpp',
+    'GPUShader.cpp',
     'GPUSwapchain.cpp',
     'GPUTexture.cpp',
 
@@ -20,6 +21,7 @@ objects = map(env.Object, [
     'Vulkan/VulkanFormat.cpp',
     'Vulkan/VulkanMemoryManager.cpp',
     'Vulkan/VulkanResourceView.cpp',
+    'Vulkan/VulkanShader.cpp',
     'Vulkan/VulkanSwapchain.cpp',
     'Vulkan/VulkanTexture.cpp',
 

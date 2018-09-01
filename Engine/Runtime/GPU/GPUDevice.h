@@ -17,6 +17,7 @@
 #pragma once
 
 #include "GPU/GPUResourceView.h"
+#include "GPU/GPUShader.h"
 #include "GPU/GPUTexture.h"
 
 #include "Core/Singleton.h"
@@ -52,6 +53,9 @@ public:
 
     virtual GPUResourceViewPtr  CreateResourceView(GPUResource&               inResource,
                                                    const GPUResourceViewDesc& inDesc) = 0;
+
+    virtual GPUShaderPtr        CreateShader(const GPUShaderStage inStage,
+                                             GPUShaderCode        inCode) = 0;
 
     /**
      * Mark the end of a frame. Should be called after the last work submission

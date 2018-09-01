@@ -20,6 +20,8 @@
 #include "Core/PixelFormat.h"
 #include "Core/Utility.h"
 
+#include <vector>
+
 class GPUResource;
 
 /** Maximum number of colour attachments in a render pass. */
@@ -280,3 +282,6 @@ enum GPUShaderStage : uint8_t
     kGPUShaderStage_Fragment,
     kGPUShaderStage_Compute,
 };
+
+/** Array containing SPIR-V shader code. */
+using GPUShaderCode = std::vector<uint32_t>;

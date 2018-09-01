@@ -16,4 +16,23 @@
 
 #pragma once
 
-#include "GPU/GPUDefs.h"
+#include "GPU/GPUShader.h"
+
+#include "VulkanDeviceChild.h"
+
+class VulkanShader final : public GPUShader,
+                           public VulkanDeviceChild<VulkanShader>
+{
+public:
+                            VulkanShader(VulkanDevice&        inDevice,
+                                         const GPUShaderStage inStage,
+                                         GPUShaderCode        inCode);
+
+                            ~VulkanShader();
+
+    VkShaderModule          GetHandle() const   { return mHandle; }
+
+private:
+    VkShaderModule          mHandle;
+
+};
