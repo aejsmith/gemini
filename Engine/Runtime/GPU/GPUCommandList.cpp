@@ -33,8 +33,11 @@ GPUCommandList::GPUCommandList(GPUContext&                 inContext,
 GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
                                                const GPUGraphicsCommandList* const inParent,
                                                const GPURenderPass&                inRenderPass) :
-    GPUCommandList  (inContext, inParent),
-    mRenderPass     (inRenderPass)
+    GPUCommandList      (inContext, inParent),
+    mRenderPass         (inRenderPass),
+    mRenderTargetState  ((inParent)
+                             ? inParent->GetRenderTargetState()
+                             : mRenderPass.GetRenderTargetState())
 {
     /* Add a reference to each view in the pass. Only the top level command
      * list in a pass needs to do this - it will be alive as long as any

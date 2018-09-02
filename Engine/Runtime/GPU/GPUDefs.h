@@ -285,3 +285,76 @@ enum GPUShaderStage : uint8_t
 
 /** Array containing SPIR-V shader code. */
 using GPUShaderCode = std::vector<uint32_t>;
+
+enum GPUBlendFactor : uint8_t
+{
+    kGPUBlendFactor_Zero,
+    kGPUBlendFactor_One,
+    kGPUBlendFactor_SrcColour,
+    kGPUBlendFactor_OneMinusSrcColour,
+    kGPUBlendFactor_DstColour,
+    kGPUBlendFactor_OneMinusDstColour,
+    kGPUBlendFactor_SrcAlpha,
+    kGPUBlendFactor_OneMinusSrcAlpha,
+    kGPUBlendFactor_DstAlpha,
+    kGPUBlendFactor_OneMinusDstAlpha,
+    kGPUBlendFactor_ConstantColour,
+    kGPUBlendFactor_OneMinusConstantColour,
+    kGPUBlendFactor_ConstantAlpha,
+    kGPUBlendFactor_OneMinusConstantAlpha,
+    kGPUBlendFactor_SrcAlphaSaturate,
+};
+
+enum GPUBlendOp : uint8_t
+{
+    kGPUBlendOp_Add,
+    kGPUBlendOp_Subtract,
+    kGPUBlendOp_ReverseSubtract,
+    kGPUBlendOp_Min,
+    kGPUBlendOp_Max,
+};
+
+enum GPUCompareOp : uint8_t
+{
+    kGPUCompareOp_Never,
+    kGPUCompareOp_Less,
+    kGPUCompareOp_Equal,
+    kGPUCompareOp_LessOrEqual,
+    kGPUCompareOp_Greater,
+    kGPUCompareOp_NotEqual,
+    kGPUCompareOp_GreaterOrEqual,
+    kGPUCompareOp_Always,
+};
+
+enum GPUStencilOp : uint8_t
+{
+    kGPUStencilOp_Keep,
+    kGPUStencilOp_Zero,
+    kGPUStencilOp_Replace,
+    kGPUStencilOp_IncrementAndClamp,
+    kGPUStencilOp_DecrementAndClamp,
+    kGPUStencilOp_Invert,
+    kGPUStencilOp_IncrementAndWrap,
+    kGPUStencilOp_DecrementAndWrap,
+};
+
+enum GPUPolygonMode : uint8_t
+{
+    kGPUPolygonMode_Fill,
+    kGPUPolygonMode_Line,
+    kGPUPolygonMode_Point,
+};
+
+enum GPUCullMode : uint8_t
+{
+    kGPUCullMode_Back,
+    kGPUCullMode_Front,
+    kGPUCullMode_Both,
+    kGPUCullMode_None,
+};
+
+enum GPUFrontFace : uint8_t
+{
+    kGPUFrontFace_CounterClockwise,
+    kGPUFrontFace_Clockwise,
+};

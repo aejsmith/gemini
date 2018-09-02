@@ -17,6 +17,7 @@
 #pragma once
 
 #include "GPU/GPUResourceView.h"
+#include "GPU/GPUState.h"
 
 /**
  * Structure defining a render pass. Defines the set of attachments that will
@@ -102,6 +103,9 @@ public:
     void                        GetDimensions(uint32_t& outWidth,
                                               uint32_t& outHeight,
                                               uint32_t& outLayers) const;
+
+    /** Returns a render target state matching this pass. */
+    GPURenderTargetStateRef     GetRenderTargetState() const;
 
     #if ORION_BUILD_DEBUG
 

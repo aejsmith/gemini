@@ -38,6 +38,26 @@ void GPURenderPass::GetDimensions(uint32_t& outWidth,
     outLayers = view->GetElementCount();
 }
 
+GPURenderTargetStateRef GPURenderPass::GetRenderTargetState() const
+{
+    GPURenderTargetStateDesc desc;
+
+    for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
+    {
+        if (this->colour[i].view)
+        {
+            desc.colour[i] = this->colour[i].view->GetFormat();
+        }
+    }
+
+    if (this->depthStencil.view)
+    {
+        desc.depthStencil = this->depthStencil.view->GetFormat();
+    }
+
+    return GPURenderTargetState::Get(desc);
+}
+
 #if ORION_BUILD_DEBUG
 
 void GPURenderPass::Validate() const

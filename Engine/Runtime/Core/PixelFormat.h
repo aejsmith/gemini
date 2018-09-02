@@ -24,7 +24,7 @@ public:
     enum Impl
     {
         /** Unknown format. */
-        kUnknown,
+        kUnknown = 0,
 
         /**
          * Colour formats. Note these are all given in the order of elements in

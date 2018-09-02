@@ -9,6 +9,7 @@ objects = map(env.Object, [
     'GPUResource.cpp',
     'GPUResourceView.cpp',
     'GPUShader.cpp',
+    'GPUState.cpp',
     'GPUSwapchain.cpp',
     'GPUTexture.cpp',
 

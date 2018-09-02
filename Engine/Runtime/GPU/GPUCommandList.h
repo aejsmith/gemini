@@ -80,9 +80,9 @@ class GPUGraphicsContext;
 class GPUCommandList : public GPUDeviceChild
 {
 protected:
-                                GPUCommandList(GPUContext&                 inContext,
-                                               const GPUCommandList* const inParent);
-                                ~GPUCommandList() {}
+                                    GPUCommandList(GPUContext&                 inContext,
+                                                   const GPUCommandList* const inParent);
+                                    ~GPUCommandList() {}
 
 public:
     enum State
@@ -93,9 +93,9 @@ public:
     };
 
 public:
-    GPUContext&                 GetContext() const  { return mContext; }
-    const GPUCommandList*       GetParent() const   { return mParent; }
-    State                       GetState() const    { return mState; }
+    GPUContext&                     GetContext() const  { return mContext; }
+    const GPUCommandList*           GetParent() const   { return mParent; }
+    State                           GetState() const    { return mState; }
 
     /**
      * Begin the command list. This must be called before recording any
@@ -104,14 +104,14 @@ public:
      * created from one thread (usually the main thread), and then passed off
      * to another thread to do the actual work.
      */
-    void                        Begin();
+    void                            Begin();
 
     /**
      * End the command list. After this is called, no more commands can be
      * recorded. This must be called before submitting the command list to its
      * parent.
      */
-    void                        End();
+    void                            End();
 
     /**
      * Create a new child command list. A child command list is entirely
@@ -123,7 +123,7 @@ public:
      * Begin() has been called. It is the only method in this class for which
      * this is the case.
      */
-    GPUCommandList*             CreateChild();
+    GPUCommandList*                 CreateChild();
 
     /**
      * Submit an array of child command lists. These will be ordered after any
@@ -131,35 +131,35 @@ public:
      * within the children will be performed in the order in which they are
      * found in the array.
      */
-    void                        SubmitChildren(GPUCommandList** const inChildren,
-                                               const size_t           inCount);
+    void                            SubmitChildren(GPUCommandList** const inChildren,
+                                                   const size_t           inCount);
 
     /**
      * Validate that the command list is in the correct state and that it is
      * being used from the correct thread.
      */
-    void                        ValidateCommand() const;
+    void                            ValidateCommand() const;
 
 protected:
-    virtual void                BeginImpl() {}
-    virtual void                EndImpl() {}
+    virtual void                    BeginImpl() {}
+    virtual void                    EndImpl() {}
 
-    virtual GPUCommandList*     CreateChildImpl() = 0;
+    virtual GPUCommandList*         CreateChildImpl() = 0;
 
-    virtual void                SubmitChildrenImpl(GPUCommandList** const inChildren,
-                                                   const size_t           inCount) = 0;
+    virtual void                    SubmitChildrenImpl(GPUCommandList** const inChildren,
+                                                       const size_t           inCount) = 0;
 
 protected:
-    GPUContext&                 mContext;
-    const GPUCommandList* const mParent;
+    GPUContext&                     mContext;
+    const GPUCommandList* const     mParent;
 
     /** State of the command list. */
-    State                       mState;
+    State                           mState;
 
     #if ORION_BUILD_DEBUG
 
-    std::thread::id             mOwningThread;
-    std::atomic<size_t>         mActiveChildCount;
+    std::thread::id                 mOwningThread;
+    std::atomic<size_t>             mActiveChildCount;
 
     #endif
 };
@@ -167,44 +167,47 @@ protected:
 class GPUGraphicsCommandList : public GPUCommandList
 {
 protected:
-                                GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
-                                                       const GPUGraphicsCommandList* const inParent,
-                                                       const GPURenderPass&                inRenderPass);
-                                ~GPUGraphicsCommandList();
+                                    GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
+                                                           const GPUGraphicsCommandList* const inParent,
+                                                           const GPURenderPass&                inRenderPass);
+                                    ~GPUGraphicsCommandList();
 
 public:
-    const GPURenderPass&        GetRenderPass() const   { return mRenderPass; }
-    GPUResourceView*            GetColourView(const uint32_t inIndex) const
-                                    { return mRenderPass.colour[inIndex].view; }
-    GPUResourceView*            GetDepthStencilView() const
-                                    { return mRenderPass.depthStencil.view; }
+    const GPURenderPass&            GetRenderPass() const           { return mRenderPass; }
+    GPURenderTargetStateRef         GetRenderTargetState() const    { return mRenderTargetState; }
+
+    GPUResourceView*                GetColourView(const uint32_t inIndex) const
+                                        { return mRenderPass.colour[inIndex].view; }
+    GPUResourceView*                GetDepthStencilView() const
+                                        { return mRenderPass.depthStencil.view; }
 
     /**
      * See GPUCommandList::CreateChild(). This is the same but returns a
      * GPUGraphicsCommandList instead.
      */
-    GPUGraphicsCommandList*     CreateChild()
-                                    { return static_cast<GPUGraphicsCommandList*>(GPUCommandList::CreateChild()); }
+    GPUGraphicsCommandList*         CreateChild()
+                                        { return static_cast<GPUGraphicsCommandList*>(GPUCommandList::CreateChild()); }
 
 protected:
-    const GPURenderPass         mRenderPass;
+    const GPURenderPass             mRenderPass;
+    const GPURenderTargetStateRef   mRenderTargetState;
 
 };
 
 class GPUComputeCommandList : public GPUCommandList
 {
 protected:
-                                GPUComputeCommandList(GPUComputeContext&                 inContext,
-                                                      const GPUComputeCommandList* const inParent);
-                                ~GPUComputeCommandList() {}
+                                    GPUComputeCommandList(GPUComputeContext&                 inContext,
+                                                          const GPUComputeCommandList* const inParent);
+                                    ~GPUComputeCommandList() {}
 
 public:
     /**
      * See GPUCommandList::CreateChild(). This is the same but returns a
      * GPUComputeCommandList instead.
      */
-    GPUComputeCommandList*      CreateChild()
-                                    { return static_cast<GPUComputeCommandList*>(GPUCommandList::CreateChild()); }
+    GPUComputeCommandList*          CreateChild()
+                                        { return static_cast<GPUComputeCommandList*>(GPUCommandList::CreateChild()); }
 
 };
 
