@@ -16,9 +16,12 @@
 
 #pragma once
 
+#include "Core/HashTable.h"
 #include "Core/String.h"
 
 #include "GPU/GPUObject.h"
+
+class GPUPipeline;
 
 class GPUShader : public GPUObject
 {
@@ -33,9 +36,22 @@ public:
     GPUShaderStage              GetStage() const    { return mStage; }
     const GPUShaderCode&        GetCode() const     { return mCode; }
 
+    /** Interface with GPUDevice/GPUPipeline to register pipelines to shaders. */
+    void                        AddPipeline(GPUPipeline* const inPipeline,
+                                            OnlyCalledBy<GPUDevice>);
+    void                        RemovePipeline(GPUPipeline* const inPipeline,
+                                               OnlyCalledBy<GPUPipeline>);
+
 private:
     const GPUShaderStage        mStage;
     const GPUShaderCode         mCode;
+
+    /**
+     * Pipelines which refer to this shader, to allow destruction of pipelines
+     * when the shader is destroyed. This is accessed under the guard of the
+     * device's mPipelineCacheLock.
+     */
+    HashSet<GPUPipeline*>       mPipelines;
 
 };
 

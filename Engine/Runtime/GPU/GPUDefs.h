@@ -280,7 +280,11 @@ enum GPUShaderStage : uint8_t
 {
     kGPUShaderStage_Vertex,
     kGPUShaderStage_Fragment,
+
     kGPUShaderStage_Compute,
+
+    /** Number of graphics shader stages. They are numbered from 0. */
+    kGPUShaderStage_NumGraphics = kGPUShaderStage_Fragment + 1,
 };
 
 /** Array containing SPIR-V shader code. */

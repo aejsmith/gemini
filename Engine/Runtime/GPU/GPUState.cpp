@@ -58,7 +58,6 @@ const GPUState<D>* GPUState<D>::Get(const Desc& inDesc)
 
     if (!state)
     {
-        /* Descriptor wasn't stored, add it. */
         std::unique_lock lock(mCache.lock);
 
         state = new GPUState(inDesc);

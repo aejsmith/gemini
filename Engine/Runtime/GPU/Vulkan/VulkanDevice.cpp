@@ -19,6 +19,7 @@
 #include "VulkanContext.h"
 #include "VulkanFormat.h"
 #include "VulkanMemoryManager.h"
+#include "VulkanPipeline.h"
 #include "VulkanRenderPass.h"
 #include "VulkanResourceView.h"
 #include "VulkanShader.h"
@@ -71,6 +72,16 @@ VulkanDevice::VulkanDevice() :
     //mComputeContext  = CreateContext(GetComputeQueueFamily());
     //mTransferContext = CreateContext(GetTransferQueueFamily());
 
+    /* Create a pipeline cache. TODO: Serialise this to disk on drivers that
+     * don't have their own on-disk cache. */
+    VkPipelineCacheCreateInfo cacheCreateInfo = {};
+    cacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+    VulkanCheck(vkCreatePipelineCache(GetHandle(),
+                                      &cacheCreateInfo,
+                                      nullptr,
+                                      &mDriverPipelineCache));
+
     mMemoryManager = new VulkanMemoryManager(*this);
 }
 
@@ -104,6 +115,8 @@ VulkanDevice::~VulkanDevice()
     {
         vkDestroyFence(mHandle, fence, nullptr);
     }
+
+    vkDestroyPipelineCache(GetHandle(), mDriverPipelineCache, nullptr);
 
     for (auto context : mContexts)
     {
@@ -288,14 +301,9 @@ void VulkanDevice::CreateDevice()
     #undef LOAD_VULKAN_DEVICE_FUNC
 }
 
-void VulkanDevice::CreateSwapchain(Window& inWindow)
+GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& inDesc)
 {
-    new VulkanSwapchain(*this, inWindow);
-}
-
-GPUTexturePtr VulkanDevice::CreateTexture(const GPUTextureDesc& inDesc)
-{
-    return new VulkanTexture(*this, inDesc);
+    return new VulkanPipeline(*this, inDesc);
 }
 
 GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource&               inResource,
@@ -308,6 +316,16 @@ GPUShaderPtr VulkanDevice::CreateShader(const GPUShaderStage inStage,
                                         GPUShaderCode        inCode)
 {
     return new VulkanShader(*this, inStage, std::move(inCode));
+}
+
+void VulkanDevice::CreateSwapchain(Window& inWindow)
+{
+    new VulkanSwapchain(*this, inWindow);
+}
+
+GPUTexturePtr VulkanDevice::CreateTexture(const GPUTextureDesc& inDesc)
+{
+    return new VulkanTexture(*this, inDesc);
 }
 
 void VulkanDevice::EndFrameImpl()

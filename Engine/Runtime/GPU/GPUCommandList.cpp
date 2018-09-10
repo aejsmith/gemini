@@ -78,6 +78,11 @@ GPUGraphicsCommandList::~GPUGraphicsCommandList()
     }
 }
 
+void GPUGraphicsCommandList::SetPipeline(const GPUPipelineDesc& inDesc)
+{
+    SetPipeline(GetDevice().GetPipeline(inDesc, {}));
+}
+
 GPUComputeCommandList::GPUComputeCommandList(GPUComputeContext&                 inContext,
                                              const GPUComputeCommandList* const inParent) :
     GPUCommandList (inContext, inParent)

@@ -198,3 +198,8 @@ GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
 {
     return new VulkanGraphicsCommandList(GetVulkanContext(), this, mRenderPass);
 }
+
+void VulkanGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
+{
+    
+}

@@ -16,6 +16,8 @@
 
 #include "GPU/GPUShader.h"
 
+#include "GPU/GPUDevice.h"
+
 GPUShader::GPUShader(GPUDevice&           inDevice,
                      const GPUShaderStage inStage,
                      GPUShaderCode        inCode) :
@@ -27,4 +29,26 @@ GPUShader::GPUShader(GPUDevice&           inDevice,
 
 GPUShader::~GPUShader()
 {
+    /* Removing the shader from the pipeline should trigger its destruction.
+     * That will call back into RemovePipeline(). To prevent recursion, move
+     * the pipeline set away. */
+    auto pipelines = std::move(mPipelines);
+
+    for (auto pipeline : pipelines)
+    {
+        GetDevice().DropPipeline(pipeline, {});
+    }
+}
+
+void GPUShader::AddPipeline(GPUPipeline* const inPipeline,
+                            OnlyCalledBy<GPUDevice>)
+{
+    auto ret = mPipelines.emplace(inPipeline);
+    Assert(ret.second);
+}
+
+void GPUShader::RemovePipeline(GPUPipeline* const inPipeline,
+                               OnlyCalledBy<GPUPipeline>)
+{
+    mPipelines.erase(inPipeline);
 }

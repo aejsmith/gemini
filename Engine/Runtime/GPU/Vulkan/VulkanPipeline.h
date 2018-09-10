@@ -16,29 +16,22 @@
 
 #pragma once
 
-#include "GPU/GPUDeviceChild.h"
+#include "GPU/GPUPipeline.h"
 
-#include "Core/RefCounted.h"
+#include "VulkanDeviceChild.h"
 
-/**
- * A reference counted child object of a GPUDevice.
- *
- * Most functions in the GPU layer take raw pointers/references to GPUObject-
- * derived classes. This is to avoid adding/releasing references around every
- * call. It is expected that if a object is passed to a function, then the
- * caller guarantees that a reference is held somewhere else for the duration
- * of the call.
- */
-class GPUObject : public GPUDeviceChild,
-                  public RefCounted
+class VulkanPipeline final : public GPUPipeline,
+                             public VulkanDeviceChild<VulkanPipeline>
 {
-protected:
-                            GPUObject(GPUDevice& inDevice);
-                            ~GPUObject() {}
+public:
+                            VulkanPipeline(VulkanDevice&          inDevice,
+                                           const GPUPipelineDesc& inDesc);
+
+                            ~VulkanPipeline();
+
+    VkPipeline              GetHandle() const   { return mHandle; }
+
+private:
+    VkPipeline              mHandle;
 
 };
-
-inline GPUObject::GPUObject(GPUDevice& inDevice) :
-    GPUDeviceChild (inDevice)
-{
-}

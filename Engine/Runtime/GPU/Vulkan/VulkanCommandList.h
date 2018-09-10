@@ -68,13 +68,11 @@ public:
 
                                     ~VulkanGraphicsCommandList() {}
 
+    /**
+     * GPUGraphicsCommandList methods.
+     */
 public:
-    VkRenderPass                    GetVulkanRenderPass() const     { return mVulkanRenderPass; }
-    VkFramebuffer                   GetFramebuffer() const          { return mFramebuffer; }
-
-    void                            BeginCommandBuffer(const VkCommandBuffer inBuffer) const;
-
-    void                            Submit(const VkCommandBuffer inBuffer) const;
+    void                            SetPipeline(GPUPipeline* const inPipeline) override;
 
 protected:
     GPUCommandList*                 CreateChildImpl() override;
@@ -85,6 +83,17 @@ protected:
     void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
                                                        const size_t           inCount) override
                                         { VulkanCommandList::SubmitChildrenImpl(inChildren, inCount); }
+
+    /**
+     * Internal methods.
+     */
+public:
+    VkRenderPass                    GetVulkanRenderPass() const     { return mVulkanRenderPass; }
+    VkFramebuffer                   GetFramebuffer() const          { return mFramebuffer; }
+
+    void                            BeginCommandBuffer(const VkCommandBuffer inBuffer) const;
+
+    void                            Submit(const VkCommandBuffer inBuffer) const;
 
 private:
     VkRenderPass                    mVulkanRenderPass;

@@ -16,22 +16,36 @@
 
 #pragma once
 
+#include "GPU/GPUShader.h"
 #include "GPU/GPUState.h"
 
 struct GPUPipelineDesc
 {
+    GPUShader*                  shaders[kGPUShaderStage_NumGraphics];
+
     GPUBlendStateRef            blendState;
     GPUDepthStencilStateRef     depthStencilState;
     GPURasterizerStateRef       rasterizerState;
     GPURenderTargetStateRef     renderTargetState;
 
 public:
-                                GPUPipelineDesc()
-                                    { memset(this, 0, sizeof(*this)); }
+                                GPUPipelineDesc();
+                                GPUPipelineDesc(const GPUPipelineDesc& inOther);
 
 };
 
 DEFINE_HASH_MEM_OPS(GPUPipelineDesc);
+
+inline GPUPipelineDesc::GPUPipelineDesc()
+{
+    /* Ensure that padding is cleared so we can hash the whole structure. */
+    memset(this, 0, sizeof(*this));
+}
+
+inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& inOther)
+{
+    memcpy(this, &inOther, sizeof(*this));
+}
 
 /**
  * GPU graphics pipeline state. This encapsulates the majority of the state for
@@ -58,7 +72,22 @@ class GPUPipeline : public GPUObject
 protected:
                                 GPUPipeline(GPUDevice&             inDevice,
                                             const GPUPipelineDesc& inDesc);
-                                ~GPUPipeline() {}
+                                ~GPUPipeline();
+
+public:
+    const GPUPipelineDesc&      GetDesc() const { return mDesc; }
+
+    /** Implementation detail for GPUDevice::CreatePipeline(). */
+    ReferencePtr<GPUPipeline>   CreatePtr(OnlyCalledBy<GPUDevice>);
+
+    /** Implementation detail for GPUDevice::DropPipeline(). */
+    void                        Destroy(OnlyCalledBy<GPUDevice>);
+
+protected:
+    void                        Released() override;
+
+protected:
+    const GPUPipelineDesc       mDesc;
 
 };
 

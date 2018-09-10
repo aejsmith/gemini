@@ -38,17 +38,19 @@ public:
      * GPUDevice methods.
      */
 public:
-    void                                CreateSwapchain(Window& inWindow) override;
-
-    GPUTexturePtr                       CreateTexture(const GPUTextureDesc& inDesc) override;
-
     GPUResourceViewPtr                  CreateResourceView(GPUResource&               inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 
     GPUShaderPtr                        CreateShader(const GPUShaderStage inStage,
                                                      GPUShaderCode        inCode) override;
 
+    void                                CreateSwapchain(Window& inWindow) override;
+
+    GPUTexturePtr                       CreateTexture(const GPUTextureDesc& inDesc) override;
+
 protected:
+    GPUPipeline*                        CreatePipelineImpl(const GPUPipelineDesc& inDesc) override;
+
     void                                EndFrameImpl() override;
 
     /**
@@ -63,6 +65,7 @@ public:
     const VkPhysicalDeviceProperties&   GetProperties() const           { return mProperties; }
     const VkPhysicalDeviceLimits&       GetLimits() const               { return mProperties.limits; }
     const VkPhysicalDeviceFeatures&     GetFeatures() const             { return mFeatures; }
+    VkPipelineCache                     GetDriverPipelineCache() const  { return mDriverPipelineCache; }
 
     VulkanMemoryManager&                GetMemoryManager() const        { return *mMemoryManager; }
 
@@ -133,6 +136,7 @@ private:
     uint32_t                            mGraphicsQueueFamily;
     VkPhysicalDeviceProperties          mProperties;
     VkPhysicalDeviceFeatures            mFeatures;
+    VkPipelineCache                     mDriverPipelineCache;
 
     VulkanMemoryManager*                mMemoryManager;
 

@@ -25,6 +25,9 @@
 class GPUContext;
 class GPUComputeContext;
 class GPUGraphicsContext;
+class GPUPipeline;
+
+struct GPUPipelineDesc;
 
 /**
  * This class and its derived classes provide the interface for recording
@@ -187,6 +190,18 @@ public:
      */
     GPUGraphicsCommandList*         CreateChild()
                                         { return static_cast<GPUGraphicsCommandList*>(GPUCommandList::CreateChild()); }
+
+    /**
+     * Set the pipeline to use for subsequent draws to a pre-created pipeline
+     * object.
+     */
+    virtual void                    SetPipeline(GPUPipeline* const inPipeline) = 0;
+
+    /**
+     * Set the pipeline to use for subsequent draws to a dynamically created
+     * pipeline matching the specified state.
+     */
+    void                            SetPipeline(const GPUPipelineDesc& inDesc);
 
 protected:
     const GPURenderPass             mRenderPass;

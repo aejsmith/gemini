@@ -23,12 +23,16 @@
 /**
  * Various parts of graphics pipeline state are described in blocks, created
  * from a state descriptor.
- * 
+ *
  * Only one state object matching a given descriptor can exist, and once a
  * state object has been created then it will never be destroyed. This means
  * a pointer to a state object can uniquely identify that state within a run
  * of the engine. This is particularly helpful for pipeline state caching: it
- * means we don't need to hash the whole state descriptor to look up a pipeline.
+ * means we don't need to hash the whole state descriptor to look up a
+ * pipeline.
+ *
+ * GPUState objects are independent of the GPUDevice. They only contain a state
+ * description, which gets consumed by the backend when creating a pipeline.
  */
 template <typename D>
 class GPUState : Uncopyable
@@ -70,6 +74,10 @@ struct GPUBlendStateDesc
         bool                    maskB : 1;
         bool                    maskA : 1;
 
+        /**
+         * Note that for blend factors involving a constant value, the constant
+         * is set dynamically using GPUGraphicsCommandList::SetBlendConstants().
+         */
         GPUBlendFactor          srcColourFactor;
         GPUBlendFactor          dstColourFactor;
         GPUBlendOp              colourOp;
@@ -81,6 +89,7 @@ struct GPUBlendStateDesc
 
 public:
                                 GPUBlendStateDesc();
+                                GPUBlendStateDesc(const GPUBlendStateDesc& inOther);
 
 };
 
@@ -90,6 +99,11 @@ inline GPUBlendStateDesc::GPUBlendStateDesc()
 {
     /* Ensure that padding is cleared so we can hash the whole structure. */
     memset(this, 0, sizeof(*this));
+}
+
+inline GPUBlendStateDesc::GPUBlendStateDesc(const GPUBlendStateDesc& inOther)
+{
+    memcpy(this, &inOther, sizeof(*this));
 }
 
 using GPUBlendState    = GPUState<GPUBlendStateDesc>;
@@ -128,6 +142,7 @@ struct GPUDepthStencilStateDesc
 
 public:
                                 GPUDepthStencilStateDesc();
+                                GPUDepthStencilStateDesc(const GPUDepthStencilStateDesc& inOther);
 
 };
 
@@ -142,6 +157,11 @@ inline GPUDepthStencilStateDesc::GPUDepthStencilStateDesc()
     this->depthTestEnable = true;
     this->depthWriteEnable = true;
     this->depthCompareOp = kGPUCompareOp_LessOrEqual;
+}
+
+inline GPUDepthStencilStateDesc::GPUDepthStencilStateDesc(const GPUDepthStencilStateDesc& inOther)
+{
+    memcpy(this, &inOther, sizeof(*this));
 }
 
 using GPUDepthStencilState    = GPUState<GPUDepthStencilStateDesc>;
@@ -163,6 +183,7 @@ struct GPURasterizerStateDesc
 
 public:
                                 GPURasterizerStateDesc();
+                                GPURasterizerStateDesc(const GPURasterizerStateDesc& inOther);
 
 };
 
@@ -172,6 +193,11 @@ inline GPURasterizerStateDesc::GPURasterizerStateDesc()
 {
     /* Ensure that padding is cleared so we can hash the whole structure. */
     memset(this, 0, sizeof(*this));
+}
+
+inline GPURasterizerStateDesc::GPURasterizerStateDesc(const GPURasterizerStateDesc& inOther)
+{
+    memcpy(this, &inOther, sizeof(*this));
 }
 
 using GPURasterizerState    = GPUState<GPURasterizerStateDesc>;
@@ -194,6 +220,7 @@ struct GPURenderTargetStateDesc
 
 public:
                                 GPURenderTargetStateDesc();
+                                GPURenderTargetStateDesc(const GPURenderTargetStateDesc& inOther);
 
 };
 
@@ -203,6 +230,11 @@ inline GPURenderTargetStateDesc::GPURenderTargetStateDesc()
 {
     /* Ensure that padding is cleared so we can hash the whole structure. */
     memset(this, 0, sizeof(*this));
+}
+
+inline GPURenderTargetStateDesc::GPURenderTargetStateDesc(const GPURenderTargetStateDesc& inOther)
+{
+    memcpy(this, &inOther, sizeof(*this));
 }
 
 using GPURenderTargetState   = GPUState<GPURenderTargetStateDesc>;

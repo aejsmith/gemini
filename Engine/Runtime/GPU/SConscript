@@ -5,6 +5,7 @@ Import('env')
 objects = map(env.Object, [
     'GPUCommandList.cpp',
     'GPUDevice.cpp',
+    'GPUPipeline.cpp',
     'GPURenderPass.cpp',
     'GPUResource.cpp',
     'GPUResourceView.cpp',
@@ -21,6 +22,7 @@ objects = map(env.Object, [
     'Vulkan/VulkanDevice.cpp',
     'Vulkan/VulkanFormat.cpp',
     'Vulkan/VulkanMemoryManager.cpp',
+    'Vulkan/VulkanPipeline.cpp',
     'Vulkan/VulkanResourceView.cpp',
     'Vulkan/VulkanShader.cpp',
     'Vulkan/VulkanSwapchain.cpp',

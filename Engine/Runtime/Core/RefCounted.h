@@ -131,7 +131,14 @@ public:
 
     ReferencedType*                 Get() const                         { return mObject; }
 
-    void                            Reset(ReferencedType* const inObject = nullptr);
+    /**
+     * Change the object that the pointer refers to. inRetain indicates whether
+     * to retain the object, defaults to true. If false, the caller should have
+     * already added a reference to the object, which will be taken over by
+     * this ReferencePtr.
+     */
+    void                            Reset(ReferencedType* const inObject = nullptr,
+                                          const bool            inRetain = true);
 
     void                            Swap(ReferencePtr& inOther);
 
@@ -235,13 +242,18 @@ ReferencePtr<T>& ReferencePtr<T>::operator =(ReferencePtr&& inOther)
 }
 
 template <typename T>
-void ReferencePtr<T>::Reset(ReferencedType* const inObject)
+void ReferencePtr<T>::Reset(ReferencedType* const inObject,
+                            const bool            inRetain)
 {
-    if (inObject)
+    if (inObject && inRetain)
+    {
         inObject->Retain();
+    }
 
     if (mObject)
+    {
         mObject->Release();
+    }
 
     mObject = inObject;
 }
