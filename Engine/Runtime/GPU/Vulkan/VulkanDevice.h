@@ -101,6 +101,12 @@ public:
                                                       VkFramebuffer&       outFramebuffer);
 
     /**
+     * Get a Vulkan render pass matching the given render target state, which
+     * should be compatible with any real render pass matching the state.
+     */
+    VkRenderPass                        GetRenderPass(const GPURenderTargetStateDesc& inState);
+
+    /**
      * Callback from VulkanResourceView and VulkanSwapchain to invalidate any
      * framebuffers referring to a view.
      */
@@ -127,6 +133,8 @@ private:
 
 private:
     void                                CreateDevice();
+
+    VkRenderPass                        GetRenderPass(const VulkanRenderPassKey& inKey);
 
 private:
     VulkanInstance*                     mInstance;

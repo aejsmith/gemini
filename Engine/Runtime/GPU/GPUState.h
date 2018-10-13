@@ -87,6 +87,12 @@ struct GPUBlendStateDesc
         GPUBlendOp              alphaOp;
     };
 
+    /**
+     * Blending state for each colour attachment. If an attachment is disabled
+     * in the render target state, the blend state is ignored.
+     */
+    Attachment                  attachments[kMaxRenderPassColourAttachments];
+
 public:
                                 GPUBlendStateDesc();
                                 GPUBlendStateDesc(const GPUBlendStateDesc& inOther);
@@ -152,11 +158,6 @@ inline GPUDepthStencilStateDesc::GPUDepthStencilStateDesc()
 {
     /* Ensure that padding is cleared so we can hash the whole structure. */
     memset(this, 0, sizeof(*this));
-
-    /* Set defaults. */
-    this->depthTestEnable = true;
-    this->depthWriteEnable = true;
-    this->depthCompareOp = kGPUCompareOp_LessOrEqual;
 }
 
 inline GPUDepthStencilStateDesc::GPUDepthStencilStateDesc(const GPUDepthStencilStateDesc& inOther)

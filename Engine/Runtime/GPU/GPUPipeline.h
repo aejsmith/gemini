@@ -28,6 +28,8 @@ struct GPUPipelineDesc
     GPURasterizerStateRef       rasterizerState;
     GPURenderTargetStateRef     renderTargetState;
 
+    GPUPrimitiveTopology        topology;
+
 public:
                                 GPUPipelineDesc();
                                 GPUPipelineDesc(const GPUPipelineDesc& inOther);

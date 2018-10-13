@@ -362,3 +362,13 @@ enum GPUFrontFace : uint8_t
     kGPUFrontFace_CounterClockwise,
     kGPUFrontFace_Clockwise,
 };
+
+enum GPUPrimitiveTopology : uint8_t
+{
+    kGPUPrimitiveTopology_PointList,
+    kGPUPrimitiveTopology_LineList,
+    kGPUPrimitiveTopology_LineStrip,
+    kGPUPrimitiveTopology_TriangleList,
+    kGPUPrimitiveTopology_TriangleStrip,
+    kGPUPrimitiveTopology_TriangleFan,
+};

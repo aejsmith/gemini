@@ -144,6 +144,18 @@ void Engine::Run()
 
         GPUGraphicsCommandList* cmdList = presentContext.CreateRenderPass(renderPass);
         cmdList->Begin();
+
+        GPUPipelineDesc pipelineDesc;
+        pipelineDesc.shaders[kGPUShaderStage_Vertex]   = vertexShader;
+        pipelineDesc.shaders[kGPUShaderStage_Fragment] = fragmentShader;
+        pipelineDesc.blendState                        = GPUBlendState::Get(GPUBlendStateDesc());
+        pipelineDesc.depthStencilState                 = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
+        pipelineDesc.rasterizerState                   = GPURasterizerState::Get(GPURasterizerStateDesc());
+        pipelineDesc.renderTargetState                 = cmdList->GetRenderTargetState();
+        pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
+
+        cmdList->SetPipeline(pipelineDesc);
+
         cmdList->End();
         presentContext.SubmitRenderPass(cmdList);
 

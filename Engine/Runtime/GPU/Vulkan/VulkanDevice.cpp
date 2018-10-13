@@ -420,13 +420,9 @@ VkFence VulkanDevice::AllocateFence()
     return fence;
 }
 
-void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
-                                 VkRenderPass&        outVulkanRenderPass,
-                                 VkFramebuffer&       outFramebuffer)
+VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
 {
-    VulkanRenderPassKey passKey(inPass);
-
-    VkRenderPass& cachedRenderPass = mRenderPassCache[passKey];
+    VkRenderPass& cachedRenderPass = mRenderPassCache[inKey];
     if (cachedRenderPass == VK_NULL_HANDLE)
     {
         /* VkRenderPassCreateInfo requires a tightly packed attachment array,
@@ -500,14 +496,14 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
 
         for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
         {
-            if (AddAttachment(passKey.colour[i], colourReferences[i]))
+            if (AddAttachment(inKey.colour[i], colourReferences[i]))
             {
-                subpass.colorAttachmentCount++;
-                subpass.pColorAttachments = colourReferences;
+                subpass.colorAttachmentCount = i + 1;
+                subpass.pColorAttachments    = colourReferences;
             }
         }
 
-        if (AddAttachment(passKey.depthStencil, depthStencilReference))
+        if (AddAttachment(inKey.depthStencil, depthStencilReference))
         {
             subpass.pDepthStencilAttachment = &depthStencilReference;
         }
@@ -523,6 +519,17 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
                                        nullptr,
                                        &cachedRenderPass));
     }
+
+    return cachedRenderPass;
+}
+
+void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
+                                 VkRenderPass&        outVulkanRenderPass,
+                                 VkFramebuffer&       outFramebuffer)
+{
+    VulkanRenderPassKey passKey(inPass);
+
+    outVulkanRenderPass = GetRenderPass(passKey);
 
     VulkanFramebufferKey framebufferKey(inPass);
 
@@ -556,7 +563,7 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
                              createInfo.layers);
 
         createInfo.sType        = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        createInfo.renderPass   = cachedRenderPass;
+        createInfo.renderPass   = outVulkanRenderPass;
         createInfo.pAttachments = imageViews;
 
         VulkanCheck(vkCreateFramebuffer(GetHandle(),
@@ -565,8 +572,13 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
                                         &cachedFramebuffer));
     }
 
-    outVulkanRenderPass = cachedRenderPass;
-    outFramebuffer      = cachedFramebuffer;
+    outFramebuffer = cachedFramebuffer;
+}
+
+VkRenderPass VulkanDevice::GetRenderPass(const GPURenderTargetStateDesc& inState)
+{
+    VulkanRenderPassKey passKey(inState);
+    return GetRenderPass(passKey);
 }
 
 void VulkanDevice::InvalidateFramebuffers(const VkImageView inView)

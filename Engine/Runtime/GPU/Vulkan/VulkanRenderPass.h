@@ -46,6 +46,7 @@ struct VulkanRenderPassKey
 
 public:
                                 VulkanRenderPassKey(const GPURenderPass& inPass);
+                                VulkanRenderPassKey(const GPURenderTargetStateDesc& inState);
 
 };
 
@@ -93,6 +94,46 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& inPass)
     else
     {
         dstAttachment.format = PixelFormat::kUnknown;
+    }
+}
+
+inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderTargetStateDesc& inState)
+{
+    /* Ensure padding is clear. */
+    memset(this, 0, sizeof(*this));
+
+    for (size_t i = 0; i < ArraySize(this->colour); i++)
+    {
+        auto& dstAttachment = this->colour[i];
+
+        dstAttachment.format = inState.colour[i];
+
+        if (dstAttachment.format != PixelFormat::kUnknown)
+        {
+            /* Fill out other parts with sensible defaults. There's a reasonable
+             * chance this render pass might actually be used for real, rather
+             * than just for pipeline creation. */
+            dstAttachment.state   = kGPUResourceState_RenderTarget;
+            dstAttachment.loadOp  = kGPULoadOp_Load;
+            dstAttachment.storeOp = kGPUStoreOp_Store;
+        }
+    }
+
+    auto& dstAttachment = this->depthStencil;
+
+    dstAttachment.format = inState.depthStencil;
+
+    if (dstAttachment.format != PixelFormat::kUnknown)
+    {
+        dstAttachment.state   = kGPUResourceState_DepthStencilWrite;
+        dstAttachment.loadOp  = kGPULoadOp_Load;
+        dstAttachment.storeOp = kGPUStoreOp_Store;
+
+        if (PixelFormat::IsDepthStencil(dstAttachment.format))
+        {
+            dstAttachment.stencilLoadOp  = kGPULoadOp_Load;
+            dstAttachment.stencilStoreOp = kGPUStoreOp_Store;
+        }
     }
 }
 

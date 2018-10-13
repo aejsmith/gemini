@@ -33,5 +33,6 @@ public:
 
 private:
     VkPipeline              mHandle;
+    VkPipelineLayout        mLayoutHandle;
 
 };
