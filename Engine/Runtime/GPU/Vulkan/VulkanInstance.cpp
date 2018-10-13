@@ -112,7 +112,7 @@ DebugReportCallback(VkDebugReportFlagsEXT      flags,
 
     if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
     {
-        Fatal("Vulkan validation error (see log for details)");
+        DebugBreak();
     }
 
     return VK_FALSE;
