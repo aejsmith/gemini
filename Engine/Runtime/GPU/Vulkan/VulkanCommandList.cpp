@@ -19,6 +19,7 @@
 #include "VulkanCommandPool.h"
 #include "VulkanContext.h"
 #include "VulkanDevice.h"
+#include "VulkanPipeline.h"
 
 template <typename T>
 inline VulkanCommandList<T>::VulkanCommandList() :
@@ -199,7 +200,65 @@ GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
     return new VulkanGraphicsCommandList(GetVulkanContext(), this, mRenderPass);
 }
 
-void VulkanGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
+void VulkanGraphicsCommandList::PreDraw()
 {
-    
+    if (mDirtyState & kDirtyState_Pipeline)
+    {
+        const auto pipeline = static_cast<VulkanPipeline*>(mPipeline);
+
+        vkCmdBindPipeline(GetCommandBuffer(),
+                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        pipeline->GetHandle());
+
+        mDirtyState &= ~kDirtyState_Pipeline;
+    }
+
+    if (mDirtyState & kDirtyState_Viewport)
+    {
+        VkViewport viewport;
+
+        /* Use a negative height to have Y pointing up. This means we need to
+         * specify Y as pointing to the lower left of the viewport. */
+        viewport.x        = mViewport.rect.x;
+        viewport.y        = mViewport.rect.y + mViewport.rect.height;
+        viewport.width    = mViewport.rect.width;
+        viewport.height   = -mViewport.rect.height;
+        viewport.minDepth = mViewport.minDepth;
+        viewport.maxDepth = mViewport.maxDepth;
+
+        vkCmdSetViewport(GetCommandBuffer(),
+                         0,
+                         1,
+                         &viewport);
+
+        mDirtyState &= ~kDirtyState_Viewport;
+    }
+
+    if (mDirtyState & kDirtyState_Scissor)
+    {
+        VkRect2D scissor;
+        scissor.offset.x      = mScissor.x;
+        scissor.offset.y      = mScissor.y;
+        scissor.extent.width  = mScissor.width;
+        scissor.extent.height = mScissor.height;
+
+        vkCmdSetScissor(GetCommandBuffer(),
+                        0,
+                        1,
+                        &scissor);
+
+        mDirtyState &= ~kDirtyState_Scissor;
+    }
+}
+
+void VulkanGraphicsCommandList::Draw(const uint32_t inVertexCount,
+                                     const uint32_t inFirstVertex)
+{
+    PreDraw();
+
+    vkCmdDraw(GetCommandBuffer(),
+              inVertexCount,
+              1,
+              inFirstVertex,
+              0);
 }

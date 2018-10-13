@@ -195,7 +195,7 @@ public:
      * Set the pipeline to use for subsequent draws to a pre-created pipeline
      * object.
      */
-    virtual void                    SetPipeline(GPUPipeline* const inPipeline) = 0;
+    void                            SetPipeline(GPUPipeline* const inPipeline);
 
     /**
      * Set the pipeline to use for subsequent draws to a dynamically created
@@ -203,9 +203,33 @@ public:
      */
     void                            SetPipeline(const GPUPipelineDesc& inDesc);
 
+    void                            SetViewport(const GPUViewport& inViewport);
+    void                            SetScissor(const IntRect& inScissor);
+
+    virtual void                    Draw(const uint32_t inVertexCount,
+                                         const uint32_t inFirstVertex = 0) = 0;
+
+protected:
+    enum DirtyState
+    {
+        kDirtyState_Pipeline    = (1 << 0),
+        kDirtyState_Viewport    = (1 << 1),
+        kDirtyState_Scissor     = (1 << 2),
+
+        kDirtyState_All         = kDirtyState_Pipeline |
+                                  kDirtyState_Viewport |
+                                  kDirtyState_Scissor
+    };
+
 protected:
     const GPURenderPass             mRenderPass;
     const GPURenderTargetStateRef   mRenderTargetState;
+
+    uint32_t                        mDirtyState;
+
+    GPUPipeline*                    mPipeline;
+    GPUViewport                     mViewport;
+    IntRect                         mScissor;
 
 };
 

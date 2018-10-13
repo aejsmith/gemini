@@ -72,7 +72,8 @@ public:
      * GPUGraphicsCommandList methods.
      */
 public:
-    void                            SetPipeline(GPUPipeline* const inPipeline) override;
+    void                            Draw(const uint32_t inVertexCount,
+                                         const uint32_t inFirstVertex) override;
 
 protected:
     GPUCommandList*                 CreateChildImpl() override;
@@ -94,6 +95,9 @@ public:
     void                            BeginCommandBuffer(const VkCommandBuffer inBuffer) const;
 
     void                            Submit(const VkCommandBuffer inBuffer) const;
+
+private:
+    void                            PreDraw();
 
 private:
     VkRenderPass                    mVulkanRenderPass;

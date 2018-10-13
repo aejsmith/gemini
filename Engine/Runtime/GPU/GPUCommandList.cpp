@@ -37,7 +37,9 @@ GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&              
     mRenderPass         (inRenderPass),
     mRenderTargetState  ((inParent)
                              ? inParent->GetRenderTargetState()
-                             : mRenderPass.GetRenderTargetState())
+                             : mRenderPass.GetRenderTargetState()),
+    mDirtyState         (0),
+    mPipeline           (nullptr)
 {
     /* Add a reference to each view in the pass. Only the top level command
      * list in a pass needs to do this - it will be alive as long as any
@@ -57,6 +59,19 @@ GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&              
             mRenderPass.depthStencil.view->Retain();
         }
     }
+
+    /* Initialise the viewport and scissor to the size of the render target. */
+    uint32_t width, height, layers;
+    inRenderPass.GetDimensions(width, height, layers);
+
+    mViewport.rect.x      = mScissor.x      = 0;
+    mViewport.rect.y      = mScissor.y      = 0;
+    mViewport.rect.width  = mScissor.width  = width;
+    mViewport.rect.height = mScissor.height = height;
+    mViewport.minDepth    = 0.0f;
+    mViewport.maxDepth    = 1.0f;
+
+    mDirtyState |= kDirtyState_Viewport | kDirtyState_Scissor;
 }
 
 GPUGraphicsCommandList::~GPUGraphicsCommandList()
@@ -78,9 +93,39 @@ GPUGraphicsCommandList::~GPUGraphicsCommandList()
     }
 }
 
+void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
+{
+    if (inPipeline != mPipeline)
+    {
+        mPipeline = inPipeline;
+
+        mDirtyState |= kDirtyState_Pipeline;
+    }
+}
+
 void GPUGraphicsCommandList::SetPipeline(const GPUPipelineDesc& inDesc)
 {
     SetPipeline(GetDevice().GetPipeline(inDesc, {}));
+}
+
+void GPUGraphicsCommandList::SetViewport(const GPUViewport& inViewport)
+{
+    if (memcmp(&mViewport, &inViewport, sizeof(mViewport)) != 0)
+    {
+        mViewport = inViewport;
+
+        mDirtyState |= kDirtyState_Viewport;
+    }
+}
+
+void GPUGraphicsCommandList::SetScissor(const IntRect& inScissor)
+{
+    if (memcmp(&mScissor, &inScissor, sizeof(mScissor)) != 0)
+    {
+        mScissor = inScissor;
+
+        mDirtyState |= kDirtyState_Scissor;
+    }
 }
 
 GPUComputeCommandList::GPUComputeCommandList(GPUComputeContext&                 inContext,

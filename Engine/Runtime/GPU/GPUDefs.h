@@ -372,3 +372,10 @@ enum GPUPrimitiveTopology : uint8_t
     kGPUPrimitiveTopology_TriangleStrip,
     kGPUPrimitiveTopology_TriangleFan,
 };
+
+struct GPUViewport
+{
+    IntRect                     rect;
+    float                       minDepth;
+    float                       maxDepth;
+};

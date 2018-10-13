@@ -155,6 +155,7 @@ void Engine::Run()
         pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
 
         cmdList->SetPipeline(pipelineDesc);
+        cmdList->Draw(3);
 
         cmdList->End();
         presentContext.SubmitRenderPass(cmdList);
