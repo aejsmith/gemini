@@ -118,8 +118,11 @@ VulkanTexture::~VulkanTexture()
 {
     if (!IsSwapchain())
     {
-        /* FIXME: Defer destruction until no longer used. */
-        vkDestroyImage(GetVulkanDevice().GetHandle(), mHandle, nullptr);
-        GetVulkanDevice().GetMemoryManager().Free(mAllocation);
+        GetVulkanDevice().AddFrameCompleteCallback(
+            [handle = mHandle, allocation = mAllocation] (VulkanDevice& inDevice)
+            {
+                vkDestroyImage(inDevice.GetHandle(), handle, nullptr);
+                inDevice.GetMemoryManager().Free(allocation);
+            });
     }
 }

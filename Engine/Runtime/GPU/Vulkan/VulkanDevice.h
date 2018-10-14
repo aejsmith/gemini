@@ -23,6 +23,8 @@
 
 #include "Core/HashTable.h"
 
+#include <functional>
+#include <list>
 #include <vector>
 
 class VulkanContext;
@@ -57,6 +59,10 @@ protected:
      * Internal methods.
      */
 public:
+    using FrameCompleteCallback       = std::function<void (VulkanDevice&)>;
+    using FrameCompleteCallbackList   = std::list<FrameCompleteCallback>;
+
+public:
     VulkanInstance&                     GetInstance() const             { return *mInstance; }
 
     VkPhysicalDevice                    GetPhysicalDevice() const       { return mPhysicalDevice; }
@@ -74,6 +80,12 @@ public:
      * for indexing data tracked for in-flight frames.
      */
     uint8_t                             GetCurrentFrame() const         { return mCurrentFrame; }
+
+    /**
+     * Add a function to be called when the current frame has completed on the
+     * GPU. This can be used for deferred deletion.
+     */
+    void                                AddFrameCompleteCallback(FrameCompleteCallback inCallback);
 
     /**
      * Get a semaphore. This should be used within the current frame - once it
@@ -115,6 +127,8 @@ public:
 private:
     struct Frame
     {
+        FrameCompleteCallbackList       completeCallbacks;
+
         /**
          * Semaphores used in the frame. Returned to the pool once the frame
          * is completed.

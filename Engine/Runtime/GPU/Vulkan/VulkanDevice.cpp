@@ -104,6 +104,13 @@ VulkanDevice::~VulkanDevice()
         auto& frame = mFrames[i];
         std::move(frame.semaphores.begin(), frame.semaphores.end(), std::back_inserter(mSemaphorePool));
         std::move(frame.fences.begin(), frame.fences.end(), std::back_inserter(mFencePool));
+
+        for (const auto& callback : frame.completeCallbacks)
+        {
+            callback(*this);
+        }
+
+        frame.completeCallbacks.clear();
     }
 
     for (VkSemaphore semaphore : mSemaphorePool)
@@ -366,6 +373,13 @@ void VulkanDevice::EndFrameImpl()
     std::move(frame.fences.begin(), frame.fences.end(), std::back_inserter(mFencePool));
     frame.fences.clear();
 
+    for (const auto& callback : frame.completeCallbacks)
+    {
+        callback(*this);
+    }
+
+    frame.completeCallbacks.clear();
+
     /* Reset command pools etc. on each context. */
     for (auto context : mContexts)
     {
@@ -374,6 +388,11 @@ void VulkanDevice::EndFrameImpl()
             context->BeginFrame();
         }
     }
+}
+
+void VulkanDevice::AddFrameCompleteCallback(FrameCompleteCallback inCallback)
+{
+    mFrames[mCurrentFrame].completeCallbacks.emplace_back(std::move(inCallback));
 }
 
 VkSemaphore VulkanDevice::AllocateSemaphore()
@@ -601,7 +620,12 @@ void VulkanDevice::InvalidateFramebuffers(const VkImageView inView)
 
         if (isMatch)
         {
-            vkDestroyFramebuffer(GetHandle(), it->second, nullptr);
+            AddFrameCompleteCallback(
+                [framebuffer = it->second] (VulkanDevice& inDevice)
+                {
+                    vkDestroyFramebuffer(inDevice.GetHandle(), framebuffer, nullptr);
+                });
+
             it = mFramebufferCache.erase(it);
         }
         else

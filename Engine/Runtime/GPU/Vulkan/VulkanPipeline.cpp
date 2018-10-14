@@ -222,6 +222,10 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
 
 VulkanPipeline::~VulkanPipeline()
 {
-    vkDestroyPipelineLayout(GetVulkanDevice().GetHandle(), mLayoutHandle, nullptr);
-    vkDestroyPipeline(GetVulkanDevice().GetHandle(), mHandle, nullptr);
+    GetVulkanDevice().AddFrameCompleteCallback(
+        [handle = mHandle, layoutHandle = mLayoutHandle] (VulkanDevice& inDevice)
+        {
+            vkDestroyPipelineLayout(inDevice.GetHandle(), layoutHandle, nullptr);
+            vkDestroyPipeline(inDevice.GetHandle(), handle, nullptr);
+        });
 }

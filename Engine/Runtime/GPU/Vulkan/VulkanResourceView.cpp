@@ -47,7 +47,11 @@ VulkanResourceView::~VulkanResourceView()
 {
     if (GetType() == kGPUResourceViewType_TextureBuffer)
     {
-        vkDestroyBufferView(GetVulkanDevice().GetHandle(), mBufferView, nullptr);
+        GetVulkanDevice().AddFrameCompleteCallback(
+            [bufferView = mBufferView] (VulkanDevice& inDevice)
+            {
+                vkDestroyBufferView(inDevice.GetHandle(), bufferView, nullptr);
+            });
     }
     else if (GetType() != kGPUResourceViewType_Buffer)
     {
@@ -56,7 +60,11 @@ VulkanResourceView::~VulkanResourceView()
             GetVulkanDevice().InvalidateFramebuffers(mImageView);
         }
 
-        vkDestroyImageView(GetVulkanDevice().GetHandle(), mImageView, nullptr);
+        GetVulkanDevice().AddFrameCompleteCallback(
+            [imageView = mImageView] (VulkanDevice& inDevice)
+            {
+                vkDestroyImageView(inDevice.GetHandle(), imageView, nullptr);
+            });
     }
 }
 
