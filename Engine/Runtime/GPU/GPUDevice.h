@@ -44,6 +44,8 @@ protected:
 public:
     static void                 Create();
 
+    GPUVendor                   GetVendor() const           { return mVendor; }
+
     /** Get the primary graphics context. This is always present. */
     GPUGraphicsContext&         GetGraphicsContext() const  { return *mGraphicsContext; }
 
@@ -96,6 +98,8 @@ protected:
     virtual void                EndFrameImpl() = 0;
 
 protected:
+    GPUVendor                   mVendor;
+
     GPUGraphicsContext*         mGraphicsContext;
 
 private:
@@ -105,7 +109,6 @@ private:
     GPUPipeline*                GetPipelineImpl(const GPUPipelineDesc& inDesc);
 
 private:
-    /** Graphics pipeline cache. */
     PipelineCache               mPipelineCache;
     std::shared_mutex           mPipelineCacheLock;
 

@@ -83,11 +83,13 @@ VulkanTexture::VulkanTexture(VulkanDevice&         inDevice,
     if (GetUsage() & (kGPUResourceUsage_RenderTarget | kGPUResourceUsage_DepthStencil))
     {
         /*
-         * Mark render target allocations as dedicated. This provides a
-         * significant performance boost for some NVIDIA cards. TODO: Can be
-         * a slight perf hit on AMD - GPU detection.
+         * Mark render target allocations as dedicated for NVIDIA. This provides
+         * a significant performance boost for some cards.
          */
-        allocationInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+        if (GetVulkanDevice().GetVendor() == kGPUVendor_NVIDIA)
+        {
+            allocationInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+        }
     }
 
     if (GetUsage() & (kGPUResourceUsage_RenderTarget | kGPUResourceUsage_DepthStencil | kGPUResourceUsage_ShaderWrite))

@@ -246,6 +246,13 @@ void VulkanDevice::CreateDevice()
             mProperties.vendorID,
             mProperties.deviceID);
 
+    switch (mProperties.vendorID)
+    {
+        case 0x1002:    mVendor = kGPUVendor_AMD;
+        case 0x8086:    mVendor = kGPUVendor_Intel;
+        case 0x10de:    mVendor = kGPUVendor_NVIDIA;
+    }
+
     LogInfo("  Extensions:");
 
     for (const VkExtensionProperties& extension : extensionProps)

@@ -24,6 +24,7 @@
 SINGLETON_IMPL(GPUDevice);
 
 GPUDevice::GPUDevice() :
+    mVendor          (kGPUVendor_Unknown),
     mGraphicsContext (nullptr)
 {
 }

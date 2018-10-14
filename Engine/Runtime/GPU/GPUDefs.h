@@ -27,6 +27,14 @@ class GPUResource;
 /** Maximum number of colour attachments in a render pass. */
 static constexpr size_t kMaxRenderPassColourAttachments = 8;
 
+enum GPUVendor : uint8_t
+{
+    kGPUVendor_Unknown,
+    kGPUVendor_AMD,
+    kGPUVendor_Intel,
+    kGPUVendor_NVIDIA,
+};
+
 enum GPUResourceUsage : uint32_t
 {
     /** Resource will be bound as a read-only shader resource. */
