@@ -222,7 +222,11 @@ void ShaderCompiler::Compile()
         default:                        Unreachable();
     }
 
-    const EShMessages messages = static_cast<EShMessages>(EShMsgVulkanRules | EShMsgSpvRules);
+    EShMessages messages = static_cast<EShMessages>(EShMsgVulkanRules | EShMsgSpvRules);
+
+    #if ORION_BUILD_DEBUG
+        messages = static_cast<EShMessages>(messages | EShMsgDebugInfo);
+    #endif
 
     /* Parse the shader. */
     const char* const sourceString = source.c_str();
@@ -265,8 +269,13 @@ void ShaderCompiler::Compile()
     glslang::TIntermediate* intermediate = program.getIntermediate(glslangStage);
     Assert(intermediate);
 
+    glslang::SpvOptions options;
+    #if ORION_BUILD_DEBUG
+        options.generateDebugInfo = true;
+    #endif
+
     spv::SpvBuildLogger logger;
-    glslang::GlslangToSpv(*intermediate, mCode, &logger);
+    glslang::GlslangToSpv(*intermediate, mCode, &logger, &options);
 
     if (!LogSPIRVMessages(sourcePath, logger))
     {
