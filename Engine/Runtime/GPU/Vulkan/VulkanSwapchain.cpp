@@ -144,7 +144,9 @@ void VulkanSwapchain::CreateSwapchain()
      * the minimum it needs to work and we want an additional one for buffering. */
     createInfo.minImageCount = glm::clamp(kNumSwapchainImages,
                                           surfaceCapabilities.minImageCount + 1,
-                                          surfaceCapabilities.maxImageCount);
+                                          (surfaceCapabilities.maxImageCount != 0)
+                                              ? surfaceCapabilities.maxImageCount
+                                              : std::numeric_limits<uint32_t>::max());
 
     /* Define swap chain image extents. If the current extent is given as -1,
      * this means the surface size will be determined by the size we give for
