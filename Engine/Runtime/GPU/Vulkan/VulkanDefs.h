@@ -42,6 +42,7 @@
     macro(vkGetPhysicalDeviceFeatures) \
     macro(vkGetPhysicalDeviceFormatProperties) \
     macro(vkGetPhysicalDeviceImageFormatProperties) \
+    macro(vkGetPhysicalDeviceSparseImageFormatProperties) \
     macro(vkGetPhysicalDeviceProperties) \
     macro(vkGetPhysicalDeviceQueueFamilyProperties) \
     macro(vkGetPhysicalDeviceMemoryProperties) \
@@ -76,7 +77,6 @@
     macro(vkGetBufferMemoryRequirements) \
     macro(vkGetImageMemoryRequirements) \
     macro(vkGetImageSparseMemoryRequirements) \
-    macro(vkGetPhysicalDeviceSparseImageFormatProperties) \
     macro(vkQueueBindSparse) \
     macro(vkCreateFence) \
     macro(vkDestroyFence) \
