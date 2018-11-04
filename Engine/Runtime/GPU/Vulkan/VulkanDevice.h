@@ -40,6 +40,8 @@ public:
      * GPUDevice methods.
      */
 public:
+    GPUBufferPtr                        CreateBuffer(const GPUBufferDesc& inDesc) override;
+
     GPUResourceViewPtr                  CreateResourceView(GPUResource&               inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 

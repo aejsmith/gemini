@@ -43,6 +43,10 @@ enum GPUResourceUsage : uint32_t
     /** Resource will be bound as a writable shader resource. */
     kGPUResourceUsage_ShaderWrite   = (1 << 1),
 
+    /**
+     * Texture-only usages.
+     */
+
     /** Resource will be bound as a render target. */
     kGPUResourceUsage_RenderTarget  = (1 << 2),
 

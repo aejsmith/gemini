@@ -22,9 +22,7 @@
 
 GPUTexture::GPUTexture(GPUDevice&            inDevice,
                        const GPUTextureDesc& inDesc) :
-    GPUResource     (inDevice,
-                     inDesc.type,
-                     inDesc.usage),
+    GPUResource     (inDevice, inDesc.type, inDesc.usage),
     mFlags          (inDesc.flags),
     mFormat         (inDesc.format),
     mWidth          (inDesc.width),

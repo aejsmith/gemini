@@ -16,6 +16,7 @@
 
 #include "VulkanDevice.h"
 
+#include "VulkanBuffer.h"
 #include "VulkanContext.h"
 #include "VulkanFormat.h"
 #include "VulkanMemoryManager.h"
@@ -313,6 +314,11 @@ void VulkanDevice::CreateDevice()
     ENUMERATE_VULKAN_DEVICE_FUNCS(LOAD_VULKAN_DEVICE_FUNC);
 
     #undef LOAD_VULKAN_DEVICE_FUNC
+}
+
+GPUBufferPtr VulkanDevice::CreateBuffer(const GPUBufferDesc& inDesc)
+{
+    return new VulkanBuffer(*this, inDesc);
 }
 
 GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& inDesc)

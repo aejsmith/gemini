@@ -86,7 +86,7 @@ public:
     bool                    IsSwapchain() const         { return mSwapchain != nullptr; }
     GPUSwapchain*           GetSwapchain() const        { return mSwapchain; }
 
-protected:
+private:
     const GPUTextureFlags   mFlags;
     const PixelFormat       mFormat;
     const uint32_t          mWidth;

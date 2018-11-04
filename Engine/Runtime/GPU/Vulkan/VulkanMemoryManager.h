@@ -32,6 +32,11 @@ public:
                                               VkImage&                       outImage,
                                               VmaAllocation&                 outAllocation);
 
+    void                        AllocateBuffer(const VkBufferCreateInfo&      inCreateInfo,
+                                               const VmaAllocationCreateInfo& inAllocationInfo,
+                                               VkBuffer&                      outBuffer,
+                                               VmaAllocation&                 outAllocation);
+
     void                        Free(const VmaAllocation inAllocation);
 
 private:

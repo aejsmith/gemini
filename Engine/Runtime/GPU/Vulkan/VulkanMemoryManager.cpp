@@ -76,6 +76,19 @@ void VulkanMemoryManager::AllocateImage(const VkImageCreateInfo&       inCreateI
                                nullptr));
 }
 
+void VulkanMemoryManager::AllocateBuffer(const VkBufferCreateInfo&      inCreateInfo,
+                                         const VmaAllocationCreateInfo& inAllocationInfo,
+                                         VkBuffer&                      outBuffer,
+                                         VmaAllocation&                 outAllocation)
+{
+    VulkanCheck(vmaCreateBuffer(mAllocator,
+                                &inCreateInfo,
+                                &inAllocationInfo,
+                                &outBuffer,
+                                &outAllocation,
+                                nullptr));
+}
+
 void VulkanMemoryManager::Free(const VmaAllocation inAllocation)
 {
     vmaFreeMemory(mAllocator, inAllocation);

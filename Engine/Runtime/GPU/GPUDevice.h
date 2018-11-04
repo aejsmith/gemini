@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "GPU/GPUBuffer.h"
 #include "GPU/GPUPipeline.h"
 #include "GPU/GPUResourceView.h"
 #include "GPU/GPUShader.h"
@@ -74,6 +75,8 @@ public:
     /**
      * Resource creation methods.
      */
+
+    virtual GPUBufferPtr        CreateBuffer(const GPUBufferDesc& inDesc) = 0;
 
     GPUPipelinePtr              CreatePipeline(const GPUPipelineDesc& inDesc);
 
