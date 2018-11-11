@@ -14,27 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "GPU/GPUArgumentSet.h"
 
-#include "GPU/GPUDefs.h"
-
-class GPUDevice;
-
-class GPUDeviceChild : Uncopyable
+GPUArgumentSetLayout::GPUArgumentSetLayout(GPUDevice&                 inDevice,
+                                           GPUArgumentSetLayoutDesc&& inDesc) :
+    GPUDeviceChild  (inDevice),
+    mDesc           (std::move(inDesc))
 {
-protected:
-                                GPUDeviceChild(GPUDevice& inDevice);
-    virtual                     ~GPUDeviceChild() {}
+}
 
-public:
-    GPUDevice&                  GetDevice() const { return mDevice; }
-
-private:
-    GPUDevice&                  mDevice;
-
-};
-
-inline GPUDeviceChild::GPUDeviceChild(GPUDevice& inDevice) :
-    mDevice (inDevice)
+GPUArgumentSetLayout::~GPUArgumentSetLayout()
 {
 }

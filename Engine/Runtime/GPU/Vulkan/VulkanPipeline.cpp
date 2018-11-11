@@ -171,14 +171,9 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
     mHandle       (VK_NULL_HANDLE),
     mLayoutHandle (VK_NULL_HANDLE)
 {
-    // TODO: Proper layouts, cache them.
-    VkPipelineLayoutCreateInfo layoutCreateInfo = {};
-    layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-
-    VulkanCheck(vkCreatePipelineLayout(GetVulkanDevice().GetHandle(),
-                                       &layoutCreateInfo,
-                                       nullptr,
-                                       &mLayoutHandle));
+    VulkanPipelineLayoutKey layoutKey;
+    memcpy(layoutKey.argumentSetLayouts, inDesc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
+    mLayoutHandle = GetVulkanDevice().GetPipelineLayout(layoutKey);
 
     VkPipelineShaderStageCreateInfo        stageInfo[kGPUShaderStage_NumGraphics]            = {{}};
     VkPipelineVertexInputStateCreateInfo   vertexInputInfo                                   = {};

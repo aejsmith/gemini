@@ -49,6 +49,30 @@ void GPUDevice::EndFrame()
     EndFrameImpl();
 }
 
+GPUArgumentSetLayout* GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc)
+{
+    const size_t hash = HashValue(inDesc);
+
+    GPUArgumentSetLayout* layout = nullptr;
+
+    std::unique_lock lock(mArgumentSetLayoutCacheLock);
+
+    auto it = mArgumentSetLayoutCache.find(hash);
+    if (it != mArgumentSetLayoutCache.end())
+    {
+        layout = it->second;
+    }
+    else
+    {
+        layout = CreateArgumentSetLayoutImpl(std::move(inDesc));
+
+        auto ret = mArgumentSetLayoutCache.emplace(hash, layout);
+        Assert(ret.second);
+    }
+
+    return layout;
+}
+
 GPUPipeline* GPUDevice::GetPipelineImpl(const GPUPipelineDesc& inDesc)
 {
     /*

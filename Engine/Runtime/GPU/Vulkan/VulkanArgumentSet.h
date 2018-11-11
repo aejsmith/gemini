@@ -16,35 +16,22 @@
 
 #pragma once
 
-#include "GPU/GPUResource.h"
+#include "GPU/GPUArgumentSet.h"
 
-struct GPUBufferDesc
+#include "VulkanDeviceChild.h"
+
+class VulkanArgumentSetLayout final : public GPUArgumentSetLayout,
+                                      public VulkanDeviceChild<VulkanArgumentSetLayout>
 {
-    /**
-     * Usage flags for the buffer. This only needs to specify certain types of
-     * usage which might require special handling, namely shader binding. All
-     * buffers, regardless of usage, allow binding as vertex/index/indirect
-     * buffers, and transfers.
-     */
-    GPUResourceUsage        usage;
-
-    uint32_t                size;
-};
-
-class GPUBuffer : public GPUResource
-{
-protected:
-                            GPUBuffer(GPUDevice&           inDevice,
-                                      const GPUBufferDesc& inDesc);
-
-                            ~GPUBuffer() {}
-
 public:
-    uint32_t                GetSize() const { return mSize; }
+                            VulkanArgumentSetLayout(VulkanDevice&              inDevice,
+                                                    GPUArgumentSetLayoutDesc&& inDesc);
+
+                            ~VulkanArgumentSetLayout();
+
+    VkDescriptorSetLayout   GetHandle() const   { return mHandle; }
 
 private:
-    const uint32_t          mSize;
+    VkDescriptorSetLayout   mHandle;
 
 };
-
-using GPUBufferPtr = ReferencePtr<GPUBuffer>;

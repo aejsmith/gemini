@@ -19,6 +19,7 @@
 #include "GPU/GPUDevice.h"
 
 #include "VulkanInstance.h"
+#include "VulkanPipelineLayoutKey.h"
 #include "VulkanRenderPass.h"
 
 #include "Core/HashTable.h"
@@ -27,6 +28,7 @@
 #include <list>
 #include <vector>
 
+class VulkanArgumentSetLayout;
 class VulkanContext;
 class VulkanMemoryManager;
 
@@ -53,6 +55,7 @@ public:
     GPUTexturePtr                       CreateTexture(const GPUTextureDesc& inDesc) override;
 
 protected:
+    GPUArgumentSetLayout*               CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) override;
     GPUPipeline*                        CreatePipelineImpl(const GPUPipelineDesc& inDesc) override;
 
     void                                EndFrameImpl() override;
@@ -105,6 +108,8 @@ public:
      */
     VkFence                             AllocateFence();
 
+    VkPipelineLayout                    GetPipelineLayout(const VulkanPipelineLayoutKey& inKey);
+
     /**
      * Get a Vulkan render pass and framebuffer object matching the given
      * render pass description from a cache. If no matching objects are found,
@@ -144,8 +149,9 @@ private:
         std::vector<VkFence>            fences;
     };
 
-    using RenderPassCache             = HashMap<VulkanRenderPassKey, VkRenderPass>;
+    using PipelineLayoutCache         = HashMap<VulkanPipelineLayoutKey, VkPipelineLayout>;
     using FramebufferCache            = HashMap<VulkanFramebufferKey, VkFramebuffer>;
+    using RenderPassCache             = HashMap<VulkanRenderPassKey, VkRenderPass>;
 
 private:
     void                                CreateDevice();
@@ -176,7 +182,11 @@ private:
     std::vector<VkSemaphore>            mSemaphorePool;
     std::vector<VkFence>                mFencePool;
 
+    std::mutex                          mCacheLock;
+    PipelineLayoutCache                 mPipelineLayoutCache;
     RenderPassCache                     mRenderPassCache;
     FramebufferCache                    mFramebufferCache;
+
+    VulkanArgumentSetLayout*            mDummyArgumentSetLayout;
 
 };

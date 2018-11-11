@@ -16,25 +16,18 @@
 
 #pragma once
 
-#include "GPU/GPUDefs.h"
+#include "Core/Hash.h"
 
-class GPUDevice;
+#include "GPU/GPUArgumentSet.h"
 
-class GPUDeviceChild : Uncopyable
+/**
+ * Key for a VkPipelineLayout based on the argument set layouts.
+ * GPUArgumentSetLayout objects are persistent so we can just hash the pointers
+ * to them.
+ */
+struct VulkanPipelineLayoutKey
 {
-protected:
-                                GPUDeviceChild(GPUDevice& inDevice);
-    virtual                     ~GPUDeviceChild() {}
-
-public:
-    GPUDevice&                  GetDevice() const { return mDevice; }
-
-private:
-    GPUDevice&                  mDevice;
-
+    GPUArgumentSetLayout*   argumentSetLayouts[kMaxArgumentSets];
 };
 
-inline GPUDeviceChild::GPUDeviceChild(GPUDevice& inDevice) :
-    mDevice (inDevice)
-{
-}
+DEFINE_HASH_MEM_OPS(VulkanPipelineLayoutKey);

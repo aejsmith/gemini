@@ -16,12 +16,19 @@
 
 #pragma once
 
+#include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUShader.h"
 #include "GPU/GPUState.h"
 
 struct GPUPipelineDesc
 {
     GPUShader*                  shaders[kGPUShaderStage_NumGraphics];
+
+    /**
+     * Argument set layouts for the pipeline. These are shared by all stages.
+     * Null indicates that the set is not used by the pipeline.
+     */
+    GPUArgumentSetLayout*       argumentSetLayouts[kMaxArgumentSets];
 
     GPUBlendStateRef            blendState;
     GPUDepthStencilStateRef     depthStencilState;

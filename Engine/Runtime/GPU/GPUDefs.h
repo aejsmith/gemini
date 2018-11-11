@@ -27,6 +27,9 @@ class GPUResource;
 /** Maximum number of colour attachments in a render pass. */
 static constexpr size_t kMaxRenderPassColourAttachments = 8;
 
+/** Maximum number of shader argument sets. */
+static constexpr size_t kMaxArgumentSets = 4;
+
 enum GPUVendor : uint8_t
 {
     kGPUVendor_Unknown,
@@ -390,4 +393,51 @@ struct GPUViewport
     IntRect                     rect;
     float                       minDepth;
     float                       maxDepth;
+};
+
+/** Type of an argument to a shader, in an argument set. */
+enum GPUArgumentType : uint8_t
+{
+    /**
+     * Uniforms. Uniforms are always rewritten per-frame, and therefore need to
+     * be supplied at command recording time regardless of whether using pre-
+     * baked or dynamically created argument sets.
+     */
+    kGPUArgumentType_Uniforms,
+
+    /**
+     * Read-only buffer. Buffers used with an argument of this type must have
+     * have kGPUResourceUsage_ShaderRead.
+     */
+    kGPUArgumentType_Buffer,
+
+    /**
+     * Read/write buffer. Buffers used with an argument of this type must have
+     * have kGPUResourceUsage_ShaderWrite.
+     */
+    kGPUArgumentType_RWBuffer,
+
+    /**
+     * Read-only (sampled) texture. Textures used with an argument of this
+     * type must have kGPUResourceUsage_ShaderRead.
+     */
+    kGPUArgumentType_Texture,
+
+    /**
+     * Read/write texture, or an image in GLSL terminology. Textures used with
+     * an argument of this type must have kGPUResourceUsage_ShaderWrite.
+     */
+    kGPUArgumentType_RWTexture,
+
+    /**
+     * Read-only texture (typed) buffer. Buffers used with an argument of this
+     * type must have have kGPUResourceUsage_ShaderRead.
+     */
+    kGPUArgumentType_TextureBuffer,
+
+    /**
+     * Read/write texture (typed) buffer. Buffers used with an argument of this
+     * type must have have kGPUResourceUsage_ShaderWrite.
+     */
+    kGPUArgumentType_RWTextureBuffer,
 };

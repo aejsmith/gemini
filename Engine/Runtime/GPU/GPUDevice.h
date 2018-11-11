@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUBuffer.h"
 #include "GPU/GPUPipeline.h"
 #include "GPU/GPUResourceView.h"
@@ -39,16 +40,16 @@ class Window;
 class GPUDevice : public Singleton<GPUDevice>
 {
 protected:
-                                GPUDevice();
-                                ~GPUDevice();
+                                    GPUDevice();
+                                    ~GPUDevice();
 
 public:
-    static void                 Create();
+    static void                     Create();
 
-    GPUVendor                   GetVendor() const           { return mVendor; }
+    GPUVendor                       GetVendor() const           { return mVendor; }
 
     /** Get the primary graphics context. This is always present. */
-    GPUGraphicsContext&         GetGraphicsContext() const  { return *mGraphicsContext; }
+    GPUGraphicsContext&             GetGraphicsContext() const  { return *mGraphicsContext; }
 
     /**
      * Mark the end of a frame. Should be called after the last work submission
@@ -61,58 +62,65 @@ public:
      * No other threads must be recording work to any command lists at the
      * point where this is called.
      */
-    void                        EndFrame();
+    void                            EndFrame();
 
     /** Helper to look up a cached pipeline for GPUGraphicsCommandList. */
-    GPUPipeline*                GetPipeline(const GPUPipelineDesc& inDesc,
-                                            OnlyCalledBy<GPUGraphicsCommandList>)
-                                    { return GetPipelineImpl(inDesc); }
+    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& inDesc,
+                                                OnlyCalledBy<GPUGraphicsCommandList>)
+                                        { return GetPipelineImpl(inDesc); }
 
     /** Callback from GPUShader destructor to drop pipelines using the shader. */
-    void                        DropPipeline(GPUPipeline* const inPipeline,
-                                             OnlyCalledBy<GPUShader>);
+    void                            DropPipeline(GPUPipeline* const inPipeline,
+                                                 OnlyCalledBy<GPUShader>);
 
     /**
      * Resource creation methods.
      */
 
-    virtual GPUBufferPtr        CreateBuffer(const GPUBufferDesc& inDesc) = 0;
+    virtual GPUBufferPtr            CreateBuffer(const GPUBufferDesc& inDesc) = 0;
 
-    GPUPipelinePtr              CreatePipeline(const GPUPipelineDesc& inDesc);
+    GPUPipelinePtr                  CreatePipeline(const GPUPipelineDesc& inDesc);
 
-    virtual GPUResourceViewPtr  CreateResourceView(GPUResource&               inResource,
+    virtual GPUResourceViewPtr      CreateResourceView(GPUResource&               inResource,
                                                    const GPUResourceViewDesc& inDesc) = 0;
 
-    virtual GPUShaderPtr        CreateShader(const GPUShaderStage inStage,
-                                             GPUShaderCode        inCode) = 0;
+    virtual GPUShaderPtr            CreateShader(const GPUShaderStage inStage,
+                                                 GPUShaderCode        inCode) = 0;
 
     /**
      * Create and attach a swapchain to the specified window so that it can be
      * rendered to. The swapchain will be permanently associated with the
      * window.
      */
-    virtual void                CreateSwapchain(Window& inWindow) = 0;
+    virtual void                    CreateSwapchain(Window& inWindow) = 0;
 
-    virtual GPUTexturePtr       CreateTexture(const GPUTextureDesc& inDesc) = 0;
+    virtual GPUTexturePtr           CreateTexture(const GPUTextureDesc& inDesc) = 0;
 
-protected:
-    virtual GPUPipeline*        CreatePipelineImpl(const GPUPipelineDesc& inDesc) = 0;
-
-    virtual void                EndFrameImpl() = 0;
+    GPUArgumentSetLayout*           GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc);
 
 protected:
-    GPUVendor                   mVendor;
+    virtual GPUArgumentSetLayout*   CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) = 0;
+    virtual GPUPipeline*            CreatePipelineImpl(const GPUPipelineDesc& inDesc) = 0;
 
-    GPUGraphicsContext*         mGraphicsContext;
+    virtual void                    EndFrameImpl() = 0;
+
+protected:
+    GPUVendor                       mVendor;
+
+    GPUGraphicsContext*             mGraphicsContext;
 
 private:
-    using PipelineCache       = HashMap<size_t, GPUPipeline*>;
+    using ArgumentSetLayoutCache  = HashMap<size_t, GPUArgumentSetLayout*>;
+    using PipelineCache           = HashMap<size_t, GPUPipeline*>;
 
 private:
-    GPUPipeline*                GetPipelineImpl(const GPUPipelineDesc& inDesc);
+    GPUPipeline*                    GetPipelineImpl(const GPUPipelineDesc& inDesc);
 
 private:
-    PipelineCache               mPipelineCache;
-    std::shared_mutex           mPipelineCacheLock;
+    ArgumentSetLayoutCache          mArgumentSetLayoutCache;
+    std::mutex                      mArgumentSetLayoutCacheLock;
+
+    PipelineCache                   mPipelineCache;
+    std::shared_mutex               mPipelineCacheLock;
 
 };

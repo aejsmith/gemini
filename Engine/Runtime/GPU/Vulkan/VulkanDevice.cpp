@@ -16,6 +16,7 @@
 
 #include "VulkanDevice.h"
 
+#include "VulkanArgumentSet.h"
 #include "VulkanBuffer.h"
 #include "VulkanContext.h"
 #include "VulkanFormat.h"
@@ -84,6 +85,10 @@ VulkanDevice::VulkanDevice() :
                                       &mDriverPipelineCache));
 
     mMemoryManager = new VulkanMemoryManager(*this);
+
+    /* See GetPipelineLayout() for details of what this is for. */
+    GPUArgumentSetLayoutDesc layoutDesc;
+    mDummyArgumentSetLayout = static_cast<VulkanArgumentSetLayout*>(GetArgumentSetLayout(std::move(layoutDesc)));
 }
 
 VulkanDevice::~VulkanDevice()
@@ -249,9 +254,9 @@ void VulkanDevice::CreateDevice()
 
     switch (mProperties.vendorID)
     {
-        case 0x1002:    mVendor = kGPUVendor_AMD;
-        case 0x8086:    mVendor = kGPUVendor_Intel;
-        case 0x10de:    mVendor = kGPUVendor_NVIDIA;
+        case 0x1002:    mVendor = kGPUVendor_AMD; break;
+        case 0x8086:    mVendor = kGPUVendor_Intel; break;
+        case 0x10de:    mVendor = kGPUVendor_NVIDIA; break;
     }
 
     LogInfo("  Extensions:");
@@ -314,6 +319,11 @@ void VulkanDevice::CreateDevice()
     ENUMERATE_VULKAN_DEVICE_FUNCS(LOAD_VULKAN_DEVICE_FUNC);
 
     #undef LOAD_VULKAN_DEVICE_FUNC
+}
+
+GPUArgumentSetLayout* VulkanDevice::CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc)
+{
+    return new VulkanArgumentSetLayout(*this, std::move(inDesc));
 }
 
 GPUBufferPtr VulkanDevice::CreateBuffer(const GPUBufferDesc& inDesc)
@@ -452,8 +462,52 @@ VkFence VulkanDevice::AllocateFence()
     return fence;
 }
 
+VkPipelineLayout VulkanDevice::GetPipelineLayout(const VulkanPipelineLayoutKey& inKey)
+{
+    std::unique_lock lock(mCacheLock);
+
+    VkPipelineLayout& cachedLayout = mPipelineLayoutCache[inKey];
+    if (cachedLayout == VK_NULL_HANDLE)
+    {
+        VkDescriptorSetLayout setLayouts[kMaxArgumentSets];
+
+        VkPipelineLayoutCreateInfo createInfo = {};
+        createInfo.sType       = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        createInfo.pSetLayouts = setLayouts;
+
+        for (size_t i = 0; i < kMaxArgumentSets; i++)
+        {
+            VulkanArgumentSetLayout* setLayout;
+            if (inKey.argumentSetLayouts[i])
+            {
+                createInfo.setLayoutCount = i + 1;
+
+                setLayout = static_cast<VulkanArgumentSetLayout*>(inKey.argumentSetLayouts[i]);
+            }
+            else
+            {
+                /* If we have e.g. set 0 and set 2 populated, set 1 must still
+                 * be supplied a valid VkDescriptorSetLayout handle, so we
+                 * create a dummy empty set and pass it in to handle this. */
+                setLayout = mDummyArgumentSetLayout;
+            }
+
+            setLayouts[i] = setLayout->GetHandle();
+        }
+
+        VulkanCheck(vkCreatePipelineLayout(GetHandle(),
+                                           &createInfo,
+                                           nullptr,
+                                           &cachedLayout));
+    }
+
+    return cachedLayout;
+}
+
 VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
 {
+    std::unique_lock lock(mCacheLock);
+
     VkRenderPass& cachedRenderPass = mRenderPassCache[inKey];
     if (cachedRenderPass == VK_NULL_HANDLE)
     {
@@ -565,6 +619,8 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
 
     VulkanFramebufferKey framebufferKey(inPass);
 
+    std::unique_lock lock(mCacheLock);
+
     VkFramebuffer& cachedFramebuffer = mFramebufferCache[framebufferKey];
     if (cachedFramebuffer == VK_NULL_HANDLE)
     {
@@ -615,6 +671,8 @@ VkRenderPass VulkanDevice::GetRenderPass(const GPURenderTargetStateDesc& inState
 
 void VulkanDevice::InvalidateFramebuffers(const VkImageView inView)
 {
+    std::unique_lock lock(mCacheLock);
+
     for (auto it = mFramebufferCache.begin(); it != mFramebufferCache.end(); )
     {
         bool isMatch = it->first.depthStencil == inView;

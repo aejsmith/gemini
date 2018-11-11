@@ -3,6 +3,7 @@ import os
 Import('env')
 
 objects = map(env.Object, [
+    'GPUArgumentSet.cpp',
     'GPUBuffer.cpp',
     'GPUCommandList.cpp',
     'GPUDevice.cpp',
@@ -15,6 +16,7 @@ objects = map(env.Object, [
     'GPUSwapchain.cpp',
     'GPUTexture.cpp',
 
+    'Vulkan/VulkanArgumentSet.cpp',
     'Vulkan/VulkanBuffer.cpp',
     'Vulkan/VulkanCommandList.cpp',
     'Vulkan/VulkanCommandPool.cpp',
