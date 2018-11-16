@@ -398,12 +398,16 @@ void VulkanDevice::EndFrameImpl()
     std::move(frame.fences.begin(), frame.fences.end(), std::back_inserter(mFencePool));
     frame.fences.clear();
 
-    for (const auto& callback : frame.completeCallbacks)
     {
-        callback(*this);
-    }
+        std::unique_lock lock(mCompleteCallbacksLock);
 
-    frame.completeCallbacks.clear();
+        for (const auto& callback : frame.completeCallbacks)
+        {
+            callback(*this);
+        }
+
+        frame.completeCallbacks.clear();
+    }
 
     /* Reset command pools etc. on each context. */
     for (auto context : mContexts)
@@ -417,6 +421,7 @@ void VulkanDevice::EndFrameImpl()
 
 void VulkanDevice::AddFrameCompleteCallback(FrameCompleteCallback inCallback)
 {
+    std::unique_lock lock(mCompleteCallbacksLock);
     mFrames[mCurrentFrame].completeCallbacks.emplace_back(std::move(inCallback));
 }
 

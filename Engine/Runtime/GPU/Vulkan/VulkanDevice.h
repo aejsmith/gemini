@@ -176,6 +176,7 @@ private:
      */
     uint8_t                             mCurrentFrame;
     Frame                               mFrames[kVulkanInFlightFrameCount];
+    std::mutex                          mCompleteCallbacksLock;
 
     VulkanContext*                      mContexts[kVulkanMaxContexts];
 
