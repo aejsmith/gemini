@@ -79,4 +79,6 @@ public:
 private:
     const GPUArgumentSetLayoutDesc  mDesc;
 
+    /* Allows the device to destroy cached layouts upon destruction. */
+    friend class GPUDevice;
 };

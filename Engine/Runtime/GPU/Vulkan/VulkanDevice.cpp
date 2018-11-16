@@ -95,6 +95,8 @@ VulkanDevice::~VulkanDevice()
 {
     vkDeviceWaitIdle(mHandle);
 
+    DestroyResources();
+
     for (const auto& it : mFramebufferCache)
     {
         vkDestroyFramebuffer(mHandle, it.second, nullptr);

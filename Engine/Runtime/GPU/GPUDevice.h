@@ -99,6 +99,8 @@ public:
     GPUArgumentSetLayout*           GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc);
 
 protected:
+    void                            DestroyResources();
+
     virtual GPUArgumentSetLayout*   CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) = 0;
     virtual GPUPipeline*            CreatePipelineImpl(const GPUPipelineDesc& inDesc) = 0;
 

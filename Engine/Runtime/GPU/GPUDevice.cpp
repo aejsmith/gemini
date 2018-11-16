@@ -33,6 +33,18 @@ GPUDevice::~GPUDevice()
 {
 }
 
+void GPUDevice::DestroyResources()
+{
+    for (auto& it : mArgumentSetLayoutCache)
+    {
+        delete it.second;
+    }
+
+    /* All externally created resources should have been destroyed (explicitly
+     * created pipelines, and shaders), therefore this should already be empty. */
+    Assert(mPipelineCache.empty());
+}
+
 void GPUDevice::Create()
 {
     /* For now, only Vulkan. This will initialise the Singleton pointer. */
