@@ -24,7 +24,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice&        inDevice,
     mHandle     (VK_NULL_HANDLE),
     mAllocation (VK_NULL_HANDLE)
 {
-    VkBufferCreateInfo createInfo;
+    VkBufferCreateInfo createInfo = {};
     createInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     createInfo.size        = GetSize();
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;

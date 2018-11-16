@@ -39,6 +39,9 @@ public:
 
     void                        Free(const VmaAllocation inAllocation);
 
+    void                        GetInfo(const VmaAllocation inAllocation,
+                                        VmaAllocationInfo&  outInfo);
+
 private:
     VmaAllocator                mAllocator;
 

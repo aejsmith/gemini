@@ -27,6 +27,7 @@
 #include "VulkanShader.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
+#include "VulkanUniformPool.h"
 #include "VulkanUtils.h"
 
 #include "Core/Utility.h"
@@ -85,6 +86,7 @@ VulkanDevice::VulkanDevice() :
                                       &mDriverPipelineCache));
 
     mMemoryManager = new VulkanMemoryManager(*this);
+    mUniformPool   = new VulkanUniformPool(*this);
 
     /* See GetPipelineLayout() for details of what this is for. */
     GPUArgumentSetLayoutDesc layoutDesc;
@@ -138,6 +140,7 @@ VulkanDevice::~VulkanDevice()
         delete context;
     }
 
+    delete static_cast<VulkanUniformPool*>(mUniformPool);
     delete mMemoryManager;
 
     vkDestroyDevice(mHandle, nullptr);
@@ -417,6 +420,8 @@ void VulkanDevice::EndFrameImpl()
             context->BeginFrame();
         }
     }
+
+    static_cast<VulkanUniformPool&>(GetUniformPool()).BeginFrame();
 }
 
 void VulkanDevice::AddFrameCompleteCallback(FrameCompleteCallback inCallback)

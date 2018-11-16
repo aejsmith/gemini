@@ -30,6 +30,7 @@
 
 class GPUGraphicsCommandList;
 class GPUGraphicsContext;
+class GPUUniformPool;
 class Window;
 
 /**
@@ -50,6 +51,9 @@ public:
 
     /** Get the primary graphics context. This is always present. */
     GPUGraphicsContext&             GetGraphicsContext() const  { return *mGraphicsContext; }
+
+    /** Get the uniform data pool. */
+    GPUUniformPool&                 GetUniformPool() const      { return *mUniformPool; }
 
     /**
      * Mark the end of a frame. Should be called after the last work submission
@@ -110,6 +114,8 @@ protected:
     GPUVendor                       mVendor;
 
     GPUGraphicsContext*             mGraphicsContext;
+
+    GPUUniformPool*                 mUniformPool;
 
 private:
     using ArgumentSetLayoutCache  = HashMap<size_t, GPUArgumentSetLayout*>;

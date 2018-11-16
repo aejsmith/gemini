@@ -93,3 +93,9 @@ void VulkanMemoryManager::Free(const VmaAllocation inAllocation)
 {
     vmaFreeMemory(mAllocator, inAllocation);
 }
+
+void VulkanMemoryManager::GetInfo(const VmaAllocation inAllocation,
+                                  VmaAllocationInfo&  outInfo)
+{
+    vmaGetAllocationInfo(mAllocator, inAllocation, &outInfo);
+}

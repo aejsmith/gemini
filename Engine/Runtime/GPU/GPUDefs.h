@@ -30,6 +30,9 @@ static constexpr size_t kMaxRenderPassColourAttachments = 8;
 /** Maximum number of shader argument sets. */
 static constexpr size_t kMaxArgumentSets = 4;
 
+/** Handle to uniform data written within the current frame (see GPUUniformPool). */
+using GPUUniforms = uint32_t;
+
 enum GPUVendor : uint8_t
 {
     kGPUVendor_Unknown,
@@ -165,7 +168,7 @@ enum GPUResourceState : uint32_t
                                                   kGPUResourceState_ComputeShaderWrite,
 
     /**
-     * Constant buffer read states.
+     * Uniform buffer read states.
      */
     kGPUResourceState_VertexShaderUniformRead   = (1 << 6),
     kGPUResourceState_FragmentShaderUniformRead = (1 << 7),
