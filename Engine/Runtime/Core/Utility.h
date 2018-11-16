@@ -71,6 +71,42 @@ constexpr bool IsPowerOf2(const T& inValue)
     return IsOnlyOneBitSet(inValue);
 }
 
+/** Round an integer value up to a power of 2. */
+template <typename T>
+constexpr T RoundUpPow2(const T& inValue, const T& inNearest)
+{
+    return (inValue & (inNearest - 1))
+               ? ((inValue + inNearest) & ~(inNearest - 1))
+               : inValue;
+}
+
+/** Round a value down to a power of 2. */
+template <typename T>
+constexpr T RoundDownPow2(const T& inValue, const T& inNearest)
+{
+    return (inValue & (inNearest - 1))
+               ? (inValue & ~(inNearest - 1))
+               : inValue;
+}
+
+/** Round an integer value up. Use RoundUpPow2() if known as a power of 2. */
+template <typename T>
+constexpr T RoundUp(const T& inValue, const T& inNearest)
+{
+    return (inValue % inNearest)
+               ? (inValue - (inValue % inNearest)) + inNearest
+               : inValue;
+}
+
+/** Round an integer value down. Use RoundDownPow2() if known as a power of 2. */
+template <typename T>
+constexpr T RoundDown(const T& inValue, const T& inNearest)
+{
+    return (inValue % inNearest)
+               ? inValue - (inValue % inNearest)
+               : inValue;
+}
+
 /**
  * Scope guard helper.
  */
