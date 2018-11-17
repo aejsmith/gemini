@@ -101,6 +101,7 @@ MetaClass::MetaClass(const char* const         inName,
     mProperties  (inProperties)
 {
     auto ret = GetMetaClassMap().insert(std::make_pair(mName, this));
+    Unused(ret);
 
     AssertMsg(ret.second,
               "Registering meta-class '%s' that already exists",
@@ -110,6 +111,7 @@ MetaClass::MetaClass(const char* const         inName,
     for (const MetaProperty& property : mProperties)
     {
         auto ret = mPropertyMap.insert(std::make_pair(property.GetName(), &property));
+        Unused(ret);
 
         AssertMsg(ret.second,
                   "Meta-class '%s' has duplicate property '%s'",

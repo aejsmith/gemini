@@ -45,6 +45,7 @@ void GPUShader::AddPipeline(GPUPipeline* const inPipeline,
 {
     auto ret = mPipelines.emplace(inPipeline);
     Assert(ret.second);
+    Unused(ret);
 }
 
 void GPUShader::RemovePipeline(GPUPipeline* const inPipeline,

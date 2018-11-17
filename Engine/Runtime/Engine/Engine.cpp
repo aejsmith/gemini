@@ -110,8 +110,8 @@ void Engine::Run()
         {
             GPUShaderCode code;
             bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
-
             Assert(isCompiled);
+            Unused(isCompiled);
 
             return GPUDevice::Get().CreateShader(inStage, std::move(code));
         };

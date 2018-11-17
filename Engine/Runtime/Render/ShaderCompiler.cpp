@@ -210,6 +210,7 @@ void ShaderCompiler::Compile()
     /* Initialise once on first use. */
     static const bool initialised = glslang::InitializeProcess();
     Assert(initialised);
+    Unused(initialised);
 
     /* Convert stage to a glslang type. */
     EShLanguage glslangStage;

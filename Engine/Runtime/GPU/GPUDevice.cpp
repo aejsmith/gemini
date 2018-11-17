@@ -81,6 +81,7 @@ GPUArgumentSetLayout* GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc&&
 
         auto ret = mArgumentSetLayoutCache.emplace(hash, layout);
         Assert(ret.second);
+        Unused(ret);
     }
 
     return layout;
