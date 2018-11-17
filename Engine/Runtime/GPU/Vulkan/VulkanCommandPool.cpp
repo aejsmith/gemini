@@ -150,4 +150,6 @@ void VulkanCommandPool::Reset()
      * used again. */
     std::move(mAllocatedPrimary.begin(), mAllocatedPrimary.end(), std::back_inserter(mFreePrimary));
     std::move(mAllocatedSecondary.begin(), mAllocatedSecondary.end(), std::back_inserter(mFreeSecondary));
+    mAllocatedPrimary.clear();
+    mAllocatedSecondary.clear();
 }
