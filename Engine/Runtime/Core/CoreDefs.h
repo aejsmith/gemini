@@ -80,34 +80,41 @@ extern void FatalLogImpl(const char* const inFile,
  * Check that a condition is true. If it is not, the engine will abort with an
  * error message giving the condition that failed.
  */
-#define Assert(inCondition) \
-    do \
-    { \
-        if (Unlikely(!(inCondition))) \
+#if ORION_BUILD_DEBUG
+    #define Assert(inCondition) \
+        do \
         { \
-            FatalLogImpl(__FILE__, __LINE__, "Assertion failed: %s", #inCondition); \
-            DebugBreak(); \
-            FatalImpl(); \
+            if (Unlikely(!(inCondition))) \
+            { \
+                FatalLogImpl(__FILE__, __LINE__, "Assertion failed: %s", #inCondition); \
+                DebugBreak(); \
+                FatalImpl(); \
+            } \
         } \
-    } \
-    while (0)
+        while (0)
+#else
+    #define Assert(inCondition)
+#endif
 
 /**
  * Check that a condition is true. If it is not, the engine will abort with the
  * specified error message.
  */
-
-#define AssertMsg(inCondition, inFormat, ...) \
-    do \
-    { \
-        if (Unlikely(!(inCondition))) \
+#if ORION_BUILD_DEBUG
+    #define AssertMsg(inCondition, inFormat, ...) \
+        do \
         { \
-            FatalLogImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__); \
-            DebugBreak(); \
-            FatalImpl(); \
+            if (Unlikely(!(inCondition))) \
+            { \
+                FatalLogImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__); \
+                DebugBreak(); \
+                FatalImpl(); \
+            } \
         } \
-    } \
-    while (0)
+        while (0)
+#else
+    #define AssertMsg(inCondtion, inFormat, ...)
+#endif
 
 /**
  * This hints to the compiler that the point where it is used is unreachable.
@@ -122,7 +129,7 @@ extern void FatalLogImpl(const char* const inFile,
 #else
     #define Unreachable() \
         CompilerUnreachable();
-    #define UnreachableMsg() \
+    #define UnreachableMsg(...) \
         CompilerUnreachable();
 #endif
 
