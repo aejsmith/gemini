@@ -42,7 +42,7 @@
 #endif
 
 /**
- * Logging functions/macros.
+ * Helper macros.
  */
 
 /** Break into the debugger. */
@@ -52,6 +52,13 @@
 #else
     #define DebugBreak()
 #endif
+
+/** Indicate that a variable may be unused (e.g. only used on debug builds). */
+#define Unused(x) ((void)(x))
+
+/**
+ * Logging functions/macros.
+ */
 
 extern void FatalLogImpl(const char* const inFile,
                          const int         inLine,
