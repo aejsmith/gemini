@@ -20,6 +20,11 @@
 
 #include <deque>
 
+/**
+ * Class handling per-thread command buffer allocations and dynamic descriptor
+ * set allocations. Both the VkCommandPool and VkDescriptorPool are reset as
+ * a whole once a frame is complete.
+ */
 class VulkanCommandPool final : public GPUDeviceChild,
                                 public VulkanDeviceChild<VulkanCommandPool>
 {
@@ -32,13 +37,16 @@ public:
     VkCommandBuffer             AllocatePrimary();
     VkCommandBuffer             AllocateSecondary();
 
+    VkDescriptorSet             AllocateDescriptorSet(const VkDescriptorSetLayout inLayout);
+
     void                        Reset();
 
 private:
     using CommandBufferList   = std::deque<VkCommandBuffer>;
 
 private:
-    VkCommandPool               mHandle;
+    VkCommandPool               mCommandPool;
+    VkDescriptorPool            mDescriptorPool;
 
     /**
      * List of free command buffers. Resetting a command pool does not free

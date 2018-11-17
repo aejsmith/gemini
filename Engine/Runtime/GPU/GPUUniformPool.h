@@ -43,8 +43,8 @@ public:
      * Convenience wrapper to allocate uniform data space and copy some data
      * into it.
      */
-    GPUUniforms             Write(const void*  inData,
-                                  const size_t inSize);
+    GPUUniforms             Write(const void* const inData,
+                                  const size_t      inSize);
 };
 
 inline GPUUniformPool::GPUUniformPool(GPUDevice& inDevice) :
@@ -56,8 +56,8 @@ inline GPUUniformPool::~GPUUniformPool()
 {
 }
 
-inline GPUUniforms GPUUniformPool::Write(const void*  inData,
-                                         const size_t inSize)
+inline GPUUniforms GPUUniformPool::Write(const void* const inData,
+                                         const size_t      inSize)
 {
     void* mapping;
     const GPUUniforms handle = Allocate(inSize, mapping);

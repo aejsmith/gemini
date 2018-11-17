@@ -30,8 +30,12 @@ static constexpr size_t kMaxRenderPassColourAttachments = 8;
 /** Maximum number of shader argument sets. */
 static constexpr size_t kMaxArgumentSets = 4;
 
+/** Maximum number of arguments per argument set. */
+static constexpr size_t kMaxArgumentsPerSet = 32;
+
 /** Handle to uniform data written within the current frame (see GPUUniformPool). */
 using GPUUniforms = uint32_t;
+static constexpr GPUUniforms kGPUUniforms_Invalid = std::numeric_limits<uint32_t>::max();
 
 enum GPUVendor : uint8_t
 {
@@ -406,41 +410,49 @@ enum GPUArgumentType : uint8_t
      * be supplied at command recording time regardless of whether using pre-
      * baked or dynamically created argument sets.
      */
-    kGPUArgumentType_Uniforms,
+    kGPUArgumentType_Uniforms = 0,
 
     /**
      * Read-only buffer. Buffers used with an argument of this type must have
      * have kGPUResourceUsage_ShaderRead.
      */
-    kGPUArgumentType_Buffer,
+    kGPUArgumentType_Buffer = 1,
 
     /**
      * Read/write buffer. Buffers used with an argument of this type must have
      * have kGPUResourceUsage_ShaderWrite.
      */
-    kGPUArgumentType_RWBuffer,
+    kGPUArgumentType_RWBuffer = 2,
 
     /**
      * Read-only (sampled) texture. Textures used with an argument of this
      * type must have kGPUResourceUsage_ShaderRead.
      */
-    kGPUArgumentType_Texture,
+    kGPUArgumentType_Texture = 3,
 
     /**
      * Read/write texture, or an image in GLSL terminology. Textures used with
      * an argument of this type must have kGPUResourceUsage_ShaderWrite.
      */
-    kGPUArgumentType_RWTexture,
+    kGPUArgumentType_RWTexture = 4,
 
     /**
      * Read-only texture (typed) buffer. Buffers used with an argument of this
      * type must have have kGPUResourceUsage_ShaderRead.
      */
-    kGPUArgumentType_TextureBuffer,
+    kGPUArgumentType_TextureBuffer = 5,
 
     /**
      * Read/write texture (typed) buffer. Buffers used with an argument of this
      * type must have have kGPUResourceUsage_ShaderWrite.
      */
-    kGPUArgumentType_RWTextureBuffer,
+    kGPUArgumentType_RWTextureBuffer = 6,
+
+    /**
+     * Texture sampler.
+     */
+    kGPUArgumentType_Sampler = 7,
+
+    /* Number of argument types - note some things depend on the order of these. */
+    kGPUArgumentTypeCount,
 };

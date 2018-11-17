@@ -46,6 +46,14 @@ protected:
     void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
                                                        const size_t           inCount);
 
+    void                            SetArgumentsImpl(const uint8_t         inIndex,
+                                                     GPUArgumentSet* const inSet);
+    void                            SetArgumentsImpl(const uint8_t            inIndex,
+                                                     const GPUArgument* const inArguments);
+
+    void                            BindDescriptorSets(const VkPipelineBindPoint inBindPoint,
+                                                       const VkPipelineLayout    inPipelineLayout);
+
 private:
     T&                              GetT()          { return static_cast<T&>(*this); }
     const T&                        GetT() const    { return static_cast<const T&>(*this); }
@@ -55,6 +63,8 @@ private:
 
     /** Flattened array of completed command buffers, in submission order. */
     std::vector<VkCommandBuffer>    mCommandBuffers;
+
+    VkDescriptorSet                 mDescriptorSets[kMaxArgumentSets];
 
 };
 
@@ -85,6 +95,14 @@ protected:
                                                        const size_t           inCount) override
                                         { VulkanCommandList::SubmitChildrenImpl(inChildren, inCount); }
 
+    void                            SetArgumentsImpl(const uint8_t         inIndex,
+                                                     GPUArgumentSet* const inSet) override
+                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inSet); }
+
+    void                            SetArgumentsImpl(const uint8_t            inIndex,
+                                                     const GPUArgument* const inArguments) override
+                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inArguments); }
+
     /**
      * Internal methods.
      */
@@ -102,5 +120,7 @@ private:
 private:
     VkRenderPass                    mVulkanRenderPass;
     VkFramebuffer                   mFramebuffer;
+
+    friend class VulkanCommandList<VulkanGraphicsCommandList>;
 
 };

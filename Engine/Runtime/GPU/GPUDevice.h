@@ -33,6 +33,8 @@ class GPUGraphicsContext;
 class GPUUniformPool;
 class Window;
 
+struct GPUArgument;
+
 /**
  * This class is the main class of the low-level rendering API abstraction
  * layer. It provides an interface to create GPU resources and record
@@ -81,12 +83,28 @@ public:
      * Resource creation methods.
      */
 
+    /**
+     * Create a persistent argument set. See GPUArgumentSet for more details of
+     * when persistent vs dynamic should be used.
+     *
+     * Takes a layout, and an array of arguments. The number of entries in the
+     * array must be the number of arguments according to the layout. In the
+     * case where the layout only contains Uniforms entries, then it is valid
+     * to pass null for the arguments array.
+     *
+     * The created argument set does *NOT* hold a reference to any of its
+     * resource view arguments. The owner of the set must ensure that the
+     * arguments remain alive while the set is still being used.
+     */
+    virtual GPUArgumentSetPtr       CreateArgumentSet(GPUArgumentSetLayout* const inLayout,
+                                                      const GPUArgument* const    inArguments) = 0;
+
     virtual GPUBufferPtr            CreateBuffer(const GPUBufferDesc& inDesc) = 0;
 
     GPUPipelinePtr                  CreatePipeline(const GPUPipelineDesc& inDesc);
 
-    virtual GPUResourceViewPtr      CreateResourceView(GPUResource&               inResource,
-                                                   const GPUResourceViewDesc& inDesc) = 0;
+    virtual GPUResourceViewPtr      CreateResourceView(GPUResource* const         inResource,
+                                                       const GPUResourceViewDesc& inDesc) = 0;
 
     virtual GPUShaderPtr            CreateShader(const GPUShaderStage inStage,
                                                  GPUShaderCode        inCode) = 0;

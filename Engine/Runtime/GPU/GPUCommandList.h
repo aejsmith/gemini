@@ -22,11 +22,14 @@
 #include <atomic>
 #include <thread>
 
+class GPUArgumentSet;
+class GPUArgumentSetLayout;
 class GPUContext;
 class GPUComputeContext;
 class GPUGraphicsContext;
 class GPUPipeline;
 
+struct GPUArgument;
 struct GPUPipelineDesc;
 
 /**
@@ -138,12 +141,80 @@ public:
                                                    const size_t           inCount);
 
     /**
+     * Set shader arguments to be used for subsequent draw/dispatch commands.
+     * The overload taking a GPUArgumentSet pointer binds a pre-existing
+     * argument set. This set's layout must match the layout specified in the
+     * currently bound pipeline or compute shader for the given set index.
+     *
+     * The other dynamically allocates a temporary argument set binding the
+     * specified arguments, which again must match the pipeline's layout for
+     * the given set index. Argument array follows the same rules as for
+     * GPUDevice::CreateArgumentSet(). See GPUArgumentSet for more details of
+     * persistent vs. dynamically created sets.
+     *
+     * When binding a pipeline, any set index which uses a uniform-only layout
+     * will automatically have valid arguments bound, there is no need to call
+     * these functions. It is only necessary to set the uniforms themselves.
+     *
+     * Any arguments of type kGPUArgumentType_Uniforms in the set are initially
+     * invalid. Before drawing, SetUniforms()/WriteUniforms() must be used to
+     * set uniform data written in the current frame.
+     *
+     * See GPUGraphicsCommandList::SetPipeline() for details of how changing
+     * pipeline affects bound argument state.
+     */
+    void                            SetArguments(const uint8_t         inIndex,
+                                                 GPUArgumentSet* const inSet);
+    void                            SetArguments(const uint8_t            inIndex,
+                                                 const GPUArgument* const inArguments);
+
+    /**
+     * Set data for a kGPUArgumentType_Uniforms shader argument. This remains
+     * valid until the argument set layout at the given set index changes (i.e.
+     * due to a pipeline change).
+     */
+    void                            SetUniforms(const uint8_t     inSetIndex,
+                                                const uint8_t     inArgumentIndex,
+                                                const GPUUniforms inUniforms);
+
+    /**
+     * Convenience function which writes new data to the uniform pool and then
+     * sets it with SetUniforms().
+     */
+    void                            WriteUniforms(const uint8_t     inSetIndex,
+                                                  const uint8_t     inArgumentIndex,
+                                                  const void* const inData,
+                                                  const size_t      inSize);
+
+protected:
+    struct ArgumentState
+    {
+        /** Layout as expected by the pipeline/compute shader. */
+        GPUArgumentSetLayout*       layout;
+
+        /** Currently set uniform handles. */
+        GPUUniforms                 uniforms[kMaxArgumentsPerSet];
+
+        /**
+         * Dirty state tracking for the backend. Set when the layout, set or
+         * uniforms change.
+         */
+        bool                        dirty : 1;
+
+        #if ORION_BUILD_DEBUG
+        bool                        valid : 1;
+        #endif
+    };
+
+protected:
+    /**
      * Validate that the command list is in the correct state and that it is
      * being used from the correct thread.
      */
     void                            ValidateCommand() const;
 
-protected:
+    void                            ValidateArguments() const;
+
     virtual void                    BeginImpl() {}
     virtual void                    EndImpl() {}
 
@@ -152,12 +223,26 @@ protected:
     virtual void                    SubmitChildrenImpl(GPUCommandList** const inChildren,
                                                        const size_t           inCount) = 0;
 
+    /**
+     * Set shader arguments. Responsible for setting backend-specific state on
+     * the command list, dynamically allocating it in the second case, and for
+     * flagging argument state as dirty if the backend determines it is
+     * necessary.
+     */
+    virtual void                    SetArgumentsImpl(const uint8_t         inIndex,
+                                                     GPUArgumentSet* const inSet) = 0;
+    virtual void                    SetArgumentsImpl(const uint8_t            inIndex,
+                                                     const GPUArgument* const inArguments) = 0;
+
 protected:
     GPUContext&                     mContext;
     const GPUCommandList* const     mParent;
 
     /** State of the command list. */
     State                           mState;
+
+    /** Bound shader argument state. */
+    ArgumentState                   mArgumentState[kMaxArgumentSets];
 
     #if ORION_BUILD_DEBUG
 
@@ -192,15 +277,15 @@ public:
                                         { return static_cast<GPUGraphicsCommandList*>(GPUCommandList::CreateChild()); }
 
     /**
-     * Set the pipeline to use for subsequent draws to a pre-created pipeline
-     * object.
+     * Set the pipeline to use for subsequent draws, to either a pre-created
+     * pipeline object, or to a dynamically created pipeline matching the
+     * specified state.
+     *
+     * For each argument set index, if the new pipeline's layout at that index
+     * differs from the old pipeline's, then any bound arguments at that index
+     * will be unbound. Otherwise, bound arguments will remain bound.
      */
     void                            SetPipeline(GPUPipeline* const inPipeline);
-
-    /**
-     * Set the pipeline to use for subsequent draws to a dynamically created
-     * pipeline matching the specified state.
-     */
     void                            SetPipeline(const GPUPipelineDesc& inDesc);
 
     void                            SetViewport(const GPUViewport& inViewport);
@@ -276,6 +361,15 @@ inline void GPUCommandList::ValidateCommand() const
     Assert(mState == kState_Begun);
     Assert(mOwningThread == std::this_thread::get_id());
 }
+
+#ifndef ORION_BUILD_DEBUG
+
+inline void GPUCommandList::ValidateArguments() const
+{
+    /* No validation on non-debug builds. */
+}
+
+#endif
 
 inline GPUCommandList* GPUCommandList::CreateChild()
 {

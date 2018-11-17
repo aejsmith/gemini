@@ -22,6 +22,7 @@
 #include "Engine/Game.h"
 #include "Engine/Window.h"
 
+#include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
 #include "GPU/GPUSwapchain.h"
@@ -118,6 +119,18 @@ void Engine::Run()
     GPUShaderPtr vertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
     GPUShaderPtr fragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
 
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
+    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;
+
+    GPUArgumentSetLayout* argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+
+    static const glm::vec4 kColours[3] =
+    {
+        glm::vec4(1.0, 0.0, 0.0, 1.0),
+        glm::vec4(0.0, 1.0, 0.0, 1.0),
+        glm::vec4(0.0, 0.0, 1.0, 1.0)
+    };
+
     while (true)
     {
         SDL_Event event;
@@ -148,6 +161,7 @@ void Engine::Run()
         GPUPipelineDesc pipelineDesc;
         pipelineDesc.shaders[kGPUShaderStage_Vertex]   = vertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Fragment] = fragmentShader;
+        pipelineDesc.argumentSetLayouts[0]             = argumentLayout;
         pipelineDesc.blendState                        = GPUBlendState::Get(GPUBlendStateDesc());
         pipelineDesc.depthStencilState                 = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
         pipelineDesc.rasterizerState                   = GPURasterizerState::Get(GPURasterizerStateDesc());
@@ -155,6 +169,9 @@ void Engine::Run()
         pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
 
         cmdList->SetPipeline(pipelineDesc);
+
+        cmdList->WriteUniforms(0, 0, kColours, sizeof(kColours));
+
         cmdList->Draw(3);
 
         cmdList->End();

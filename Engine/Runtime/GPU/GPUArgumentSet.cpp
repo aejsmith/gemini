@@ -16,13 +16,117 @@
 
 #include "GPU/GPUArgumentSet.h"
 
+#include "GPU/GPUResourceView.h"
+
 GPUArgumentSetLayout::GPUArgumentSetLayout(GPUDevice&                 inDevice,
                                            GPUArgumentSetLayoutDesc&& inDesc) :
     GPUDeviceChild  (inDevice),
     mDesc           (std::move(inDesc))
 {
+    Assert(GetArgumentCount() <= kMaxArgumentsPerSet);
+
+    mIsUniformOnly = true;
+
+    for (const auto argument : GetArguments())
+    {
+        if (argument != kGPUArgumentType_Uniforms)
+        {
+            mIsUniformOnly = false;
+        }
+    }
 }
 
 GPUArgumentSetLayout::~GPUArgumentSetLayout()
 {
 }
+
+GPUArgumentSet::GPUArgumentSet(GPUDevice&                  inDevice,
+                               GPUArgumentSetLayout* const inLayout,
+                               const GPUArgument* const    inArguments) :
+    GPUObject   (inDevice),
+    mLayout     (inLayout)
+{
+    ValidateArguments(inLayout, inArguments);
+}
+
+GPUArgumentSet::~GPUArgumentSet()
+{
+}
+
+#ifdef ORION_BUILD_DEBUG
+
+void GPUArgumentSet::ValidateArguments(GPUArgumentSetLayout* const inLayout,
+                                       const GPUArgument* const    inArguments)
+{
+    Assert(inLayout);
+
+    const auto& argumentTypes = inLayout->GetArguments();
+
+    for (size_t i = 0; i < inLayout->GetArgumentCount(); i++)
+    {
+        if (argumentTypes[i] == kGPUArgumentType_Uniforms)
+        {
+            Assert(!inArguments || (!inArguments[i].view && !inArguments[i].sampler));
+        }
+        else
+        {
+            Assert(inArguments);
+
+            const auto view    = inArguments[i].view;
+            const auto sampler = inArguments[i].sampler;
+
+            /* Must have only 1 of a view or sampler. */
+            Assert(!view != !sampler);
+
+            switch (argumentTypes[i])
+            {
+                case kGPUArgumentType_Buffer:
+                    Assert(view);
+                    Assert(view->GetType() == kGPUResourceViewType_Buffer);
+                    Assert(view->GetResource().GetUsage() & kGPUResourceUsage_ShaderRead);
+                    break;
+
+                case kGPUArgumentType_RWBuffer:
+                    Assert(view);
+                    Assert(view->GetType() == kGPUResourceViewType_Buffer);
+                    Assert(view->GetResource().GetUsage() & kGPUResourceUsage_ShaderWrite);
+                    break;
+
+                case kGPUArgumentType_Texture:
+                    Assert(view);
+                    Assert(view->GetResource().IsTexture());
+                    Assert(view->GetResource().GetUsage() & kGPUResourceUsage_ShaderRead);
+                    break;
+
+                case kGPUArgumentType_RWTexture:
+                    Assert(view);
+                    Assert(view->GetResource().IsTexture());
+                    Assert(view->GetResource().GetUsage() & kGPUResourceUsage_ShaderWrite);
+                    break;
+
+                case kGPUArgumentType_TextureBuffer:
+                    Assert(view);
+                    Assert(view->GetType() == kGPUResourceViewType_TextureBuffer);
+                    Assert(view->GetResource().GetUsage() & kGPUResourceUsage_ShaderRead);
+                    break;
+
+                case kGPUArgumentType_RWTextureBuffer:
+                    Assert(view);
+                    Assert(view->GetType() == kGPUResourceViewType_TextureBuffer);
+                    Assert(view->GetResource().GetUsage() & kGPUResourceUsage_ShaderWrite);
+                    break;
+
+                case kGPUArgumentType_Sampler:
+                    Assert(sampler);
+                    break;
+
+                default:
+                    UnreachableMsg("Unknown GPUArgumentType");
+                    break;
+
+            }
+        }
+    }
+}
+
+#endif

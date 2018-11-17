@@ -32,7 +32,13 @@ public:
                                 ~VulkanResourceView();
 
     VkImageView                 GetImageView() const;
-    VkBufferView                GetBufferView() const;
+
+    /**
+     * Returns a const reference to the buffer view handle, allows us to point
+     * to this directly in VulkanArgumentSet::Write() without putting it in
+     * temporary intermediate storage.
+     */
+    const VkBufferView&         GetBufferView() const;
 
     /**
      * Interface from VulkanSwapchain to create/set a view that corresponds
@@ -62,7 +68,7 @@ inline VkImageView VulkanResourceView::GetImageView() const
     return mImageView;
 }
 
-inline VkBufferView VulkanResourceView::GetBufferView() const
+inline const VkBufferView& VulkanResourceView::GetBufferView() const
 {
     Assert(GetType() == kGPUResourceViewType_TextureBuffer);
     return mBufferView;

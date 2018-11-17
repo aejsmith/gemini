@@ -16,6 +16,7 @@
 
 #include "VulkanCommandList.h"
 
+#include "VulkanArgumentSet.h"
 #include "VulkanCommandPool.h"
 #include "VulkanContext.h"
 #include "VulkanDevice.h"
@@ -23,7 +24,8 @@
 
 template <typename T>
 inline VulkanCommandList<T>::VulkanCommandList() :
-    mCommandBuffer (VK_NULL_HANDLE)
+    mCommandBuffer  (VK_NULL_HANDLE),
+    mDescriptorSets {}
 {
 }
 
@@ -88,6 +90,108 @@ inline void VulkanCommandList<T>::SubmitChildrenImpl(GPUCommandList** const inCh
                                cmdList->mCommandBuffers.end());
 
         delete cmdList;
+    }
+}
+
+template <typename T>
+inline void VulkanCommandList<T>::SetArgumentsImpl(const uint8_t         inIndex,
+                                                   GPUArgumentSet* const inSet)
+{
+    const auto set = static_cast<VulkanArgumentSet*>(inSet);
+
+    if (set->GetHandle() != mDescriptorSets[inIndex])
+    {
+        auto& argumentState = GetT().mArgumentState[inIndex];
+        argumentState.dirty = true;
+
+        mDescriptorSets[inIndex] = set->GetHandle();
+    }
+}
+
+template <typename T>
+inline void VulkanCommandList<T>::SetArgumentsImpl(const uint8_t            inIndex,
+                                                   const GPUArgument* const inArguments)
+{
+    auto& argumentState = GetT().mArgumentState[inIndex];
+    argumentState.dirty = true;
+
+    const auto layout = static_cast<const VulkanArgumentSetLayout*>(argumentState.layout);
+
+    if (layout->IsUniformOnly())
+    {
+        mDescriptorSets[inIndex] = layout->GetUniformOnlySet();
+    }
+    else
+    {
+        mDescriptorSets[inIndex] = GetVulkanContext().GetCommandPool().AllocateDescriptorSet(layout->GetHandle());
+
+        VulkanArgumentSet::Write(mDescriptorSets[inIndex], layout, inArguments);
+    }
+}
+
+template <typename T>
+inline void VulkanCommandList<T>::BindDescriptorSets(const VkPipelineBindPoint inBindPoint,
+                                                     const VkPipelineLayout    inPipelineLayout)
+{
+    GetT().ValidateArguments();
+
+    /* Try to group multiple contiguous set changes into a single call. */
+    VkDescriptorSet sets[kMaxArgumentSets];
+    uint32_t firstSet = 0;
+    uint32_t setCount = 0;
+
+    uint32_t dynamicOffsets[kMaxArgumentSets * kMaxArgumentsPerSet];
+    uint32_t dynamicOffsetCount = 0;
+
+    auto DoBind =
+        [&] ()
+        {
+            vkCmdBindDescriptorSets(GetCommandBuffer(),
+                                    inBindPoint,
+                                    inPipelineLayout,
+                                    firstSet,
+                                    setCount,
+                                    sets,
+                                    dynamicOffsetCount,
+                                    dynamicOffsets);
+
+            setCount           = 0;
+            dynamicOffsetCount = 0;
+        };
+
+    for (uint32_t setIndex = 0; setIndex < kMaxArgumentSets; setIndex++)
+    {
+        auto& argumentState = GetT().mArgumentState[setIndex];
+
+        if (argumentState.dirty && argumentState.layout)
+        {
+            if (setCount > 0 && firstSet + setCount != setIndex)
+            {
+                DoBind();
+            }
+
+            if (setCount == 0)
+            {
+                firstSet = setIndex;
+            }
+
+            sets[setCount++] = mDescriptorSets[setIndex];
+
+            for (size_t argumentIndex = 0; argumentIndex < argumentState.layout->GetArgumentCount(); argumentIndex++)
+            {
+                if (argumentState.layout->GetArguments()[argumentIndex] == kGPUArgumentType_Uniforms)
+                {
+                    dynamicOffsets[dynamicOffsetCount++] = argumentState.uniforms[argumentIndex];
+                }
+            }
+
+            argumentState.dirty = false;
+        }
+    }
+
+    if (setCount > 0)
+    {
+        DoBind();
     }
 }
 
@@ -202,16 +306,18 @@ GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
 
 void VulkanGraphicsCommandList::PreDraw()
 {
+    const auto pipeline = static_cast<VulkanPipeline*>(mPipeline);
+
     if (mDirtyState & kDirtyState_Pipeline)
     {
-        const auto pipeline = static_cast<VulkanPipeline*>(mPipeline);
-
         vkCmdBindPipeline(GetCommandBuffer(),
-                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                        pipeline->GetHandle());
+                          VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipeline->GetHandle());
 
         mDirtyState &= ~kDirtyState_Pipeline;
     }
+
+    BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetLayout());
 
     if (mDirtyState & kDirtyState_Viewport)
     {

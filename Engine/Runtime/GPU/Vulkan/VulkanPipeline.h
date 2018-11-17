@@ -29,10 +29,11 @@ public:
 
                             ~VulkanPipeline();
 
-    VkPipeline              GetHandle() const   { return mHandle; }
+    VkPipeline              GetHandle() const { return mHandle; }
+    VkPipelineLayout        GetLayout() const { return mLayout; }
 
 private:
     VkPipeline              mHandle;
-    VkPipelineLayout        mLayoutHandle;
+    VkPipelineLayout        mLayout;
 
 };

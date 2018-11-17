@@ -14,22 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-layout (location = 0) out vec4 vtxColour;
+#pragma once
 
-const vec2 vertices[3] = vec2[]
-(
-    vec2(-0.3, -0.4),
-    vec2( 0.3, -0.4),
-    vec2( 0.0,  0.4)
-);
+#include "VulkanDeviceChild.h"
 
-layout (set = 0, binding = 0) uniform Uniforms
+#include <mutex>
+
+/**
+ * Class handling global (persistent) descriptor set allocations. Dynamic
+ * sets are allocated through VulkanCommandPool.
+ */
+class VulkanDescriptorPool final : public GPUDeviceChild,
+                                   public VulkanDeviceChild<VulkanDescriptorPool>
 {
-    vec4 colours[3];
+public:
+                                VulkanDescriptorPool(VulkanDevice& inDevice);
+                                ~VulkanDescriptorPool();
+
+public:
+    VkDescriptorSet             Allocate(const VkDescriptorSetLayout inLayout);
+    void                        Free(const VkDescriptorSet inDescriptorSet);
+
+private:
+    VkDescriptorPool            mHandle;
+    std::mutex                  mLock;
+
 };
-
-void main()
-{
-    gl_Position = vec4(vertices[gl_VertexIndex], 0.0, 1.0);
-    vtxColour = colours[gl_VertexIndex % 3];
-}

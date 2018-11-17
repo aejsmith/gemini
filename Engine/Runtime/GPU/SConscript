@@ -21,6 +21,7 @@ objects = map(env.Object, [
     'Vulkan/VulkanCommandList.cpp',
     'Vulkan/VulkanCommandPool.cpp',
     'Vulkan/VulkanContext.cpp',
+    'Vulkan/VulkanDescriptorPool.cpp',
     'Vulkan/VulkanInstance.cpp',
     'Vulkan/VulkanDefs.cpp',
     'Vulkan/VulkanDevice.cpp',

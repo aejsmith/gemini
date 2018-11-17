@@ -30,6 +30,7 @@
 
 class VulkanArgumentSetLayout;
 class VulkanContext;
+class VulkanDescriptorPool;
 class VulkanMemoryManager;
 
 class VulkanDevice final : public GPUDevice
@@ -42,9 +43,12 @@ public:
      * GPUDevice methods.
      */
 public:
+    GPUArgumentSetPtr                   CreateArgumentSet(GPUArgumentSetLayout* const inLayout,
+                                                          const GPUArgument* const    inArguments) override;
+
     GPUBufferPtr                        CreateBuffer(const GPUBufferDesc& inDesc) override;
 
-    GPUResourceViewPtr                  CreateResourceView(GPUResource&               inResource,
+    GPUResourceViewPtr                  CreateResourceView(GPUResource* const         inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 
     GPUShaderPtr                        CreateShader(const GPUShaderStage inStage,
@@ -79,6 +83,7 @@ public:
     VkPipelineCache                     GetDriverPipelineCache() const  { return mDriverPipelineCache; }
 
     VulkanMemoryManager&                GetMemoryManager() const        { return *mMemoryManager; }
+    VulkanDescriptorPool&               GetDescriptorPool() const       { return *mDescriptorPool; }
 
     /**
      * Get the current frame index (between 0 and kVulkanInFlightFrameCount),
@@ -169,6 +174,7 @@ private:
     VkPipelineCache                     mDriverPipelineCache;
 
     VulkanMemoryManager*                mMemoryManager;
+    VulkanDescriptorPool*               mDescriptorPool;
 
     /**
      * Per-frame data. Indexed by mCurrentFrame, which is a value between 0

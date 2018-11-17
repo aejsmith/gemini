@@ -18,7 +18,10 @@
 
 #include "Core/Hash.h"
 
-#include "GPU/GPUDeviceChild.h"
+#include "GPU/GPUObject.h"
+
+class GPUResourceView;
+class GPUSamplerState;
 
 using GPUArgumentTypeArray = std::vector<GPUArgumentType>;
 
@@ -71,14 +74,73 @@ class GPUArgumentSetLayout : public GPUDeviceChild
 protected:
                                     GPUArgumentSetLayout(GPUDevice&                 inDevice,
                                                          GPUArgumentSetLayoutDesc&& inDesc);
+
                                     ~GPUArgumentSetLayout();
 
 public:
-    const GPUArgumentTypeArray&     GetArguments() const { return mDesc.arguments; }
+    const GPUArgumentTypeArray&     GetArguments() const        { return mDesc.arguments; }
+    uint8_t                         GetArgumentCount() const    { return mDesc.arguments.size(); }
+
+    bool                            IsUniformOnly() const       { return mIsUniformOnly; }
 
 private:
     const GPUArgumentSetLayoutDesc  mDesc;
+    bool                            mIsUniformOnly;
 
     /* Allows the device to destroy cached layouts upon destruction. */
     friend class GPUDevice;
 };
+
+struct GPUArgument
+{
+    GPUResourceView*                view    = nullptr;
+    const GPUSamplerState*          sampler = nullptr;
+};
+
+/**
+ * Persistent argument set, created with GPUDevice::CreateArgumentSet().
+ * Creating sets persistently should be preferred over dynamically setting
+ * arguments on a command list where possible, since it moves the overhead of
+ * allocating space for and writing hardware descriptors from draw time to
+ * creation time, and allows sets of arguments to be bound very cheaply.
+ *
+ * An exception to this is sets which only contain kGPUArgumentType_Uniforms
+ * arguments: due to the way we handle uniforms, we can create these sets
+ * dynamically very cheaply, e.g. on Vulkan we actually create just one set up
+ * front at layout creation time and reuse that when asked to dynamically
+ * create the set.
+ *
+ * Argument sets are immutable: if the higher level engine needs to change
+ * arguments, it should create a new argument set.
+ */
+class GPUArgumentSet : public GPUObject
+{
+protected:
+                                    GPUArgumentSet(GPUDevice&                  inDevice,
+                                                   GPUArgumentSetLayout* const inLayout,
+                                                   const GPUArgument* const    inArguments);
+
+                                    ~GPUArgumentSet();
+
+public:
+    GPUArgumentSetLayout*           GetLayout() const { return mLayout; }
+
+    static void                     ValidateArguments(GPUArgumentSetLayout* const inLayout,
+                                                      const GPUArgument* const    inArguments);
+
+private:
+    GPUArgumentSetLayout*           mLayout;
+
+};
+
+using GPUArgumentSetPtr = ReferencePtr<GPUArgumentSet>;
+
+#ifndef ORION_BUILD_DEBUG
+
+inline void GPUArgumentSet::ValidateArguments(GPUArgumentSetLayout* const inLayout,
+                                              const GPUArgument* const    inArguments)
+{
+    /* On non-debug builds this does nothing. */
+}
+
+#endif

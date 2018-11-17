@@ -19,6 +19,7 @@
 #include "VulkanArgumentSet.h"
 #include "VulkanBuffer.h"
 #include "VulkanContext.h"
+#include "VulkanDescriptorPool.h"
 #include "VulkanFormat.h"
 #include "VulkanMemoryManager.h"
 #include "VulkanPipeline.h"
@@ -85,8 +86,9 @@ VulkanDevice::VulkanDevice() :
                                       nullptr,
                                       &mDriverPipelineCache));
 
-    mMemoryManager = new VulkanMemoryManager(*this);
-    mUniformPool   = new VulkanUniformPool(*this);
+    mMemoryManager  = new VulkanMemoryManager(*this);
+    mDescriptorPool = new VulkanDescriptorPool(*this);
+    mUniformPool    = new VulkanUniformPool(*this);
 
     /* See GetPipelineLayout() for details of what this is for. */
     GPUArgumentSetLayoutDesc layoutDesc;
@@ -141,6 +143,7 @@ VulkanDevice::~VulkanDevice()
     }
 
     delete static_cast<VulkanUniformPool*>(mUniformPool);
+    delete mDescriptorPool;
     delete mMemoryManager;
 
     vkDestroyDevice(mHandle, nullptr);
@@ -326,6 +329,13 @@ void VulkanDevice::CreateDevice()
     #undef LOAD_VULKAN_DEVICE_FUNC
 }
 
+GPUArgumentSetPtr VulkanDevice::CreateArgumentSet(GPUArgumentSetLayout* const inLayout,
+                                                  const GPUArgument* const    inArguments)
+{
+    DebugBreak();
+    return nullptr;
+}
+
 GPUArgumentSetLayout* VulkanDevice::CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc)
 {
     return new VulkanArgumentSetLayout(*this, std::move(inDesc));
@@ -341,10 +351,10 @@ GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& inDesc)
     return new VulkanPipeline(*this, inDesc);
 }
 
-GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource&               inResource,
+GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource* const         inResource,
                                                     const GPUResourceViewDesc& inDesc)
 {
-    return new VulkanResourceView(inResource, inDesc);
+    return new VulkanResourceView(*inResource, inDesc);
 }
 
 GPUShaderPtr VulkanDevice::CreateShader(const GPUShaderStage inStage,

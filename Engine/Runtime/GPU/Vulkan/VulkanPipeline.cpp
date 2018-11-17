@@ -167,13 +167,13 @@ static void ConvertBlendState(const GPUPipelineDesc&               inDesc,
 
 VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
                                const GPUPipelineDesc& inDesc) :
-    GPUPipeline   (inDevice, inDesc),
-    mHandle       (VK_NULL_HANDLE),
-    mLayoutHandle (VK_NULL_HANDLE)
+    GPUPipeline (inDevice, inDesc),
+    mHandle     (VK_NULL_HANDLE),
+    mLayout     (VK_NULL_HANDLE)
 {
     VulkanPipelineLayoutKey layoutKey;
     memcpy(layoutKey.argumentSetLayouts, inDesc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
-    mLayoutHandle = GetVulkanDevice().GetPipelineLayout(layoutKey);
+    mLayout = GetVulkanDevice().GetPipelineLayout(layoutKey);
 
     VkPipelineShaderStageCreateInfo        stageInfo[kGPUShaderStage_NumGraphics]            = {{}};
     VkPipelineVertexInputStateCreateInfo   vertexInputInfo                                   = {};
@@ -204,7 +204,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
     createInfo.pDepthStencilState  = &depthStencilInfo;
     createInfo.pColorBlendState    = &blendInfo;
     createInfo.pDynamicState       = &kDynamicStateInfo;
-    createInfo.layout              = mLayoutHandle;
+    createInfo.layout              = mLayout;
     createInfo.renderPass          = GetVulkanDevice().GetRenderPass(mDesc.renderTargetState->GetDesc());
     createInfo.subpass             = 0;
 
@@ -218,9 +218,9 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
 VulkanPipeline::~VulkanPipeline()
 {
     GetVulkanDevice().AddFrameCompleteCallback(
-        [handle = mHandle, layoutHandle = mLayoutHandle] (VulkanDevice& inDevice)
+        [handle = mHandle, layout = mLayout] (VulkanDevice& inDevice)
         {
-            vkDestroyPipelineLayout(inDevice.GetHandle(), layoutHandle, nullptr);
+            vkDestroyPipelineLayout(inDevice.GetHandle(), layout, nullptr);
             vkDestroyPipeline(inDevice.GetHandle(), handle, nullptr);
         });
 }
