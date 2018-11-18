@@ -16,6 +16,7 @@
 
 #include "GPU/GPUResourceView.h"
 
+#include "GPU/GPUBuffer.h"
 #include "GPU/GPUResource.h"
 #include "GPU/GPUSwapchain.h"
 #include "GPU/GPUTexture.h"
@@ -41,8 +42,9 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
             Assert(GetResource().IsBuffer());
             Assert(GetMipOffset() == 0 && GetMipCount() == 1);
 
-            /* TODO: Validate buffer offset/size once buffers are implemented. */
-            Assert(false);
+            const auto& buffer = static_cast<const GPUBuffer&>(GetResource());
+
+            Assert(GetElementOffset() + GetElementCount() <= buffer.GetSize());
         }
         else
         {
