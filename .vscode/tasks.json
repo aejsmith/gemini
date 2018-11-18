@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "SCons",
+            "label": "SCons (Debug)",
             "type": "shell",
-            "command": "scons -j8",
+            "command": "scons BUILD=Debug -j8",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -14,6 +14,15 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "SCons (Release)",
+            "type": "shell",
+            "command": "scons BUILD=Release -j8",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
         }
     ]
 }
