@@ -26,6 +26,7 @@
 #include "VulkanRenderPass.h"
 #include "VulkanResourceView.h"
 #include "VulkanShader.h"
+#include "VulkanStagingPool.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
 #include "VulkanUniformPool.h"
@@ -88,6 +89,7 @@ VulkanDevice::VulkanDevice() :
 
     mMemoryManager  = new VulkanMemoryManager(*this);
     mDescriptorPool = new VulkanDescriptorPool(*this);
+    mStagingPool    = new VulkanStagingPool(*this);
     mUniformPool    = new VulkanUniformPool(*this);
 
     /* See GetPipelineLayout() for details of what this is for. */
@@ -143,6 +145,7 @@ VulkanDevice::~VulkanDevice()
     }
 
     delete static_cast<VulkanUniformPool*>(mUniformPool);
+    delete static_cast<VulkanStagingPool*>(mStagingPool);
     delete mDescriptorPool;
     delete mMemoryManager;
 
@@ -332,8 +335,7 @@ void VulkanDevice::CreateDevice()
 GPUArgumentSetPtr VulkanDevice::CreateArgumentSet(GPUArgumentSetLayout* const inLayout,
                                                   const GPUArgument* const    inArguments)
 {
-    DebugBreak();
-    return nullptr;
+    return new VulkanArgumentSet(*this, inLayout, inArguments);
 }
 
 GPUArgumentSetLayout* VulkanDevice::CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc)

@@ -16,11 +16,13 @@
 
 #include "VulkanContext.h"
 
+#include "VulkanBuffer.h"
 #include "VulkanCommandList.h"
 #include "VulkanCommandPool.h"
 #include "VulkanDevice.h"
-#include "VulkanTexture.h"
+#include "VulkanStagingPool.h"
 #include "VulkanSwapchain.h"
+#include "VulkanTexture.h"
 
 /**
  * Per-thread, per-context, per-frame command pools. We have separate pools for
@@ -371,8 +373,8 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
         {
             if (inBarriers[i].resource->IsTexture())
             {
-                auto& texture = static_cast<VulkanTexture&>(*inBarriers[i].resource);
-                auto range    = texture.GetExactSubresourceRange(inBarriers[i].range);
+                auto texture = static_cast<VulkanTexture*>(inBarriers[i].resource);
+                auto range   = texture->GetExactSubresourceRange(inBarriers[i].range);
 
                 auto& imageBarrier = imageBarriers[imageBarrierCount++];
                 imageBarrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -382,8 +384,8 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
                 imageBarrier.newLayout                       = newImageLayout;
                 imageBarrier.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
                 imageBarrier.dstQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
-                imageBarrier.image                           = texture.GetHandle();
-                imageBarrier.subresourceRange.aspectMask     = texture.GetAspectMask();
+                imageBarrier.image                           = texture->GetHandle();
+                imageBarrier.subresourceRange.aspectMask     = texture->GetAspectMask();
                 imageBarrier.subresourceRange.baseArrayLayer = range.layerOffset;
                 imageBarrier.subresourceRange.layerCount     = range.layerCount;
                 imageBarrier.subresourceRange.baseMipLevel   = range.mipOffset;
@@ -391,7 +393,17 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
             }
             else
             {
-                Fatal("TODO: Buffers");
+                auto buffer = static_cast<VulkanBuffer*>(inBarriers[i].resource);
+
+                auto& bufferBarrier = bufferBarriers[bufferBarrierCount++];
+                bufferBarrier.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                bufferBarrier.srcAccessMask       = srcAccessMask;
+                bufferBarrier.dstAccessMask       = dstAccessMask;
+                bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferBarrier.buffer              = buffer->GetHandle();
+                bufferBarrier.offset              = 0;
+                bufferBarrier.size                = buffer->GetSize();
             }
         }
     }
@@ -414,8 +426,8 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
                                  const GPUTextureClearData& inData,
                                  const GPUSubresourceRange& inRange)
 {
-    auto& texture = static_cast<VulkanTexture&>(*inTexture);
-    auto range    = texture.GetExactSubresourceRange(inRange);
+    auto texture = static_cast<VulkanTexture*>(inTexture);
+    auto range   = texture->GetExactSubresourceRange(inRange);
 
     VkImageSubresourceRange vkRange;
     vkRange.aspectMask     = 0;
@@ -426,7 +438,7 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
 
     if (inData.type == GPUTextureClearData::kColour)
     {
-        Assert(texture.GetAspectMask() == VK_IMAGE_ASPECT_COLOR_BIT);
+        Assert(texture->GetAspectMask() == VK_IMAGE_ASPECT_COLOR_BIT);
         vkRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
         VkClearColorValue value;
@@ -436,7 +448,7 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
         value.float32[3] = inData.colour.a;
 
         vkCmdClearColorImage(GetCommandBuffer(),
-                             texture.GetHandle(),
+                             texture->GetHandle(),
                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                              &value,
                              1, &vkRange);
@@ -445,13 +457,13 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
     {
         if (inData.type == GPUTextureClearData::kDepth || inData.type == GPUTextureClearData::kDepthStencil)
         {
-            Assert(texture.GetAspectMask() & VK_IMAGE_ASPECT_DEPTH_BIT);
+            Assert(texture->GetAspectMask() & VK_IMAGE_ASPECT_DEPTH_BIT);
             vkRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
         }
 
         if (inData.type == GPUTextureClearData::kStencil || inData.type == GPUTextureClearData::kDepthStencil)
         {
-            Assert(texture.GetAspectMask() & VK_IMAGE_ASPECT_STENCIL_BIT);
+            Assert(texture->GetAspectMask() & VK_IMAGE_ASPECT_STENCIL_BIT);
             vkRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
         }
 
@@ -460,11 +472,34 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
         value.stencil = inData.stencil;
 
         vkCmdClearDepthStencilImage(GetCommandBuffer(),
-                                    texture.GetHandle(),
+                                    texture->GetHandle(),
                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                     &value,
                                     1, &vkRange);
     }
+}
+
+void VulkanContext::UploadBuffer(GPUBuffer* const        inDestBuffer,
+                                 const GPUStagingBuffer& inSourceBuffer,
+                                 const uint32_t          inSize,
+                                 const uint32_t          inDestOffset,
+                                 const uint32_t          inSourceOffset)
+{
+    Assert(inSourceBuffer.IsFinalised());
+    Assert(inSourceBuffer.GetAccess() == kGPUStagingAccess_Write);
+
+    auto destBuffer       = static_cast<VulkanBuffer*>(inDestBuffer);
+    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(inSourceBuffer.GetHandle());
+
+    VkBufferCopy region;
+    region.size      = inSize;
+    region.dstOffset = inDestOffset;
+    region.srcOffset = inSourceOffset;
+
+    vkCmdCopyBuffer(GetCommandBuffer(),
+                    sourceAllocation->handle,
+                    destBuffer->GetHandle(),
+                    1, &region);
 }
 
 GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& inRenderPass)

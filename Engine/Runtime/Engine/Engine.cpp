@@ -25,6 +25,7 @@
 #include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
+#include "GPU/GPUStagingResource.h"
 #include "GPU/GPUSwapchain.h"
 
 #include "Render/ShaderCompiler.h"
@@ -98,10 +99,7 @@ Engine::~Engine()
 
 void Engine::Run()
 {
-    /* Always present from graphics for now, but in future depending on
-     * workload we may wish to present from compute. Probably ought to be
-     * decided by the frame graph. */
-    GPUGraphicsContext& presentContext = GPUGraphicsContext::Get();
+    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
     GPUSwapchain& swapchain = *MainWindow::Get().GetSwapchain();
 
@@ -119,17 +117,53 @@ void Engine::Run()
     GPUShaderPtr vertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
     GPUShaderPtr fragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
 
-    GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
-    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(2);
+    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Buffer;
+    argumentLayoutDesc.arguments[1] = kGPUArgumentType_Uniforms;
 
     GPUArgumentSetLayout* argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
+    static const glm::vec2 kVertices[3] =
+    {
+        glm::vec2(-0.3f, -0.4f),
+        glm::vec2( 0.3f, -0.4f),
+        glm::vec2( 0.0f,  0.4f)
+    };
+
     static const glm::vec4 kColours[3] =
     {
-        glm::vec4(1.0, 0.0, 0.0, 1.0),
-        glm::vec4(0.0, 1.0, 0.0, 1.0),
-        glm::vec4(0.0, 0.0, 1.0, 1.0)
+        glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+        glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+        glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
     };
+
+    GPUBufferDesc vertexBufferDesc;
+    vertexBufferDesc.usage = kGPUResourceUsage_ShaderRead;
+    vertexBufferDesc.size  = sizeof(kVertices);
+
+    GPUBufferPtr vertexBuffer = GPUDevice::Get().CreateBuffer(vertexBufferDesc);
+
+    GPUResourceViewDesc vertexViewDesc;
+    vertexViewDesc.type         = kGPUResourceViewType_Buffer;
+    vertexViewDesc.usage        = kGPUResourceUsage_ShaderRead;
+    vertexViewDesc.elementCount = sizeof(kVertices);
+
+    GPUResourceViewPtr vertexView = GPUDevice::Get().CreateResourceView(vertexBuffer, vertexViewDesc);
+
+    GPUArgument arguments[2] = {};
+    arguments[0].view = vertexView;
+
+    GPUArgumentSetPtr argumentSet = GPUDevice::Get().CreateArgumentSet(argumentLayout, arguments);
+
+    {
+        GPUStagingBuffer stagingBuffer(GPUDevice::Get(), kGPUStagingAccess_Write, sizeof(kVertices));
+        stagingBuffer.Write(kVertices, sizeof(kVertices));
+        stagingBuffer.Finalise();
+
+        graphicsContext.UploadBuffer(vertexBuffer, stagingBuffer, sizeof(kVertices));
+
+        graphicsContext.ResourceBarrier(vertexBuffer, kGPUResourceState_TransferWrite, kGPUResourceState_AllShaderRead);
+    }
 
     while (true)
     {
@@ -145,17 +179,17 @@ void Engine::Run()
 
         /* TODO: Do everything else! */
 
-        presentContext.BeginPresent(swapchain);
+        graphicsContext.BeginPresent(swapchain);
 
         GPUResourceView* const view = swapchain.GetRenderTargetView();
 
-        presentContext.ResourceBarrier(view, kGPUResourceState_Present, kGPUResourceState_RenderTarget);
+        graphicsContext.ResourceBarrier(view, kGPUResourceState_Present, kGPUResourceState_RenderTarget);
 
         GPURenderPass renderPass;
         renderPass.SetColour(0, view);
         renderPass.ClearColour(0, glm::vec4(0.0f, 0.2f, 0.4f, 1.0f));
 
-        GPUGraphicsCommandList* cmdList = presentContext.CreateRenderPass(renderPass);
+        GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
         cmdList->Begin();
 
         GPUPipelineDesc pipelineDesc;
@@ -170,14 +204,15 @@ void Engine::Run()
 
         cmdList->SetPipeline(pipelineDesc);
 
-        cmdList->WriteUniforms(0, 0, kColours, sizeof(kColours));
+        cmdList->SetArguments(0, argumentSet);
+        cmdList->WriteUniforms(0, 1, kColours, sizeof(kColours));
 
         cmdList->Draw(3);
 
         cmdList->End();
-        presentContext.SubmitRenderPass(cmdList);
+        graphicsContext.SubmitRenderPass(cmdList);
 
-        presentContext.ResourceBarrier(view, kGPUResourceState_RenderTarget, kGPUResourceState_Present);
+        graphicsContext.ResourceBarrier(view, kGPUResourceState_RenderTarget, kGPUResourceState_Present);
 
 #if 0
         GPUTexture* const texture   = swapchain.GetTexture();
@@ -186,12 +221,12 @@ void Engine::Run()
         clearData.type   = GPUTextureClearData::kColour;
         clearData.colour = glm::vec4(0.0f, 0.2f, 0.4f, 1.0f);
 
-        presentContext.ResourceBarrier(texture, kGPUResourceState_Present, kGPUResourceState_TransferWrite);
-        presentContext.ClearTexture(texture, clearData);
-        presentContext.ResourceBarrier(texture, kGPUResourceState_TransferWrite, kGPUResourceState_Present);
+        graphicsContext.ResourceBarrier(texture, kGPUResourceState_Present, kGPUResourceState_TransferWrite);
+        graphicsContext.ClearTexture(texture, clearData);
+        graphicsContext.ResourceBarrier(texture, kGPUResourceState_TransferWrite, kGPUResourceState_Present);
 #endif
 
-        presentContext.EndPresent(swapchain);
+        graphicsContext.EndPresent(swapchain);
 
         GPUDevice::Get().EndFrame();
     }

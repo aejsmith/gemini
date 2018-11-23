@@ -58,6 +58,12 @@ public:
                                                  const GPUTextureClearData& inData,
                                                  const GPUSubresourceRange& inRange) override;
 
+    void                            UploadBuffer(GPUBuffer* const        inDestBuffer,
+                                                 const GPUStagingBuffer& inSourceBuffer,
+                                                 const uint32_t          inSize,
+                                                 const uint32_t          inDestOffset,
+                                                 const uint32_t          inSourceOffset) override;
+
     /**
      * GPUComputeContext methods.
      */

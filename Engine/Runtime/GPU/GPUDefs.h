@@ -456,3 +456,12 @@ enum GPUArgumentType : uint8_t
     /* Number of argument types - note some things depend on the order of these. */
     kGPUArgumentTypeCount,
 };
+
+enum GPUStagingAccess
+{
+    /** Staging resource will be used to read back from the GPU. */
+    kGPUStagingAccess_Read,
+
+    /** Staging resource will be used to upload data to the GPU. */
+    kGPUStagingAccess_Write,
+};

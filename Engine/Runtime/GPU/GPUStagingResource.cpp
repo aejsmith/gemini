@@ -14,20 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-layout (location = 0) out vec4 vtxColour;
+#include "GPU/GPUStagingResource.h"
 
-layout (set = 0, binding = 0) readonly buffer Vertices
-{
-    vec2 vertices[];
-};
+#include "GPU/GPUDevice.h"
 
-layout (set = 0, binding = 1) uniform Uniforms
+GPUStagingResource::~GPUStagingResource()
 {
-    vec4 colours[3];
-};
+    if (IsAllocated())
+    {
+        GetDevice().GetStagingPool().Free(mHandle);
+    }
+}
 
-void main()
+void GPUStagingResource::Allocate(const GPUStagingAccess inAccess,
+                                  const uint32_t         inSize)
 {
-    gl_Position = vec4(vertices[gl_VertexIndex], 0.0, 1.0);
-    vtxColour = colours[gl_VertexIndex % 3];
+    if (IsAllocated())
+    {
+        GetDevice().GetStagingPool().Free(mHandle);
+    }
+
+    mHandle    = GetDevice().GetStagingPool().Allocate(inAccess, inSize, mMapping);
+    mAccess    = inAccess;
+    mFinalised = false;
 }

@@ -32,14 +32,14 @@ struct GPUResourceViewDesc
      * View format. Must be PixelFormat::kUnknown for raw buffer views,
      * otherwise must be compatible with the underlying resource format.
      */
-    PixelFormat                 format;
+    PixelFormat                 format          = PixelFormat::kUnknown;
 
     /**
      * Base mip level and mip count. mipCount must be 1 for anything other
      * than kGPUResourceUsage_ShaderRead views.
      */
-    uint32_t                    mipOffset;
-    uint32_t                    mipCount;
+    uint32_t                    mipOffset       = 0;
+    uint32_t                    mipCount        = 1;
 
     /**
      * Element offset and element count. For a buffer view, this specifies the
@@ -47,8 +47,8 @@ struct GPUResourceViewDesc
      * specifies the array offset and layer count. For cube views, these must
      * be a multiple of 6.
      */
-    uint32_t                    elementOffset;
-    uint32_t                    elementCount;
+    uint32_t                    elementOffset   = 0;
+    uint32_t                    elementCount    = 1;
 };
 
 /**

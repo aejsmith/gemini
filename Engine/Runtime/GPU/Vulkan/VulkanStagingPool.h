@@ -14,20 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-layout (location = 0) out vec4 vtxColour;
+#pragma once
 
-layout (set = 0, binding = 0) readonly buffer Vertices
+#include "GPU/GPUStagingResource.h"
+
+#include "VulkanMemoryManager.h"
+
+struct VulkanStagingAllocation
 {
-    vec2 vertices[];
+    VkBuffer                handle;
+    VmaAllocation           allocation;
 };
 
-layout (set = 0, binding = 1) uniform Uniforms
+class VulkanStagingPool final : public GPUStagingPool,
+                                public VulkanDeviceChild<VulkanStagingPool>
 {
-    vec4 colours[3];
-};
+public:
+                            VulkanStagingPool(VulkanDevice& inDevice);
+                            ~VulkanStagingPool();
 
-void main()
-{
-    gl_Position = vec4(vertices[gl_VertexIndex], 0.0, 1.0);
-    vtxColour = colours[gl_VertexIndex % 3];
-}
+    void*                   Allocate(const GPUStagingAccess inAccess,
+                                     const uint32_t         inSize,
+                                     void*&                 outMapping) override;
+
+    void                    Free(void* const inHandle) override;
+
+};

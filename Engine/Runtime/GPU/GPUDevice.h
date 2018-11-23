@@ -30,6 +30,7 @@
 
 class GPUGraphicsCommandList;
 class GPUGraphicsContext;
+class GPUStagingPool;
 class GPUUniformPool;
 class Window;
 
@@ -54,7 +55,7 @@ public:
     /** Get the primary graphics context. This is always present. */
     GPUGraphicsContext&             GetGraphicsContext() const  { return *mGraphicsContext; }
 
-    /** Get the uniform data pool. */
+    GPUStagingPool&                 GetStagingPool() const      { return *mStagingPool; }
     GPUUniformPool&                 GetUniformPool() const      { return *mUniformPool; }
 
     /**
@@ -133,6 +134,7 @@ protected:
 
     GPUGraphicsContext*             mGraphicsContext;
 
+    GPUStagingPool*                 mStagingPool;
     GPUUniformPool*                 mUniformPool;
 
 private:

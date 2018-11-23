@@ -20,6 +20,7 @@
 #include "GPU/GPUCommandList.h"
 #include "GPU/GPURenderPass.h"
 
+class GPUStagingBuffer;
 class GPUSwapchain;
 class GPUTexture;
 
@@ -91,6 +92,13 @@ public:
     virtual void                    ClearTexture(GPUTexture* const          inTexture,
                                                  const GPUTextureClearData& inData,
                                                  const GPUSubresourceRange& inRange = GPUSubresourceRange()) = 0;
+
+    /** Upload data to a buffer from a staging buffer. */
+    virtual void                    UploadBuffer(GPUBuffer* const        inDestBuffer,
+                                                 const GPUStagingBuffer& inSourceBuffer,
+                                                 const uint32_t          inSize,
+                                                 const uint32_t          inDestOffset   = 0,
+                                                 const uint32_t          inSourceOffset = 0) = 0;
 
 };
 
