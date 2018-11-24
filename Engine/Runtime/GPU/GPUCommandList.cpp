@@ -146,7 +146,8 @@ GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&              
                              ? inParent->GetRenderTargetState()
                              : mRenderPass.GetRenderTargetState()),
     mDirtyState         (0),
-    mPipeline           (nullptr)
+    mPipeline           (nullptr),
+    mVertexBuffers      {}
 {
     /* Add a reference to each view in the pass. Only the top level command
      * list in a pass needs to do this - it will be alive as long as any
@@ -261,6 +262,22 @@ void GPUGraphicsCommandList::SetScissor(const IntRect& inScissor)
         mScissor = inScissor;
 
         mDirtyState |= kDirtyState_Scissor;
+    }
+}
+
+void GPUGraphicsCommandList::SetVertexBuffer(const uint32_t   inIndex,
+                                             GPUBuffer* const inBuffer,
+                                             const uint32_t   inOffset)
+{
+    Assert(inIndex < kMaxVertexAttributes);
+
+    auto& vertexBuffer = mVertexBuffers[inIndex];
+
+    if (inBuffer != vertexBuffer.buffer || inOffset != vertexBuffer.offset)
+    {
+        vertexBuffer.buffer = inBuffer;
+        vertexBuffer.offset = inOffset;
+        vertexBuffer.dirty  = true;
     }
 }
 

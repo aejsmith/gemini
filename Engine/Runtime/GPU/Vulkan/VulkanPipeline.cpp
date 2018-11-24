@@ -62,11 +62,50 @@ static void ConvertShaderState(const GPUPipelineDesc&           inDesc,
 }
 
 static void ConvertVertexInputState(const GPUPipelineDesc&                inDesc,
-                                    VkPipelineVertexInputStateCreateInfo& outVertexInputInfo)
+                                    VkPipelineVertexInputStateCreateInfo& outVertexInputInfo,
+                                    VkVertexInputAttributeDescription*    outVertexAttributes,
+                                    VkVertexInputBindingDescription*      outVertexBindings)
 {
+    const auto& stateDesc = inDesc.vertexInputState->GetDesc();
+
     outVertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    // TODO.
+    bool isReferenced[kMaxVertexAttributes] = {};
+
+    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    {
+        auto& attribute = stateDesc.attributes[i];
+
+        if (attribute.format != kGPUAttributeFormat_Unknown)
+        {
+            isReferenced[stateDesc.attributes[i].buffer] = true;
+
+            outVertexInputInfo.pVertexAttributeDescriptions = outVertexAttributes;
+
+            auto& outAttribute = outVertexAttributes[outVertexInputInfo.vertexAttributeDescriptionCount++];
+            outAttribute.location = i;
+            outAttribute.binding  = attribute.buffer;
+            outAttribute.format   = VulkanUtils::ConvertAttributeFormat(attribute.format);
+            outAttribute.offset   = attribute.offset;
+        }
+    }
+
+    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    {
+        if (isReferenced[i])
+        {
+            auto& buffer = stateDesc.buffers[i];
+
+            outVertexInputInfo.pVertexBindingDescriptions = outVertexBindings;
+
+            auto& outBinding = outVertexBindings[outVertexInputInfo.vertexBindingDescriptionCount++];
+            outBinding.binding   = i;
+            outBinding.stride    = buffer.stride;
+            outBinding.inputRate = (buffer.perInstance)
+                                       ? VK_VERTEX_INPUT_RATE_INSTANCE
+                                       : VK_VERTEX_INPUT_RATE_VERTEX;
+        }
+    }
 }
 
 static void ConvertInputAssemblyState(const GPUPipelineDesc&                  inDesc,
@@ -176,6 +215,8 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
     mLayout = GetVulkanDevice().GetPipelineLayout(layoutKey);
 
     VkPipelineShaderStageCreateInfo        stageInfo[kGPUShaderStage_NumGraphics]            = {{}};
+    VkVertexInputAttributeDescription      vertexAttributes[kMaxVertexAttributes]            = {{}};
+    VkVertexInputBindingDescription        vertexBindings[kMaxVertexAttributes]              = {{}};
     VkPipelineVertexInputStateCreateInfo   vertexInputInfo                                   = {};
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo                                 = {};
     VkPipelineViewportStateCreateInfo      viewportInfo                                      = {};
@@ -187,7 +228,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
     VkGraphicsPipelineCreateInfo           createInfo                                        = {};
 
     ConvertShaderState(mDesc, stageInfo, createInfo.stageCount);
-    ConvertVertexInputState(mDesc, vertexInputInfo);
+    ConvertVertexInputState(mDesc, vertexInputInfo, vertexAttributes, vertexBindings);
     ConvertInputAssemblyState(mDesc, inputAssemblyInfo);
     ConvertViewportState(mDesc, viewportInfo);
     ConvertRasterizerState(mDesc, rasterizationInfo, multisampleInfo);

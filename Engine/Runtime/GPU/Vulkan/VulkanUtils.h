@@ -198,4 +198,23 @@ namespace VulkanUtils
 
         }
     }
+
+    inline VkFormat ConvertAttributeFormat(const GPUAttributeFormat inFormat)
+    {
+        switch (inFormat)
+        {
+            case kGPUAttributeFormat_R8_UNorm:              return VK_FORMAT_R8_UNORM;
+            case kGPUAttributeFormat_R8G8_UNorm:            return VK_FORMAT_R8G8_UNORM;
+            case kGPUAttributeFormat_R8G8B8_UNorm:          return VK_FORMAT_R8G8B8_UNORM;
+            case kGPUAttributeFormat_R8G8B8A8_UNorm:        return VK_FORMAT_R8G8B8A8_UNORM;
+            case kGPUAttributeFormat_R32_Float:             return VK_FORMAT_R32_SFLOAT;
+            case kGPUAttributeFormat_R32G32_Float:          return VK_FORMAT_R32G32_SFLOAT;
+            case kGPUAttributeFormat_R32G32B32_Float:       return VK_FORMAT_R32G32B32_SFLOAT;
+            case kGPUAttributeFormat_R32G32B32A32_Float:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+            default:
+                UnreachableMsg("Unrecognised GPUAttributeFormat");
+
+        }
+    }
 }

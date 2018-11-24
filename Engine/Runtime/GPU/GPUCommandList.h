@@ -24,6 +24,7 @@
 
 class GPUArgumentSet;
 class GPUArgumentSetLayout;
+class GPUBuffer;
 class GPUContext;
 class GPUComputeContext;
 class GPUGraphicsContext;
@@ -291,6 +292,10 @@ public:
     void                            SetViewport(const GPUViewport& inViewport);
     void                            SetScissor(const IntRect& inScissor);
 
+    void                            SetVertexBuffer(const uint32_t   inIndex,
+                                                    GPUBuffer* const inBuffer,
+                                                    const uint32_t   inOffset = 0);
+
     virtual void                    Draw(const uint32_t inVertexCount,
                                          const uint32_t inFirstVertex = 0) = 0;
 
@@ -306,6 +311,13 @@ protected:
                                   kDirtyState_Scissor
     };
 
+    struct VertexBuffer
+    {
+        GPUBuffer*                  buffer;
+        uint32_t                    offset;
+        bool                        dirty : 1;
+    };
+
 protected:
     const GPURenderPass             mRenderPass;
     const GPURenderTargetStateRef   mRenderTargetState;
@@ -315,6 +327,7 @@ protected:
     GPUPipeline*                    mPipeline;
     GPUViewport                     mViewport;
     IntRect                         mScissor;
+    VertexBuffer                    mVertexBuffers[kMaxVertexAttributes];
 
 };
 

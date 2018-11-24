@@ -117,9 +117,8 @@ void Engine::Run()
     GPUShaderPtr vertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
     GPUShaderPtr fragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
 
-    GPUArgumentSetLayoutDesc argumentLayoutDesc(2);
-    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Buffer;
-    argumentLayoutDesc.arguments[1] = kGPUArgumentType_Uniforms;
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
+    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;
 
     GPUArgumentSetLayout* argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
@@ -143,17 +142,13 @@ void Engine::Run()
 
     GPUBufferPtr vertexBuffer = GPUDevice::Get().CreateBuffer(vertexBufferDesc);
 
-    GPUResourceViewDesc vertexViewDesc;
-    vertexViewDesc.type         = kGPUResourceViewType_Buffer;
-    vertexViewDesc.usage        = kGPUResourceUsage_ShaderRead;
-    vertexViewDesc.elementCount = sizeof(kVertices);
+    GPUVertexInputStateDesc vertexInputDesc;
+    vertexInputDesc.buffers[0].stride = sizeof(glm::vec2);
+    vertexInputDesc.attributes[0].format = kGPUAttributeFormat_R32G32_Float;
+    vertexInputDesc.attributes[0].buffer = 0;
+    vertexInputDesc.attributes[0].offset = 0;
 
-    GPUResourceViewPtr vertexView = GPUDevice::Get().CreateResourceView(vertexBuffer, vertexViewDesc);
-
-    GPUArgument arguments[2] = {};
-    arguments[0].view = vertexView;
-
-    GPUArgumentSetPtr argumentSet = GPUDevice::Get().CreateArgumentSet(argumentLayout, arguments);
+    GPUVertexInputStateRef vertexInputState = GPUVertexInputState::Get(vertexInputDesc);
 
     {
         GPUStagingBuffer stagingBuffer(GPUDevice::Get(), kGPUStagingAccess_Write, sizeof(kVertices));
@@ -200,12 +195,12 @@ void Engine::Run()
         pipelineDesc.depthStencilState                 = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
         pipelineDesc.rasterizerState                   = GPURasterizerState::Get(GPURasterizerStateDesc());
         pipelineDesc.renderTargetState                 = cmdList->GetRenderTargetState();
+        pipelineDesc.vertexInputState                  = vertexInputState;
         pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
 
         cmdList->SetPipeline(pipelineDesc);
-
-        cmdList->SetArguments(0, argumentSet);
-        cmdList->WriteUniforms(0, 1, kColours, sizeof(kColours));
+        cmdList->SetVertexBuffer(0, vertexBuffer);
+        cmdList->WriteUniforms(0, 0, kColours, sizeof(kColours));
 
         cmdList->Draw(3);
 

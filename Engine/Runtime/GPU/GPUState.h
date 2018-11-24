@@ -240,3 +240,63 @@ inline GPURenderTargetStateDesc::GPURenderTargetStateDesc(const GPURenderTargetS
 
 using GPURenderTargetState   = GPUState<GPURenderTargetStateDesc>;
 using GPURenderTargetStateRef = const GPURenderTargetState*;
+
+/** Configuration of vertex inputs for the graphics pipeline. */
+struct GPUVertexInputStateDesc
+{
+    struct Attribute
+    {
+        /**
+         * Format of the attribute. kGPUAttributeFormat_Unknown indicates that
+         * this attribute is unused.
+         */
+        GPUAttributeFormat      format;
+
+        /** Buffer index that this attribute sources data from. */
+        uint8_t                 buffer;
+
+        /** Offset from the start of each vertex of the attribute data. */
+        uint16_t                offset;
+    };
+
+    struct Buffer
+    {
+        /** Stride between vertices in the buffer. */
+        uint16_t                stride;
+
+        /** If true, buffer advances per-instance rather than per-vertex. */
+        bool                    perInstance;
+    };
+
+    /**
+     * Array of attributes. Index into the array matches the location index
+     * that the attribute will be available at in shaders.
+     */
+    Attribute                   attributes[kMaxVertexAttributes];
+
+    /**
+     * Array of buffers, referenced by attributes. Only entries referenced by
+     * an attribute are paid attention to.
+     */
+    Buffer                      buffers[kMaxVertexAttributes];
+
+public:
+                                GPUVertexInputStateDesc();
+                                GPUVertexInputStateDesc(const GPUVertexInputStateDesc& inOther);
+};
+
+DEFINE_HASH_MEM_OPS(GPUVertexInputStateDesc);
+
+inline GPUVertexInputStateDesc::GPUVertexInputStateDesc()
+{
+    /* Ensure that padding is cleared so we can hash the whole structure. */
+    memset(this, 0, sizeof(*this));
+}
+
+inline GPUVertexInputStateDesc::GPUVertexInputStateDesc(const GPUVertexInputStateDesc& inOther)
+{
+    memcpy(this, &inOther, sizeof(*this));
+}
+
+using GPUVertexInputState    = GPUState<GPUVertexInputStateDesc>;
+using GPUVertexInputStateRef = const GPUVertexInputState*;

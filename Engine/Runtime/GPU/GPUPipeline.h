@@ -34,6 +34,7 @@ struct GPUPipelineDesc
     GPUDepthStencilStateRef     depthStencilState;
     GPURasterizerStateRef       rasterizerState;
     GPURenderTargetStateRef     renderTargetState;
+    GPUVertexInputStateRef      vertexInputState;
 
     GPUPrimitiveTopology        topology;
 

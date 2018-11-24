@@ -17,6 +17,7 @@
 #include "VulkanCommandList.h"
 
 #include "VulkanArgumentSet.h"
+#include "VulkanBuffer.h"
 #include "VulkanCommandPool.h"
 #include "VulkanContext.h"
 #include "VulkanDevice.h"
@@ -354,6 +355,27 @@ void VulkanGraphicsCommandList::PreDraw()
                         &scissor);
 
         mDirtyState &= ~kDirtyState_Scissor;
+    }
+
+    // TODO: Could batch these.
+    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    {
+        auto& vertexBuffer = mVertexBuffers[i];
+
+        if (vertexBuffer.dirty && vertexBuffer.buffer)
+        {
+            const auto buffer         = static_cast<VulkanBuffer*>(vertexBuffer.buffer);
+            const VkBuffer handle     = buffer->GetHandle();
+            const VkDeviceSize offset = vertexBuffer.offset;
+
+            vkCmdBindVertexBuffers(GetCommandBuffer(),
+                                   i,
+                                   1,
+                                   &handle,
+                                   &offset);
+
+            vertexBuffer.dirty = false;
+        }
     }
 }
 

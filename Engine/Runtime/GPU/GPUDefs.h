@@ -27,6 +27,9 @@ class GPUResource;
 /** Maximum number of colour attachments in a render pass. */
 static constexpr size_t kMaxRenderPassColourAttachments = 8;
 
+/** Maximum number of vertex attributes. */
+static constexpr size_t kMaxVertexAttributes = 8;
+
 /** Maximum number of shader argument sets. */
 static constexpr size_t kMaxArgumentSets = 4;
 
@@ -464,4 +467,19 @@ enum GPUStagingAccess
 
     /** Staging resource will be used to upload data to the GPU. */
     kGPUStagingAccess_Write,
+};
+
+enum GPUAttributeFormat
+{
+    kGPUAttributeFormat_Unknown,
+
+    kGPUAttributeFormat_R8_UNorm,
+    kGPUAttributeFormat_R8G8_UNorm,
+    kGPUAttributeFormat_R8G8B8_UNorm,
+    kGPUAttributeFormat_R8G8B8A8_UNorm,
+
+    kGPUAttributeFormat_R32_Float,
+    kGPUAttributeFormat_R32G32_Float,
+    kGPUAttributeFormat_R32G32B32_Float,
+    kGPUAttributeFormat_R32G32B32A32_Float,
 };

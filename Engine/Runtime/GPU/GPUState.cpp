@@ -81,8 +81,10 @@ template<> GPUState<GPUBlendStateDesc>::Cache GPUState<GPUBlendStateDesc>::mCach
 template<> GPUState<GPUDepthStencilStateDesc>::Cache GPUState<GPUDepthStencilStateDesc>::mCache{};
 template<> GPUState<GPURasterizerStateDesc>::Cache GPUState<GPURasterizerStateDesc>::mCache{};
 template<> GPUState<GPURenderTargetStateDesc>::Cache GPUState<GPURenderTargetStateDesc>::mCache{};
+template<> GPUState<GPUVertexInputStateDesc>::Cache GPUState<GPUVertexInputStateDesc>::mCache{};
 
 template class GPUState<GPUBlendStateDesc>;
 template class GPUState<GPUDepthStencilStateDesc>;
 template class GPUState<GPURasterizerStateDesc>;
 template class GPUState<GPURenderTargetStateDesc>;
+template class GPUState<GPUVertexInputStateDesc>;

@@ -14,20 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+layout (location = 0) in vec2 attribPosition;
+
 layout (location = 0) out vec4 vtxColour;
 
-layout (set = 0, binding = 0) readonly buffer Vertices
-{
-    vec2 vertices[];
-};
-
-layout (set = 0, binding = 1) uniform Uniforms
+layout (set = 0, binding = 0) uniform Uniforms
 {
     vec4 colours[3];
 };
 
 void main()
 {
-    gl_Position = vec4(vertices[gl_VertexIndex], 0.0, 1.0);
+    gl_Position = vec4(attribPosition, 0.0, 1.0);
     vtxColour = colours[gl_VertexIndex % 3];
 }
