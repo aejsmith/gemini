@@ -296,8 +296,16 @@ public:
                                                     GPUBuffer* const inBuffer,
                                                     const uint32_t   inOffset = 0);
 
+    void                            SetIndexBuffer(const GPUIndexType inType,
+                                                   GPUBuffer* const   inBuffer,
+                                                   const uint32_t     inOffset = 0);
+
     virtual void                    Draw(const uint32_t inVertexCount,
                                          const uint32_t inFirstVertex = 0) = 0;
+
+    virtual void                    DrawIndexed(const uint32_t inIndexCount,
+                                                const uint32_t inFirstIndex  = 0,
+                                                const int32_t  inVertexOffset = 0) = 0;
 
 protected:
     enum DirtyState
@@ -305,10 +313,12 @@ protected:
         kDirtyState_Pipeline    = (1 << 0),
         kDirtyState_Viewport    = (1 << 1),
         kDirtyState_Scissor     = (1 << 2),
+        kDirtyState_IndexBuffer = (1 << 3),
 
         kDirtyState_All         = kDirtyState_Pipeline |
                                   kDirtyState_Viewport |
-                                  kDirtyState_Scissor
+                                  kDirtyState_Scissor |
+                                  kDirtyState_IndexBuffer
     };
 
     struct VertexBuffer
@@ -316,6 +326,13 @@ protected:
         GPUBuffer*                  buffer;
         uint32_t                    offset;
         bool                        dirty : 1;
+    };
+
+    struct IndexBuffer
+    {
+        GPUIndexType                type;
+        GPUBuffer*                  buffer;
+        uint32_t                    offset;
     };
 
 protected:
@@ -328,6 +345,7 @@ protected:
     GPUViewport                     mViewport;
     IntRect                         mScissor;
     VertexBuffer                    mVertexBuffers[kMaxVertexAttributes];
+    IndexBuffer                     mIndexBuffer;
 
 };
 

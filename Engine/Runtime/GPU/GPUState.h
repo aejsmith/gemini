@@ -238,7 +238,7 @@ inline GPURenderTargetStateDesc::GPURenderTargetStateDesc(const GPURenderTargetS
     memcpy(this, &inOther, sizeof(*this));
 }
 
-using GPURenderTargetState   = GPUState<GPURenderTargetStateDesc>;
+using GPURenderTargetState    = GPUState<GPURenderTargetStateDesc>;
 using GPURenderTargetStateRef = const GPURenderTargetState*;
 
 /** Configuration of vertex inputs for the graphics pipeline. */

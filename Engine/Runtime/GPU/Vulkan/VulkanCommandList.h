@@ -85,6 +85,10 @@ public:
     void                            Draw(const uint32_t inVertexCount,
                                          const uint32_t inFirstVertex) override;
 
+    void                            DrawIndexed(const uint32_t inIndexCount,
+                                                const uint32_t inFirstIndex,
+                                                const int32_t  inVertexOffset) override;
+
 protected:
     GPUCommandList*                 CreateChildImpl() override;
 
@@ -115,7 +119,7 @@ public:
     void                            Submit(const VkCommandBuffer inBuffer) const;
 
 private:
-    void                            PreDraw();
+    void                            PreDraw(const bool inIsIndexed);
 
 private:
     VkRenderPass                    mVulkanRenderPass;

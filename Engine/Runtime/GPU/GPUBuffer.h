@@ -26,7 +26,7 @@ struct GPUBufferDesc
      * buffers, regardless of usage, allow binding as vertex/index/indirect
      * buffers, and transfers.
      */
-    GPUResourceUsage        usage;
+    GPUResourceUsage        usage = kGPUResourceUsage_Standard;
 
     uint32_t                size;
 };

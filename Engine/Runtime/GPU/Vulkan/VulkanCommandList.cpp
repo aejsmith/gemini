@@ -305,7 +305,7 @@ GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
     return new VulkanGraphicsCommandList(GetVulkanContext(), this, mRenderPass);
 }
 
-void VulkanGraphicsCommandList::PreDraw()
+void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
 {
     const auto pipeline = static_cast<VulkanPipeline*>(mPipeline);
 
@@ -377,16 +377,45 @@ void VulkanGraphicsCommandList::PreDraw()
             vertexBuffer.dirty = false;
         }
     }
+
+    if (inIsIndexed && mDirtyState & kDirtyState_IndexBuffer)
+    {
+        const auto buffer           = static_cast<VulkanBuffer*>(mIndexBuffer.buffer);
+        const VkIndexType indexType = (mIndexBuffer.type == kGPUIndexType_32)
+                                          ? VK_INDEX_TYPE_UINT32
+                                          : VK_INDEX_TYPE_UINT16;
+
+        vkCmdBindIndexBuffer(GetCommandBuffer(),
+                             buffer->GetHandle(),
+                             mIndexBuffer.offset,
+                             indexType);
+
+        mDirtyState &= ~kDirtyState_IndexBuffer;
+    }
 }
 
 void VulkanGraphicsCommandList::Draw(const uint32_t inVertexCount,
                                      const uint32_t inFirstVertex)
 {
-    PreDraw();
+    PreDraw(false);
 
     vkCmdDraw(GetCommandBuffer(),
               inVertexCount,
               1,
               inFirstVertex,
               0);
+}
+
+void VulkanGraphicsCommandList::DrawIndexed(const uint32_t inIndexCount,
+                                            const uint32_t inFirstIndex,
+                                            const int32_t  inVertexOffset)
+{
+    PreDraw(true);
+
+    vkCmdDrawIndexed(GetCommandBuffer(),
+                     inIndexCount,
+                     1,
+                     inFirstIndex,
+                     inVertexOffset,
+                     0);
 }

@@ -147,7 +147,8 @@ GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&              
                              : mRenderPass.GetRenderTargetState()),
     mDirtyState         (0),
     mPipeline           (nullptr),
-    mVertexBuffers      {}
+    mVertexBuffers      {},
+    mIndexBuffer        {}
 {
     /* Add a reference to each view in the pass. Only the top level command
      * list in a pass needs to do this - it will be alive as long as any
@@ -278,6 +279,20 @@ void GPUGraphicsCommandList::SetVertexBuffer(const uint32_t   inIndex,
         vertexBuffer.buffer = inBuffer;
         vertexBuffer.offset = inOffset;
         vertexBuffer.dirty  = true;
+    }
+}
+
+void GPUGraphicsCommandList::SetIndexBuffer(const GPUIndexType inType,
+                                            GPUBuffer* const   inBuffer,
+                                            const uint32_t     inOffset)
+{
+    if (inType != mIndexBuffer.type || inBuffer != mIndexBuffer.buffer || inOffset != mIndexBuffer.offset)
+    {
+        mIndexBuffer.type   = inType;
+        mIndexBuffer.buffer = inBuffer;
+        mIndexBuffer.offset = inOffset;
+
+        mDirtyState |= kDirtyState_IndexBuffer;
     }
 }
 

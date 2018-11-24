@@ -50,6 +50,13 @@ enum GPUVendor : uint8_t
 
 enum GPUResourceUsage : uint32_t
 {
+    /**
+     * All buffers allow vertex/index/indirect buffer usage, they don't need
+     * this indicated in the usage flags. This is just a constant mapping to 0
+     * to use when no additional usage needs to be specified.
+     */
+    kGPUResourceUsage_Standard      = 0,
+
     /** Resource will be bound as a read-only shader resource. */
     kGPUResourceUsage_ShaderRead    = (1 << 0),
 
@@ -482,4 +489,10 @@ enum GPUAttributeFormat
     kGPUAttributeFormat_R32G32_Float,
     kGPUAttributeFormat_R32G32B32_Float,
     kGPUAttributeFormat_R32G32B32A32_Float,
+};
+
+enum GPUIndexType
+{
+    kGPUIndexType_16,
+    kGPUIndexType_32,
 };
