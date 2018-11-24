@@ -1,6 +1,7 @@
 SConscript(dirs = [
     'glm',
     'glslang',
+    'imgui',
     'Mustache',
     'RapidJSON',
     'VulkanMemoryAllocator',

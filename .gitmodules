@@ -16,3 +16,6 @@
 [submodule "Engine/3rdParty/glslang/Repo"]
 	path = Engine/3rdParty/glslang/Repo
 	url = https://github.com/KhronosGroup/glslang.git
+[submodule "Engine/3rdParty/imgui/Repo"]
+	path = Engine/3rdParty/imgui/Repo
+	url = https://github.com/ocornut/imgui.git
