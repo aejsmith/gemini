@@ -38,3 +38,54 @@ void GPUStagingResource::Allocate(const GPUStagingAccess inAccess,
     mAccess    = inAccess;
     mFinalised = false;
 }
+
+GPUStagingTexture::GPUStagingTexture(GPUDevice& inDevice) :
+    GPUStagingResource  (inDevice)
+{
+}
+
+GPUStagingTexture::~GPUStagingTexture()
+{
+}
+
+void GPUStagingTexture::Initialise(const GPUStagingAccess inAccess,
+                                   const GPUTextureDesc&  inDesc)
+{
+    mDesc = inDesc;
+
+    const uint32_t subresourceCount = GetNumMipLevels() * GetArraySize();
+    mSubresourceOffsets.resize(subresourceCount);
+
+    const uint32_t bytesPerPixel = PixelFormat::BytesPerPixel(GetFormat());
+
+    uint32_t bufferSize       = 0;
+    uint32_t subresourceIndex = 0;
+    for (uint32_t layer = 0; layer < GetArraySize(); layer++)
+    {
+        uint32_t width  = GetWidth();
+        uint32_t height = GetHeight();
+        uint32_t depth  = GetDepth();
+
+        for (uint32_t mipLevel = 0; mipLevel < GetNumMipLevels(); mipLevel++)
+        {
+            mSubresourceOffsets[subresourceIndex] = bufferSize;
+
+            bufferSize += bytesPerPixel * width * height * depth;
+            subresourceIndex++;
+
+            width  = std::max(width  >> 1, 1u);
+            height = std::max(height >> 1, 1u);
+            depth  = std::max(depth  >> 1, 1u);
+        }
+    }
+
+    Allocate(inAccess, bufferSize);
+}
+
+void* GPUStagingTexture::MapWrite(const GPUSubresource inSubresource)
+{
+    Assert(!IsFinalised());
+
+    const uint32_t offset = GetSubresourceOffset(inSubresource);
+    return reinterpret_cast<uint8_t*>(mMapping) + offset;
+}

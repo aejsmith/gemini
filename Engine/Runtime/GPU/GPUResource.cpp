@@ -60,7 +60,6 @@ void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
         kGPUResourceState_DepthStencilRead
     };
 
-    Assert(inBarrier.currentState);
     Assert(inBarrier.newState);
 
     for (auto state : kMutuallyExclusiveStates)

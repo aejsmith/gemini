@@ -408,7 +408,10 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
         }
     }
 
-    Assert(srcStageMask != 0);
+    /* Can happen for a initial state transition from kGPUResourceState_None. */
+    if (srcStageMask == 0)
+        srcStageMask |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
     Assert(dstStageMask != 0);
 
     vkCmdPipelineBarrier(GetCommandBuffer(),
@@ -500,6 +503,66 @@ void VulkanContext::UploadBuffer(GPUBuffer* const        inDestBuffer,
                     sourceAllocation->handle,
                     destBuffer->GetHandle(),
                     1, &region);
+}
+
+void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
+                                  const GPUStagingTexture& inSourceTexture)
+{
+    Assert(inSourceTexture.IsFinalised());
+    Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
+    Assert(inDestTexture->SizeMatches(inSourceTexture));
+    Assert(inDestTexture->GetFormat() == inSourceTexture.GetFormat());
+    Assert(PixelFormat::IsColour(inDestTexture->GetFormat()));
+
+    auto destTexture      = static_cast<VulkanTexture*>(inDestTexture);
+    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(inSourceTexture.GetHandle());
+
+    const auto regions = AllocateStackArray(VkBufferImageCopy, destTexture->GetArraySize() * destTexture->GetNumMipLevels());
+
+    uint32_t subresourceIndex = 0;
+    for (uint32_t layer = 0; layer < destTexture->GetArraySize(); layer++)
+    {
+        for (uint32_t mipLevel = 0; mipLevel < destTexture->GetNumMipLevels(); mipLevel++)
+        {
+            auto& region = regions[subresourceIndex++];
+
+            const uint32_t width  = destTexture->GetMipWidth(mipLevel);
+            const uint32_t height = destTexture->GetMipHeight(mipLevel);
+            const uint32_t depth  = destTexture->GetMipDepth(mipLevel);
+
+            region.bufferOffset                    = inSourceTexture.GetSubresourceOffset({mipLevel, layer});
+            region.bufferRowLength                 = 0;
+            region.bufferImageHeight               = 0;
+            region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.baseArrayLayer = layer;
+            region.imageSubresource.layerCount     = 1;
+            region.imageSubresource.mipLevel       = mipLevel;
+            region.imageOffset                     = { 0, 0, 0 };
+            region.imageExtent                     = { width, height, depth };
+        }
+    }
+
+    vkCmdCopyBufferToImage(GetCommandBuffer(),
+                           sourceAllocation->handle,
+                           destTexture->GetHandle(),
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           subresourceIndex,
+                           regions);
+}
+
+void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
+                                  const GPUStagingTexture& inSourceTexture,
+                                  const glm::ivec3&        inSize,
+                                  const GPUSubresource     inDestSubresource,
+                                  const glm::ivec3&        inDestOffset,
+                                  const GPUSubresource     inSourceSubresource,
+                                  const glm::ivec3&        inSourceOffset)
+{
+    Assert(inSourceTexture.IsFinalised());
+    Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
+    Assert(inDestTexture->GetFormat() == inSourceTexture.GetFormat());
+
+    Fatal("TODO");
 }
 
 GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& inRenderPass)

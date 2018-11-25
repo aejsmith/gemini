@@ -21,6 +21,7 @@
 #include "GPU/GPURenderPass.h"
 
 class GPUStagingBuffer;
+class GPUStagingTexture;
 class GPUSwapchain;
 class GPUTexture;
 
@@ -93,12 +94,37 @@ public:
                                                  const GPUTextureClearData& inData,
                                                  const GPUSubresourceRange& inRange = GPUSubresourceRange()) = 0;
 
-    /** Upload data to a buffer from a staging buffer. */
+    /**
+     * Upload data to a buffer from a staging buffer. Requires the destination
+     * buffer to be in the kGPUResourceState_TransferWrite state.
+     */
     virtual void                    UploadBuffer(GPUBuffer* const        inDestBuffer,
                                                  const GPUStagingBuffer& inSourceBuffer,
                                                  const uint32_t          inSize,
                                                  const uint32_t          inDestOffset   = 0,
                                                  const uint32_t          inSourceOffset = 0) = 0;
+
+    /**
+     * Upload data to a texture from a staging texture. Requires the destination
+     * texture to be in the kGPUResourceState_TransferWrite state. Format must
+     * match between source and destination.
+     *
+     * The first version requires a match in dimension/subresource count between
+     * source and destination, and will upload the whole texture.
+     *
+     * The second version uploads a subregion of a single subresource, and only
+     * requires that the specified region is valid within both the source and
+     * destination subresource.
+     */
+    virtual void                    UploadTexture(GPUTexture* const        inDestTexture,
+                                                  const GPUStagingTexture& inSourceTexture) = 0;
+    virtual void                    UploadTexture(GPUTexture* const        inDestTexture,
+                                                  const GPUStagingTexture& inSourceTexture,
+                                                  const glm::ivec3&        inSize,
+                                                  const GPUSubresource     inDestSubresource,
+                                                  const glm::ivec3&        inDestOffset,
+                                                  const GPUSubresource     inSourceSubresource,
+                                                  const glm::ivec3&        inSourceOffset) = 0;
 
 };
 

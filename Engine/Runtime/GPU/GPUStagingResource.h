@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "GPU/GPUDeviceChild.h"
+#include "GPU/GPUTexture.h"
 
 /**
  * Interface for uploading data to and reading data back from GPU resources.
@@ -89,22 +89,6 @@ protected:
 
 };
 
-inline GPUStagingResource::GPUStagingResource(GPUDevice& inDevice) :
-    GPUDeviceChild  (inDevice),
-    mHandle         (nullptr),
-    mMapping        (nullptr),
-    mFinalised      (false)
-{
-}
-
-inline void GPUStagingResource::Finalise()
-{
-    Assert(IsAllocated());
-    Assert(!IsFinalised());
-
-    mFinalised = true;
-}
-
 class GPUStagingBuffer : public GPUStagingResource
 {
 public:
@@ -116,6 +100,7 @@ public:
 
                             ~GPUStagingBuffer() {}
 
+public:
     uint32_t                GetSize() const     { return mSize; }
 
     /**
@@ -144,6 +129,105 @@ private:
     uint32_t                mSize;
 
 };
+
+class GPUStagingTexture : public GPUStagingResource
+{
+public:
+                            GPUStagingTexture(GPUDevice& inDevice);
+
+                            GPUStagingTexture(GPUDevice&             inDevice,
+                                              const GPUStagingAccess inAccess,
+                                              const GPUTextureDesc&  inDesc);
+
+                            ~GPUStagingTexture();
+
+public:
+    PixelFormat             GetFormat() const       { return mDesc.format; }
+    uint32_t                GetWidth() const        { return mDesc.width; }
+    uint32_t                GetHeight() const       { return mDesc.height; }
+    uint32_t                GetDepth() const        { return mDesc.depth; }
+    uint16_t                GetArraySize() const    { return mDesc.arraySize; }
+    uint8_t                 GetNumMipLevels() const { return mDesc.numMipLevels; }
+
+    /**
+     * Allocate a new staging texture. Any previous texture is discarded (once
+     * any previously submitted GPU transfers have completed), and the texture
+     * becomes free to use again.
+     *
+     * The supplied GPUTextureDesc specifies properties of the staging texture.
+     * The type, usage and flags members are ignored, only the format,
+     * dimensions and number of subresources are relevant.
+     */
+    void                    Initialise(const GPUStagingAccess inAccess,
+                                       const GPUTextureDesc&  inDesc);
+
+    /**
+     * Return a pointer to write data into for a subresource. Texture must not
+     * be finalised, and must have been initialised with kGPUStagingAccess_Write.
+     * Data layout is linear: consecutive pixels of a row are contiguous in
+     * memory, and each row is contiguous. Number of bytes per pixel is as
+     * reported by PixelFormat::BytesPerPixel().
+     */
+    void*                   MapWrite(const GPUSubresource inSubresource);
+
+    /**
+     * Calculate the offset in the underlying staging buffer of a given
+     * subresource.
+     */
+    uint32_t                GetSubresourceOffset(const GPUSubresource inSubresource) const;
+
+private:
+    uint32_t                GetSubresourceIndex(const GPUSubresource inSubresource) const;
+
+private:
+    GPUTextureDesc          mDesc;
+    std::vector<uint32_t>   mSubresourceOffsets;
+
+};
+
+/**
+ * Interface for allocating memory for staging resources. The GPUStaging*
+ * classes are all backend-agnostic, and rely on this class to do the API-
+ * specific memory allocation.
+ */
+class GPUStagingPool : public GPUDeviceChild
+{
+protected:
+                            GPUStagingPool(GPUDevice& inDevice);
+                            ~GPUStagingPool() {}
+
+public:
+    /**
+     * Allocates memory for a staging resource. Returns a handle referring to
+     * the allocation, which gets stored in the GPUStagingResource.
+     */
+    virtual void*           Allocate(const GPUStagingAccess inAccess,
+                                     const uint32_t         inSize,
+                                     void*&                 outMapping) = 0;
+
+    /**
+     * Free a staging resource allocation. Will only free the allocation once
+     * the memory is guaranteed to no longer be in use by the GPU.
+     */
+    virtual void            Free(void* const inHandle) = 0;
+
+};
+
+inline GPUStagingResource::GPUStagingResource(GPUDevice& inDevice) :
+    GPUDeviceChild  (inDevice),
+    mHandle         (nullptr),
+    mMapping        (nullptr),
+    mFinalised      (false)
+{
+}
+
+inline void GPUStagingResource::Finalise()
+{
+    Assert(IsAllocated());
+    Assert(!IsFinalised());
+
+    mFinalised = true;
+}
 
 inline GPUStagingBuffer::GPUStagingBuffer(GPUDevice& inDevice) :
     GPUStagingResource  (inDevice),
@@ -186,43 +270,27 @@ inline void GPUStagingBuffer::Write(const void*    inData,
     memcpy(reinterpret_cast<uint8_t*>(mMapping) + inOffset, inData, inSize);
 }
 
-
-#if 0
-// TODO
-class GPUStagingTexture : public GPUStagingResource
+inline GPUStagingTexture::GPUStagingTexture(GPUDevice&             inDevice,
+                                            const GPUStagingAccess inAccess,
+                                            const GPUTextureDesc&  inDesc) :
+    GPUStagingTexture   (inDevice)
 {
-public:
+    Initialise(inAccess, inDesc);
+}
 
-};
-#endif
-
-/**
- * Interface for allocating memory for staging resources. The GPUStaging*
- * classes are all backend-agnostic, and rely on this class to do the API-
- * specific memory allocation.
- */
-class GPUStagingPool : public GPUDeviceChild
+inline uint32_t GPUStagingTexture::GetSubresourceOffset(const GPUSubresource inSubresource) const
 {
-protected:
-                            GPUStagingPool(GPUDevice& inDevice);
-                            ~GPUStagingPool() {}
+    return mSubresourceOffsets[GetSubresourceIndex(inSubresource)];
+}
 
-public:
-    /**
-     * Allocates memory for a staging resource. Returns a handle referring to
-     * the allocation, which gets stored in the GPUStagingResource.
-     */
-    virtual void*           Allocate(const GPUStagingAccess inAccess,
-                                     const uint32_t         inSize,
-                                     void*&                 outMapping) = 0;
+inline uint32_t GPUStagingTexture::GetSubresourceIndex(const GPUSubresource inSubresource) const
+{
+    Assert(IsAllocated());
+    Assert(inSubresource.mipLevel < GetNumMipLevels());
+    Assert(inSubresource.layer < GetArraySize());
 
-    /**
-     * Free a staging resource allocation. Will only free the allocation once
-     * the memory is guaranteed to no longer be in use by the GPU.
-     */
-    virtual void            Free(void* const inHandle) = 0;
-
-};
+    return (inSubresource.layer * GetNumMipLevels()) + inSubresource.mipLevel;
+}
 
 inline GPUStagingPool::GPUStagingPool(GPUDevice& inDevice) :
     GPUDeviceChild  (inDevice)

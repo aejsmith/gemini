@@ -120,6 +120,12 @@ enum GPUResourceViewType : uint8_t
     kGPUResourceViewType_Texture3D,
 };
 
+struct GPUSubresource
+{
+    uint32_t                    mipLevel;
+    uint32_t                    layer;
+};
+
 struct GPUSubresourceRange
 {
     uint32_t                    mipOffset;
@@ -154,6 +160,16 @@ struct GPUSubresourceRange
  */
 enum GPUResourceState : uint32_t
 {
+    /**
+     * When resources are initially created, they are in undefined state.
+     * Buffers implicitly transition on first use to the state require for that
+     * first use, an explicit barrier is not required. However, textures do
+     * require an explicit barrier, since for example on Vulkan we need to
+     * transition to a defined image layout before use. This should be done as
+     * a transition with this state as the current state.
+     */
+    kGPUResourceState_None                      = 0,
+
     /**
      * Generic shader read states for each stage. For buffers, this should be
      * used for anything other than uniform read access, which has its own

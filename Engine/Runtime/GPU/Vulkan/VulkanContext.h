@@ -64,6 +64,16 @@ public:
                                                  const uint32_t          inDestOffset,
                                                  const uint32_t          inSourceOffset) override;
 
+    void                            UploadTexture(GPUTexture* const        inDestTexture,
+                                                  const GPUStagingTexture& inSourceTexture) override;
+    void                            UploadTexture(GPUTexture* const        inDestTexture,
+                                                  const GPUStagingTexture& inSourceTexture,
+                                                  const glm::ivec3&        inSize,
+                                                  const GPUSubresource     inDestSubresource,
+                                                  const glm::ivec3&        inDestOffset,
+                                                  const GPUSubresource     inSourceSubresource,
+                                                  const glm::ivec3&        inSourceOffset) override;
+
     /**
      * GPUComputeContext methods.
      */

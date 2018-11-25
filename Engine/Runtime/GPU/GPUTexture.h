@@ -23,25 +23,25 @@ class GPUSwapchain;
 struct GPUTextureDesc
 {
     GPUResourceType         type;
-    GPUResourceUsage        usage;
-    GPUTextureFlags         flags;
+    GPUResourceUsage        usage           = kGPUResourceUsage_Standard;
+    GPUTextureFlags         flags           = kGPUTexture_None;
     PixelFormat             format;
 
-    uint32_t                width;
-    uint32_t                height;
-    uint32_t                depth;
+    uint32_t                width           = 1;
+    uint32_t                height          = 1;
+    uint32_t                depth           = 1;
 
     /**
      * Array size. Must be 1 for 3D textures. Must be a multiple of 6 for cube
      * compatible textures.
      */
-    uint16_t                arraySize;
+    uint16_t                arraySize       = 1;
 
     /**
      * Number of mip levels. Specifying 0 here will give the texture a full mip
      * chain.
      */
-    uint8_t                 numMipLevels;
+    uint8_t                 numMipLevels    = 1;
 
 };
 
@@ -86,6 +86,14 @@ public:
     bool                    IsSwapchain() const         { return mSwapchain != nullptr; }
     GPUSwapchain*           GetSwapchain() const        { return mSwapchain; }
 
+    /**
+     * Determine whether the size (dimensions, subresources) of this texture
+     * matches another. Templated to work for both another GPUTexture and a
+     * GPUStagingTexture.
+     */
+    template <typename T>
+    bool                    SizeMatches(const T& inOther) const;
+
 private:
     const GPUTextureFlags   mFlags;
     const PixelFormat       mFormat;
@@ -126,4 +134,14 @@ inline GPUSubresourceRange GPUTexture::GetExactSubresourceRange(const GPUSubreso
     {
         return { 0, GetNumMipLevels(), 0, GetArraySize() };
     }
+}
+
+template <typename T>
+inline bool GPUTexture::SizeMatches(const T& inOther) const
+{
+    return mWidth        == inOther.GetWidth() &&
+           mHeight       == inOther.GetHeight() &&
+           mDepth        == inOther.GetDepth() &&
+           mArraySize    == inOther.GetArraySize() &&
+           mNumMipLevels == inOther.GetNumMipLevels();
 }
