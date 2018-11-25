@@ -42,7 +42,7 @@ public:
     VkInstance                  GetHandle() const           { return mHandle; }
     const LayerList&            GetEnabledLayers() const    { return mEnabledLayers; }
 
-    bool                        HasCap(const Caps inCap)
+    bool                        HasCap(const Caps inCap) const
                                     { return (mCaps & inCap) == inCap; }
 
     template <typename Function>

@@ -50,6 +50,10 @@ VulkanUniformPool::VulkanUniformPool(VulkanDevice& inDevice) :
     VmaAllocationInfo allocationInfo;
     memoryManager.GetInfo(mAllocation, allocationInfo);
     mMapping = reinterpret_cast<uint8_t*>(allocationInfo.pMappedData);
+
+    GetVulkanDevice().UpdateName(mHandle,
+                                 VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT,
+                                 "VulkanUniformPool");
 }
 
 VulkanUniformPool::~VulkanUniformPool()

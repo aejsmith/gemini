@@ -52,6 +52,7 @@ static const char* kRequiredDeviceExtensions[] =
 
 VulkanDevice::VulkanDevice() :
     mHandle         (VK_NULL_HANDLE),
+    mCaps           (0),
     mCurrentFrame   (0),
     mContexts       ()
 {
@@ -280,13 +281,14 @@ void VulkanDevice::CreateDevice()
     std::vector<const char*> enabledExtensions;
 
     auto EnableExtension =
-        [&] (const char* const inName, const bool inRequired = false) -> bool
+        [&] (const char* const inName, const uint32_t inCap, const bool inRequired = false) -> bool
         {
             const bool available = availableExtensions.find(inName) != availableExtensions.end();
 
             if (available)
             {
                 enabledExtensions.emplace_back(inName);
+                mCaps |= inCap;
             }
             else if (inRequired)
             {
@@ -298,8 +300,10 @@ void VulkanDevice::CreateDevice()
 
     for (const char* const extension : kRequiredDeviceExtensions)
     {
-        EnableExtension(extension, true);
+        EnableExtension(extension, 0, true);
     }
+
+    EnableExtension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, kCap_DebugMarker);
 
     const float queuePriority = 1.0f;
 
@@ -324,16 +328,21 @@ void VulkanDevice::CreateDevice()
                                nullptr,
                                &mHandle));
 
+    #define LOAD_OPTIONAL_VULKAN_DEVICE_FUNC(name) \
+        name = reinterpret_cast<PFN_##name>(vkGetDeviceProcAddr(mHandle, #name));
+
     #define LOAD_VULKAN_DEVICE_FUNC(name) \
-        name = reinterpret_cast<PFN_##name>(vkGetDeviceProcAddr(mHandle, #name)); \
+        LOAD_OPTIONAL_VULKAN_DEVICE_FUNC(name); \
         if (!name) \
         { \
             Fatal("Failed to load Vulkan function '%s'", #name); \
         }
 
     ENUMERATE_VULKAN_DEVICE_FUNCS(LOAD_VULKAN_DEVICE_FUNC);
+    ENUMERATE_VULKAN_DEVICE_EXTENSION_FUNCS(LOAD_OPTIONAL_VULKAN_DEVICE_FUNC);
 
     #undef LOAD_VULKAN_DEVICE_FUNC
+    #undef LOAD_OPTIONAL_VULKAN_DEVICE_FUNC
 }
 
 GPUArgumentSetPtr VulkanDevice::CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,

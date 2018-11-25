@@ -123,6 +123,9 @@ void VulkanInstance::CreateInstance()
     #define LOAD_VULKAN_INSTANCE_FUNC(name) \
         name = Load<PFN_##name>(#name, true);
 
+    #define LOAD_OPTIONAL_VULKAN_INSTANCE_FUNC(name) \
+        name = Load<PFN_##name>(#name, false);
+
     /*
      * Load all functions we need to create the instance. mHandle is null
      * initially.
@@ -201,6 +204,8 @@ void VulkanInstance::CreateInstance()
             return available;
         };
 
+    Unused(EnableLayer);
+
     std::vector<const char*> enabledExtensions;
 
     auto EnableExtension =
@@ -264,13 +269,12 @@ void VulkanInstance::CreateInstance()
 
     /* Get instance function pointers. */
     ENUMERATE_VULKAN_INSTANCE_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);
+    ENUMERATE_VULKAN_INSTANCE_EXTENSION_FUNCS(LOAD_OPTIONAL_VULKAN_INSTANCE_FUNC);
 
     /* Register a debug report callback. */
     #if ORION_VULKAN_VALIDATION
         if (HasCap(kCap_DebugReport))
         {
-            ENUMERATE_VULKAN_DEBUG_REPORT_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);
-
             VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
             callbackCreateInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
             callbackCreateInfo.flags       = VK_DEBUG_REPORT_ERROR_BIT_EXT |

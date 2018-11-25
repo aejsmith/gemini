@@ -19,6 +19,7 @@
 #include "GPU/GPUDeviceChild.h"
 
 #include "Core/RefCounted.h"
+#include "Core/String.h"
 
 /**
  * A reference counted child object of a GPUDevice.
@@ -36,9 +37,31 @@ protected:
                             GPUObject(GPUDevice& inDevice);
                             ~GPUObject() {}
 
+public:
+    /**
+     * Get/set a name for the object. This is for debugging purposes only. It
+     * will be passed through to the underlying API and may be displayed in
+     * tools (e.g. RenderDoc).
+     */
+    const std::string&      GetName() const { return mName; }
+    void                    SetName(std::string inName);
+
+protected:
+    /** Callback when the name changes to pass this through to the API. */
+    virtual void            UpdateName() {}
+
+private:
+    std::string             mName;
+
 };
 
 inline GPUObject::GPUObject(GPUDevice& inDevice) :
     GPUDeviceChild (inDevice)
 {
+}
+
+inline void GPUObject::SetName(std::string inName)
+{
+    mName = std::move(inName);
+    UpdateName();
 }

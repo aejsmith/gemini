@@ -68,3 +68,10 @@ VulkanBuffer::~VulkanBuffer()
             inDevice.GetMemoryManager().Free(allocation);
         });
 }
+
+void VulkanBuffer::UpdateName()
+{
+    GetVulkanDevice().UpdateName(mHandle,
+                                 VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT,
+                                 GetName());
+}

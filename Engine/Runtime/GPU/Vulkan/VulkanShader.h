@@ -32,6 +32,9 @@ public:
 
     VkShaderModule          GetHandle() const   { return mHandle; }
 
+protected:
+    void                    UpdateName() override;
+
 private:
     VkShaderModule          mHandle;
 

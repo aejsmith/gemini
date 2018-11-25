@@ -31,6 +31,9 @@ public:
 
     VkBuffer                GetHandle() const   { return mHandle; }
 
+protected:
+    void                    UpdateName() override;
+
 private:
     VkBuffer                mHandle;
     VmaAllocation           mAllocation;

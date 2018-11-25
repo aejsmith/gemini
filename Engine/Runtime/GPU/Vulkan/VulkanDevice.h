@@ -36,6 +36,13 @@ class VulkanMemoryManager;
 class VulkanDevice final : public GPUDevice
 {
 public:
+    /** Device capability flags. */
+    enum Caps : uint32_t
+    {
+        kCap_DebugMarker        = (1 << 0),
+    };
+
+public:
                                         VulkanDevice();
                                         ~VulkanDevice();
 
@@ -86,6 +93,9 @@ public:
     VulkanMemoryManager&                GetMemoryManager() const        { return *mMemoryManager; }
     VulkanDescriptorPool&               GetDescriptorPool() const       { return *mDescriptorPool; }
 
+    bool                                HasCap(const Caps inCap) const
+                                            { return (mCaps & inCap) == inCap; }
+
     /**
      * Get the current frame index (between 0 and kVulkanInFlightFrameCount),
      * for indexing data tracked for in-flight frames.
@@ -97,6 +107,12 @@ public:
      * GPU. This can be used for deferred deletion.
      */
     void                                AddFrameCompleteCallback(FrameCompleteCallback inCallback);
+
+    /** Apply a debug name to an object if we have VK_EXT_debug_marker. */
+    template <typename T>
+    void                                UpdateName(const T                          inHandle,
+                                                   const VkDebugReportObjectTypeEXT inType,
+                                                   const std::string&               inName);
 
     /**
      * Get a semaphore. This should be used within the current frame - once it
@@ -172,6 +188,8 @@ private:
     uint32_t                            mGraphicsQueueFamily;
     VkPhysicalDeviceProperties          mProperties;
     VkPhysicalDeviceFeatures            mFeatures;
+    uint32_t                            mCaps;
+
     VkPipelineCache                     mDriverPipelineCache;
 
     VulkanMemoryManager*                mMemoryManager;
@@ -198,3 +216,20 @@ private:
     const VulkanArgumentSetLayout*      mDummyArgumentSetLayout;
 
 };
+
+template <typename T>
+inline void VulkanDevice::UpdateName(const T                          inHandle,
+                                     const VkDebugReportObjectTypeEXT inType,
+                                     const std::string&               inName)
+{
+    if (HasCap(kCap_DebugMarker))
+    {
+        VkDebugMarkerObjectNameInfoEXT nameInfo = {};
+        nameInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+        nameInfo.objectType  = inType;
+        nameInfo.object      = reinterpret_cast<uint64_t>(inHandle);
+        nameInfo.pObjectName = inName.c_str();
+
+        vkDebugMarkerSetObjectNameEXT(GetHandle(), &nameInfo);
+    }
+}

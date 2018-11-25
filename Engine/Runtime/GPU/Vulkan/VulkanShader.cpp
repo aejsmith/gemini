@@ -41,3 +41,10 @@ VulkanShader::~VulkanShader()
 {
     vkDestroyShaderModule(GetVulkanDevice().GetHandle(), mHandle, nullptr);
 }
+
+void VulkanShader::UpdateName()
+{
+    GetVulkanDevice().UpdateName(mHandle,
+                                 VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT,
+                                 GetName());
+}

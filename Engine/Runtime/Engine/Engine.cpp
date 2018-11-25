@@ -106,7 +106,11 @@ static GPUShaderPtr CreateShader(Path inPath, const GPUShaderStage inStage)
     Assert(isCompiled);
     Unused(isCompiled);
 
-    return GPUDevice::Get().CreateShader(inStage, std::move(code));
+    GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage, std::move(code));
+
+    shader->SetName(inPath.GetString());
+
+    return shader;
 }
 
 struct ImGuiResources

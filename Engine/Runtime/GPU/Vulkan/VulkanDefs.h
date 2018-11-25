@@ -189,12 +189,22 @@
     macro(vkGetBufferMemoryRequirements2)
 
 /**
- * VK_EXT_debug_report functions.
+ * Instance extension functions.
  */
-#define ENUMERATE_VULKAN_DEBUG_REPORT_FUNCS(macro) \
+#define ENUMERATE_VULKAN_INSTANCE_EXTENSION_FUNCS(macro) \
     macro(vkCreateDebugReportCallbackEXT) \
     macro(vkDestroyDebugReportCallbackEXT) \
     macro(vkDebugReportMessageEXT)
+
+/**
+ * Device extension functions.
+ */
+#define ENUMERATE_VULKAN_DEVICE_EXTENSION_FUNCS(macro) \
+    macro(vkDebugMarkerSetObjectTagEXT) \
+    macro(vkDebugMarkerSetObjectNameEXT) \
+    macro(vkCmdDebugMarkerBeginEXT) \
+    macro(vkCmdDebugMarkerEndEXT) \
+    macro(vkCmdDebugMarkerInsertEXT)
 
 /**
  * Table of Vulkan function pointers loaded manually. These are made available
@@ -212,8 +222,9 @@ namespace VulkanFuncs
 
     ENUMERATE_VULKAN_NO_INSTANCE_FUNCS(DECLARE_VULKAN_FUNC);
     ENUMERATE_VULKAN_INSTANCE_FUNCS(DECLARE_VULKAN_FUNC);
+    ENUMERATE_VULKAN_INSTANCE_EXTENSION_FUNCS(DECLARE_VULKAN_FUNC);
     ENUMERATE_VULKAN_DEVICE_FUNCS(DECLARE_VULKAN_FUNC);
-    ENUMERATE_VULKAN_DEBUG_REPORT_FUNCS(DECLARE_VULKAN_FUNC);
+    ENUMERATE_VULKAN_DEVICE_EXTENSION_FUNCS(DECLARE_VULKAN_FUNC);
 
     #undef DECLARE_VULKAN_FUNC
 }

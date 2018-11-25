@@ -128,3 +128,10 @@ VulkanTexture::~VulkanTexture()
             });
     }
 }
+
+void VulkanTexture::UpdateName()
+{
+    GetVulkanDevice().UpdateName(mHandle,
+                                 VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT,
+                                 GetName());
+}

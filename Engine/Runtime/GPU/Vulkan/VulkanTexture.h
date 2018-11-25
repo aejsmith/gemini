@@ -26,30 +26,33 @@ class VulkanTexture final : public GPUTexture,
                             public VulkanDeviceChild<VulkanTexture>
 {
 public:
-                                VulkanTexture(VulkanDevice&         inDevice,
-                                              const GPUTextureDesc& inDesc);
+                            VulkanTexture(VulkanDevice&         inDevice,
+                                          const GPUTextureDesc& inDesc);
 
-                                VulkanTexture(VulkanSwapchain& inSwapchain,
-                                              OnlyCalledBy<VulkanSwapchain>);
+                            VulkanTexture(VulkanSwapchain& inSwapchain,
+                                          OnlyCalledBy<VulkanSwapchain>);
 
-                                ~VulkanTexture();
+                            ~VulkanTexture();
 
-    VkImage                     GetHandle() const           { return mHandle; }
+    VkImage                 GetHandle() const           { return mHandle; }
 
-    VkImageAspectFlags          GetAspectMask() const       { return mAspectMask; }
+    VkImageAspectFlags      GetAspectMask() const       { return mAspectMask; }
 
     /**
      * Interface with VulkanSwapchain for swapchain textures to set the current
      * swapchain image that this refers to.
      */
-    void                        SetImage(const VkImage inImage,
-                                         OnlyCalledBy<VulkanSwapchain>)
-                                    { Assert(IsSwapchain()); mHandle = inImage; }
+    void                    SetImage(const VkImage inImage,
+                                     OnlyCalledBy<VulkanSwapchain>)
+                                { Assert(IsSwapchain()); mHandle = inImage; }
+
+protected:
+    void                    UpdateName() override;
 
 private:
-    VkImage                     mHandle;
-    VmaAllocation               mAllocation;
+    VkImage                 mHandle;
+    VmaAllocation           mAllocation;
 
-    VkImageAspectFlags          mAspectMask;
+    VkImageAspectFlags      mAspectMask;
 
 };
