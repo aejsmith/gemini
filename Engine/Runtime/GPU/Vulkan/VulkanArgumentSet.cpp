@@ -20,6 +20,7 @@
 #include "VulkanDescriptorPool.h"
 #include "VulkanDevice.h"
 #include "VulkanResourceView.h"
+#include "VulkanSampler.h"
 #include "VulkanTexture.h"
 #include "VulkanUniformPool.h"
 
@@ -84,9 +85,9 @@ VulkanArgumentSetLayout::~VulkanArgumentSetLayout()
     vkDestroyDescriptorSetLayout(GetVulkanDevice().GetHandle(), mHandle, nullptr);
 }
 
-VulkanArgumentSet::VulkanArgumentSet(VulkanDevice&               inDevice,
-                                     GPUArgumentSetLayout* const inLayout,
-                                     const GPUArgument* const    inArguments) :
+VulkanArgumentSet::VulkanArgumentSet(VulkanDevice&                 inDevice,
+                                     const GPUArgumentSetLayoutRef inLayout,
+                                     const GPUArgument* const      inArguments) :
     GPUArgumentSet  (inDevice, inLayout, inArguments)
 {
     const auto layout = static_cast<const VulkanArgumentSetLayout*>(GetLayout());
@@ -154,22 +155,28 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
         }
         else if (arguments[i] == kGPUArgumentType_Sampler)
         {
-            Fatal("TODO");
+            const auto sampler = static_cast<const VulkanSampler*>(inArguments[i].sampler);
+
+            imageInfo.imageView   = VK_NULL_HANDLE;
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.sampler     = sampler->GetHandle();
+
+            descriptorWrite.pImageInfo = &imageInfo;
         }
         else
         {
-            const auto& view = static_cast<VulkanResourceView&>(*inArguments[i].view);
+            const auto view = static_cast<VulkanResourceView*>(inArguments[i].view);
 
             switch (arguments[i])
             {
                 case kGPUArgumentType_Buffer:
                 case kGPUArgumentType_RWBuffer:
                 {
-                    const auto& buffer = static_cast<const VulkanBuffer&>(view.GetResource());
+                    const auto& buffer = static_cast<const VulkanBuffer&>(view->GetResource());
 
                     bufferInfo.buffer = buffer.GetHandle();
-                    bufferInfo.offset = view.GetElementOffset();
-                    bufferInfo.range  = view.GetElementCount();
+                    bufferInfo.offset = view->GetElementOffset();
+                    bufferInfo.range  = view->GetElementCount();
 
                     descriptorWrite.pBufferInfo = &bufferInfo;
                     break;
@@ -179,7 +186,7 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
                 case kGPUArgumentType_RWTexture:
                 {
                     // FIXME: Depth sampling layout is wrong.
-                    imageInfo.imageView   = view.GetImageView();
+                    imageInfo.imageView   = view->GetImageView();
                     imageInfo.imageLayout = (arguments[i] == kGPUArgumentType_RWTexture)
                                                 ? VK_IMAGE_LAYOUT_GENERAL
                                                 : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -194,7 +201,7 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
                 case kGPUArgumentType_RWTextureBuffer:
                 {
                     /* Returns by reference. */
-                    descriptorWrite.pTexelBufferView = &view.GetBufferView();
+                    descriptorWrite.pTexelBufferView = &view->GetBufferView();
                     break;
                 }
 

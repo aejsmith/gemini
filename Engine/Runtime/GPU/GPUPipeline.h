@@ -28,7 +28,7 @@ struct GPUPipelineDesc
      * Argument set layouts for the pipeline. These are shared by all stages.
      * Null indicates that the set is not used by the pipeline.
      */
-    GPUArgumentSetLayout*       argumentSetLayouts[kMaxArgumentSets];
+    GPUArgumentSetLayoutRef     argumentSetLayouts[kMaxArgumentSets];
 
     GPUBlendStateRef            blendState;
     GPUDepthStencilStateRef     depthStencilState;

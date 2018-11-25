@@ -214,7 +214,7 @@ void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
         {
             auto& argumentState = mArgumentState[setIndex];
 
-            GPUArgumentSetLayout* const layout = inPipeline->GetDesc().argumentSetLayouts[setIndex];
+            const GPUArgumentSetLayoutRef layout = inPipeline->GetDesc().argumentSetLayouts[setIndex];
 
             if (layout != argumentState.layout)
             {

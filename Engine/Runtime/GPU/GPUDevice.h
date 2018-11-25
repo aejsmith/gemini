@@ -20,6 +20,7 @@
 #include "GPU/GPUBuffer.h"
 #include "GPU/GPUPipeline.h"
 #include "GPU/GPUResourceView.h"
+#include "GPU/GPUSampler.h"
 #include "GPU/GPUShader.h"
 #include "GPU/GPUTexture.h"
 
@@ -33,8 +34,6 @@ class GPUGraphicsContext;
 class GPUStagingPool;
 class GPUUniformPool;
 class Window;
-
-struct GPUArgument;
 
 /**
  * This class is the main class of the low-level rendering API abstraction
@@ -97,8 +96,8 @@ public:
      * resource view arguments. The owner of the set must ensure that the
      * arguments remain alive while the set is still being used.
      */
-    virtual GPUArgumentSetPtr       CreateArgumentSet(GPUArgumentSetLayout* const inLayout,
-                                                      const GPUArgument* const    inArguments) = 0;
+    virtual GPUArgumentSetPtr       CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
+                                                      const GPUArgument* const      inArguments) = 0;
 
     virtual GPUBufferPtr            CreateBuffer(const GPUBufferDesc& inDesc) = 0;
 
@@ -119,13 +118,16 @@ public:
 
     virtual GPUTexturePtr           CreateTexture(const GPUTextureDesc& inDesc) = 0;
 
-    GPUArgumentSetLayout*           GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc);
+    GPUArgumentSetLayoutRef         GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc);
+
+    GPUSamplerRef                   GetSampler(const GPUSamplerDesc& inDesc);
 
 protected:
     void                            DestroyResources();
 
     virtual GPUArgumentSetLayout*   CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) = 0;
     virtual GPUPipeline*            CreatePipelineImpl(const GPUPipelineDesc& inDesc) = 0;
+    virtual GPUSampler*             CreateSamplerImpl(const GPUSamplerDesc& inDesc) = 0;
 
     virtual void                    EndFrameImpl() = 0;
 
@@ -140,15 +142,16 @@ protected:
 private:
     using ArgumentSetLayoutCache  = HashMap<size_t, GPUArgumentSetLayout*>;
     using PipelineCache           = HashMap<size_t, GPUPipeline*>;
+    using SamplerCache            = HashMap<size_t, GPUSampler*>;
 
 private:
     GPUPipeline*                    GetPipelineImpl(const GPUPipelineDesc& inDesc);
 
 private:
-    ArgumentSetLayoutCache          mArgumentSetLayoutCache;
-    std::mutex                      mArgumentSetLayoutCacheLock;
+    std::shared_mutex               mResourceCacheLock;
 
+    ArgumentSetLayoutCache          mArgumentSetLayoutCache;
     PipelineCache                   mPipelineCache;
-    std::shared_mutex               mPipelineCacheLock;
+    SamplerCache                    mSamplerCache;
 
 };

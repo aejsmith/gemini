@@ -30,6 +30,7 @@ objects = map(env.Object, [
     'Vulkan/VulkanMemoryManager.cpp',
     'Vulkan/VulkanPipeline.cpp',
     'Vulkan/VulkanResourceView.cpp',
+    'Vulkan/VulkanSampler.cpp',
     'Vulkan/VulkanShader.cpp',
     'Vulkan/VulkanStagingPool.cpp',
     'Vulkan/VulkanSwapchain.cpp',

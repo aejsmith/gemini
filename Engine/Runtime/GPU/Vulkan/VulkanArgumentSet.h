@@ -29,6 +29,7 @@ public:
 
                             ~VulkanArgumentSetLayout();
 
+public:
     VkDescriptorSetLayout   GetHandle() const           { return mHandle; }
 
     /**
@@ -50,12 +51,13 @@ class VulkanArgumentSet final : public GPUArgumentSet,
                                 public VulkanDeviceChild<VulkanArgumentSetLayout>
 {
 public:
-                            VulkanArgumentSet(VulkanDevice&               inDevice,
-                                              GPUArgumentSetLayout* const inLayout,
-                                              const GPUArgument* const    inArguments);
+                            VulkanArgumentSet(VulkanDevice&                 inDevice,
+                                              const GPUArgumentSetLayoutRef inLayout,
+                                              const GPUArgument* const      inArguments);
 
                             ~VulkanArgumentSet();
 
+public:
     VkDescriptorSet         GetHandle() const   { return mHandle; }
 
     static void             Write(const VkDescriptorSet                inHandle,

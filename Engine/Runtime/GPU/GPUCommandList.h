@@ -16,21 +16,18 @@
 
 #pragma once
 
-#include "GPU/GPUDeviceChild.h"
+#include "GPU/GPUArgumentSet.h"
 #include "GPU/GPURenderPass.h"
 
 #include <atomic>
 #include <thread>
 
-class GPUArgumentSet;
-class GPUArgumentSetLayout;
 class GPUBuffer;
 class GPUContext;
 class GPUComputeContext;
 class GPUGraphicsContext;
 class GPUPipeline;
 
-struct GPUArgument;
 struct GPUPipelineDesc;
 
 /**
@@ -191,7 +188,7 @@ protected:
     struct ArgumentState
     {
         /** Layout as expected by the pipeline/compute shader. */
-        GPUArgumentSetLayout*       layout;
+        GPUArgumentSetLayoutRef     layout;
 
         /** Currently set uniform handles. */
         GPUUniforms                 uniforms[kMaxArgumentsPerSet];

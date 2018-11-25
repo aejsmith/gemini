@@ -120,7 +120,7 @@ void Engine::Run()
     GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;
 
-    GPUArgumentSetLayout* argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+    const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
     static const glm::vec2 kVertices[3] =
     {

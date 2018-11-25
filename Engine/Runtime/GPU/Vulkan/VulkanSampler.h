@@ -16,18 +16,23 @@
 
 #pragma once
 
-#include "Core/Hash.h"
+#include "GPU/GPUSampler.h"
 
-#include "GPU/GPUArgumentSet.h"
+#include "VulkanDeviceChild.h"
 
-/**
- * Key for a VkPipelineLayout based on the argument set layouts.
- * GPUArgumentSetLayout objects are persistent so we can just hash the pointers
- * to them.
- */
-struct VulkanPipelineLayoutKey
+class VulkanSampler final : public GPUSampler,
+                            public VulkanDeviceChild<VulkanSampler>
 {
-    GPUArgumentSetLayoutRef argumentSetLayouts[kMaxArgumentSets];
-};
+public:
+                            VulkanSampler(VulkanDevice&         inDevice,
+                                          const GPUSamplerDesc& inDesc);
 
-DEFINE_HASH_MEM_OPS(VulkanPipelineLayoutKey);
+                            ~VulkanSampler();
+
+public:
+    VkSampler               GetHandle() const { return mHandle; }
+
+private:
+    VkSampler               mHandle;
+
+};

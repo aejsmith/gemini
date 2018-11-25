@@ -16,6 +16,7 @@
 
 #include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
+#include "GPU/GPUSampler.h"
 
 #include "Vulkan/VulkanDevice.h"
 
@@ -37,6 +38,11 @@ GPUDevice::~GPUDevice()
 
 void GPUDevice::DestroyResources()
 {
+    for (auto& it : mSamplerCache)
+    {
+        delete it.second;
+    }
+
     for (auto& it : mArgumentSetLayoutCache)
     {
         delete it.second;
@@ -63,26 +69,35 @@ void GPUDevice::EndFrame()
     EndFrameImpl();
 }
 
-GPUArgumentSetLayout* GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc)
+GPUArgumentSetLayoutRef GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc)
 {
     const size_t hash = HashValue(inDesc);
 
     GPUArgumentSetLayout* layout = nullptr;
 
-    std::unique_lock lock(mArgumentSetLayoutCacheLock);
-
-    auto it = mArgumentSetLayoutCache.find(hash);
-    if (it != mArgumentSetLayoutCache.end())
     {
-        layout = it->second;
+        std::shared_lock lock(mResourceCacheLock);
+
+        auto it = mArgumentSetLayoutCache.find(hash);
+        if (it != mArgumentSetLayoutCache.end())
+        {
+            layout = it->second;
+        }
     }
-    else
+
+    if (!layout)
     {
         layout = CreateArgumentSetLayoutImpl(std::move(inDesc));
 
+        std::unique_lock lock(mResourceCacheLock);
+
         auto ret = mArgumentSetLayoutCache.emplace(hash, layout);
-        Assert(ret.second);
-        Unused(ret);
+
+        if (!ret.second)
+        {
+            delete layout;
+            layout = ret.first->second;
+        }
     }
 
     return layout;
@@ -112,7 +127,7 @@ GPUPipeline* GPUDevice::GetPipelineImpl(const GPUPipelineDesc& inDesc)
     GPUPipeline* pipeline = nullptr;
 
     {
-        std::shared_lock lock(mPipelineCacheLock);
+        std::shared_lock lock(mResourceCacheLock);
 
         auto it = mPipelineCache.find(hash);
         if (it != mPipelineCache.end())
@@ -132,13 +147,13 @@ GPUPipeline* GPUDevice::GetPipelineImpl(const GPUPipelineDesc& inDesc)
 
         Assert(pipeline->GetRefCount() == 0);
 
-        std::unique_lock lock(mPipelineCacheLock);
+        std::unique_lock lock(mResourceCacheLock);
 
         auto ret = mPipelineCache.emplace(hash, pipeline);
 
         if (ret.second)
         {
-            /* Register with the shaders. mPipelineCacheLock guards the shader
+            /* Register with the shaders. mResourceCacheLock guards the shader
              * pipeline sets. */
             for (auto shader : inDesc.shaders)
             {
@@ -172,7 +187,7 @@ void GPUDevice::DropPipeline(GPUPipeline* const inPipeline,
 
     const size_t hash = HashValue(inPipeline->GetDesc());
 
-    std::unique_lock lock(mPipelineCacheLock);
+    std::unique_lock lock(mResourceCacheLock);
 
     auto ret = mPipelineCache.find(hash);
     Assert(ret != mPipelineCache.end());
@@ -190,4 +205,38 @@ GPUPipelinePtr GPUDevice::CreatePipeline(const GPUPipelineDesc& inDesc)
     /* See GetPipelineImpl() for details. */
     GPUPipeline* const pipeline = GetPipelineImpl(inDesc);
     return pipeline->CreatePtr({});
+}
+
+GPUSamplerRef GPUDevice::GetSampler(const GPUSamplerDesc& inDesc)
+{
+    const size_t hash = HashValue(inDesc);
+
+    GPUSampler* layout = nullptr;
+
+    {
+        std::shared_lock lock(mResourceCacheLock);
+
+        auto it = mSamplerCache.find(hash);
+        if (it != mSamplerCache.end())
+        {
+            layout = it->second;
+        }
+    }
+
+    if (!layout)
+    {
+        layout = CreateSamplerImpl(inDesc);
+
+        std::unique_lock lock(mResourceCacheLock);
+
+        auto ret = mSamplerCache.emplace(hash, layout);
+
+        if (!ret.second)
+        {
+            delete layout;
+            layout = ret.first->second;
+        }
+    }
+
+    return layout;
 }

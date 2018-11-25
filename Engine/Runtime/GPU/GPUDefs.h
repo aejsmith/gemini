@@ -483,7 +483,7 @@ enum GPUArgumentType : uint8_t
     kGPUArgumentTypeCount,
 };
 
-enum GPUStagingAccess
+enum GPUStagingAccess : uint8_t
 {
     /** Staging resource will be used to read back from the GPU. */
     kGPUStagingAccess_Read,
@@ -492,7 +492,7 @@ enum GPUStagingAccess
     kGPUStagingAccess_Write,
 };
 
-enum GPUAttributeFormat
+enum GPUAttributeFormat : uint8_t
 {
     kGPUAttributeFormat_Unknown,
 
@@ -507,8 +507,22 @@ enum GPUAttributeFormat
     kGPUAttributeFormat_R32G32B32A32_Float,
 };
 
-enum GPUIndexType
+enum GPUIndexType : uint8_t
 {
     kGPUIndexType_16,
     kGPUIndexType_32,
+};
+
+enum GPUFilter : uint8_t
+{
+    kGPUFilter_Nearest,
+    kGPUFilter_Linear,
+};
+
+enum GPUAddressMode : uint8_t
+{
+    kGPUAddressMode_Repeat,
+    kGPUAddressMode_MirroredRepeat,
+    kGPUAddressMode_Clamp,
+    kGPUAddressMode_MirroredClamp,
 };

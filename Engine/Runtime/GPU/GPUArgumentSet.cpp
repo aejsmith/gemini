@@ -40,9 +40,9 @@ GPUArgumentSetLayout::~GPUArgumentSetLayout()
 {
 }
 
-GPUArgumentSet::GPUArgumentSet(GPUDevice&                  inDevice,
-                               GPUArgumentSetLayout* const inLayout,
-                               const GPUArgument* const    inArguments) :
+GPUArgumentSet::GPUArgumentSet(GPUDevice&                    inDevice,
+                               const GPUArgumentSetLayoutRef inLayout,
+                               const GPUArgument* const      inArguments) :
     GPUObject   (inDevice),
     mLayout     (inLayout)
 {
@@ -55,8 +55,8 @@ GPUArgumentSet::~GPUArgumentSet()
 
 #ifdef ORION_BUILD_DEBUG
 
-void GPUArgumentSet::ValidateArguments(GPUArgumentSetLayout* const inLayout,
-                                       const GPUArgument* const    inArguments)
+void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
+                                       const GPUArgument* const      inArguments)
 {
     Assert(inLayout);
 

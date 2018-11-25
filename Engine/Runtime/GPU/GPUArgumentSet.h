@@ -19,9 +19,9 @@
 #include "Core/Hash.h"
 
 #include "GPU/GPUObject.h"
+#include "GPU/GPUSampler.h"
 
 class GPUResourceView;
-class GPUSamplerState;
 
 using GPUArgumentTypeArray = std::vector<GPUArgumentType>;
 
@@ -91,10 +91,12 @@ private:
     friend class GPUDevice;
 };
 
+using GPUArgumentSetLayoutRef = const GPUArgumentSetLayout*;
+
 struct GPUArgument
 {
     GPUResourceView*                view    = nullptr;
-    const GPUSamplerState*          sampler = nullptr;
+    GPUSamplerRef                   sampler = nullptr;
 };
 
 /**
@@ -116,20 +118,20 @@ struct GPUArgument
 class GPUArgumentSet : public GPUObject
 {
 protected:
-                                    GPUArgumentSet(GPUDevice&                  inDevice,
-                                                   GPUArgumentSetLayout* const inLayout,
-                                                   const GPUArgument* const    inArguments);
+                                    GPUArgumentSet(GPUDevice&                    inDevice,
+                                                   const GPUArgumentSetLayoutRef inLayout,
+                                                   const GPUArgument* const      inArguments);
 
                                     ~GPUArgumentSet();
 
 public:
-    GPUArgumentSetLayout*           GetLayout() const { return mLayout; }
+    GPUArgumentSetLayoutRef         GetLayout() const { return mLayout; }
 
-    static void                     ValidateArguments(GPUArgumentSetLayout* const inLayout,
-                                                      const GPUArgument* const    inArguments);
+    static void                     ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
+                                                      const GPUArgument* const      inArguments);
 
 private:
-    GPUArgumentSetLayout*           mLayout;
+    const GPUArgumentSetLayoutRef   mLayout;
 
 };
 
@@ -137,8 +139,8 @@ using GPUArgumentSetPtr = ReferencePtr<GPUArgumentSet>;
 
 #ifndef ORION_BUILD_DEBUG
 
-inline void GPUArgumentSet::ValidateArguments(GPUArgumentSetLayout* const inLayout,
-                                              const GPUArgument* const    inArguments)
+inline void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
+                                              const GPUArgument* const      inArguments)
 {
     /* On non-debug builds this does nothing. */
 }

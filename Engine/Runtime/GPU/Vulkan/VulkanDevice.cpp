@@ -25,6 +25,7 @@
 #include "VulkanPipeline.h"
 #include "VulkanRenderPass.h"
 #include "VulkanResourceView.h"
+#include "VulkanSampler.h"
 #include "VulkanShader.h"
 #include "VulkanStagingPool.h"
 #include "VulkanSwapchain.h"
@@ -94,7 +95,7 @@ VulkanDevice::VulkanDevice() :
 
     /* See GetPipelineLayout() for details of what this is for. */
     GPUArgumentSetLayoutDesc layoutDesc;
-    mDummyArgumentSetLayout = static_cast<VulkanArgumentSetLayout*>(GetArgumentSetLayout(std::move(layoutDesc)));
+    mDummyArgumentSetLayout = static_cast<const VulkanArgumentSetLayout*>(GetArgumentSetLayout(std::move(layoutDesc)));
 }
 
 VulkanDevice::~VulkanDevice()
@@ -332,8 +333,8 @@ void VulkanDevice::CreateDevice()
     #undef LOAD_VULKAN_DEVICE_FUNC
 }
 
-GPUArgumentSetPtr VulkanDevice::CreateArgumentSet(GPUArgumentSetLayout* const inLayout,
-                                                  const GPUArgument* const    inArguments)
+GPUArgumentSetPtr VulkanDevice::CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
+                                                  const GPUArgument* const      inArguments)
 {
     return new VulkanArgumentSet(*this, inLayout, inArguments);
 }
@@ -357,6 +358,11 @@ GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource* const         i
                                                     const GPUResourceViewDesc& inDesc)
 {
     return new VulkanResourceView(*inResource, inDesc);
+}
+
+GPUSampler* VulkanDevice::CreateSamplerImpl(const GPUSamplerDesc& inDesc)
+{
+    return new VulkanSampler(*this, inDesc);
 }
 
 GPUShaderPtr VulkanDevice::CreateShader(const GPUShaderStage inStage,
@@ -501,12 +507,12 @@ VkPipelineLayout VulkanDevice::GetPipelineLayout(const VulkanPipelineLayoutKey& 
 
         for (size_t i = 0; i < kMaxArgumentSets; i++)
         {
-            VulkanArgumentSetLayout* setLayout;
+            const VulkanArgumentSetLayout* setLayout;
             if (inKey.argumentSetLayouts[i])
             {
                 createInfo.setLayoutCount = i + 1;
 
-                setLayout = static_cast<VulkanArgumentSetLayout*>(inKey.argumentSetLayouts[i]);
+                setLayout = static_cast<const VulkanArgumentSetLayout*>(inKey.argumentSetLayouts[i]);
             }
             else
             {

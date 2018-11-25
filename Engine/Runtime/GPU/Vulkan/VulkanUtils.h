@@ -217,4 +217,45 @@ namespace VulkanUtils
 
         }
     }
+
+    inline VkFilter ConvertFilter(const GPUFilter inFilter)
+    {
+        switch (inFilter)
+        {
+            case kGPUFilter_Nearest:    return VK_FILTER_NEAREST;
+            case kGPUFilter_Linear:     return VK_FILTER_LINEAR;
+
+            default:
+                UnreachableMsg("Unrecognised GPUFilter");
+
+        }
+    }
+
+    inline VkSamplerMipmapMode ConvertMipmapMode(const GPUFilter inFilter)
+    {
+        switch (inFilter)
+        {
+            case kGPUFilter_Nearest:    return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            case kGPUFilter_Linear:     return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+            default:
+                UnreachableMsg("Unrecognised GPUFilter");
+
+        }
+    }
+
+    inline VkSamplerAddressMode ConvertAddressMode(const GPUAddressMode inAddressMode)
+    {
+        switch (inAddressMode)
+        {
+            case kGPUAddressMode_Repeat:            return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            case kGPUAddressMode_MirroredRepeat:    return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+            case kGPUAddressMode_Clamp:             return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            case kGPUAddressMode_MirroredClamp:     return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+
+            default:
+                UnreachableMsg("Unrecognised GPUAddressMode");
+
+        }
+    }
 }

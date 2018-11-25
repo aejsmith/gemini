@@ -43,8 +43,8 @@ public:
      * GPUDevice methods.
      */
 public:
-    GPUArgumentSetPtr                   CreateArgumentSet(GPUArgumentSetLayout* const inLayout,
-                                                          const GPUArgument* const    inArguments) override;
+    GPUArgumentSetPtr                   CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
+                                                          const GPUArgument* const      inArguments) override;
 
     GPUBufferPtr                        CreateBuffer(const GPUBufferDesc& inDesc) override;
 
@@ -61,6 +61,7 @@ public:
 protected:
     GPUArgumentSetLayout*               CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) override;
     GPUPipeline*                        CreatePipelineImpl(const GPUPipelineDesc& inDesc) override;
+    GPUSampler*                         CreateSamplerImpl(const GPUSamplerDesc& inDesc) override;
 
     void                                EndFrameImpl() override;
 
@@ -194,6 +195,6 @@ private:
     RenderPassCache                     mRenderPassCache;
     FramebufferCache                    mFramebufferCache;
 
-    VulkanArgumentSetLayout*            mDummyArgumentSetLayout;
+    const VulkanArgumentSetLayout*      mDummyArgumentSetLayout;
 
 };
