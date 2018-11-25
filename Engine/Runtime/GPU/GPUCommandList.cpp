@@ -150,25 +150,6 @@ GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&              
     mVertexBuffers      {},
     mIndexBuffer        {}
 {
-    /* Add a reference to each view in the pass. Only the top level command
-     * list in a pass needs to do this - it will be alive as long as any
-     * children are. */
-    if (!mParent)
-    {
-        for (size_t i = 0; i < ArraySize(mRenderPass.colour); i++)
-        {
-            if (mRenderPass.colour[i].view)
-            {
-                mRenderPass.colour[i].view->Retain();
-            }
-        }
-
-        if (mRenderPass.depthStencil.view)
-        {
-            mRenderPass.depthStencil.view->Retain();
-        }
-    }
-
     /* Initialise the viewport and scissor to the size of the render target. */
     uint32_t width, height, layers;
     inRenderPass.GetDimensions(width, height, layers);
@@ -185,21 +166,6 @@ GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&              
 
 GPUGraphicsCommandList::~GPUGraphicsCommandList()
 {
-    if (!mParent)
-    {
-        for (size_t i = 0; i < ArraySize(mRenderPass.colour); i++)
-        {
-            if (mRenderPass.colour[i].view)
-            {
-                mRenderPass.colour[i].view->Release();
-            }
-        }
-
-        if (mRenderPass.depthStencil.view)
-        {
-            mRenderPass.depthStencil.view->Release();
-        }
-    }
 }
 
 void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)

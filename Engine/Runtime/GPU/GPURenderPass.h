@@ -29,9 +29,9 @@
  *
  * Note that setting a resource view on this structure does not cause the
  * reference count of the view to be incremented (a non-reference-counting
- * pointer is used). However, passing it to CreateRenderPass() will increment
- * the reference counts, and they will be released when the pass is submitted
- * with SubmitRenderPass().
+ * pointer is used), nor does creating a render pass with it. The user must
+ * ensure that the resources are kept alive until the render pass has been
+ * submitted.
  */
 struct GPURenderPass
 {
