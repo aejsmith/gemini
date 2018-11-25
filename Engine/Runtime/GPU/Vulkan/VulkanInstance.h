@@ -20,6 +20,8 @@
 
 #include "Core/Singleton.h"
 
+#include <vector>
+
 class VulkanInstance : public Singleton<VulkanInstance>
 {
 public:
@@ -30,12 +32,15 @@ public:
         kCap_DebugReport = (1 << 1),
     };
 
+    using LayerList           = std::vector<const char*>;
+
 public:
                                 VulkanInstance();
                                 ~VulkanInstance();
 
 public:
-    VkInstance                  GetHandle() const       { return mHandle; }
+    VkInstance                  GetHandle() const           { return mHandle; }
+    const LayerList&            GetEnabledLayers() const    { return mEnabledLayers; }
 
     bool                        HasCap(const Caps inCap)
                                     { return (mCaps & inCap) == inCap; }
@@ -55,6 +60,8 @@ private:
     void*                       mLoaderHandle;
     VkInstance                  mHandle;
     uint32_t                    mCaps;
+
+    std::vector<const char*>    mEnabledLayers;
 
     #if ORION_VULKAN_VALIDATION
     VkDebugReportCallbackEXT    mDebugReportCallback;

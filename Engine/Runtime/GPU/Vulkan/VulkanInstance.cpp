@@ -161,49 +161,83 @@ void VulkanInstance::CreateInstance()
         availableLayers.insert(layer.layerName);
     }
 
-    VulkanCheck(vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr));
-    std::vector<VkExtensionProperties> extensionProps(count);
-    VulkanCheck(vkEnumerateInstanceExtensionProperties(nullptr, &count, extensionProps.data()));
-
     std::unordered_set<std::string> availableExtensions;
+
+    auto EnumerateExtensions =
+        [&] (const char* const inLayerName)
+        {
+            VulkanCheck(vkEnumerateInstanceExtensionProperties(inLayerName, &count, nullptr));
+            std::vector<VkExtensionProperties> extensionProps(count);
+            VulkanCheck(vkEnumerateInstanceExtensionProperties(inLayerName, &count, extensionProps.data()));
+
+            for (const auto& extension : extensionProps)
+            {
+                LogInfo("  %s (revision %u)",
+                        extension.extensionName,
+                        extension.specVersion);
+
+                availableExtensions.insert(extension.extensionName);
+            }
+        };
+
     LogInfo("Instance extensions:");
-    for (const auto& extension : extensionProps)
-    {
-        LogInfo("  %s (revision %u)",
-                extension.extensionName,
-                extension.specVersion);
+    EnumerateExtensions(nullptr);
 
-        availableExtensions.insert(extension.extensionName);
-    }
+    auto EnableLayer =
+        [&] (const char* const inName, const uint32_t inCap) -> bool
+        {
+            const bool available = availableLayers.find(inName) != availableLayers.end();
 
-    std::vector<const char*> enabledLayers;
+            if (available)
+            {
+                mEnabledLayers.emplace_back(inName);
+                mCaps |= inCap;
+
+                /* Get extensions provided by the layer. */
+                LogInfo("Instance extensions (%s):", inName);
+                EnumerateExtensions(inName);
+            }
+
+            return available;
+        };
+
     std::vector<const char*> enabledExtensions;
 
-    enabledExtensions.assign(&kRequiredInstanceExtensions[0],
-                             &kRequiredInstanceExtensions[ArraySize(kRequiredInstanceExtensions)]);
-
-    enabledExtensions.emplace_back(VulkanSwapchain::GetSurfaceExtensionName());
-
-    for (const char* extension : enabledExtensions)
-    {
-        if (availableExtensions.find(extension) == availableExtensions.end())
+    auto EnableExtension =
+        [&] (const char* const inName, const uint32_t inCap, const bool inRequired = false) -> bool
         {
-            Fatal("Required Vulkan instance extension '%s' not available", extension);
-        }
+            const bool available = availableExtensions.find(inName) != availableExtensions.end();
+
+            if (available)
+            {
+                enabledExtensions.emplace_back(inName);
+                mCaps |= inCap;
+            }
+            else if (inRequired)
+            {
+                Fatal("Required Vulkan instance extension '%s' not available", inName);
+            }
+
+            return available;
+        };
+
+    EnableExtension(VulkanSwapchain::GetSurfaceExtensionName(), 0, true);
+
+    for (const char* const extension : kRequiredInstanceExtensions)
+    {
+        EnableExtension(extension, 0, true);
     }
 
     /* Enable validation extensions if requested and present. */
     #if ORION_VULKAN_VALIDATION
-        auto validationLayer = availableLayers.find("VK_LAYER_LUNARG_standard_validation");
-        auto reportExtension = availableExtensions.find(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-
-        if (validationLayer != availableLayers.end() && reportExtension != availableExtensions.end())
+        if (EnableLayer("VK_LAYER_LUNARG_standard_validation", kCap_Validation))
         {
             LogInfo("Enabling Vulkan validation layers");
-            enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-            enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
-            mCaps |= kCap_Validation | kCap_DebugReport;
+            if (!EnableExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, kCap_DebugReport))
+            {
+                LogWarning("Vulkan validation layers are enabled, but debug report unavailable");
+            }
         }
         else
         {
@@ -221,8 +255,8 @@ void VulkanInstance::CreateInstance()
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo        = &applicationInfo;
-    createInfo.enabledLayerCount       = enabledLayers.size();
-    createInfo.ppEnabledLayerNames     = enabledLayers.data();
+    createInfo.enabledLayerCount       = mEnabledLayers.size();
+    createInfo.ppEnabledLayerNames     = mEnabledLayers.data();
     createInfo.enabledExtensionCount   = enabledExtensions.size();
     createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
@@ -233,7 +267,7 @@ void VulkanInstance::CreateInstance()
 
     /* Register a debug report callback. */
     #if ORION_VULKAN_VALIDATION
-        if (mCaps & kCap_DebugReport)
+        if (HasCap(kCap_DebugReport))
         {
             ENUMERATE_VULKAN_DEBUG_REPORT_FUNCS(LOAD_VULKAN_INSTANCE_FUNC);
 

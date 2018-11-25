@@ -166,101 +166,37 @@ void VulkanDevice::CreateDevice()
     std::vector<VkPhysicalDevice> devices(count);
     VulkanCheck(vkEnumeratePhysicalDevices(GetInstance().GetHandle(), &count, devices.data()));
 
-    mPhysicalDevice = VK_NULL_HANDLE;
+    size_t deviceIndex = count;
 
-    std::unordered_set<std::string> availableExtensions;
-    std::vector<VkExtensionProperties> extensionProps;
-
+    /* Pick a device. Use the first, but if it is not a discrete GPU then check
+     * if there is one, and prefer it if so. */
     for (size_t i = 0; i < devices.size(); i++)
     {
-        VkPhysicalDevice device = devices[i];
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(devices[i], &properties);
 
-        vkGetPhysicalDeviceProperties(device, &mProperties);
-        vkGetPhysicalDeviceFeatures(device, &mFeatures);
+        const bool isDiscrete = properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 
-        LogInfo("Checking device %zu (%s)", i, mProperties.deviceName);
-
-        if (mProperties.apiVersion < VK_API_VERSION_1_1)
+        if (deviceIndex == count || isDiscrete)
         {
-            LogWarning("  Vulkan 1.1 is not supported");
-            continue;
-        }
+            deviceIndex = i;
+            mProperties = properties;
 
-        VulkanCheck(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, nullptr));
-        extensionProps.resize(count);
-        VulkanCheck(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, extensionProps.data()));
-
-        availableExtensions.clear();
-        for (const VkExtensionProperties& extension : extensionProps)
-        {
-            availableExtensions.insert(extension.extensionName);
-        }
-
-        bool found = true;
-
-        for (const char* extension : kRequiredDeviceExtensions)
-        {
-            found = availableExtensions.find(extension) != availableExtensions.end();
-            if (!found)
+            if (isDiscrete)
             {
-                LogWarning("  Required device extension '%s' not available", extension);
                 break;
             }
         }
-
-        if (!found)
-        {
-            continue;
-        }
-
-        /* Find suitable queue families. We need to support both graphics
-         * operations and presentation. */
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);
-
-        mGraphicsQueueFamily = std::numeric_limits<uint32_t>::max();
-
-        if (count > 0)
-        {
-            std::vector<VkQueueFamilyProperties> familyProps(count);
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &count, familyProps.data());
-
-            for (uint32_t family = 0; family < familyProps.size(); family++)
-            {
-                const bool graphicsSupported = familyProps[family].queueCount > 0 &&
-                                               familyProps[family].queueFlags & VK_QUEUE_GRAPHICS_BIT &&
-                                               familyProps[family].queueFlags & VK_QUEUE_COMPUTE_BIT;
-
-                const bool presentSupported  = VulkanSwapchain::CheckPresentationSupport(device, i);
-
-                if (graphicsSupported && presentSupported)
-                {
-                    mGraphicsQueueFamily = family;
-                    break;
-                }
-            }
-        }
-
-        if (mGraphicsQueueFamily == std::numeric_limits<uint32_t>::max())
-        {
-            LogWarning("  No suitable queue families");
-            continue;
-        }
-
-        /* This device is good. */
-        mPhysicalDevice = device;
-        break;
     }
 
-    if (mPhysicalDevice == VK_NULL_HANDLE)
-    {
-        Fatal("No suitable Vulkan devices found");
-    }
+    LogInfo("Using device %zu (%s)", deviceIndex, mProperties.deviceName);
+    mPhysicalDevice = devices[deviceIndex];
 
-    LogInfo("  API version: %u.%u.%u",
+    LogInfo("API version: %u.%u.%u",
             VK_VERSION_MAJOR(mProperties.apiVersion),
             VK_VERSION_MINOR(mProperties.apiVersion),
             VK_VERSION_PATCH(mProperties.apiVersion));
-    LogInfo("  IDs:         0x%x / 0x%x",
+    LogInfo("IDs:         0x%x / 0x%x",
             mProperties.vendorID,
             mProperties.deviceID);
 
@@ -271,32 +207,99 @@ void VulkanDevice::CreateDevice()
         case 0x10de:    mVendor = kGPUVendor_NVIDIA; break;
     }
 
-    LogInfo("  Extensions:");
-
-    for (const VkExtensionProperties& extension : extensionProps)
+    if (mProperties.apiVersion < VK_API_VERSION_1_1)
     {
-        LogInfo("    %s (revision %u)",
-                extension.extensionName,
-                extension.specVersion);
+        Fatal("Vulkan 1.1 is not supported");
     }
 
-    std::vector<const char*> enabledLayers;
+    /* Enable all supported features, aside from robustBufferAccess - we should
+     * behave properly without it, and it can have a performance impact. */
+    vkGetPhysicalDeviceFeatures(mPhysicalDevice, &mFeatures);
+    mFeatures.robustBufferAccess = false;
+
+    /* Find suitable queue families. We need to support both graphics
+     * operations and presentation. */
+    vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &count, nullptr);
+
+    mGraphicsQueueFamily = std::numeric_limits<uint32_t>::max();
+
+    if (count > 0)
+    {
+        std::vector<VkQueueFamilyProperties> familyProps(count);
+        vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &count, familyProps.data());
+
+        for (uint32_t family = 0; family < familyProps.size(); family++)
+        {
+            const bool graphicsSupported = familyProps[family].queueCount > 0 &&
+                                           familyProps[family].queueFlags & VK_QUEUE_GRAPHICS_BIT &&
+                                           familyProps[family].queueFlags & VK_QUEUE_COMPUTE_BIT;
+
+            const bool presentSupported = VulkanSwapchain::CheckPresentationSupport(mPhysicalDevice, family);
+
+            if (graphicsSupported && presentSupported)
+            {
+                mGraphicsQueueFamily = family;
+                break;
+            }
+        }
+    }
+
+    if (mGraphicsQueueFamily == std::numeric_limits<uint32_t>::max())
+    {
+        Fatal("No suitable graphics queue families");
+    }
+
+    std::unordered_set<std::string> availableExtensions;
+
+    auto EnumerateExtensions =
+        [&] (const char* const inLayerName)
+        {
+            VulkanCheck(vkEnumerateDeviceExtensionProperties(mPhysicalDevice, inLayerName, &count, nullptr));
+            std::vector<VkExtensionProperties> extensionProps(count);
+            VulkanCheck(vkEnumerateDeviceExtensionProperties(mPhysicalDevice, inLayerName, &count, extensionProps.data()));
+
+            for (const VkExtensionProperties& extension : extensionProps)
+            {
+                LogInfo("  %s (revision %u)",
+                        extension.extensionName,
+                        extension.specVersion);
+
+                availableExtensions.insert(extension.extensionName);
+            }
+        };
+
+    LogInfo("Device extensions:");
+    EnumerateExtensions(nullptr);
+
+    for (const char* const layer : GetInstance().GetEnabledLayers())
+    {
+        LogInfo("Device extensions (%s):", layer);
+        EnumerateExtensions(layer);
+    }
+
     std::vector<const char*> enabledExtensions;
 
-    if (GetInstance().HasCap(VulkanInstance::kCap_Validation))
+    auto EnableExtension =
+        [&] (const char* const inName, const bool inRequired = false) -> bool
+        {
+            const bool available = availableExtensions.find(inName) != availableExtensions.end();
+
+            if (available)
+            {
+                enabledExtensions.emplace_back(inName);
+            }
+            else if (inRequired)
+            {
+                Fatal("Required Vulkan device extension '%s' not available", inName);
+            }
+
+            return available;
+        };
+
+    for (const char* const extension : kRequiredDeviceExtensions)
     {
-        /* Assume that if the instance has validation then the device does
-         * too. */
-        enabledLayers.emplace_back("VK_LAYER_LUNARG_standard_validation");
+        EnableExtension(extension, true);
     }
-
-    enabledExtensions.assign(&kRequiredDeviceExtensions[0],
-                             &kRequiredDeviceExtensions[ArraySize(kRequiredDeviceExtensions)]);
-
-    /* Enable all supported features, aside from robustBufferAccess - we
-     * should behave properly without it, and it can have a performance
-     * impact. */
-    mFeatures.robustBufferAccess = false;
 
     const float queuePriority = 1.0f;
 
@@ -310,11 +313,11 @@ void VulkanDevice::CreateDevice()
     deviceCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount    = 1;
     deviceCreateInfo.pQueueCreateInfos       = &queueCreateInfo;
-    deviceCreateInfo.enabledLayerCount       = enabledLayers.size();
-    deviceCreateInfo.ppEnabledLayerNames     = enabledLayers.data();
+    deviceCreateInfo.enabledLayerCount       = GetInstance().GetEnabledLayers().size();
+    deviceCreateInfo.ppEnabledLayerNames     = GetInstance().GetEnabledLayers().data();
     deviceCreateInfo.enabledExtensionCount   = enabledExtensions.size();
     deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
-    deviceCreateInfo.pEnabledFeatures        = &mFeatures;;
+    deviceCreateInfo.pEnabledFeatures        = &mFeatures;
 
     VulkanCheck(vkCreateDevice(mPhysicalDevice,
                                &deviceCreateInfo,
