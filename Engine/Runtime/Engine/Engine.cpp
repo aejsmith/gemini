@@ -32,6 +32,8 @@
 
 #include <SDL.h>
 
+#include <imgui.h>
+
 SINGLETON_IMPL(Engine);
 SINGLETON_IMPL(Game);
 
@@ -97,22 +99,234 @@ Engine::~Engine()
      */
 }
 
+static GPUShaderPtr CreateShader(Path inPath, const GPUShaderStage inStage)
+{
+    GPUShaderCode code;
+    bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
+    Assert(isCompiled);
+    Unused(isCompiled);
+
+    return GPUDevice::Get().CreateShader(inStage, std::move(code));
+}
+
+struct ImGuiResources
+{
+    GPUShaderPtr        vertexShader;
+    GPUShaderPtr        fragmentShader;
+    GPUPipelinePtr      pipeline;
+    GPUTexturePtr       fontTexture;
+    GPUResourceViewPtr  fontView;
+    GPUSamplerRef       sampler;
+};
+
+static void InitImGui(ImGuiResources& outResources)
+{
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
+
+    outResources.vertexShader   = CreateShader("Engine/Shaders/ImGuiVert.glsl", kGPUShaderStage_Vertex);
+    outResources.fragmentShader = CreateShader("Engine/Shaders/ImGuiFrag.glsl", kGPUShaderStage_Fragment);
+
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(3);
+    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Texture;
+    argumentLayoutDesc.arguments[1] = kGPUArgumentType_Sampler;
+    argumentLayoutDesc.arguments[2] = kGPUArgumentType_Uniforms;
+
+    const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+
+    GPUVertexInputStateDesc vertexInputDesc;
+    vertexInputDesc.buffers[0].stride = sizeof(ImDrawVert);
+    vertexInputDesc.attributes[0].format = kGPUAttributeFormat_R32G32_Float;
+    vertexInputDesc.attributes[0].buffer = 0;
+    vertexInputDesc.attributes[0].offset = offsetof(ImDrawVert, pos);
+    vertexInputDesc.attributes[1].format = kGPUAttributeFormat_R32G32_Float;
+    vertexInputDesc.attributes[1].buffer = 0;
+    vertexInputDesc.attributes[1].offset = offsetof(ImDrawVert, uv);
+    vertexInputDesc.attributes[2].format = kGPUAttributeFormat_R8G8B8A8_UNorm;
+    vertexInputDesc.attributes[2].buffer = 0;
+    vertexInputDesc.attributes[2].offset = offsetof(ImDrawVert, col);
+
+    GPURenderTargetStateDesc renderTargetDesc;
+    renderTargetDesc.colour[0] = MainWindow::Get().GetSwapchain()->GetFormat();
+
+    GPURasterizerStateDesc rasterizerDesc;
+    rasterizerDesc.cullMode         = kGPUCullMode_None;
+    rasterizerDesc.depthClampEnable = true;
+
+    GPUBlendStateDesc blendDesc;
+    blendDesc.attachments[0].enable          = true;
+    blendDesc.attachments[0].srcColourFactor = kGPUBlendFactor_SrcAlpha;
+    blendDesc.attachments[0].dstColourFactor = kGPUBlendFactor_OneMinusSrcAlpha;
+    blendDesc.attachments[0].colourOp        = kGPUBlendOp_Add;
+    blendDesc.attachments[0].srcAlphaFactor  = kGPUBlendFactor_OneMinusSrcAlpha;
+    blendDesc.attachments[0].dstAlphaFactor  = kGPUBlendFactor_Zero;
+    blendDesc.attachments[0].alphaOp         = kGPUBlendOp_Add;
+
+    GPUPipelineDesc pipelineDesc;
+    pipelineDesc.shaders[kGPUShaderStage_Vertex]   = outResources.vertexShader;
+    pipelineDesc.shaders[kGPUShaderStage_Fragment] = outResources.fragmentShader;
+    pipelineDesc.argumentSetLayouts[0]             = argumentLayout;
+    pipelineDesc.blendState                        = GPUBlendState::Get(blendDesc);
+    pipelineDesc.depthStencilState                 = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
+    pipelineDesc.rasterizerState                   = GPURasterizerState::Get(rasterizerDesc);
+    pipelineDesc.renderTargetState                 = GPURenderTargetState::Get(renderTargetDesc);
+    pipelineDesc.vertexInputState                  = GPUVertexInputState::Get(vertexInputDesc);
+    pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
+
+    outResources.pipeline = GPUDevice::Get().CreatePipeline(pipelineDesc);
+
+    /* We use RGBA rather than just alpha here since the same shader supports
+     * displaying custom textures. */
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+    GPUTextureDesc textureDesc;
+    textureDesc.type   = kGPUResourceType_Texture2D;
+    textureDesc.usage  = kGPUResourceUsage_ShaderRead;
+    textureDesc.format = PixelFormat::kR8G8B8A8;
+    textureDesc.width  = width;
+    textureDesc.height = height;
+
+    outResources.fontTexture = GPUDevice::Get().CreateTexture(textureDesc);
+
+    GPUResourceViewDesc viewDesc;
+    viewDesc.type     = kGPUResourceViewType_Texture2D;
+    viewDesc.usage    = kGPUResourceUsage_ShaderRead;
+    viewDesc.format   = textureDesc.format;
+    viewDesc.mipCount = outResources.fontTexture->GetNumMipLevels();
+
+    outResources.fontView = GPUDevice::Get().CreateResourceView(outResources.fontTexture, viewDesc);
+
+    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+
+    GPUStagingTexture stagingTexture(GPUDevice::Get(), kGPUStagingAccess_Write, textureDesc);
+    memcpy(stagingTexture.MapWrite({0, 0}), pixels, width * height * 4);
+    stagingTexture.Finalise();
+
+    graphicsContext.ResourceBarrier(outResources.fontTexture,
+                                    kGPUResourceState_None,
+                                    kGPUResourceState_TransferWrite);
+
+    graphicsContext.UploadTexture(outResources.fontTexture, stagingTexture);
+
+    graphicsContext.ResourceBarrier(outResources.fontTexture,
+                                    kGPUResourceState_TransferWrite,
+                                    kGPUResourceState_AllShaderRead);
+
+    GPUSamplerDesc samplerDesc;
+    samplerDesc.minFilter = samplerDesc.magFilter = kGPUFilter_Linear;
+
+    outResources.sampler = GPUDevice::Get().GetSampler(samplerDesc);
+}
+
+static void BeginImGui()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    const glm::ivec2 size = MainWindow::Get().GetSize();
+    io.DisplaySize = ImVec2(size.x, size.y);
+
+    ImGui::NewFrame();
+}
+
+static void RenderImGui(const ImGuiResources& inResources)
+{
+    ImGui::Render();
+
+    const ImDrawData* const drawData = ImGui::GetDrawData();
+    if (!drawData)
+    {
+        return;
+    }
+
+    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+
+    GPURenderPass renderPass;
+    renderPass.SetColour(0, MainWindow::Get().GetSwapchain()->GetRenderTargetView());
+
+    GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
+    cmdList->Begin();
+    cmdList->SetPipeline(inResources.pipeline);
+
+    GPUArgument arguments[3] = {};
+    arguments[0].view    = inResources.fontView;
+    arguments[1].sampler = inResources.sampler;
+
+    cmdList->SetArguments(0, arguments);
+
+    const glm::ivec2 winSize = MainWindow::Get().GetSize();
+
+    const glm::mat4 projectionMatrix(
+         2.0f / winSize.x, 0.0f,               0.0f, 0.0f,
+         0.0f,             2.0f / -winSize.y,  0.0f, 0.0f,
+         0.0f,             0.0f,              -1.0f, 0.0f,
+        -1.0f,             1.0f,               0.0f, 1.0f);
+
+    cmdList->WriteUniforms(0, 2, &projectionMatrix, sizeof(projectionMatrix));
+
+    /* Keep created buffers alive until we submit the command list. */
+    std::vector<GPUBufferPtr> buffers;
+
+    GPUStagingBuffer stagingBuffer(GPUDevice::Get());
+
+    for (int i = 0; i < drawData->CmdListsCount; i++)
+    {
+        const ImDrawList* const imCmdList = drawData->CmdLists[i];
+
+        const uint32_t vertexDataSize = imCmdList->VtxBuffer.size() * sizeof(ImDrawVert);
+        const uint32_t indexDataSize  = imCmdList->IdxBuffer.size() * sizeof(ImDrawIdx);
+        const uint32_t bufferSize     = vertexDataSize + indexDataSize;
+
+        stagingBuffer.Initialise(kGPUStagingAccess_Write, bufferSize);
+        stagingBuffer.Write(&imCmdList->VtxBuffer.front(), vertexDataSize, 0);
+        stagingBuffer.Write(&imCmdList->IdxBuffer.front(), indexDataSize, vertexDataSize);
+        stagingBuffer.Finalise();
+
+        GPUBufferDesc bufferDesc;
+        bufferDesc.size = bufferSize;
+
+        GPUBufferPtr buffer = GPUDevice::Get().CreateBuffer(bufferDesc);
+
+        graphicsContext.UploadBuffer(buffer, stagingBuffer, bufferSize);
+        graphicsContext.ResourceBarrier(buffer,
+                                        kGPUResourceState_TransferWrite,
+                                        kGPUResourceState_IndexBufferRead | kGPUResourceState_VertexBufferRead);
+
+        cmdList->SetVertexBuffer(0, buffer, 0);
+        cmdList->SetIndexBuffer(kGPUIndexType_16, buffer, vertexDataSize);
+
+        buffers.emplace_back(std::move(buffer));
+
+        size_t indexOffset = 0;
+
+        for (const ImDrawCmd* cmd = imCmdList->CmdBuffer.begin(); cmd != imCmdList->CmdBuffer.end(); cmd++)
+        {
+            const IntRect scissor(cmd->ClipRect.x,
+                                  cmd->ClipRect.y,
+                                  cmd->ClipRect.z - cmd->ClipRect.x,
+                                  cmd->ClipRect.w - cmd->ClipRect.y);
+
+            cmdList->SetScissor(scissor);
+            cmdList->DrawIndexed(cmd->ElemCount, indexOffset);
+
+            indexOffset += cmd->ElemCount;
+        }
+    }
+
+    cmdList->End();
+    graphicsContext.SubmitRenderPass(cmdList);
+}
+
 void Engine::Run()
 {
+    ImGuiResources imGuiResources;
+    InitImGui(imGuiResources);
+
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
     GPUSwapchain& swapchain = *MainWindow::Get().GetSwapchain();
-
-    auto CreateShader =
-        [] (Path inPath, const GPUShaderStage inStage) -> GPUShaderPtr
-        {
-            GPUShaderCode code;
-            bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
-            Assert(isCompiled);
-            Unused(isCompiled);
-
-            return GPUDevice::Get().CreateShader(inStage, std::move(code));
-        };
 
     GPUShaderPtr vertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
     GPUShaderPtr fragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
@@ -172,6 +386,16 @@ void Engine::Run()
             }
         }
 
+        BeginImGui();
+
+        ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Test", nullptr, ImGuiWindowFlags_None))
+        {
+            ImGui::Text("Hello World!");
+        }
+
+        ImGui::End();
+
         /* TODO: Do everything else! */
 
         graphicsContext.BeginPresent(swapchain);
@@ -207,19 +431,9 @@ void Engine::Run()
         cmdList->End();
         graphicsContext.SubmitRenderPass(cmdList);
 
+        RenderImGui(imGuiResources);
+
         graphicsContext.ResourceBarrier(view, kGPUResourceState_RenderTarget, kGPUResourceState_Present);
-
-#if 0
-        GPUTexture* const texture   = swapchain.GetTexture();
-
-        GPUTextureClearData clearData;
-        clearData.type   = GPUTextureClearData::kColour;
-        clearData.colour = glm::vec4(0.0f, 0.2f, 0.4f, 1.0f);
-
-        graphicsContext.ResourceBarrier(texture, kGPUResourceState_Present, kGPUResourceState_TransferWrite);
-        graphicsContext.ClearTexture(texture, clearData);
-        graphicsContext.ResourceBarrier(texture, kGPUResourceState_TransferWrite, kGPUResourceState_Present);
-#endif
 
         graphicsContext.EndPresent(swapchain);
 
