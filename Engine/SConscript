@@ -8,6 +8,7 @@ Import('manager')
 baseComponents = [
     'Engine',
     'GPU',
+    'Input',
     'Render',
 ]
 

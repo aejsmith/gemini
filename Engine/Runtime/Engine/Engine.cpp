@@ -28,6 +28,8 @@
 #include "GPU/GPUStagingResource.h"
 #include "GPU/GPUSwapchain.h"
 
+#include "Input/InputManager.h"
+
 #include "Render/ShaderCompiler.h"
 
 #include <SDL.h>
@@ -87,6 +89,8 @@ Engine::Engine()
     new MainWindow(glm::ivec2(1600, 900), 0);
     GPUDevice::Create();
     GPUDevice::Get().CreateSwapchain(MainWindow::Get());
+
+    new InputManager();
 
     Game::Get().Init();
 }
@@ -387,6 +391,11 @@ void Engine::Run()
             if ((event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE) || event.type == SDL_QUIT)
             {
                 return;
+            }
+
+            if (InputManager::Get().HandleEvent(event, {}))
+            {
+                continue;
             }
         }
 
