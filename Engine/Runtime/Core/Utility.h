@@ -36,6 +36,14 @@
     { \
         using UnderlyingType = std::underlying_type<Type>::type; \
         return static_cast<Type>(static_cast<UnderlyingType>(a) & static_cast<UnderlyingType>(b)); \
+    } \
+    inline constexpr Type& operator |=(Type& a, const Type b) \
+    { \
+        return a = a | b; \
+    } \
+    inline constexpr Type& operator &=(Type& a, const Type b) \
+    { \
+        return a = a & b; \
     }
 
 /**
