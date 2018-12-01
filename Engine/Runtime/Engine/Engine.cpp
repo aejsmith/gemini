@@ -19,6 +19,7 @@
 #include "Core/Filesystem.h"
 #include "Core/String.h"
 
+#include "Engine/DebugManager.h"
 #include "Engine/Game.h"
 #include "Engine/ImGUI.h"
 #include "Engine/Window.h"
@@ -93,6 +94,7 @@ Engine::Engine()
 
     new InputManager();
     new ImGUIManager();
+    new DebugManager();
 
     Game::Get().Init();
 }
@@ -189,6 +191,10 @@ void Engine::Run()
         }
 
         ImGUIManager::Get().BeginFrame({});
+        DebugManager::Get().BeginFrame({});
+
+        DebugManager::Get().AddText("Hello World");
+        DebugManager::Get().AddText("Error: Foo", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
         ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_FirstUseEver);
         if (ImGui::Begin("Test", nullptr, ImGuiWindowFlags_None))
