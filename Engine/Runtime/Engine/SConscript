@@ -9,6 +9,7 @@ objects = map(env.ObjectGenHeader, [
 
 objects += map(env.Object, [
     'Engine.cpp',
+    'ImGUI.cpp',
     'JSONSerialiser.cpp',
     'Main.cpp',
     'Object.cpp',
