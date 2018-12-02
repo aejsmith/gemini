@@ -16,6 +16,7 @@
 
 #include "Engine/ImGUI.h"
 
+#include "Engine/Engine.h"
 #include "Engine/Window.h"
 
 #include "GPU/GPUArgumentSet.h"
@@ -86,7 +87,7 @@ void ImGUIManager::BeginFrame(OnlyCalledBy<Engine>)
 
     const glm::ivec2 size = MainWindow::Get().GetSize();
     io.DisplaySize        = ImVec2(size.x, size.y);
-    // FIXME: deltaTime
+    io.DeltaTime          = Engine::Get().GetDeltaTime();
 
     /* Pass input state. */
     const InputModifier modifiers = InputManager::Get().GetModifiers();

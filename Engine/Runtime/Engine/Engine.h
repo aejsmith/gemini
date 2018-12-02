@@ -30,9 +30,16 @@ public:
 public:
     void                    Run();
 
+    /** Get the last frame time, in nanoseconds. */
+    uint64_t                GetLastFrameTime() const    { return mLastFrameTime; }
+
+    /** Get the time delta for the current frame, in seconds. */
+    float                   GetDeltaTime() const        { return mDeltaTime; }
+
 private:
     uint64_t                mFrameStartTime;
     uint64_t                mLastFrameTime;
+    float                   mDeltaTime;
     uint64_t                mFPSUpdateTime;
     uint32_t                mFramesSinceFPSUpdate;
     float                   mFPS;

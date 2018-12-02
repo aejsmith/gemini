@@ -45,6 +45,7 @@ SINGLETON_IMPL(Game);
 Engine::Engine() :
     mFrameStartTime         (0),
     mLastFrameTime          (0),
+    mDeltaTime              (0.0f),
     mFPSUpdateTime          (0),
     mFramesSinceFPSUpdate   (0),
     mFPS                    (0.0f)
@@ -186,6 +187,7 @@ void Engine::Run()
         if (mFrameStartTime != 0)
         {
             mLastFrameTime = newStartTime - mFrameStartTime;
+            mDeltaTime     = static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerSecond);
 
             mFramesSinceFPSUpdate++;
 
