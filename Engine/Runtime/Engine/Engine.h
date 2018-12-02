@@ -30,4 +30,11 @@ public:
 public:
     void                    Run();
 
+private:
+    uint64_t                mFrameStartTime;
+    uint64_t                mLastFrameTime;
+    uint64_t                mFPSUpdateTime;
+    uint32_t                mFramesSinceFPSUpdate;
+    float                   mFPS;
+
 };

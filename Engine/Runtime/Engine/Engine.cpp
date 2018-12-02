@@ -18,6 +18,7 @@
 
 #include "Core/Filesystem.h"
 #include "Core/String.h"
+#include "Core/Time.h"
 
 #include "Engine/DebugManager.h"
 #include "Engine/Game.h"
@@ -41,7 +42,12 @@
 SINGLETON_IMPL(Engine);
 SINGLETON_IMPL(Game);
 
-Engine::Engine()
+Engine::Engine() :
+    mFrameStartTime         (0),
+    mLastFrameTime          (0),
+    mFPSUpdateTime          (0),
+    mFramesSinceFPSUpdate   (0),
+    mFPS                    (0.0f)
 {
     LogInfo("Hello, World!");
 
@@ -175,6 +181,30 @@ void Engine::Run()
 
     while (true)
     {
+        const uint64_t newStartTime = Platform::GetPerformanceCounter();
+
+        if (mFrameStartTime != 0)
+        {
+            mLastFrameTime = newStartTime - mFrameStartTime;
+
+            mFramesSinceFPSUpdate++;
+
+            const uint64_t timeSinceFPSUpdate = newStartTime - mFPSUpdateTime;
+            if (timeSinceFPSUpdate >= kNanosecondsPerSecond)
+            {
+                mFPS = static_cast<double>(mFramesSinceFPSUpdate) / (static_cast<double>(timeSinceFPSUpdate) / static_cast<double>(kNanosecondsPerSecond));
+
+                mFPSUpdateTime        = newStartTime;
+                mFramesSinceFPSUpdate = 0;
+            }
+        }
+        else
+        {
+            mFPSUpdateTime = newStartTime;
+        }
+
+        mFrameStartTime = newStartTime;
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -193,16 +223,8 @@ void Engine::Run()
         ImGUIManager::Get().BeginFrame({});
         DebugManager::Get().BeginFrame({});
 
-        DebugManager::Get().AddText("Hello World");
-        DebugManager::Get().AddText("Error: Foo", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-        ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("Test", nullptr, ImGuiWindowFlags_None))
-        {
-            ImGui::Text("Hello World!");
-        }
-
-        ImGui::End();
+        DebugManager::Get().AddText(StringUtils::Format("FPS: %.2f", mFPS));
+        DebugManager::Get().AddText(StringUtils::Format("Frame time: %.2f ms", static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerMillisecond)));
 
         /* TODO: Do everything else! */
 
