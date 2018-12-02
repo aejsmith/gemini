@@ -78,7 +78,7 @@ class GPUSampler : public GPUDeviceChild
 {
 protected:
                             GPUSampler(GPUDevice& inDevice) : GPUDeviceChild (inDevice) {}
-                            ~GPUSampler() {}
+    virtual                 ~GPUSampler() {}
 
     /* Allows the device to destroy cached samplers upon destruction. */
     friend class GPUDevice;

@@ -75,7 +75,7 @@ protected:
                                     GPUArgumentSetLayout(GPUDevice&                 inDevice,
                                                          GPUArgumentSetLayoutDesc&& inDesc);
 
-                                    ~GPUArgumentSetLayout();
+    virtual                         ~GPUArgumentSetLayout();
 
 public:
     const GPUArgumentTypeArray&     GetArguments() const        { return mDesc.arguments; }

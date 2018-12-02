@@ -24,7 +24,7 @@ class GPUDeviceChild : Uncopyable
 {
 protected:
                                 GPUDeviceChild(GPUDevice& inDevice);
-    virtual                     ~GPUDeviceChild() {}
+                                ~GPUDeviceChild() {}
 
 public:
     GPUDevice&                  GetDevice() const { return mDevice; }
