@@ -21,5 +21,11 @@
 namespace Platform
 {
     /** Get the program executable name (without extensions). */
-    extern std::string          GetProgramName();
+    std::string             GetProgramName();
+
+    /**
+     * Get the performance counter value, a monotonic counter in units of
+     * nanoseconds useful for performance measurements.
+     */
+    uint64_t                GetPerformanceCounter();
 }

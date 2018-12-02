@@ -14,35 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#pragma once
+
 #include "Core/Platform.h"
 
-#include "Core/Path.h"
-#include "Core/Time.h"
-
-#include <errno.h>
-#include <limits.h>
-#include <time.h>
-#include <unistd.h>
-
-std::string Platform::GetProgramName()
-{
-    std::string str;
-    str.resize(PATH_MAX);
-
-    const int ret = readlink("/proc/self/exe", &str[0], PATH_MAX - 1);
-    if (ret == -1)
-    {
-        Fatal("Failed to get program name: %s", strerror(errno));
-    }
-
-    str[ret] = 0;
-    str.resize(ret);
-    return Path(str).GetBaseFileName();
-}
-
-uint64_t Platform::GetPerformanceCounter()
-{
-    struct timespec monotonicTime;
-    clock_gettime(CLOCK_MONOTONIC, &monotonicTime);
-    return (monotonicTime.tv_sec * kNanosecondsPerSecond) + monotonicTime.tv_nsec;
-}
+/** Time conversion factors. */
+static constexpr uint64_t kNanosecondsPerSecond         = 1000000000;
+static constexpr uint64_t kNanosecondsPerMillisecond    = 1000000;
+static constexpr uint64_t kNanosecondsPerMicrosecond    = 1000;

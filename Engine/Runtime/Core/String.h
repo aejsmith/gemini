@@ -16,7 +16,9 @@
 
 #pragma once
 
-#include "Core/Hash.h"
+#include "Core/CoreDefs.h"
+
+#include <string>
 
 namespace StringUtils
 {
