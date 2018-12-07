@@ -14,20 +14,37 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "GPU/GPUSwapchain.h"
+#include "Render/RenderManager.h"
 
-#include "Engine/Window.h"
+#include "Render/RenderLayer.h"
+#include "Render/RenderOutput.h"
 
-GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
-                           Window&    inWindow) :
-    GPUDeviceChild (inDevice),
-    mWindow        (inWindow),
-    mFormat        (PixelFormat::kUnknown)
+SINGLETON_IMPL(RenderManager);
+
+RenderManager::RenderManager()
 {
-    mWindow.SetSwapchain(this, {});
 }
 
-GPUSwapchain::~GPUSwapchain()
+RenderManager::~RenderManager()
 {
-    mWindow.SetSwapchain(nullptr, {});
+}
+
+void RenderManager::Render(OnlyCalledBy<Engine>)
+{
+    for (RenderOutput* output : mOutputs)
+    {
+        output->Render({});
+    }
+}
+
+void RenderManager::RegisterOutput(RenderOutput* const inOutput,
+                                   OnlyCalledBy<RenderOutput>)
+{
+    mOutputs.emplace_back(inOutput);
+}
+
+void RenderManager::UnregisterOutput(RenderOutput* const inOutput,
+                                     OnlyCalledBy<RenderOutput>)
+{
+    mOutputs.remove(inOutput);
 }

@@ -63,7 +63,7 @@ protected:
 protected:
     void                    SetInputPriority(const Priority inPriority);
 
-    /** (Un)register with the input handler. */
+    /** (Un)register with the input manager. */
     void                    RegisterInputHandler();
     void                    UnregisterInputHandler();
 

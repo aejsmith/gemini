@@ -14,20 +14,54 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "GPU/GPUSwapchain.h"
+#include "Render/RenderLayer.h"
 
-#include "Engine/Window.h"
+#include "Render/RenderOutput.h"
 
-GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
-                           Window&    inWindow) :
-    GPUDeviceChild (inDevice),
-    mWindow        (inWindow),
-    mFormat        (PixelFormat::kUnknown)
+RenderLayer::RenderLayer(const uint8_t inOrder) :
+    mOrder  (inOrder),
+    mOutput (nullptr),
+    mActive (false)
 {
-    mWindow.SetSwapchain(this, {});
 }
 
-GPUSwapchain::~GPUSwapchain()
+RenderLayer::~RenderLayer()
 {
-    mWindow.SetSwapchain(nullptr, {});
+    if (mActive)
+    {
+        DeactivateLayer();
+    }
+}
+
+void RenderLayer::SetLayerOutput(RenderOutput* const inOutput)
+{
+    const bool active = mActive;
+
+    if (active)
+    {
+        DeactivateLayer();
+    }
+
+    mOutput = inOutput;
+
+    if (active)
+    {
+        ActivateLayer();
+    }
+}
+
+void RenderLayer::ActivateLayer()
+{
+    Assert(mOutput);
+    Assert(!mActive);
+
+    mOutput->RegisterLayer(this, {});
+}
+
+void RenderLayer::DeactivateLayer()
+{
+    Assert(mOutput);
+    Assert(mActive);
+
+    mOutput->UnregisterLayer(this, {});
 }

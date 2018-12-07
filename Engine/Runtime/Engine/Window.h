@@ -20,13 +20,15 @@
 #include "Core/Singleton.h"
 #include "Core/Utility.h"
 
+#include "Render/RenderOutput.h"
+
 #include <string>
 
 struct SDL_Window;
 
 class GPUSwapchain;
 
-class Window
+class Window : public RenderOutput
 {
 public:
     enum Flags : uint32_t
@@ -52,6 +54,12 @@ public:
 
     void                    SetSwapchain(GPUSwapchain* const inSwapchain,
                                          OnlyCalledBy<GPUSwapchain>);
+
+protected:
+    GPUResourceView*        GetRenderTargetView() const override;
+    GPUResourceState        GetFinalState() const override;
+    void                    BeginRender() override;
+    void                    EndRender() override;
 
 private:
     SDL_Window*             mSDLWindow;

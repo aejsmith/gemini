@@ -23,7 +23,7 @@
 
 class Engine;
 class ImGUIInputHandler;
-class ImGUIRenderer;
+class ImGUIRenderLayer;
 
 class ImGUIManager : public Singleton<ImGUIManager>
 {
@@ -33,11 +33,10 @@ public:
 
 public:
     void                    BeginFrame(OnlyCalledBy<Engine>);
-    void                    Render(OnlyCalledBy<Engine>);
 
 private:
     ImGUIInputHandler*      mInputHandler;
-    ImGUIRenderer*          mRenderer;
+    ImGUIRenderLayer*       mRenderLayer;
     bool                    mInputtingText;
 
 };

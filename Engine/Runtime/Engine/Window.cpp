@@ -18,6 +18,8 @@
 
 #include "Engine/Game.h"
 
+#include "GPU/GPUContext.h"
+#include "GPU/GPUDevice.h"
 #include "GPU/GPUSwapchain.h"
 
 #include <SDL.h>
@@ -58,9 +60,43 @@ Window::~Window()
 void Window::SetSwapchain(GPUSwapchain* const inSwapchain,
                           OnlyCalledBy<GPUSwapchain>)
 {
-    Assert(!mSwapchain);
+    Assert(!inSwapchain || !mSwapchain);
+
     mSwapchain = inSwapchain;
+
+    if (mSwapchain)
+    {
+        RegisterOutput();
+    }
+    else
+    {
+        UnregisterOutput();
+    }
 }
+
+GPUResourceView* Window::GetRenderTargetView() const
+{
+    Assert(mSwapchain);
+    return mSwapchain->GetRenderTargetView();
+}
+
+GPUResourceState Window::GetFinalState() const
+{
+    return kGPUResourceState_Present;
+}
+
+void Window::BeginRender()
+{
+    Assert(mSwapchain);
+    GPUGraphicsContext::Get().BeginPresent(*mSwapchain);
+}
+
+void Window::EndRender()
+{
+    Assert(mSwapchain);
+    GPUGraphicsContext::Get().EndPresent(*mSwapchain);
+}
+
 
 MainWindow::MainWindow(const glm::ivec2& inSize,
                        const uint32_t    inFlags) :

@@ -28,6 +28,8 @@
 #include "Input/InputHandler.h"
 #include "Input/InputManager.h"
 
+#include "Render/RenderLayer.h"
+#include "Render/RenderOutput.h"
 #include "Render/ShaderCompiler.h"
 
 SINGLETON_IMPL(ImGUIManager);
@@ -45,13 +47,13 @@ protected:
     friend class ImGUIManager;
 };
 
-class ImGUIRenderer
+class ImGUIRenderLayer final : public RenderLayer
 {
 public:
-                            ImGUIRenderer();
+                            ImGUIRenderLayer();
 
 public:
-    void                    Render();
+    void                    Render() override;
 
 private:
     GPUShaderPtr            mVertexShader;
@@ -72,13 +74,13 @@ ImGUIManager::ImGUIManager() :
     io.IniFilename = nullptr;
 
     mInputHandler = new ImGUIInputHandler;
-    mRenderer     = new ImGUIRenderer;
+    mRenderLayer  = new ImGUIRenderLayer;
 }
 
 ImGUIManager::~ImGUIManager()
 {
     delete mInputHandler;
-    delete mRenderer;
+    delete mRenderLayer;
 }
 
 void ImGUIManager::BeginFrame(OnlyCalledBy<Engine>)
@@ -112,11 +114,6 @@ void ImGUIManager::BeginFrame(OnlyCalledBy<Engine>)
 
         mInputtingText = io.WantTextInput;
     }
-}
-
-void ImGUIManager::Render(OnlyCalledBy<Engine>)
-{
-    mRenderer->Render();
 }
 
 ImGUIInputHandler::ImGUIInputHandler() :
@@ -184,8 +181,12 @@ void ImGUIInputHandler::HandleTextInput(const TextInputEvent& inEvent)
     io.AddInputCharactersUTF8(inEvent.text.c_str());
 }
 
-ImGUIRenderer::ImGUIRenderer()
+ImGUIRenderLayer::ImGUIRenderLayer() :
+    RenderLayer (RenderLayer::kOrder_ImGUI)
 {
+    SetLayerOutput(&MainWindow::Get());
+    ActivateLayer();
+
     ImGuiIO& io = ImGui::GetIO();
 
     auto CreateShader =
@@ -293,7 +294,7 @@ ImGUIRenderer::ImGUIRenderer()
     mSampler = GPUDevice::Get().GetSampler(samplerDesc);
 }
 
-void ImGUIRenderer::Render()
+void ImGUIRenderLayer::Render()
 {
     ImGui::Render();
 
@@ -306,7 +307,7 @@ void ImGUIRenderer::Render()
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
     GPURenderPass renderPass;
-    renderPass.SetColour(0, MainWindow::Get().GetSwapchain()->GetRenderTargetView());
+    renderPass.SetColour(0, GetLayerOutput()->GetRenderTargetView());
 
     GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
     cmdList->Begin();

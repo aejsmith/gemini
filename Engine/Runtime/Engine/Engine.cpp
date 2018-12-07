@@ -33,6 +33,8 @@
 
 #include "Input/InputManager.h"
 
+#include "Render/RenderLayer.h"
+#include "Render/RenderManager.h"
 #include "Render/ShaderCompiler.h"
 
 #include <SDL.h>
@@ -97,6 +99,9 @@ Engine::Engine() :
      * configurable. */
     new MainWindow(glm::ivec2(1600, 900), 0);
     GPUDevice::Create();
+
+    new RenderManager();
+
     GPUDevice::Get().CreateSwapchain(MainWindow::Get());
 
     new InputManager();
@@ -114,53 +119,68 @@ Engine::~Engine()
      */
 }
 
-static GPUShaderPtr CreateShader(Path inPath, const GPUShaderStage inStage)
+class TestRenderLayer final : public RenderLayer
 {
-    GPUShaderCode code;
-    bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
-    Assert(isCompiled);
-    Unused(isCompiled);
+public:
+                            TestRenderLayer();
+                            ~TestRenderLayer() {}
 
-    GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage, std::move(code));
+public:
+    void                    Render() override;
 
-    shader->SetName(inPath.GetString());
+private:
+    GPUShaderPtr            mVertexShader;
+    GPUShaderPtr            mFragmentShader;
+    GPUArgumentSetLayoutRef mArgumentLayout;
+    GPUBufferPtr            mVertexBuffer;
+    GPUVertexInputStateRef  mVertexInputState;
+};
 
-    return shader;
-}
-
-void Engine::Run()
+static const glm::vec2 kVertices[3] =
 {
-    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+    glm::vec2(-0.3f, -0.4f),
+    glm::vec2( 0.3f, -0.4f),
+    glm::vec2( 0.0f,  0.4f)
+};
 
-    GPUSwapchain& swapchain = *MainWindow::Get().GetSwapchain();
+static const glm::vec4 kColours[3] =
+{
+    glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+    glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+    glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
+};
 
-    GPUShaderPtr vertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
-    GPUShaderPtr fragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
+TestRenderLayer::TestRenderLayer() :
+    RenderLayer (RenderLayer::kOrder_World)
+{
+    auto CreateShader =
+        [] (Path inPath, const GPUShaderStage inStage)
+        {
+            GPUShaderCode code;
+            bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
+            Assert(isCompiled);
+            Unused(isCompiled);
+
+            GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage, std::move(code));
+
+            shader->SetName(inPath.GetString());
+
+            return shader;
+        };
+
+    mVertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
+    mFragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;
 
-    const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
-
-    static const glm::vec2 kVertices[3] =
-    {
-        glm::vec2(-0.3f, -0.4f),
-        glm::vec2( 0.3f, -0.4f),
-        glm::vec2( 0.0f,  0.4f)
-    };
-
-    static const glm::vec4 kColours[3] =
-    {
-        glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-        glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
-        glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
-    };
+    mArgumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
     GPUBufferDesc vertexBufferDesc;
     vertexBufferDesc.usage = kGPUResourceUsage_ShaderRead;
     vertexBufferDesc.size  = sizeof(kVertices);
 
-    GPUBufferPtr vertexBuffer = GPUDevice::Get().CreateBuffer(vertexBufferDesc);
+    mVertexBuffer = GPUDevice::Get().CreateBuffer(vertexBufferDesc);
 
     GPUVertexInputStateDesc vertexInputDesc;
     vertexInputDesc.buffers[0].stride    = sizeof(glm::vec2);
@@ -168,17 +188,56 @@ void Engine::Run()
     vertexInputDesc.attributes[0].buffer = 0;
     vertexInputDesc.attributes[0].offset = 0;
 
-    GPUVertexInputStateRef vertexInputState = GPUVertexInputState::Get(vertexInputDesc);
+    mVertexInputState = GPUVertexInputState::Get(vertexInputDesc);
 
-    {
-        GPUStagingBuffer stagingBuffer(GPUDevice::Get(), kGPUStagingAccess_Write, sizeof(kVertices));
-        stagingBuffer.Write(kVertices, sizeof(kVertices));
-        stagingBuffer.Finalise();
+    GPUStagingBuffer stagingBuffer(GPUDevice::Get(), kGPUStagingAccess_Write, sizeof(kVertices));
+    stagingBuffer.Write(kVertices, sizeof(kVertices));
+    stagingBuffer.Finalise();
 
-        graphicsContext.UploadBuffer(vertexBuffer, stagingBuffer, sizeof(kVertices));
+    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
-        graphicsContext.ResourceBarrier(vertexBuffer, kGPUResourceState_TransferWrite, kGPUResourceState_AllShaderRead);
-    }
+    graphicsContext.UploadBuffer(mVertexBuffer, stagingBuffer, sizeof(kVertices));
+
+    graphicsContext.ResourceBarrier(mVertexBuffer, kGPUResourceState_TransferWrite, kGPUResourceState_AllShaderRead);
+}
+
+void TestRenderLayer::Render()
+{
+    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+
+    GPURenderPass renderPass;
+    renderPass.SetColour(0, GetLayerOutput()->GetRenderTargetView());
+    renderPass.ClearColour(0, glm::vec4(0.0f, 0.2f, 0.4f, 1.0f));
+
+    GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
+    cmdList->Begin();
+
+    GPUPipelineDesc pipelineDesc;
+    pipelineDesc.shaders[kGPUShaderStage_Vertex]   = mVertexShader;
+    pipelineDesc.shaders[kGPUShaderStage_Fragment] = mFragmentShader;
+    pipelineDesc.argumentSetLayouts[0]             = mArgumentLayout;
+    pipelineDesc.blendState                        = GPUBlendState::Get(GPUBlendStateDesc());
+    pipelineDesc.depthStencilState                 = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
+    pipelineDesc.rasterizerState                   = GPURasterizerState::Get(GPURasterizerStateDesc());
+    pipelineDesc.renderTargetState                 = cmdList->GetRenderTargetState();
+    pipelineDesc.vertexInputState                  = mVertexInputState;
+    pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
+
+    cmdList->SetPipeline(pipelineDesc);
+    cmdList->SetVertexBuffer(0, mVertexBuffer);
+    cmdList->WriteUniforms(0, 0, kColours, sizeof(kColours));
+
+    cmdList->Draw(3);
+
+    cmdList->End();
+    graphicsContext.SubmitRenderPass(cmdList);
+}
+
+void Engine::Run()
+{
+    TestRenderLayer testLayer;
+    testLayer.SetLayerOutput(&MainWindow::Get());
+    testLayer.ActivateLayer();
 
     while (true)
     {
@@ -228,46 +287,7 @@ void Engine::Run()
         DebugManager::Get().AddText(StringUtils::Format("FPS: %.2f", mFPS));
         DebugManager::Get().AddText(StringUtils::Format("Frame time: %.2f ms", static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerMillisecond)));
 
-        /* TODO: Do everything else! */
-
-        graphicsContext.BeginPresent(swapchain);
-
-        GPUResourceView* const view = swapchain.GetRenderTargetView();
-
-        graphicsContext.ResourceBarrier(view, kGPUResourceState_Present, kGPUResourceState_RenderTarget);
-
-        GPURenderPass renderPass;
-        renderPass.SetColour(0, view);
-        renderPass.ClearColour(0, glm::vec4(0.0f, 0.2f, 0.4f, 1.0f));
-
-        GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
-        cmdList->Begin();
-
-        GPUPipelineDesc pipelineDesc;
-        pipelineDesc.shaders[kGPUShaderStage_Vertex]   = vertexShader;
-        pipelineDesc.shaders[kGPUShaderStage_Fragment] = fragmentShader;
-        pipelineDesc.argumentSetLayouts[0]             = argumentLayout;
-        pipelineDesc.blendState                        = GPUBlendState::Get(GPUBlendStateDesc());
-        pipelineDesc.depthStencilState                 = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
-        pipelineDesc.rasterizerState                   = GPURasterizerState::Get(GPURasterizerStateDesc());
-        pipelineDesc.renderTargetState                 = cmdList->GetRenderTargetState();
-        pipelineDesc.vertexInputState                  = vertexInputState;
-        pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
-
-        cmdList->SetPipeline(pipelineDesc);
-        cmdList->SetVertexBuffer(0, vertexBuffer);
-        cmdList->WriteUniforms(0, 0, kColours, sizeof(kColours));
-
-        cmdList->Draw(3);
-
-        cmdList->End();
-        graphicsContext.SubmitRenderPass(cmdList);
-
-        ImGUIManager::Get().Render({});
-
-        graphicsContext.ResourceBarrier(view, kGPUResourceState_RenderTarget, kGPUResourceState_Present);
-
-        graphicsContext.EndPresent(swapchain);
+        RenderManager::Get().Render({});
 
         GPUDevice::Get().EndFrame();
     }

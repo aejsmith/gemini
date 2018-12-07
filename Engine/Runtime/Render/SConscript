@@ -1,6 +1,9 @@
 Import('env')
 
 objects = map(env.Object, [
+    'RenderLayer.cpp',
+    'RenderManager.cpp',
+    'RenderOutput.cpp',
     'ShaderCompiler.cpp',
 ])
 
