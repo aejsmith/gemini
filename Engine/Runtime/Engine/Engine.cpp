@@ -35,7 +35,7 @@
 
 #include "Render/RenderLayer.h"
 #include "Render/RenderManager.h"
-#include "Render/ShaderCompiler.h"
+#include "Render/ShaderManager.h"
 
 #include <SDL.h>
 
@@ -104,6 +104,7 @@ Engine::Engine() :
 
     GPUDevice::Get().CreateSwapchain(MainWindow::Get());
 
+    new ShaderManager();
     new InputManager();
     new ImGUIManager();
     new DebugManager();
@@ -153,23 +154,8 @@ static const glm::vec4 kColours[3] =
 TestRenderLayer::TestRenderLayer() :
     RenderLayer (RenderLayer::kOrder_World)
 {
-    auto CreateShader =
-        [] (Path inPath, const GPUShaderStage inStage)
-        {
-            GPUShaderCode code;
-            bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
-            Assert(isCompiled);
-            Unused(isCompiled);
-
-            GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage, std::move(code));
-
-            shader->SetName(inPath.GetString());
-
-            return shader;
-        };
-
-    mVertexShader   = CreateShader("Engine/Shaders/TestVert.glsl", kGPUShaderStage_Vertex);
-    mFragmentShader = CreateShader("Engine/Shaders/TestFrag.glsl", kGPUShaderStage_Fragment);
+    mVertexShader   = ShaderManager::Get().GetShader("Engine/Test.vert");
+    mFragmentShader = ShaderManager::Get().GetShader("Engine/Test.frag");
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;

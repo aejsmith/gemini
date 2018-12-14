@@ -4,6 +4,7 @@ objects = map(env.Object, [
     'RenderLayer.cpp',
     'RenderManager.cpp',
     'RenderOutput.cpp',
+    'ShaderManager.cpp',
     'ShaderCompiler.cpp',
 ])
 

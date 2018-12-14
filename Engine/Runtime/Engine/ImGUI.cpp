@@ -30,7 +30,7 @@
 
 #include "Render/RenderLayer.h"
 #include "Render/RenderOutput.h"
-#include "Render/ShaderCompiler.h"
+#include "Render/ShaderManager.h"
 
 SINGLETON_IMPL(ImGUIManager);
 
@@ -189,23 +189,8 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
 
     ImGuiIO& io = ImGui::GetIO();
 
-    auto CreateShader =
-        [] (Path inPath, const GPUShaderStage inStage)
-        {
-            GPUShaderCode code;
-            bool isCompiled = ShaderCompiler::CompileFile(inPath, inStage, code);
-            Assert(isCompiled);
-            Unused(isCompiled);
-
-            GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage, std::move(code));
-
-            shader->SetName(inPath.GetString());
-
-            return shader;
-        };
-
-    mVertexShader   = CreateShader("Engine/Shaders/ImGuiVert.glsl", kGPUShaderStage_Vertex);
-    mFragmentShader = CreateShader("Engine/Shaders/ImGuiFrag.glsl", kGPUShaderStage_Fragment);
+    mVertexShader   = ShaderManager::Get().GetShader("Engine/ImGui.vert");
+    mFragmentShader = ShaderManager::Get().GetShader("Engine/ImGui.frag");
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(3);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Texture;
