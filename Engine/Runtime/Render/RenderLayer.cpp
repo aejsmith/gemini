@@ -56,6 +56,8 @@ void RenderLayer::ActivateLayer()
     Assert(!mActive);
 
     mOutput->RegisterLayer(this, {});
+
+    mActive = true;
 }
 
 void RenderLayer::DeactivateLayer()
@@ -64,4 +66,6 @@ void RenderLayer::DeactivateLayer()
     Assert(mActive);
 
     mOutput->UnregisterLayer(this, {});
+
+    mActive = false;
 }
