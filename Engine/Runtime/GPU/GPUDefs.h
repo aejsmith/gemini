@@ -36,6 +36,9 @@ static constexpr size_t kMaxArgumentSets = 4;
 /** Maximum number of arguments per argument set. */
 static constexpr size_t kMaxArgumentsPerSet = 32;
 
+/** Maximum uniform data size. */
+static constexpr uint32_t kMaxUniformsSize = 65536;
+
 /** Handle to uniform data written within the current frame (see GPUUniformPool). */
 using GPUUniforms = uint32_t;
 static constexpr GPUUniforms kGPUUniforms_Invalid = std::numeric_limits<uint32_t>::max();

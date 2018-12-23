@@ -149,7 +149,7 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
              * time. */
             bufferInfo.buffer = static_cast<VulkanUniformPool&>(inLayout->GetDevice().GetUniformPool()).GetHandle();
             bufferInfo.offset = 0;
-            bufferInfo.range  = inLayout->GetVulkanDevice().GetLimits().maxUniformBufferRange;
+            bufferInfo.range  = std::min(inLayout->GetVulkanDevice().GetLimits().maxUniformBufferRange, kMaxUniformsSize);
 
             descriptorWrite.pBufferInfo = &bufferInfo;
         }

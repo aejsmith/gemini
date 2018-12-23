@@ -65,7 +65,7 @@ VulkanUniformPool::~VulkanUniformPool()
 GPUUniforms VulkanUniformPool::Allocate(const size_t inSize,
                                         void*&       outMapping)
 {
-    Assert(inSize <= kPerFramePoolSize);
+    Assert(inSize <= kMaxUniformsSize);
 
     /* Align up to the minimum offset alignment. This means that mCurrentOffset
      * is always suitably aligned for subsequent calls. */
