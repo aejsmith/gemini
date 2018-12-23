@@ -20,6 +20,7 @@
 #include "Core/String.h"
 #include "Core/Time.h"
 
+#include "Engine/AssetManager.h"
 #include "Engine/DebugManager.h"
 #include "Engine/Game.h"
 #include "Engine/ImGUI.h"
@@ -103,6 +104,7 @@ Engine::Engine() :
     new InputManager();
     new ImGUIManager();
     new DebugManager();
+    new AssetManager();
 
     Game::Get().Init();
 }

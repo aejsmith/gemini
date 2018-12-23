@@ -16,6 +16,8 @@
 
 #include "Engine/JSONSerialiser.h"
 
+#include "Engine/AssetManager.h"
+
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 #include <rapidjson/prettywriter.h>
@@ -381,17 +383,16 @@ void JSONSerialiser::Write(const char* const inName,
              * file rather than using an asset path reference. */
             auto existing = mState->objectToIDMap.find(object);
 
+            const Asset* asset;
+
             if (existing != mState->objectToIDMap.end())
             {
                 Serialiser::Write("objectID", existing->second);
             }
-#if 0
             else if ((asset = object_cast<const Asset*>(object)) && asset->IsManaged())
             {
-                std::string path = asset->path();
-                Serialiser::write("asset", path);
+                Serialiser::Write("asset", asset->GetPath());
             }
-#endif
             else
             {
                 const uint32_t id = AddObject(object);
@@ -543,7 +544,6 @@ bool JSONSerialiser::Read(const char* const inName,
         ObjectPtr<> ret;
 
         /* Check if we have an asset path. */
-#if 0
         std::string path;
         if (Serialiser::Read("asset", path))
         {
@@ -552,13 +552,12 @@ bool JSONSerialiser::Read(const char* const inName,
             {
                 LogError("Class mismatch in serialised data (expected '%s', have '%s')",
                          metaClass.GetName(),
-                         ret->metaClass().GetName());
+                         ret->GetMetaClass().GetName());
 
-                ret.reset();
+                ret.Reset();
             }
         }
         else
-#endif
         {
             /* Must be serialised within the file. */
             uint32_t id;

@@ -3,11 +3,16 @@ import VCS
 Import('env')
 
 objects = map(env.ObjectGenHeader, [
+    'Asset.h',
+    'AssetLoader.h',
     'Game.h',
     'Object.h',
 ])
 
 objects += map(env.Object, [
+    'Asset.cpp',
+    'AssetLoader.cpp',
+    'AssetManager.cpp',
     'DebugManager.cpp',
     'Engine.cpp',
     'ImGUI.cpp',
