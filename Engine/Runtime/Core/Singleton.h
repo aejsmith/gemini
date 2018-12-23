@@ -16,14 +16,14 @@
 
 #pragma once
 
-#include "Core/CoreDefs.h"
+#include "Core/Utility.h"
 
 /**
  * Template base for a singleton class. Users must add the implementation in
  * a .cpp file with SINGLETON_IMPL.
  */
 template <typename T>
-class Singleton
+class Singleton : Uncopyable
 {
 protected:
                                     Singleton();
