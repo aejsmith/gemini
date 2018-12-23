@@ -18,6 +18,8 @@
 
 #include "Engine/Game.h"
 
+class TestRenderLayer;
+
 class TestGame final : public Game
 {
     CLASS();
@@ -30,5 +32,8 @@ public:
     void                        Init() override;
 
     const char*                 GetName() const override;
+
+private:
+    TestRenderLayer*            mRenderLayer;
 
 };
