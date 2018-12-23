@@ -11,7 +11,7 @@ import Util
 # Configurable build options.
 opts = Variables('.options.cache')
 opts.AddVariables(
-    ('APP',   'Application to build (Test)', 'Test'),
+    ('GAME',  'Game to build (Test)', 'Test'),
     ('BUILD', 'Build type to perform (Debug, Release)', 'Release'),
 )
 
@@ -196,7 +196,7 @@ class BuildManager:
 manager = BuildManager(env)
 Export('manager')
 
-def OrionBaseApplicationMethod(env, dir, **kwargs):
+def OrionApplicationMethod(env, dir, **kwargs):
     name = kwargs['name']
     sources = kwargs['sources']
     flags = kwargs['flags'] if 'flags' in kwargs else {}
@@ -209,14 +209,14 @@ def OrionBaseApplicationMethod(env, dir, **kwargs):
 
     return target
 
-def OrionApplicationMethod(env, **kwargs):
-    return OrionBaseApplicationMethod(env, env['APP_DIR'], **kwargs)
+def OrionGameMethod(env, **kwargs):
+    return OrionApplicationMethod(env, env['GAME_DIR'], **kwargs)
 
-def OrionInternalApplicationMethod(env, **kwargs):
-    return OrionBaseApplicationMethod(env, Dir('.'), **kwargs)
+def OrionToolMethod(env, **kwargs):
+    return OrionApplicationMethod(env, Dir('.'), **kwargs)
 
-env.AddMethod(OrionApplicationMethod, 'OrionApplication')
-env.AddMethod(OrionInternalApplicationMethod, 'OrionInternalApplication')
+env.AddMethod(OrionGameMethod, 'OrionGame')
+env.AddMethod(OrionToolMethod, 'OrionTool')
 
 #########################
 # External dependencies #

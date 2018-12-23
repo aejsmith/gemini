@@ -30,7 +30,7 @@ ShaderManager::ShaderManager()
 {
     mSearchPaths.emplace("Engine", "Engine/Shaders");
 
-    const std::string gamePath = StringUtils::Format("Apps/%s/Shaders", Platform::GetProgramName().c_str());
+    const std::string gamePath = StringUtils::Format("Games/%s/Shaders", Platform::GetProgramName().c_str());
     mSearchPaths.emplace("Game", gamePath);
 
     LogDebug("Shader search paths:");
@@ -70,7 +70,7 @@ GPUShaderPtr ShaderManager::GetShader(const Path& inPath)
 
         return nullptr;
     }
-    
+
     const GPUShaderStage stage = ConvertShaderStage(fsPath.GetExtension());
 
     GPUShaderCode code;

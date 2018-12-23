@@ -38,7 +38,7 @@ def GenMustacheHeader(target, source, env):
         targetFile.write(';\n')
 env.Command('ObjectGen.mustache.h', 'ObjectGen.mustache', Action(GenMustacheHeader, '$GENCOMSTR'))
 
-manager.baseEnv['OBJECTGEN'] = env.OrionInternalApplication(
+manager.baseEnv['OBJECTGEN'] = env.OrionTool(
     name = 'ObjectGen',
     sources = ['ObjectGen.cpp'])
 

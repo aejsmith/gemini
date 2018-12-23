@@ -1,0 +1,4 @@
+Import('manager')
+
+target = SConscript(dirs = [manager.baseEnv['GAME']])
+Default(target)
