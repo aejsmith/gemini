@@ -84,6 +84,46 @@ inline bool IntrusiveListNode::IsInserted() const
 template <typename T, IntrusiveListNode T::*Member>
 class IntrusiveList
 {
+private:
+    using Impl                = IntrusiveImpl<T, IntrusiveListNode, Member>;
+
+public:
+    template <typename U, typename N>
+    class BaseIterator
+    {
+    public:
+                                BaseIterator() : mNode (nullptr) {}
+                                BaseIterator(const BaseIterator& inOther) : mNode (inOther.mNode) {}
+                                BaseIterator(N* const inNode) : mNode (inNode) {}
+
+        BaseIterator&           operator=(const BaseIterator& inOther)
+                                    { mNode = inOther.mNode; return *this; }
+
+        bool                    operator==(const BaseIterator& inOther) const
+                                    { return mNode == inOther.mNode; }
+        bool                    operator!=(const BaseIterator& inOther) const
+                                    { return mNode != inOther.mNode; }
+
+        U*                      operator*() const   { return Impl::GetValue(mNode); }
+        U*                      operator->() const  { return Impl::GetValue(mNode); }
+
+        BaseIterator&           operator++()
+                                    { mNode = mNode->mNext; return *this; }
+        BaseIterator            operator++(int)
+                                    { BaseIterator ret = *this; mNode = mNode->mNext; return ret; }
+        BaseIterator&           operator--()
+                                    { mNode = mNode->mPrevious; return *this; }
+        BaseIterator            operator--(int)
+                                    { BaseIterator ret = *this; mNode = mNode->mPrevious; return ret; }
+
+    private:
+        N*                      mNode;
+
+    };
+
+    using Iterator            = BaseIterator<T, IntrusiveListNode>;
+    using ConstIterator       = BaseIterator<const T, const IntrusiveListNode>;
+
 public:
                                 IntrusiveList();
                                 IntrusiveList(const IntrusiveList& inOther);
@@ -119,8 +159,14 @@ public:
     T*                          Next(T* const inCurrent) const;
     const T*                    Next(const T* const inCurrent) const;
 
-private:
-    using Impl                = IntrusiveImpl<T, IntrusiveListNode, Member>;
+    /**
+     * Iterators for use with range-based for loops. The other functions should
+     * be preferred over iterators outside of range-based loops.
+     */
+    Iterator                    begin()         { return Iterator(mHead.mNext); }
+    ConstIterator               begin() const   { return ConstIterator(mHead.mNext); }
+    Iterator                    end()           { return Iterator(&mHead); }
+    ConstIterator               end() const     { return ConstIterator(&mHead); }
 
 private:
     static void                 InsertBefore(IntrusiveListNode* const inPosition,
@@ -254,13 +300,27 @@ inline void IntrusiveList<T, Member>::Clear()
 INTRUSIVELIST_TEMPLATE
 inline T* IntrusiveList<T, Member>::First() const
 {
-    return Impl::GetValue(mHead.mNext);
+    if (!IsEmpty())
+    {
+        return Impl::GetValue(mHead.mNext);
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 INTRUSIVELIST_TEMPLATE
 inline T* IntrusiveList<T, Member>::Last() const
 {
-    return Impl::GetValue(mHead.mPrevious);
+    if (!IsEmpty())
+    {
+        return Impl::GetValue(mHead.mPrevious);
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 INTRUSIVELIST_TEMPLATE
