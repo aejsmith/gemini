@@ -97,6 +97,9 @@ public:
     /**
      * Upload data to a buffer from a staging buffer. Requires the destination
      * buffer to be in the kGPUResourceState_TransferWrite state.
+     *
+     * TODO: Have an upload command list that allows resource uploads to be
+     * done outside the main thread (for async resource loading).
      */
     virtual void                    UploadBuffer(GPUBuffer* const        inDestBuffer,
                                                  const GPUStagingBuffer& inSourceBuffer,
@@ -115,6 +118,9 @@ public:
      * The second version uploads a subregion of a single subresource, and only
      * requires that the specified region is valid within both the source and
      * destination subresource.
+     *
+     * TODO: Have an upload command list that allows resource uploads to be
+     * done outside the main thread (for async resource loading).
      */
     virtual void                    UploadTexture(GPUTexture* const        inDestTexture,
                                                   const GPUStagingTexture& inSourceTexture) = 0;

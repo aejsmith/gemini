@@ -112,7 +112,7 @@ using ObjectPtr = ReferencePtr<T>;
  *
  * The getter and settter methods to use can be specified with the "get" and
  * "set" attributes. If these are not specified, then defaults are used - it is
- * assumed that the getter function is named "Get<PropertyName" (camel case),
+ * assumed that the getter function is named "Get<PropertyName>" (camel case),
  * and the setter is named "Set<PropertyName>". For instance, for a property
  * named "position", the default getter method is "GetPosition" and the setter
  * is "SetPosition".

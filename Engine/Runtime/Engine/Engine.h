@@ -16,7 +16,12 @@
 
 #pragma once
 
+#include "Core/Path.h"
 #include "Core/Singleton.h"
+
+#include "Engine/Object.h"
+
+class World;
 
 /**
  * Main class of the engine.
@@ -36,6 +41,15 @@ public:
     /** Get the time delta for the current frame, in seconds. */
     float                   GetDeltaTime() const        { return mDeltaTime; }
 
+    /** Get the current game world. */
+    World*                  GetWorld() const            { return mWorld; }
+
+    /** Create a new, empty world, replacing the current world (if any). */
+    void                    CreateWorld();
+
+    /** Load a world asset, replacing the current world (if any). */
+    void                    LoadWorld(const Path& inPath);
+
 private:
     void                    InitSDL();
 
@@ -46,5 +60,7 @@ private:
     uint64_t                mFPSUpdateTime;
     uint32_t                mFramesSinceFPSUpdate;
     float                   mFPS;
+
+    ObjectPtr<World>        mWorld;
 
 };

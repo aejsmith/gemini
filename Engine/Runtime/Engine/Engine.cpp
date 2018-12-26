@@ -25,6 +25,7 @@
 #include "Engine/Game.h"
 #include "Engine/ImGUI.h"
 #include "Engine/Window.h"
+#include "Engine/World.h"
 
 #include "GPU/GPUDevice.h"
 
@@ -171,13 +172,26 @@ void Engine::Run()
         }
 
         ImGUIManager::Get().BeginFrame({});
-        DebugManager::Get().BeginFrame({});
 
-        DebugManager::Get().AddText(StringUtils::Format("FPS: %.2f", mFPS));
-        DebugManager::Get().AddText(StringUtils::Format("Frame time: %.2f ms", static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerMillisecond)));
+        auto& debugManager = DebugManager::Get();
+        debugManager.BeginFrame({});
+        debugManager.AddText(StringUtils::Format("FPS: %.2f", mFPS));
+        debugManager.AddText(StringUtils::Format("Frame time: %.2f ms", static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerMillisecond)));
 
         RenderManager::Get().Render({});
 
         GPUDevice::Get().EndFrame();
     }
+}
+
+void Engine::CreateWorld()
+{
+    mWorld.Reset();
+    mWorld = new World;
+}
+
+void Engine::LoadWorld(const Path& inPath)
+{
+    mWorld.Reset();
+    mWorld = AssetManager::Get().Load<World>(inPath);
 }

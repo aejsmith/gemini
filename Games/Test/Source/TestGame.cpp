@@ -16,7 +16,13 @@
 
 #include "TestGame.h"
 
+#include "Core/Filesystem.h"
+
+#include "Engine/Engine.h"
+#include "Engine/Entity.h"
+#include "Engine/JSONSerialiser.h"
 #include "Engine/Window.h"
+#include "Engine/World.h"
 
 #include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUContext.h"
@@ -140,6 +146,19 @@ void TestGame::Init()
     mRenderLayer = new TestRenderLayer;
     mRenderLayer->SetLayerOutput(&MainWindow::Get());
     mRenderLayer->ActivateLayer();
+
+    Engine::Get().LoadWorld("Game/Worlds/Test");
+
+    World* world = Engine::Get().GetWorld();
+
+    //Entity* entity1 = world->CreateEntity("Test");
+    //entity1->Translate(glm::vec3(0.0f, 1.5f, 0.0f));
+    //entity1->SetActive(true);
+
+    //JSONSerialiser serialiser;
+    //std::vector<uint8_t> data = serialiser.Serialise(world);
+    //std::unique_ptr<File> file(Filesystem::OpenFile("derp.object", kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+    //file->Write(&data[0], data.size());
 }
 
 const char* TestGame::GetName() const
