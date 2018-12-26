@@ -37,6 +37,9 @@ public:
     float                   GetDeltaTime() const        { return mDeltaTime; }
 
 private:
+    void                    InitSDL();
+
+private:
     uint64_t                mFrameStartTime;
     uint64_t                mLastFrameTime;
     float                   mDeltaTime;

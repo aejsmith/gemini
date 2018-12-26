@@ -74,10 +74,7 @@ Engine::Engine() :
     ObjectPtr<Game> game = gameClass->Construct<Game>();
     game->Retain();
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
-    {
-        Fatal("Failed to initialize SDL: %s", SDL_GetError());
-    }
+    InitSDL();
 
     /* Find the engine base directory and switch to it. */
     char* const platformBasePath = SDL_GetBasePath();
@@ -115,6 +112,18 @@ Engine::~Engine()
      * TODO: Automatically destroy all singletons in the order in which they
      * were created.
      */
+}
+
+void Engine::InitSDL()
+{
+    /* This is for the window surface API which we don't use. Disabling
+     * acceleration prevents SDL from unnecessarily loading libGL. */
+    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0");
+
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    {
+        Fatal("Failed to initialize SDL: %s", SDL_GetError());
+    }
 }
 
 void Engine::Run()
