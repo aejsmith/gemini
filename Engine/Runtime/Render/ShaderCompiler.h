@@ -75,11 +75,15 @@ public:
                                               GPUShaderCode&       outCode);
 
 private:
-    class SourceIncluder;
-    friend class SourceIncluder;
-
-private:
-    std::string                 GenerateSource();
+    bool                        LoadSource(const Path&  inPath,
+                                           const Path&  inFrom,
+                                           const size_t inLineIndex,
+                                           const size_t inDepth,
+                                           std::string& outSource);
+    bool                        Preprocess(std::string& ioSource,
+                                           const Path&  inPath,
+                                           const size_t inDepth);
+    bool                        GenerateSource(std::string& outSource);
 
 private:
     Options                     mOptions;

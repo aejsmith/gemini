@@ -42,10 +42,14 @@
 class ShaderManager : public Singleton<ShaderManager>
 {
 public:
+    using SearchPathMap   = HashMap<std::string, std::string>;
+
+public:
                             ShaderManager();
                             ~ShaderManager();
 
-public:
+    const SearchPathMap&    GetSearchPaths() const { return mSearchPaths; }
+
     /**
      * Get the specified shader from its virtual path. Shader type is determined
      * by the file extension.
@@ -54,9 +58,6 @@ public:
 
     /** Convert a shader source file extension to a shader stage enum. */
     static GPUShaderStage   ConvertShaderStage(const std::string& inExtension);
-
-private:
-    using SearchPathMap   = HashMap<std::string, std::string>;
 
 private:
     SearchPathMap           mSearchPaths;
