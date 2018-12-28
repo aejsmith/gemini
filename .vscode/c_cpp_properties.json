@@ -18,6 +18,7 @@
                 "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
                 "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
                 "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
+                "${workspaceFolder}/Dependencies/Common/shaderc/Include",
                 "/usr/include/SDL2"
             ],
             "defines": ["ORION_BUILD_DEBUG=1"],

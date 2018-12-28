@@ -21,7 +21,7 @@
 
 #include "Render/ShaderManager.h"
 
-#include "glslang.h"
+#include "shaderc/shaderc.hpp"
 
 #include <memory>
 #include <sstream>
@@ -32,11 +32,6 @@ static constexpr auto kBuiltInFileName  = "<built-in>";
 static constexpr auto kSourceStringName = "<string>";
 
 static constexpr size_t kMaximumIncludeDepth = 16;
-
-namespace glslang
-{
-    extern const TBuiltInResource DefaultTBuiltInResource;
-}
 
 ShaderCompiler::ShaderCompiler(Options inOptions) :
     mOptions (std::move(inOptions))
@@ -215,69 +210,9 @@ bool ShaderCompiler::GenerateSource(std::string& outSource)
     return Preprocess(outSource, kBuiltInFileName, 0);
 }
 
-static void LogGLSLMessages(const char* const inLog)
-{
-    std::istringstream stream(inLog);
-    std::string line;
-    while (std::getline(stream, line))
-    {
-        if (line.empty())
-        {
-            continue;
-        }
-
-        static constexpr auto errorPrefix   = "ERROR: ";
-        static constexpr auto warningPrefix = "WARNING: ";
-
-        if (!line.compare(0, strlen(errorPrefix), errorPrefix))
-        {
-            std::string message = line.substr(strlen(errorPrefix));
-            LogError("%s", message.c_str());
-        }
-        else if (!line.compare(0, strlen(warningPrefix), warningPrefix))
-        {
-            std::string message = line.substr(strlen(warningPrefix));
-            LogWarning("%s", message.c_str());
-        }
-    }
-}
-
-static bool LogSPIRVMessages(const char* const          inPath,
-                             const spv::SpvBuildLogger& inLogger)
-{
-    std::istringstream stream(inLogger.getAllMessages());
-    std::string line;
-    while (std::getline(stream, line))
-    {
-        if (line.empty())
-        {
-            continue;
-        }
-
-        static constexpr auto warningPrefix = "warning: ";
-
-        const LogLevel level = (!line.compare(0, strlen(warningPrefix), warningPrefix))
-                                   ? kLogLevel_Warning
-                                   : kLogLevel_Error;
-
-        LogMessage(level, "%s: SPIR-V %s", inPath, line.c_str());
-
-        if (level == kLogLevel_Error)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 void ShaderCompiler::Compile()
 {
     Assert(!IsCompiled());
-
-    const char* const sourcePath = (!mOptions.source.empty())
-                                       ? kSourceStringName
-                                       : mOptions.path.GetCString();
 
     /* Generate the source string to pass to the compiler, containing built in
      * definitions. This #includes the real source file, so the logic for
@@ -288,79 +223,43 @@ void ShaderCompiler::Compile()
         return;
     }
 
-    /* Initialise once on first use. */
-    static const bool initialised = glslang::InitializeProcess();
-    Assert(initialised);
-    Unused(initialised);
+    shaderc::Compiler compiler;
+    shaderc::CompileOptions options;
 
-    /* Convert stage to a glslang type. */
-    EShLanguage glslangStage;
+    options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1);
+
+    #if ORION_BUILD_DEBUG
+        options.SetGenerateDebugInfo();
+    #endif
+
+    shaderc_shader_kind shadercKind;
     switch (mOptions.stage)
     {
-        case kGPUShaderStage_Vertex:    glslangStage = EShLangVertex; break;
-        case kGPUShaderStage_Fragment:  glslangStage = EShLangFragment; break;
-        case kGPUShaderStage_Compute:   glslangStage = EShLangCompute; break;
+        case kGPUShaderStage_Vertex:    shadercKind = shaderc_vertex_shader; break;
+        case kGPUShaderStage_Fragment:  shadercKind = shaderc_fragment_shader; break;
+        case kGPUShaderStage_Compute:   shadercKind = shaderc_compute_shader; break;
 
         default:                        Unreachable();
     }
 
-    EShMessages messages = static_cast<EShMessages>(EShMsgVulkanRules | EShMsgSpvRules);
+    shaderc::SpvCompilationResult module =
+        compiler.CompileGlslToSpv(source.c_str(),
+                                  shadercKind,
+                                  kBuiltInFileName,
+                                  "main",
+                                  options);
 
-    #if ORION_BUILD_DEBUG
-        messages = static_cast<EShMessages>(messages | EShMsgDebugInfo);
-    #endif
-
-    /* Parse the shader. */
-    const char* const sourceString = source.c_str();
-    const int sourceLength         = source.length();
-    const char* const sourceName   = kBuiltInFileName;
-
-    glslang::TShader shader(glslangStage);
-    shader.setStringsWithLengthsAndNames(&sourceString, &sourceLength, &sourceName, 1);
-
-    const bool parsed = shader.parse(&glslang::DefaultTBuiltInResource,
-                                     kTargetGLSLVersion,
-                                     ENoProfile,
-                                     false,
-                                     false,
-                                     messages);
-
-    LogGLSLMessages(shader.getInfoLog());
-
-    if (!parsed)
+    if (module.GetCompilationStatus() != shaderc_compilation_status_success)
     {
+        LogError("%s", module.GetErrorMessage().c_str());
         return;
     }
-
-    /* Link the shader. */
-    glslang::TProgram program;
-    program.addShader(&shader);
-
-    const bool linked = program.link(messages);
-
-    LogGLSLMessages(program.getInfoLog());
-
-    if (!linked)
+    else if (module.GetNumWarnings() > 0)
     {
-        return;
+        LogWarning("%s", module.GetErrorMessage().c_str());
     }
 
-    /* Generate SPIR-V. */
-    glslang::TIntermediate* intermediate = program.getIntermediate(glslangStage);
-    Assert(intermediate);
-
-    glslang::SpvOptions options;
-    #if ORION_BUILD_DEBUG
-        options.generateDebugInfo = true;
-    #endif
-
-    spv::SpvBuildLogger logger;
-    glslang::GlslangToSpv(*intermediate, mCode, &logger, &options);
-
-    if (!LogSPIRVMessages(sourcePath, logger))
-    {
-        mCode.clear();
-    }
+    mCode = {module.cbegin(), module.cend()};
 }
 
 bool ShaderCompiler::CompileFile(Path                 inPath,

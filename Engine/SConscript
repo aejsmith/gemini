@@ -41,10 +41,10 @@ SConscript(dirs = ['Tools'])
 
 depends = [
     'Engine/Core',
-    '3rdParty/glslang',
     '3rdParty/imgui',
     '3rdParty/RapidJSON',
     '3rdParty/VulkanMemoryAllocator',
+    'External/shaderc',
 ]
 
 if manager.baseEnv['PLATFORM'] == 'Linux':

@@ -29,3 +29,10 @@ llvmEnv = dummyEnv.Clone()
 llvmEnv.ParseConfig('llvm-config --cflags --ldflags')
 llvmEnv['LIBS'] = ['clang']
 AddExternalComponent('External/libclang', llvmEnv)
+
+# shaderc.
+manager.AddComponent(
+    name = 'External/shaderc',
+    includePath = Dir('../Common/shaderc/Include'),
+    libPath = Dir('shaderc/Lib'),
+    libs = ['shaderc_combined'])
