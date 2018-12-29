@@ -28,8 +28,8 @@ struct PSInput
     float4      colour      : COLOR;
 };
 
-Texture2D gTexture : register(t0, space0);
-SamplerState gSampler : register(s1, space0);
+Texture2D mainTexture : register(t0, space0);
+SamplerState mainSampler : register(s1, space0);
 
 cbuffer Constants : register(b2, space0)
 {
@@ -47,5 +47,5 @@ PSInput VSMain(VSInput input)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    return input.colour * gTexture.Sample(gSampler, input.uv);
+    return input.colour * mainTexture.Sample(mainSampler, input.uv);
 }

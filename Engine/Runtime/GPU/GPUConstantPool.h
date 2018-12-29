@@ -57,7 +57,7 @@ inline GPUConstantPool::~GPUConstantPool()
 }
 
 inline GPUConstants GPUConstantPool::Write(const void* const inData,
-                                          const size_t      inSize)
+                                           const size_t      inSize)
 {
     void* mapping;
     const GPUConstants handle = Allocate(inSize, mapping);
