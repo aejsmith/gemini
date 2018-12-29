@@ -20,11 +20,13 @@
 
 VulkanShader::VulkanShader(VulkanDevice&        inDevice,
                            const GPUShaderStage inStage,
-                           GPUShaderCode        inCode) :
+                           GPUShaderCode        inCode,
+                           const std::string&   inFunction) :
     GPUShader   (inDevice,
                  inStage,
                  std::move(inCode)),
-    mHandle     (VK_NULL_HANDLE)
+    mHandle     (VK_NULL_HANDLE),
+    mFunction   (inFunction)
 {
     VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

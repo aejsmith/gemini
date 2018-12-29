@@ -26,16 +26,19 @@ class VulkanShader final : public GPUShader,
 public:
                             VulkanShader(VulkanDevice&        inDevice,
                                          const GPUShaderStage inStage,
-                                         GPUShaderCode        inCode);
+                                         GPUShaderCode        inCode,
+                                         const std::string&   inFunction);
 
                             ~VulkanShader();
 
     VkShaderModule          GetHandle() const   { return mHandle; }
+    const char*             GetFunction() const { return mFunction.c_str(); }
 
 protected:
     void                    UpdateName() override;
 
 private:
     VkShaderModule          mHandle;
+    std::string             mFunction;
 
 };

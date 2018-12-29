@@ -59,7 +59,8 @@ public:
                                                            const GPUResourceViewDesc& inDesc) override;
 
     GPUShaderPtr                        CreateShader(const GPUShaderStage inStage,
-                                                     GPUShaderCode        inCode) override;
+                                                     GPUShaderCode        inCode,
+                                                     const std::string&   inFunction) override;
 
     void                                CreateSwapchain(Window& inWindow) override;
 

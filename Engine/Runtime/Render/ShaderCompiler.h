@@ -44,6 +44,7 @@ public:
         std::string             source;
         Path                    path;
 
+        std::string             function;
         GPUShaderStage          stage;
     };
 
@@ -67,10 +68,12 @@ public:
     const SourceList&           GetSourceFiles() const  { return mSourceFiles; }
 
     static bool                 CompileFile(Path                 inPath,
+                                            std::string          inFunction,
                                             const GPUShaderStage inStage,
                                             GPUShaderCode&       outCode);
 
     static bool                 CompileString(std::string          inSource,
+                                              std::string          inFunction,
                                               const GPUShaderStage inStage,
                                               GPUShaderCode&       outCode);
 
@@ -80,9 +83,11 @@ private:
                                            const size_t inLineIndex,
                                            const size_t inDepth,
                                            std::string& outSource);
+
     bool                        Preprocess(std::string& ioSource,
                                            const Path&  inPath,
                                            const size_t inDepth);
+
     bool                        GenerateSource(std::string& outSource);
 
 private:

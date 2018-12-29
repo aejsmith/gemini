@@ -378,9 +378,10 @@ GPUSampler* VulkanDevice::CreateSamplerImpl(const GPUSamplerDesc& inDesc)
 }
 
 GPUShaderPtr VulkanDevice::CreateShader(const GPUShaderStage inStage,
-                                        GPUShaderCode        inCode)
+                                        GPUShaderCode        inCode,
+                                        const std::string&   inFunction)
 {
-    return new VulkanShader(*this, inStage, std::move(inCode));
+    return new VulkanShader(*this, inStage, std::move(inCode), inFunction);
 }
 
 void VulkanDevice::CreateSwapchain(Window& inWindow)

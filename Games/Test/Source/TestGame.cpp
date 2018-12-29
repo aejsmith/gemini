@@ -67,8 +67,8 @@ static const glm::vec4 kColours[3] =
 TestRenderLayer::TestRenderLayer() :
     RenderLayer (RenderLayer::kOrder_World)
 {
-    mVertexShader   = ShaderManager::Get().GetShader("Game/Test.vert");
-    mFragmentShader = ShaderManager::Get().GetShader("Game/Test.frag");
+    mVertexShader   = ShaderManager::Get().GetShader("Game/Test.hlsl", "VSMain", kGPUShaderStage_Vertex);
+    mFragmentShader = ShaderManager::Get().GetShader("Game/Test.hlsl", "PSMain", kGPUShaderStage_Fragment);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;

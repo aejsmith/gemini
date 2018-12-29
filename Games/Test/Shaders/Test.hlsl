@@ -14,15 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-layout (location = 0) in vec2 vtxUV;
-layout (location = 1) in vec4 vtxColour;
-
-layout (location = 0) out vec4 fragColour;
-
-layout (set = 0, binding = 0) uniform texture2D tex;
-layout (set = 0, binding = 1) uniform sampler samp;
-
-void main()
+struct VSInput
 {
-    fragColour = vtxColour * texture(sampler2D(tex, samp), vtxUV);
+    float2      position    : POSITION;
+    uint        vertexID    : SV_VERTEXID;
+};
+
+struct PSInput
+{
+    float4      position    : SV_POSITION;
+    float4      colour      : COLOR;
+};
+
+cbuffer Constants : register(b0, space0)
+{
+    float4      colours[3];
+};
+
+PSInput VSMain(VSInput input)
+{
+    PSInput output;
+    output.position = float4(input.position, 0.0, 1.0);
+    output.colour   = colours[input.vertexID % 3];
+    return output;
+}
+
+float4 PSMain(PSInput input) : SV_TARGET
+{
+    return input.colour;
 }

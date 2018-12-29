@@ -51,13 +51,12 @@ public:
     const SearchPathMap&    GetSearchPaths() const { return mSearchPaths; }
 
     /**
-     * Get the specified shader from its virtual path. Shader type is determined
-     * by the file extension.
+     * Get the specified shader from its virtual path and a function name
+     * within that shader.
      */
-    GPUShaderPtr            GetShader(const Path& inPath);
-
-    /** Convert a shader source file extension to a shader stage enum. */
-    static GPUShaderStage   ConvertShaderStage(const std::string& inExtension);
+    GPUShaderPtr            GetShader(const Path&          inPath,
+                                      const std::string&   inFunction,
+                                      const GPUShaderStage inStage);
 
 private:
     SearchPathMap           mSearchPaths;

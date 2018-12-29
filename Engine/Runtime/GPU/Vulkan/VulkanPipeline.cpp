@@ -38,8 +38,6 @@ static VkPipelineDynamicStateCreateInfo kDynamicStateInfo =
     kDynamicStates
 };
 
-static constexpr char kShaderEntryPointName[] = "main";
-
 static void ConvertShaderState(const GPUPipelineDesc&           inDesc,
                                VkPipelineShaderStageCreateInfo* outStageInfos,
                                uint32_t&                        outStageCount)
@@ -56,7 +54,7 @@ static void ConvertShaderState(const GPUPipelineDesc&           inDesc,
             stageInfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             stageInfo.stage  = VulkanUtils::ConvertShaderStage(shader->GetStage());
             stageInfo.module = shader->GetHandle();
-            stageInfo.pName  = kShaderEntryPointName;
+            stageInfo.pName  = shader->GetFunction();
         }
     }
 }

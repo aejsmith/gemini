@@ -44,7 +44,9 @@ ShaderManager::~ShaderManager()
 {
 }
 
-GPUShaderPtr ShaderManager::GetShader(const Path& inPath)
+GPUShaderPtr ShaderManager::GetShader(const Path&          inPath,
+                                      const std::string&   inFunction,
+                                      const GPUShaderStage inStage)
 {
     /*
      * TODO: Cache of GPUShaders. Would need a weak pointer stored in the cache
@@ -71,40 +73,22 @@ GPUShaderPtr ShaderManager::GetShader(const Path& inPath)
         return nullptr;
     }
 
-    const GPUShaderStage stage = ConvertShaderStage(fsPath.GetExtension());
-
     GPUShaderCode code;
-    const bool isCompiled = ShaderCompiler::CompileFile(fsPath, stage, code);
+    const bool isCompiled = ShaderCompiler::CompileFile(fsPath,
+                                                        inFunction,
+                                                        inStage,
+                                                        code);
     if (!isCompiled)
     {
         LogError("Compilation of shader '%s' failed", inPath.GetCString());
         return nullptr;
     }
 
-    GPUShaderPtr shader = GPUDevice::Get().CreateShader(stage, std::move(code));
+    GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage,
+                                                        std::move(code),
+                                                        inFunction);
 
     shader->SetName(inPath.GetString());
 
     return shader;
-}
-
-GPUShaderStage ShaderManager::ConvertShaderStage(const std::string& inExtension)
-{
-    if (inExtension == "vert")
-    {
-        return kGPUShaderStage_Vertex;
-    }
-    else if (inExtension == "frag")
-    {
-        return kGPUShaderStage_Fragment;
-    }
-    else if (inExtension == "comp")
-    {
-        return kGPUShaderStage_Compute;
-    }
-    else
-    {
-        UnreachableMsg("Unknown shader file extension '%s'", inExtension.c_str());
-        return kGPUShaderStage_NumGraphics;
-    }
 }

@@ -107,7 +107,8 @@ public:
                                                        const GPUResourceViewDesc& inDesc) = 0;
 
     virtual GPUShaderPtr            CreateShader(const GPUShaderStage inStage,
-                                                 GPUShaderCode        inCode) = 0;
+                                                 GPUShaderCode        inCode,
+                                                 const std::string&   inFunction) = 0;
 
     /**
      * Create and attach a swapchain to the specified window so that it can be

@@ -26,8 +26,6 @@
 #include <memory>
 #include <sstream>
 
-static constexpr uint16_t kTargetGLSLVersion = 450;
-
 static constexpr auto kBuiltInFileName  = "<built-in>";
 static constexpr auto kSourceStringName = "<string>";
 
@@ -191,10 +189,6 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
 
 bool ShaderCompiler::GenerateSource(std::string& outSource)
 {
-    outSource = StringUtils::Format("#version %u core\n", kTargetGLSLVersion);
-    outSource += "#extension GL_GOOGLE_cpp_style_line_directive : enable\n";
-    outSource += "\n";
-
     if (!mOptions.source.empty())
     {
         /* Source string was provided, use that directly. */
@@ -226,7 +220,9 @@ void ShaderCompiler::Compile()
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
 
+    options.SetSourceLanguage(shaderc_source_language_hlsl);
     options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1);
+    options.SetHlslFunctionality1(true);
 
     #if ORION_BUILD_DEBUG
         options.SetGenerateDebugInfo();
@@ -246,7 +242,7 @@ void ShaderCompiler::Compile()
         compiler.CompileGlslToSpv(source.c_str(),
                                   shadercKind,
                                   kBuiltInFileName,
-                                  "main",
+                                  mOptions.function.c_str(),
                                   options);
 
     if (module.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -263,12 +259,14 @@ void ShaderCompiler::Compile()
 }
 
 bool ShaderCompiler::CompileFile(Path                 inPath,
+                                 std::string          inFunction,
                                  const GPUShaderStage inStage,
                                  GPUShaderCode&       outCode)
 {
     ShaderCompiler::Options options;
-    options.path  = std::move(inPath);
-    options.stage = inStage;
+    options.path     = std::move(inPath);
+    options.function = inFunction;
+    options.stage    = inStage;
 
     ShaderCompiler compiler(options);
     compiler.Compile();
@@ -285,12 +283,14 @@ bool ShaderCompiler::CompileFile(Path                 inPath,
 }
 
 bool ShaderCompiler::CompileString(std::string          inSource,
+                                   std::string          inFunction,
                                    const GPUShaderStage inStage,
                                    GPUShaderCode&       outCode)
 {
     ShaderCompiler::Options options;
-    options.source = std::move(inSource);
-    options.stage  = inStage;
+    options.source   = std::move(inSource);
+    options.function = inFunction;
+    options.stage    = inStage;
 
     ShaderCompiler compiler(options);
     compiler.Compile();

@@ -14,22 +14,38 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-layout (location = 0) in vec2 attribPosition;
-layout (location = 1) in vec2 attribUV;
-layout (location = 2) in vec4 attribColour;
-
-layout (location = 0) out vec2 vtxUV;
-layout (location = 1) out vec4 vtxColour;
-
-layout (set = 0, binding = 2) uniform Uniforms
+struct VSInput
 {
-    mat4 projectionMatrix;
+    float2      position    : POSITION;
+    float2      uv          : TEXCOORD;
+    float4      colour      : COLOR;
 };
 
-void main()
+struct PSInput
 {
-    vtxUV     = attribUV;
-    vtxColour = attribColour;
+    float4      position    : SV_POSITION;
+    float2      uv          : TEXCOORD;
+    float4      colour      : COLOR;
+};
 
-    gl_Position = projectionMatrix * vec4(attribPosition, 0.0, 1.0);
+Texture2D gTexture : register(t0, space0);
+SamplerState gSampler : register(s1, space0);
+
+cbuffer Constants : register(b2, space0)
+{
+    float4x4    projectionMatrix;
+};
+
+PSInput VSMain(VSInput input)
+{
+    PSInput output;
+    output.position = mul(projectionMatrix, float4(input.position, 0.0, 1.0));
+    output.uv       = input.uv;
+    output.colour   = input.colour;
+    return output;
+}
+
+float4 PSMain(PSInput input) : SV_TARGET
+{
+    return input.colour * gTexture.Sample(gSampler, input.uv);
 }

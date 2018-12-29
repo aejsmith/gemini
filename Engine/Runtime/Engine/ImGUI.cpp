@@ -189,8 +189,8 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
 
     ImGuiIO& io = ImGui::GetIO();
 
-    mVertexShader   = ShaderManager::Get().GetShader("Engine/ImGui.vert");
-    mFragmentShader = ShaderManager::Get().GetShader("Engine/ImGui.frag");
+    mVertexShader   = ShaderManager::Get().GetShader("Engine/ImGui.hlsl", "VSMain", kGPUShaderStage_Vertex);
+    mFragmentShader = ShaderManager::Get().GetShader("Engine/ImGui.hlsl", "PSMain", kGPUShaderStage_Fragment);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(3);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Texture;
