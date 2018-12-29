@@ -87,11 +87,11 @@ public:
     const GPUArgumentTypeArray&     GetArguments() const        { return mDesc.arguments; }
     uint8_t                         GetArgumentCount() const    { return mDesc.arguments.size(); }
 
-    bool                            IsUniformOnly() const       { return mIsUniformOnly; }
+    bool                            IsConstantOnly() const      { return mIsConstantOnly; }
 
 private:
     const GPUArgumentSetLayoutDesc  mDesc;
-    bool                            mIsUniformOnly;
+    bool                            mIsConstantOnly;
 
     /* Allows the device to destroy cached layouts upon destruction. */
     friend class GPUDevice;
@@ -112,8 +112,8 @@ struct GPUArgument
  * allocating space for and writing hardware descriptors from draw time to
  * creation time, and allows sets of arguments to be bound very cheaply.
  *
- * An exception to this is sets which only contain kGPUArgumentType_Uniforms
- * arguments: due to the way we handle uniforms, we can create these sets
+ * An exception to this is sets which only contain kGPUArgumentType_Constants
+ * arguments: due to the way we handle constants, we can create these sets
  * dynamically very cheaply, e.g. on Vulkan we actually create just one set up
  * front at layout creation time and reuse that when asked to dynamically
  * create the set.

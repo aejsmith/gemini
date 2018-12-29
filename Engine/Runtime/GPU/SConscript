@@ -21,6 +21,7 @@ objects = map(env.Object, [
     'Vulkan/VulkanBuffer.cpp',
     'Vulkan/VulkanCommandList.cpp',
     'Vulkan/VulkanCommandPool.cpp',
+    'Vulkan/VulkanConstantPool.cpp',
     'Vulkan/VulkanContext.cpp',
     'Vulkan/VulkanDescriptorPool.cpp',
     'Vulkan/VulkanInstance.cpp',
@@ -35,7 +36,6 @@ objects = map(env.Object, [
     'Vulkan/VulkanStagingPool.cpp',
     'Vulkan/VulkanSwapchain.cpp',
     'Vulkan/VulkanTexture.cpp',
-    'Vulkan/VulkanUniformPool.cpp',
 
     'Vulkan/${PLATFORM}/${PLATFORM}VulkanInstance.cpp',
     'Vulkan/${PLATFORM}/${PLATFORM}VulkanSwapchain.cpp',

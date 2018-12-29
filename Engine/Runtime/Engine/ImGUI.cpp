@@ -195,7 +195,7 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
     GPUArgumentSetLayoutDesc argumentLayoutDesc(3);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Texture;
     argumentLayoutDesc.arguments[1] = kGPUArgumentType_Sampler;
-    argumentLayoutDesc.arguments[2] = kGPUArgumentType_Uniforms;
+    argumentLayoutDesc.arguments[2] = kGPUArgumentType_Constants;
 
     const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
@@ -312,7 +312,7 @@ void ImGUIRenderLayer::Render()
          0.0f,             0.0f,              -1.0f, 0.0f,
         -1.0f,             1.0f,               0.0f, 1.0f);
 
-    cmdList->WriteUniforms(0, 2, &projectionMatrix, sizeof(projectionMatrix));
+    cmdList->WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
 
     /* Keep created buffers alive until we submit the command list. */
     std::vector<GPUBufferPtr> buffers;

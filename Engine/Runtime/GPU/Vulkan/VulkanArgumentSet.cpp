@@ -17,16 +17,16 @@
 #include "VulkanArgumentSet.h"
 
 #include "VulkanBuffer.h"
+#include "VulkanConstantPool.h"
 #include "VulkanDescriptorPool.h"
 #include "VulkanDevice.h"
 #include "VulkanResourceView.h"
 #include "VulkanSampler.h"
 #include "VulkanTexture.h"
-#include "VulkanUniformPool.h"
 
 static VkDescriptorType kArgumentTypeMapping[kGPUArgumentTypeCount] =
 {
-    /* kGPUArgumentType_Uniforms        */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+    /* kGPUArgumentType_Constants       */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
     /* kGPUArgumentType_Buffer          */ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
     /* kGPUArgumentType_RWBuffer        */ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
     /* kGPUArgumentType_Texture         */ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
@@ -40,7 +40,7 @@ VulkanArgumentSetLayout::VulkanArgumentSetLayout(VulkanDevice&              inDe
                                                  GPUArgumentSetLayoutDesc&& inDesc) :
     GPUArgumentSetLayout    (inDevice, std::move(inDesc)),
     mHandle                 (VK_NULL_HANDLE),
-    mUniformOnlySet         (VK_NULL_HANDLE)
+    mConstantOnlySet        (VK_NULL_HANDLE)
 {
     const auto& arguments = GetArguments();
 
@@ -67,19 +67,19 @@ VulkanArgumentSetLayout::VulkanArgumentSetLayout(VulkanDevice&              inDe
                                             nullptr,
                                             &mHandle));
 
-    if (IsUniformOnly())
+    if (IsConstantOnly())
     {
-        mUniformOnlySet = GetVulkanDevice().GetDescriptorPool().Allocate(mHandle);
+        mConstantOnlySet = GetVulkanDevice().GetDescriptorPool().Allocate(mHandle);
 
-        VulkanArgumentSet::Write(mUniformOnlySet, this, nullptr);
+        VulkanArgumentSet::Write(mConstantOnlySet, this, nullptr);
     }
 }
 
 VulkanArgumentSetLayout::~VulkanArgumentSetLayout()
 {
-    if (IsUniformOnly())
+    if (IsConstantOnly())
     {
-        GetVulkanDevice().GetDescriptorPool().Free(mUniformOnlySet);
+        GetVulkanDevice().GetDescriptorPool().Free(mConstantOnlySet);
     }
 
     vkDestroyDescriptorSetLayout(GetVulkanDevice().GetHandle(), mHandle, nullptr);
@@ -92,9 +92,9 @@ VulkanArgumentSet::VulkanArgumentSet(VulkanDevice&                 inDevice,
 {
     const auto layout = static_cast<const VulkanArgumentSetLayout*>(GetLayout());
 
-    if (layout->IsUniformOnly())
+    if (layout->IsConstantOnly())
     {
-        mHandle = layout->GetUniformOnlySet();
+        mHandle = layout->GetConstantOnlySet();
     }
     else
     {
@@ -106,7 +106,7 @@ VulkanArgumentSet::VulkanArgumentSet(VulkanDevice&                 inDevice,
 
 VulkanArgumentSet::~VulkanArgumentSet()
 {
-    if (!GetLayout()->IsUniformOnly())
+    if (!GetLayout()->IsConstantOnly())
     {
         GetVulkanDevice().AddFrameCompleteCallback(
             [handle = mHandle] (VulkanDevice& inDevice)
@@ -143,13 +143,13 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
         descriptorWrite.pBufferInfo      = nullptr;
         descriptorWrite.pTexelBufferView = nullptr;
 
-        if (arguments[i] == kGPUArgumentType_Uniforms)
+        if (arguments[i] == kGPUArgumentType_Constants)
         {
-            /* This just refers to the uniform pool, which we offset at bind
+            /* This just refers to the constant pool, which we offset at bind
              * time. */
-            bufferInfo.buffer = static_cast<VulkanUniformPool&>(inLayout->GetDevice().GetUniformPool()).GetHandle();
+            bufferInfo.buffer = static_cast<VulkanConstantPool&>(inLayout->GetDevice().GetConstantPool()).GetHandle();
             bufferInfo.offset = 0;
-            bufferInfo.range  = std::min(inLayout->GetVulkanDevice().GetLimits().maxUniformBufferRange, kMaxUniformsSize);
+            bufferInfo.range  = std::min(inLayout->GetVulkanDevice().GetLimits().maxUniformBufferRange, kMaxConstantsSize);
 
             descriptorWrite.pBufferInfo = &bufferInfo;
         }

@@ -36,12 +36,15 @@ static constexpr size_t kMaxArgumentSets = 4;
 /** Maximum number of arguments per argument set. */
 static constexpr size_t kMaxArgumentsPerSet = 32;
 
-/** Maximum uniform data size. */
-static constexpr uint32_t kMaxUniformsSize = 65536;
+/** Maximum constant data size. */
+static constexpr uint32_t kMaxConstantsSize = 65536;
 
-/** Handle to uniform data written within the current frame (see GPUUniformPool). */
-using GPUUniforms = uint32_t;
-static constexpr GPUUniforms kGPUUniforms_Invalid = std::numeric_limits<uint32_t>::max();
+/**
+ * Handle to constant data written within the current frame (see
+ * GPUConstantPool).
+ */
+using GPUConstants = uint32_t;
+static constexpr GPUConstants kGPUConstants_Invalid = std::numeric_limits<uint32_t>::max();
 
 enum GPUVendor : uint8_t
 {
@@ -175,7 +178,7 @@ enum GPUResourceState : uint32_t
 
     /**
      * Generic shader read states for each stage. For buffers, this should be
-     * used for anything other than uniform read access, which has its own
+     * used for anything other than constant read access, which has its own
      * state. For textures, these must be used for access through views
      * that do not have kGPUResourceUsage_ShaderWrite usage.
      */
@@ -201,15 +204,15 @@ enum GPUResourceState : uint32_t
                                                   kGPUResourceState_ComputeShaderWrite,
 
     /**
-     * Uniform buffer read states.
+     * Constant buffer read states.
      */
-    kGPUResourceState_VertexShaderUniformRead   = (1 << 6),
-    kGPUResourceState_PixelShaderUniformRead    = (1 << 7),
-    kGPUResourceState_ComputeShaderUniformRead  = (1 << 8),
+    kGPUResourceState_VertexShaderConstantRead  = (1 << 6),
+    kGPUResourceState_PixelShaderConstantRead   = (1 << 7),
+    kGPUResourceState_ComputeShaderConstantRead = (1 << 8),
 
-    kGPUResourceState_AllShaderUniformRead      = kGPUResourceState_VertexShaderUniformRead |
-                                                  kGPUResourceState_PixelShaderUniformRead |
-                                                  kGPUResourceState_ComputeShaderUniformRead,
+    kGPUResourceState_AllShaderConstantRead     = kGPUResourceState_VertexShaderConstantRead |
+                                                  kGPUResourceState_PixelShaderConstantRead |
+                                                  kGPUResourceState_ComputeShaderConstantRead,
 
     /**
      * Buffer read states in other parts of the pipeline.
@@ -435,11 +438,11 @@ struct GPUViewport
 enum GPUArgumentType : uint8_t
 {
     /**
-     * Uniforms. Uniforms are always rewritten per-frame, and therefore need to
-     * be supplied at command recording time regardless of whether using pre-
+     * Constants. Constants are always rewritten per-frame, and therefore need
+     * to be supplied at command recording time regardless of whether using pre-
      * baked or dynamically created argument sets.
      */
-    kGPUArgumentType_Uniforms = 0,
+    kGPUArgumentType_Constants = 0,
 
     /**
      * Read-only buffer. Buffers used with an argument of this type must have

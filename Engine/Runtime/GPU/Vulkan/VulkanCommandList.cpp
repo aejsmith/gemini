@@ -118,9 +118,9 @@ inline void VulkanCommandList<T>::SetArgumentsImpl(const uint8_t            inIn
 
     const auto layout = static_cast<const VulkanArgumentSetLayout*>(argumentState.layout);
 
-    if (layout->IsUniformOnly())
+    if (layout->IsConstantOnly())
     {
-        mDescriptorSets[inIndex] = layout->GetUniformOnlySet();
+        mDescriptorSets[inIndex] = layout->GetConstantOnlySet();
     }
     else
     {
@@ -180,9 +180,9 @@ inline void VulkanCommandList<T>::BindDescriptorSets(const VkPipelineBindPoint i
 
             for (size_t argumentIndex = 0; argumentIndex < argumentState.layout->GetArgumentCount(); argumentIndex++)
             {
-                if (argumentState.layout->GetArguments()[argumentIndex] == kGPUArgumentType_Uniforms)
+                if (argumentState.layout->GetArguments()[argumentIndex] == kGPUArgumentType_Constants)
                 {
-                    dynamicOffsets[dynamicOffsetCount++] = argumentState.uniforms[argumentIndex];
+                    dynamicOffsets[dynamicOffsetCount++] = argumentState.constants[argumentIndex];
                 }
             }
 

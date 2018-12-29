@@ -150,13 +150,13 @@ public:
      * GPUDevice::CreateArgumentSet(). See GPUArgumentSet for more details of
      * persistent vs. dynamically created sets.
      *
-     * When binding a pipeline, any set index which uses a uniform-only layout
+     * When binding a pipeline, any set index which uses a constant-only layout
      * will automatically have valid arguments bound, there is no need to call
-     * these functions. It is only necessary to set the uniforms themselves.
+     * these functions. It is only necessary to set the constants themselves.
      *
-     * Any arguments of type kGPUArgumentType_Uniforms in the set are initially
-     * invalid. Before drawing, SetUniforms()/WriteUniforms() must be used to
-     * set uniform data written in the current frame.
+     * Any arguments of type kGPUArgumentType_Constants in the set are initially
+     * invalid. Before drawing, SetConstants()/WriteConstants() must be used to
+     * set constant data written in the current frame.
      *
      * See GPUGraphicsCommandList::SetPipeline() for details of how changing
      * pipeline affects bound argument state.
@@ -167,22 +167,22 @@ public:
                                                  const GPUArgument* const inArguments);
 
     /**
-     * Set data for a kGPUArgumentType_Uniforms shader argument. This remains
+     * Set data for a kGPUArgumentType_Constants shader argument. This remains
      * valid until the argument set layout at the given set index changes (i.e.
      * due to a pipeline change).
      */
-    void                            SetUniforms(const uint8_t     inSetIndex,
-                                                const uint8_t     inArgumentIndex,
-                                                const GPUUniforms inUniforms);
+    void                            SetConstants(const uint8_t     inSetIndex,
+                                                 const uint8_t     inArgumentIndex,
+                                                 const GPUConstants inConstants);
 
     /**
-     * Convenience function which writes new data to the uniform pool and then
-     * sets it with SetUniforms().
+     * Convenience function which writes new data to the constant pool and then
+     * sets it with SetConstants().
      */
-    void                            WriteUniforms(const uint8_t     inSetIndex,
-                                                  const uint8_t     inArgumentIndex,
-                                                  const void* const inData,
-                                                  const size_t      inSize);
+    void                            WriteConstants(const uint8_t     inSetIndex,
+                                                   const uint8_t     inArgumentIndex,
+                                                   const void* const inData,
+                                                   const size_t      inSize);
 
 protected:
     struct ArgumentState
@@ -190,12 +190,12 @@ protected:
         /** Layout as expected by the pipeline/compute shader. */
         GPUArgumentSetLayoutRef     layout;
 
-        /** Currently set uniform handles. */
-        GPUUniforms                 uniforms[kMaxArgumentsPerSet];
+        /** Currently set constant handles. */
+        GPUConstants                constants[kMaxArgumentsPerSet];
 
         /**
          * Dirty state tracking for the backend. Set when the layout, set or
-         * uniforms change.
+         * constants change.
          */
         bool                        dirty : 1;
 

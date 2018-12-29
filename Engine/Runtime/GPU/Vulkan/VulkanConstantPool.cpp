@@ -14,15 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "VulkanUniformPool.h"
+#include "VulkanConstantPool.h"
 
 #include "VulkanDevice.h"
 
-/** Size of the uniform pool per-frame. */
+/** Size of the constant pool per-frame. */
 static constexpr uint32_t kPerFramePoolSize = 8 * 1024 * 1024;
 
-VulkanUniformPool::VulkanUniformPool(VulkanDevice& inDevice) :
-    GPUUniformPool  (inDevice),
+VulkanConstantPool::VulkanConstantPool(VulkanDevice& inDevice) :
+    GPUConstantPool (inDevice),
     mHandle         (VK_NULL_HANDLE),
     mAllocation     (VK_NULL_HANDLE),
     mMapping        (nullptr),
@@ -53,19 +53,19 @@ VulkanUniformPool::VulkanUniformPool(VulkanDevice& inDevice) :
 
     GetVulkanDevice().UpdateName(mHandle,
                                  VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT,
-                                 "VulkanUniformPool");
+                                 "VulkanConstantPool");
 }
 
-VulkanUniformPool::~VulkanUniformPool()
+VulkanConstantPool::~VulkanConstantPool()
 {
     vkDestroyBuffer(GetVulkanDevice().GetHandle(), mHandle, nullptr);
     GetVulkanDevice().GetMemoryManager().Free(mAllocation);
 }
 
-GPUUniforms VulkanUniformPool::Allocate(const size_t inSize,
-                                        void*&       outMapping)
+GPUConstants VulkanConstantPool::Allocate(const size_t inSize,
+                                          void*&       outMapping)
 {
-    Assert(inSize <= kMaxUniformsSize);
+    Assert(inSize <= kMaxConstantsSize);
 
     /* Align up to the minimum offset alignment. This means that mCurrentOffset
      * is always suitably aligned for subsequent calls. */
@@ -74,13 +74,13 @@ GPUUniforms VulkanUniformPool::Allocate(const size_t inSize,
     const uint32_t offset = mCurrentOffset.fetch_add(alignedSize, std::memory_order_relaxed);
 
     AssertMsg(offset + alignedSize <= (GetVulkanDevice().GetCurrentFrame() + 1) * kPerFramePoolSize,
-              "Uniform pool allocation exceeds per-frame pool size");
+              "Constant pool allocation exceeds per-frame pool size");
 
     outMapping = mMapping + offset;
     return offset;
 }
 
-void VulkanUniformPool::BeginFrame()
+void VulkanConstantPool::BeginFrame()
 {
     /* Reset the offset to the start of this frame's section of the buffer. It
      * is safe to re-use this memory because we'll have waited on the frame's

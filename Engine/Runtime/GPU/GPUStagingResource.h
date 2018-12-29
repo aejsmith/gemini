@@ -34,8 +34,8 @@
  *    This would involve a lot more usage tracking in the backend, and have
  *    implications for pre-creating descriptor sets etc.
  *
- * So, for now, we just update all resources (aside from uniforms, which are
- * handled differently by GPUUniformPool) by writing the data into a staging
+ * So, for now, we just update all resources (aside from constants, which are
+ * handled differently by GPUConstantPool) by writing the data into a staging
  * buffer and using a GPU copy command to transfer to the real resource.
  *
  * In future, if needed, we could add a transient mode to buffers which would

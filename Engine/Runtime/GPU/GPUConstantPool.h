@@ -19,48 +19,48 @@
 #include "GPU/GPUDeviceChild.h"
 
 /**
- * Class managing shader uniform data. We don't persist uniform data across
+ * Class managing shader constant data. We don't persist constant data across
  * frames, instead just rewrite what is needed each frame. Data is passed to
  * shaders by allocating a handle via this class, writing data to it, and then
- * specifying the handle to SetUniforms() on the command list. Handles are only
+ * specifying the handle to SetConstants() on the command list. Handles are only
  * valid within the current frame.
  */
-class GPUUniformPool : public GPUDeviceChild
+class GPUConstantPool : public GPUDeviceChild
 {
 protected:
-                            GPUUniformPool(GPUDevice& inDevice);
-                            ~GPUUniformPool();
+                            GPUConstantPool(GPUDevice& inDevice);
+                            ~GPUConstantPool();
 
 public:
     /**
-     * Allocate space for uniform data, returning a handle to bind it later and
+     * Allocate space for constant data, returning a handle to bind it later and
      * a mapping of the allocated space to write data to. This is free-threaded.
      */
-    virtual GPUUniforms     Allocate(const size_t inSize,
+    virtual GPUConstants    Allocate(const size_t inSize,
                                      void*&       outMapping) = 0;
 
     /**
-     * Convenience wrapper to allocate uniform data space and copy some data
+     * Convenience wrapper to allocate constant data space and copy some data
      * into it.
      */
-    GPUUniforms             Write(const void* const inData,
+    GPUConstants            Write(const void* const inData,
                                   const size_t      inSize);
 };
 
-inline GPUUniformPool::GPUUniformPool(GPUDevice& inDevice) :
+inline GPUConstantPool::GPUConstantPool(GPUDevice& inDevice) :
     GPUDeviceChild  (inDevice)
 {
 }
 
-inline GPUUniformPool::~GPUUniformPool()
+inline GPUConstantPool::~GPUConstantPool()
 {
 }
 
-inline GPUUniforms GPUUniformPool::Write(const void* const inData,
-                                         const size_t      inSize)
+inline GPUConstants GPUConstantPool::Write(const void* const inData,
+                                          const size_t      inSize)
 {
     void* mapping;
-    const GPUUniforms handle = Allocate(inSize, mapping);
+    const GPUConstants handle = Allocate(inSize, mapping);
 
     memcpy(mapping, inData, inSize);
 

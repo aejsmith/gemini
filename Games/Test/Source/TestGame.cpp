@@ -71,7 +71,7 @@ TestRenderLayer::TestRenderLayer() :
     mPixelShader   = ShaderManager::Get().GetShader("Game/Test.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
-    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;
+    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Constants;
 
     mArgumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
@@ -124,7 +124,7 @@ void TestRenderLayer::Render()
 
     cmdList->SetPipeline(pipelineDesc);
     cmdList->SetVertexBuffer(0, mVertexBuffer);
-    cmdList->WriteUniforms(0, 0, kColours, sizeof(kColours));
+    cmdList->WriteConstants(0, 0, kColours, sizeof(kColours));
 
     cmdList->Draw(3);
 

@@ -17,8 +17,8 @@
 #include "GPU/GPUCommandList.h"
 
 #include "GPU/GPUArgumentSet.h"
+#include "GPU/GPUConstantPool.h"
 #include "GPU/GPUContext.h"
-#include "GPU/GPUUniformPool.h"
 
 GPUCommandList::GPUCommandList(GPUContext&                 inContext,
                                const GPUCommandList* const inParent) :
@@ -35,9 +35,9 @@ GPUCommandList::GPUCommandList(GPUContext&                 inContext,
         #if ORION_BUILD_DEBUG
             argumentState.valid = false;
 
-            for (auto& uniforms : argumentState.uniforms)
+            for (auto& constants : argumentState.constants)
             {
-                uniforms = kGPUUniforms_Invalid;
+                constants = kGPUConstants_Invalid;
             }
         #endif
     }
@@ -78,21 +78,21 @@ void GPUCommandList::SetArguments(const uint8_t            inIndex,
     #endif
 }
 
-void GPUCommandList::SetUniforms(const uint8_t     inSetIndex,
-                                 const uint8_t     inArgumentIndex,
-                                 const GPUUniforms inUniforms)
+void GPUCommandList::SetConstants(const uint8_t     inSetIndex,
+                                  const uint8_t     inArgumentIndex,
+                                  const GPUConstants inConstants)
 {
     auto& argumentState = mArgumentState[inSetIndex];
 
     Assert(inSetIndex < kMaxArgumentSets);
     Assert(argumentState.layout);
     Assert(inArgumentIndex < argumentState.layout->GetArgumentCount());
-    Assert(argumentState.layout->GetArguments()[inArgumentIndex] == kGPUArgumentType_Uniforms);
+    Assert(argumentState.layout->GetArguments()[inArgumentIndex] == kGPUArgumentType_Constants);
 
-    if (argumentState.uniforms[inArgumentIndex] != inUniforms)
+    if (argumentState.constants[inArgumentIndex] != inConstants)
     {
-        argumentState.uniforms[inArgumentIndex] = inUniforms;
-        argumentState.dirty                     = true;
+        argumentState.constants[inArgumentIndex] = inConstants;
+        argumentState.dirty                      = true;
     }
 }
 
@@ -110,9 +110,9 @@ void GPUCommandList::ValidateArguments() const
 
             for (uint8_t argumentIndex = 0; argumentIndex < argumentState.layout->GetArgumentCount(); argumentIndex++)
             {
-                if (argumentState.layout->GetArguments()[argumentIndex] == kGPUArgumentType_Uniforms)
+                if (argumentState.layout->GetArguments()[argumentIndex] == kGPUArgumentType_Constants)
                 {
-                    Assert(argumentState.uniforms[argumentIndex] != kGPUUniforms_Invalid);
+                    Assert(argumentState.constants[argumentIndex] != kGPUConstants_Invalid);
                 }
             }
         }
@@ -121,20 +121,20 @@ void GPUCommandList::ValidateArguments() const
 
 #endif
 
-void GPUCommandList::WriteUniforms(const uint8_t     inSetIndex,
-                                   const uint8_t     inArgumentIndex,
-                                   const void* const inData,
-                                   const size_t      inSize)
+void GPUCommandList::WriteConstants(const uint8_t     inSetIndex,
+                                    const uint8_t     inArgumentIndex,
+                                    const void* const inData,
+                                    const size_t      inSize)
 {
     auto& argumentState = mArgumentState[inSetIndex];
 
     Assert(inSetIndex < kMaxArgumentSets);
     Assert(argumentState.layout);
     Assert(inArgumentIndex < argumentState.layout->GetArgumentCount());
-    Assert(argumentState.layout->GetArguments()[inArgumentIndex] == kGPUArgumentType_Uniforms);
+    Assert(argumentState.layout->GetArguments()[inArgumentIndex] == kGPUArgumentType_Constants);
 
-    argumentState.uniforms[inArgumentIndex] = GetDevice().GetUniformPool().Write(inData, inSize);
-    argumentState.dirty                     = true;
+    argumentState.constants[inArgumentIndex] = GetDevice().GetConstantPool().Write(inData, inSize);
+    argumentState.dirty                      = true;
 }
 
 GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
@@ -187,17 +187,17 @@ void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
                 argumentState.layout = layout;
                 argumentState.dirty  = true;
 
-                if (layout->IsUniformOnly())
+                if (layout->IsConstantOnly())
                 {
                     SetArgumentsImpl(setIndex, static_cast<const GPUArgument*>(nullptr));
                 }
 
                 #if ORION_BUILD_DEBUG
-                    argumentState.valid = layout->IsUniformOnly();
+                    argumentState.valid = layout->IsConstantOnly();
 
-                    for (auto& uniforms : argumentState.uniforms)
+                    for (auto& constants : argumentState.constants)
                     {
-                        uniforms = kGPUUniforms_Invalid;
+                        constants = kGPUConstants_Invalid;
                     }
                 #endif
             }

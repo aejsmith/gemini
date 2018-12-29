@@ -25,13 +25,13 @@ GPUArgumentSetLayout::GPUArgumentSetLayout(GPUDevice&                 inDevice,
 {
     Assert(GetArgumentCount() <= kMaxArgumentsPerSet);
 
-    mIsUniformOnly = true;
+    mIsConstantOnly = true;
 
     for (const auto argument : GetArguments())
     {
-        if (argument != kGPUArgumentType_Uniforms)
+        if (argument != kGPUArgumentType_Constants)
         {
-            mIsUniformOnly = false;
+            mIsConstantOnly = false;
         }
     }
 }
@@ -64,7 +64,7 @@ void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
 
     for (size_t i = 0; i < inLayout->GetArgumentCount(); i++)
     {
-        if (argumentTypes[i] == kGPUArgumentType_Uniforms)
+        if (argumentTypes[i] == kGPUArgumentType_Constants)
         {
             Assert(!inArguments || (!inArguments[i].view && !inArguments[i].sampler));
         }

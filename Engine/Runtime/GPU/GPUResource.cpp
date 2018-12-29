@@ -43,9 +43,9 @@ void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
 
     static const GPUResourceState kBufferOnlyStates[] =
     {
-        kGPUResourceState_VertexShaderUniformRead,
-        kGPUResourceState_PixelShaderUniformRead,
-        kGPUResourceState_ComputeShaderUniformRead,
+        kGPUResourceState_VertexShaderConstantRead,
+        kGPUResourceState_PixelShaderConstantRead,
+        kGPUResourceState_ComputeShaderConstantRead,
         kGPUResourceState_IndirectBufferRead,
         kGPUResourceState_VertexBufferRead,
         kGPUResourceState_IndexBufferRead

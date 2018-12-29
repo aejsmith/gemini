@@ -16,29 +16,29 @@
 
 #pragma once
 
-#include "GPU/GPUUniformPool.h"
+#include "GPU/GPUConstantPool.h"
 
 #include "VulkanMemoryManager.h"
 
 #include <atomic>
 
 /**
- * Vulkan implementation of GPUUniformPool. This just uses a single VkBuffer
- * divided up between each in-flight frame. GPUUniforms handles are just an
+ * Vulkan implementation of GPUConstantPool. This just uses a single VkBuffer
+ * divided up between each in-flight frame. GPUConstants handles are just an
  * offset into that buffer. This means that we can always create descriptors
- * for kGPUArgumentType_Uniforms arguments as UNIFORM_BUFFER_DYNAMIC referring
+ * for kGPUArgumentType_Constants arguments as UNIFORM_BUFFER_DYNAMIC referring
  * to this VkBuffer, and then just plug in the offset at bind time.
  */
-class VulkanUniformPool final : public GPUUniformPool,
-                                public VulkanDeviceChild<VulkanUniformPool>
+class VulkanConstantPool final : public GPUConstantPool,
+                                 public VulkanDeviceChild<VulkanConstantPool>
 {
 public:
-                            VulkanUniformPool(VulkanDevice& inDevice);
-                            ~VulkanUniformPool();
+                            VulkanConstantPool(VulkanDevice& inDevice);
+                            ~VulkanConstantPool();
 
     VkBuffer                GetHandle() const   { return mHandle; }
 
-    GPUUniforms             Allocate(const size_t inSize,
+    GPUConstants            Allocate(const size_t inSize,
                                      void*&       outMapping) override;
 
     void                    BeginFrame();

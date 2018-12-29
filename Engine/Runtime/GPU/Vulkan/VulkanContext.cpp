@@ -302,13 +302,13 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
                     VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                     VK_ACCESS_SHADER_WRITE_BIT,
                     VK_IMAGE_LAYOUT_GENERAL);
-        HandleState(kGPUResourceState_VertexShaderUniformRead,
+        HandleState(kGPUResourceState_VertexShaderConstantRead,
                     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
                     VK_ACCESS_UNIFORM_READ_BIT);
-        HandleState(kGPUResourceState_PixelShaderUniformRead,
+        HandleState(kGPUResourceState_PixelShaderConstantRead,
                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     VK_ACCESS_UNIFORM_READ_BIT);
-        HandleState(kGPUResourceState_ComputeShaderUniformRead,
+        HandleState(kGPUResourceState_ComputeShaderConstantRead,
                     VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                     VK_ACCESS_UNIFORM_READ_BIT);
         HandleState(kGPUResourceState_IndirectBufferRead,

@@ -18,6 +18,7 @@
 
 #include "VulkanArgumentSet.h"
 #include "VulkanBuffer.h"
+#include "VulkanConstantPool.h"
 #include "VulkanContext.h"
 #include "VulkanDescriptorPool.h"
 #include "VulkanFormat.h"
@@ -30,7 +31,6 @@
 #include "VulkanStagingPool.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
-#include "VulkanUniformPool.h"
 #include "VulkanUtils.h"
 
 #include "Core/Utility.h"
@@ -92,7 +92,7 @@ VulkanDevice::VulkanDevice() :
     mMemoryManager  = new VulkanMemoryManager(*this);
     mDescriptorPool = new VulkanDescriptorPool(*this);
     mStagingPool    = new VulkanStagingPool(*this);
-    mUniformPool    = new VulkanUniformPool(*this);
+    mConstantPool   = new VulkanConstantPool(*this);
 
     /* See GetPipelineLayout() for details of what this is for. */
     GPUArgumentSetLayoutDesc layoutDesc;
@@ -146,7 +146,7 @@ VulkanDevice::~VulkanDevice()
         delete context;
     }
 
-    delete static_cast<VulkanUniformPool*>(mUniformPool);
+    delete static_cast<VulkanConstantPool*>(mConstantPool);
     delete static_cast<VulkanStagingPool*>(mStagingPool);
     delete mDescriptorPool;
     delete mMemoryManager;
@@ -452,7 +452,7 @@ void VulkanDevice::EndFrameImpl()
         }
     }
 
-    static_cast<VulkanUniformPool&>(GetUniformPool()).BeginFrame();
+    static_cast<VulkanConstantPool&>(GetConstantPool()).BeginFrame();
 }
 
 void VulkanDevice::AddFrameCompleteCallback(FrameCompleteCallback inCallback)

@@ -31,8 +31,8 @@
 
 class GPUGraphicsCommandList;
 class GPUGraphicsContext;
+class GPUConstantPool;
 class GPUStagingPool;
-class GPUUniformPool;
 class Window;
 
 /**
@@ -55,7 +55,7 @@ public:
     GPUGraphicsContext&             GetGraphicsContext() const  { return *mGraphicsContext; }
 
     GPUStagingPool&                 GetStagingPool() const      { return *mStagingPool; }
-    GPUUniformPool&                 GetUniformPool() const      { return *mUniformPool; }
+    GPUConstantPool&                GetConstantPool() const     { return *mConstantPool; }
 
     /**
      * Mark the end of a frame. Should be called after the last work submission
@@ -89,7 +89,7 @@ public:
      *
      * Takes a layout, and an array of arguments. The number of entries in the
      * array must be the number of arguments according to the layout. In the
-     * case where the layout only contains Uniforms entries, then it is valid
+     * case where the layout only contains Constants entries, then it is valid
      * to pass null for the arguments array.
      *
      * The created argument set does *NOT* hold a reference to any of its
@@ -138,7 +138,7 @@ protected:
     GPUGraphicsContext*             mGraphicsContext;
 
     GPUStagingPool*                 mStagingPool;
-    GPUUniformPool*                 mUniformPool;
+    GPUConstantPool*                mConstantPool;
 
 private:
     using ArgumentSetLayoutCache  = HashMap<size_t, GPUArgumentSetLayout*>;

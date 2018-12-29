@@ -28,7 +28,7 @@ GPUDevice::GPUDevice() :
     mVendor             (kGPUVendor_Unknown),
     mGraphicsContext    (nullptr),
     mStagingPool        (nullptr),
-    mUniformPool        (nullptr)
+    mConstantPool       (nullptr)
 {
 }
 
