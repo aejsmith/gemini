@@ -62,8 +62,14 @@ inline bool operator==(const GPUArgumentSetLayoutDesc& inA, const GPUArgumentSet
  * Defines the layout of a set of arguments passed to a pipeline or compute
  * shader. Arguments are specified in sets with a fixed layout. Sets are bound
  * to a command list, which makes the arguments contained with them available
- * to shaders. The set index and argument index within them lines up with the
- * GLSL set/binding indices.
+ * to shaders.
+ *
+ * The set index lines up with the HLSL space index, and the argument index
+ * lines up with the binding index. Note that while HLSL has separate register
+ * namespaces for constant buffers, textures, samplers and UAVs, we only have
+ * a single one which all of them map onto, since this maps better to Vulkan.
+ * For example, "register(b1, space2)" and "register(t1, space2)" both refer
+ * to argument index 1 in set index 2.
  *
  * When creating a pipeline, the argument set layouts expected by the pipeline
  * must be specified. When drawing with the pipeline, argument sets matching

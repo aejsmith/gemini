@@ -23,14 +23,10 @@
 #include <list>
 
 /**
- * Class for compiling GLSL shaders to SPIR-V. All of our shaders are written
- * as GLSL using Vulkan semantics. Other target APIs have an additional
- * compilation step to go from SPIR-V to the correct target language.
- *
- * Note that while we are currently doing compilation entirely at runtime, it
- * is intended in future that "baked" game data would include only the pre-
- * compiled target API shaders, and the compiler would not be available in the
- * final game/engine build.
+ * Class for compiling HLSL shaders to SPIR-V. Note that while we are currently
+ * doing compilation entirely at runtime, it is intended in future that "baked"
+ * game data would include only the pre-compiled target API shaders, and the
+ * compiler would not be available in the final game/engine build.
  */
 class ShaderCompiler
 {

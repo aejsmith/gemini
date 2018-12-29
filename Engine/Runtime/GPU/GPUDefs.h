@@ -460,8 +460,8 @@ enum GPUArgumentType : uint8_t
     kGPUArgumentType_Texture = 3,
 
     /**
-     * Read/write texture, or an image in GLSL terminology. Textures used with
-     * an argument of this type must have kGPUResourceUsage_ShaderWrite.
+     * Read/write texture. Textures used with an argument of this type must
+     * have kGPUResourceUsage_ShaderWrite.
      */
     kGPUArgumentType_RWTexture = 4,
 
