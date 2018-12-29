@@ -498,10 +498,22 @@ enum GPUStagingAccess : uint8_t
     kGPUStagingAccess_Write,
 };
 
+enum GPUAttributeSemantic : uint8_t
+{
+    kGPUAttributeSemantic_Unknown,
+
+    kGPUAttributeSemantic_Binormal,
+    kGPUAttributeSemantic_BlendIndices,
+    kGPUAttributeSemantic_BlendWeight,
+    kGPUAttributeSemantic_Colour,
+    kGPUAttributeSemantic_Normal,
+    kGPUAttributeSemantic_Position,
+    kGPUAttributeSemantic_Tangent,
+    kGPUAttributeSemantic_TexCoord,
+};
+
 enum GPUAttributeFormat : uint8_t
 {
-    kGPUAttributeFormat_Unknown,
-
     kGPUAttributeFormat_R8_UNorm,
     kGPUAttributeFormat_R8G8_UNorm,
     kGPUAttributeFormat_R8G8B8_UNorm,

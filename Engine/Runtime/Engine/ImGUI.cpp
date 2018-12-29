@@ -201,15 +201,18 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
 
     GPUVertexInputStateDesc vertexInputDesc;
     vertexInputDesc.buffers[0].stride = sizeof(ImDrawVert);
-    vertexInputDesc.attributes[0].format = kGPUAttributeFormat_R32G32_Float;
-    vertexInputDesc.attributes[0].buffer = 0;
-    vertexInputDesc.attributes[0].offset = offsetof(ImDrawVert, pos);
-    vertexInputDesc.attributes[1].format = kGPUAttributeFormat_R32G32_Float;
-    vertexInputDesc.attributes[1].buffer = 0;
-    vertexInputDesc.attributes[1].offset = offsetof(ImDrawVert, uv);
-    vertexInputDesc.attributes[2].format = kGPUAttributeFormat_R8G8B8A8_UNorm;
-    vertexInputDesc.attributes[2].buffer = 0;
-    vertexInputDesc.attributes[2].offset = offsetof(ImDrawVert, col);
+    vertexInputDesc.attributes[0].semantic = kGPUAttributeSemantic_Position;
+    vertexInputDesc.attributes[0].format   = kGPUAttributeFormat_R32G32_Float;
+    vertexInputDesc.attributes[0].buffer   = 0;
+    vertexInputDesc.attributes[0].offset   = offsetof(ImDrawVert, pos);
+    vertexInputDesc.attributes[1].semantic = kGPUAttributeSemantic_TexCoord;
+    vertexInputDesc.attributes[1].format   = kGPUAttributeFormat_R32G32_Float;
+    vertexInputDesc.attributes[1].buffer   = 0;
+    vertexInputDesc.attributes[1].offset   = offsetof(ImDrawVert, uv);
+    vertexInputDesc.attributes[2].semantic = kGPUAttributeSemantic_Colour;
+    vertexInputDesc.attributes[2].format   = kGPUAttributeFormat_R8G8B8A8_UNorm;
+    vertexInputDesc.attributes[2].buffer   = 0;
+    vertexInputDesc.attributes[2].offset   = offsetof(ImDrawVert, col);
 
     GPURenderTargetStateDesc renderTargetDesc;
     renderTargetDesc.colour[0] = MainWindow::Get().GetSwapchain()->GetFormat();

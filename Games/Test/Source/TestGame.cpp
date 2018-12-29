@@ -83,9 +83,10 @@ TestRenderLayer::TestRenderLayer() :
 
     GPUVertexInputStateDesc vertexInputDesc;
     vertexInputDesc.buffers[0].stride    = sizeof(glm::vec2);
-    vertexInputDesc.attributes[0].format = kGPUAttributeFormat_R32G32_Float;
-    vertexInputDesc.attributes[0].buffer = 0;
-    vertexInputDesc.attributes[0].offset = 0;
+    vertexInputDesc.attributes[0].semantic = kGPUAttributeSemantic_Position;
+    vertexInputDesc.attributes[0].format   = kGPUAttributeFormat_R32G32_Float;
+    vertexInputDesc.attributes[0].buffer   = 0;
+    vertexInputDesc.attributes[0].offset   = 0;
 
     mVertexInputState = GPUVertexInputState::Get(vertexInputDesc);
 

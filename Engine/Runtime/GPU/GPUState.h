@@ -247,9 +247,14 @@ struct GPUVertexInputStateDesc
     struct Attribute
     {
         /**
-         * Format of the attribute. kGPUAttributeFormat_Unknown indicates that
-         * this attribute is unused.
+         * Semantic and index. This is used to match to input variables in the
+         * vertex shader, based on the HLSL semantic.
+         * kGPUAttributeSemantic_Unknown indicates that this attribute is
+         * unused.
          */
+        GPUAttributeSemantic    semantic;
+        uint8_t                 index;
+
         GPUAttributeFormat      format;
 
         /** Buffer index that this attribute sources data from. */
@@ -268,10 +273,6 @@ struct GPUVertexInputStateDesc
         bool                    perInstance;
     };
 
-    /**
-     * Array of attributes. Index into the array matches the location index
-     * that the attribute will be available at in shaders.
-     */
     Attribute                   attributes[kMaxVertexAttributes];
 
     /**

@@ -65,6 +65,7 @@ static void ConvertVertexInputState(const GPUPipelineDesc&                inDesc
                                     VkVertexInputBindingDescription*      outVertexBindings)
 {
     const auto& stateDesc = inDesc.vertexInputState->GetDesc();
+    const auto shader     = static_cast<VulkanShader*>(inDesc.shaders[kGPUShaderStage_Vertex]);
 
     outVertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -74,17 +75,26 @@ static void ConvertVertexInputState(const GPUPipelineDesc&                inDesc
     {
         auto& attribute = stateDesc.attributes[i];
 
-        if (attribute.format != kGPUAttributeFormat_Unknown)
+        if (attribute.semantic != kGPUAttributeSemantic_Unknown)
         {
-            isReferenced[stateDesc.attributes[i].buffer] = true;
+            /* Match to a location reflected from the SPIR-V binary. Don't need
+             * to bother checking whether all required inputs are provided here,
+             * Vulkan validation will pick it up. */
+            for (const auto& input : shader->GetVertexInputs())
+            {
+                if (input.semantic == attribute.semantic && input.index == attribute.index)
+                {
+                    isReferenced[attribute.buffer] = true;
 
-            outVertexInputInfo.pVertexAttributeDescriptions = outVertexAttributes;
+                    outVertexInputInfo.pVertexAttributeDescriptions = outVertexAttributes;
 
-            auto& outAttribute = outVertexAttributes[outVertexInputInfo.vertexAttributeDescriptionCount++];
-            outAttribute.location = i;
-            outAttribute.binding  = attribute.buffer;
-            outAttribute.format   = VulkanUtils::ConvertAttributeFormat(attribute.format);
-            outAttribute.offset   = attribute.offset;
+                    auto& outAttribute = outVertexAttributes[outVertexInputInfo.vertexAttributeDescriptionCount++];
+                    outAttribute.location = input.location;
+                    outAttribute.binding  = attribute.buffer;
+                    outAttribute.format   = VulkanUtils::ConvertAttributeFormat(attribute.format);
+                    outAttribute.offset   = attribute.offset;
+                }
+            }
         }
     }
 

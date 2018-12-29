@@ -24,21 +24,37 @@ class VulkanShader final : public GPUShader,
                            public VulkanDeviceChild<VulkanShader>
 {
 public:
-                            VulkanShader(VulkanDevice&        inDevice,
-                                         const GPUShaderStage inStage,
-                                         GPUShaderCode        inCode,
-                                         const std::string&   inFunction);
+    struct VertexInput
+    {
+        uint8_t                 location;
+        GPUAttributeSemantic    semantic;
+        uint8_t                 index;
+    };
 
-                            ~VulkanShader();
+    using VertexInputArray    = std::vector<VertexInput>;
 
-    VkShaderModule          GetHandle() const   { return mHandle; }
-    const char*             GetFunction() const { return mFunction.c_str(); }
+public:
+                                VulkanShader(VulkanDevice&        inDevice,
+                                             const GPUShaderStage inStage,
+                                             GPUShaderCode        inCode,
+                                             const std::string&   inFunction);
+
+                                ~VulkanShader();
+
+    VkShaderModule              GetHandle() const       { return mHandle; }
+    const char*                 GetFunction() const     { return mFunction.c_str(); }
+
+    const VertexInputArray&     GetVertexInputs() const { return mVertexInputs; }
 
 protected:
-    void                    UpdateName() override;
+    void                        UpdateName() override;
 
 private:
-    VkShaderModule          mHandle;
-    std::string             mFunction;
+    void                        Reflect();
+
+private:
+    VkShaderModule              mHandle;
+    std::string                 mFunction;
+    VertexInputArray            mVertexInputs;
 
 };
