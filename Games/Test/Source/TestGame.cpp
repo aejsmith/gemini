@@ -44,7 +44,7 @@ public:
 
 private:
     GPUShaderPtr            mVertexShader;
-    GPUShaderPtr            mFragmentShader;
+    GPUShaderPtr            mPixelShader;
     GPUArgumentSetLayoutRef mArgumentLayout;
     GPUBufferPtr            mVertexBuffer;
     GPUVertexInputStateRef  mVertexInputState;
@@ -67,8 +67,8 @@ static const glm::vec4 kColours[3] =
 TestRenderLayer::TestRenderLayer() :
     RenderLayer (RenderLayer::kOrder_World)
 {
-    mVertexShader   = ShaderManager::Get().GetShader("Game/Test.hlsl", "VSMain", kGPUShaderStage_Vertex);
-    mFragmentShader = ShaderManager::Get().GetShader("Game/Test.hlsl", "PSMain", kGPUShaderStage_Fragment);
+    mVertexShader  = ShaderManager::Get().GetShader("Game/Test.hlsl", "VSMain", kGPUShaderStage_Vertex);
+    mPixelShader   = ShaderManager::Get().GetShader("Game/Test.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Uniforms;
@@ -112,15 +112,15 @@ void TestRenderLayer::Render()
     cmdList->Begin();
 
     GPUPipelineDesc pipelineDesc;
-    pipelineDesc.shaders[kGPUShaderStage_Vertex]   = mVertexShader;
-    pipelineDesc.shaders[kGPUShaderStage_Fragment] = mFragmentShader;
-    pipelineDesc.argumentSetLayouts[0]             = mArgumentLayout;
-    pipelineDesc.blendState                        = GPUBlendState::Get(GPUBlendStateDesc());
-    pipelineDesc.depthStencilState                 = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
-    pipelineDesc.rasterizerState                   = GPURasterizerState::Get(GPURasterizerStateDesc());
-    pipelineDesc.renderTargetState                 = cmdList->GetRenderTargetState();
-    pipelineDesc.vertexInputState                  = mVertexInputState;
-    pipelineDesc.topology                          = kGPUPrimitiveTopology_TriangleList;
+    pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
+    pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
+    pipelineDesc.argumentSetLayouts[0]           = mArgumentLayout;
+    pipelineDesc.blendState                      = GPUBlendState::Get(GPUBlendStateDesc());
+    pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
+    pipelineDesc.rasterizerState                 = GPURasterizerState::Get(GPURasterizerStateDesc());
+    pipelineDesc.renderTargetState               = cmdList->GetRenderTargetState();
+    pipelineDesc.vertexInputState                = mVertexInputState;
+    pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
 
     cmdList->SetPipeline(pipelineDesc);
     cmdList->SetVertexBuffer(0, mVertexBuffer);

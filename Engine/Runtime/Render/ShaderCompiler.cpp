@@ -232,7 +232,7 @@ void ShaderCompiler::Compile()
     switch (mOptions.stage)
     {
         case kGPUShaderStage_Vertex:    shadercKind = shaderc_vertex_shader; break;
-        case kGPUShaderStage_Fragment:  shadercKind = shaderc_fragment_shader; break;
+        case kGPUShaderStage_Pixel:     shadercKind = shaderc_fragment_shader; break;
         case kGPUShaderStage_Compute:   shadercKind = shaderc_compute_shader; break;
 
         default:                        Unreachable();

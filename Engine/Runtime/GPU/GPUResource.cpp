@@ -32,7 +32,7 @@ void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
     static const GPUResourceState kMutuallyExclusiveStates[] =
     {
         kGPUResourceState_VertexShaderWrite,
-        kGPUResourceState_FragmentShaderWrite,
+        kGPUResourceState_PixelShaderWrite,
         kGPUResourceState_ComputeShaderWrite,
         kGPUResourceState_RenderTarget,
         kGPUResourceState_DepthStencilWrite,
@@ -44,7 +44,7 @@ void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
     static const GPUResourceState kBufferOnlyStates[] =
     {
         kGPUResourceState_VertexShaderUniformRead,
-        kGPUResourceState_FragmentShaderUniformRead,
+        kGPUResourceState_PixelShaderUniformRead,
         kGPUResourceState_ComputeShaderUniformRead,
         kGPUResourceState_IndirectBufferRead,
         kGPUResourceState_VertexBufferRead,

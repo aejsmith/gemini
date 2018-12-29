@@ -53,7 +53,7 @@ namespace VulkanUtils
         switch (inStage)
         {
             case kGPUShaderStage_Vertex:    return VK_SHADER_STAGE_VERTEX_BIT;
-            case kGPUShaderStage_Fragment:  return VK_SHADER_STAGE_FRAGMENT_BIT;
+            case kGPUShaderStage_Pixel:     return VK_SHADER_STAGE_FRAGMENT_BIT;
             case kGPUShaderStage_Compute:   return VK_SHADER_STAGE_COMPUTE_BIT;
 
             default:

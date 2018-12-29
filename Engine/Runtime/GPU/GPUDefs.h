@@ -180,11 +180,11 @@ enum GPUResourceState : uint32_t
      * that do not have kGPUResourceUsage_ShaderWrite usage.
      */
     kGPUResourceState_VertexShaderRead          = (1 << 0),
-    kGPUResourceState_FragmentShaderRead        = (1 << 1),
+    kGPUResourceState_PixelShaderRead           = (1 << 1),
     kGPUResourceState_ComputeShaderRead         = (1 << 2),
 
     kGPUResourceState_AllShaderRead             = kGPUResourceState_VertexShaderRead |
-                                                  kGPUResourceState_FragmentShaderRead |
+                                                  kGPUResourceState_PixelShaderRead |
                                                   kGPUResourceState_ComputeShaderRead,
 
     /**
@@ -193,22 +193,22 @@ enum GPUResourceState : uint32_t
      * used for access through views with kGPUResourceUsage_ShaderWrite usage.
      */
     kGPUResourceState_VertexShaderWrite         = (1 << 3),
-    kGPUResourceState_FragmentShaderWrite       = (1 << 4),
+    kGPUResourceState_PixelShaderWrite          = (1 << 4),
     kGPUResourceState_ComputeShaderWrite        = (1 << 5),
 
     kGPUResourceState_AllShaderWrite            = kGPUResourceState_VertexShaderWrite |
-                                                  kGPUResourceState_FragmentShaderWrite |
+                                                  kGPUResourceState_PixelShaderWrite |
                                                   kGPUResourceState_ComputeShaderWrite,
 
     /**
      * Uniform buffer read states.
      */
     kGPUResourceState_VertexShaderUniformRead   = (1 << 6),
-    kGPUResourceState_FragmentShaderUniformRead = (1 << 7),
+    kGPUResourceState_PixelShaderUniformRead    = (1 << 7),
     kGPUResourceState_ComputeShaderUniformRead  = (1 << 8),
 
     kGPUResourceState_AllShaderUniformRead      = kGPUResourceState_VertexShaderUniformRead |
-                                                  kGPUResourceState_FragmentShaderUniformRead |
+                                                  kGPUResourceState_PixelShaderUniformRead |
                                                   kGPUResourceState_ComputeShaderUniformRead,
 
     /**
@@ -234,7 +234,7 @@ enum GPUResourceState : uint32_t
      * can be combined with shader read states, which makes it possible to read
      * from the portion of the texture which is indicated read-only in these
      * states. For example, kGPUResourceState_DepthReadStencilWrite can be
-     * combined with kGPUResourceState_FragmentShaderRead to allow reading the
+     * combined with kGPUResourceState_PixelShaderRead to allow reading the
      * depth portion of the texture while it is bound in the current render
      * pass.
      */
@@ -330,12 +330,12 @@ enum GPUStoreOp : uint8_t
 enum GPUShaderStage : uint8_t
 {
     kGPUShaderStage_Vertex,
-    kGPUShaderStage_Fragment,
+    kGPUShaderStage_Pixel,
 
     kGPUShaderStage_Compute,
 
     /** Number of graphics shader stages. They are numbered from 0. */
-    kGPUShaderStage_NumGraphics = kGPUShaderStage_Fragment + 1,
+    kGPUShaderStage_NumGraphics = kGPUShaderStage_Pixel + 1,
 };
 
 /** Array containing SPIR-V shader code. */
