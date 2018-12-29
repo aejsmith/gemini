@@ -16,3 +16,6 @@
 [submodule "Engine/3rdParty/imgui/Repo"]
 	path = Engine/3rdParty/imgui/Repo
 	url = https://github.com/ocornut/imgui.git
+[submodule "Engine/3rdParty/SPIRV-Reflect/Repo"]
+	path = Engine/3rdParty/SPIRV-Reflect/Repo
+	url = https://github.com/chaoticbob/SPIRV-Reflect.git

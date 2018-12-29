@@ -43,6 +43,7 @@ depends = [
     'Engine/Core',
     '3rdParty/imgui',
     '3rdParty/RapidJSON',
+    '3rdParty/SPIRV-Reflect',
     '3rdParty/VulkanMemoryAllocator',
     'External/shaderc',
 ]

@@ -3,6 +3,7 @@ SConscript(dirs = [
     'imgui',
     'Mustache',
     'RapidJSON',
+    'SPIRV-Reflect',
     'VulkanMemoryAllocator',
     'xxHash',
 ])

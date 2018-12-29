@@ -17,6 +17,7 @@
                 "${workspaceFolder}/Engine/3rdParty/imgui/Repo",
                 "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
                 "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
+                "${workspaceFolder}/Engine/3rdParty/SPIRV-Reflect/Repo",
                 "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
                 "${workspaceFolder}/Dependencies/Common/shaderc/Include",
                 "/usr/include/SDL2"

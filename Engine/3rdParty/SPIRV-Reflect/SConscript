@@ -1,0 +1,14 @@
+import Util
+
+Import('manager')
+
+env = manager.CreateEnvironment()
+
+env['CCFLAGS'] += ['-Wno-sign-compare']
+
+manager.AddComponent(
+    name = '3rdParty/SPIRV-Reflect',
+    includePath = ['Repo'],
+    objects = map(env.Object, [
+        'Repo/spirv_reflect.c',
+    ]))
