@@ -78,10 +78,12 @@ public:
                                                     const size_t                    inCount) = 0;
     void                            ResourceBarrier(GPUResource* const     inResource,
                                                     const GPUResourceState inCurrentState,
-                                                    const GPUResourceState inNewState);
+                                                    const GPUResourceState inNewState,
+                                                    const bool             inDiscard = false);
     void                            ResourceBarrier(GPUResourceView* const inView,
                                                     const GPUResourceState inCurrentState,
-                                                    const GPUResourceState inNewState);
+                                                    const GPUResourceState inNewState,
+                                                    const bool             inDiscard = false);
 
     /**
      * Clear a texture. This is a standalone clear, which requires the cleared
@@ -231,25 +233,29 @@ inline GPUTransferContext::GPUTransferContext(GPUDevice& inDevice) :
 
 inline void GPUTransferContext::ResourceBarrier(GPUResource* const     inResource,
                                                 const GPUResourceState inCurrentState,
-                                                const GPUResourceState inNewState)
+                                                const GPUResourceState inNewState,
+                                                const bool             inDiscard)
 {
     GPUResourceBarrier barrier = {};
     barrier.resource     = inResource;
     barrier.currentState = inCurrentState;
     barrier.newState     = inNewState;
+    barrier.discard      = inDiscard;
 
     ResourceBarrier(&barrier, 1);
 }
 
 inline void GPUTransferContext::ResourceBarrier(GPUResourceView* const inView,
                                                 const GPUResourceState inCurrentState,
-                                                const GPUResourceState inNewState)
+                                                const GPUResourceState inNewState,
+                                                const bool             inDiscard)
 {
     GPUResourceBarrier barrier = {};
     barrier.resource     = &inView->GetResource();
     barrier.range        = inView->GetSubresourceRange();
     barrier.currentState = inCurrentState;
     barrier.newState     = inNewState;
+    barrier.discard      = inDiscard;
 
     ResourceBarrier(&barrier, 1);
 }

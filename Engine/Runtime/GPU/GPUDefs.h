@@ -282,9 +282,19 @@ struct GPUResourceBarrier
     GPUResourceState            currentState;
     GPUResourceState            newState;
 
+    /**
+     * If true, the resource content will be invalidated by the transition.
+     * Should be used if the resource will be fully overwritten following the
+     * transition.
+     *
+     * This is only really applicable to textures: it can allow the driver to
+     * skip conversion of the content from one layout to another and instead
+     * just reinitialise the texture in the new state, which may be cheaper to
+     * do.
+     */
+    bool                        discard;
+
     // TODO: Ownership transfer.
-    // TODO: Allow discarding texture content rather than preserving it (e.g.
-    // UNDEFINED as previous Vulkan layout).
 };
 
 /** Data for clearing a texture. */

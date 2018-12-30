@@ -365,6 +365,13 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
             newImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         }
 
+        if (inBarriers[i].discard)
+        {
+            /* Undefined can always be specified as the old layout which
+             * indicates we don't care about current content. */
+            oldImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        }
+
         /* srcAccessMask can end up 0 e.g. for a read to write transition on a
          * buffer, or on a texture where a layout transition is not necessary.
          * If this happens we don't need a memory barrier, just an execution
