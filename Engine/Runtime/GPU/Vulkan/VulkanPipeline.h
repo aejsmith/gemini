@@ -37,3 +37,21 @@ private:
     VkPipelineLayout        mLayout;
 
 };
+
+class VulkanComputePipeline final : public GPUComputePipeline,
+                                    public VulkanDeviceChild<VulkanComputePipeline>
+{
+public:
+                            VulkanComputePipeline(VulkanDevice&                 inDevice,
+                                                  const GPUComputePipelineDesc& inDesc);
+
+                            ~VulkanComputePipeline();
+
+    VkPipeline              GetHandle() const { return mHandle; }
+    VkPipelineLayout        GetLayout() const { return mLayout; }
+
+private:
+    VkPipeline              mHandle;
+    VkPipelineLayout        mLayout;
+
+};

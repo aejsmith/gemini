@@ -22,25 +22,25 @@
 
 struct GPUPipelineDesc
 {
-    GPUShader*                  shaders[kGPUShaderStage_NumGraphics];
+    GPUShader*                      shaders[kGPUShaderStage_NumGraphics];
 
     /**
      * Argument set layouts for the pipeline. These are shared by all stages.
      * Null indicates that the set is not used by the pipeline.
      */
-    GPUArgumentSetLayoutRef     argumentSetLayouts[kMaxArgumentSets];
+    GPUArgumentSetLayoutRef         argumentSetLayouts[kMaxArgumentSets];
 
-    GPUBlendStateRef            blendState;
-    GPUDepthStencilStateRef     depthStencilState;
-    GPURasterizerStateRef       rasterizerState;
-    GPURenderTargetStateRef     renderTargetState;
-    GPUVertexInputStateRef      vertexInputState;
+    GPUBlendStateRef                blendState;
+    GPUDepthStencilStateRef         depthStencilState;
+    GPURasterizerStateRef           rasterizerState;
+    GPURenderTargetStateRef         renderTargetState;
+    GPUVertexInputStateRef          vertexInputState;
 
-    GPUPrimitiveTopology        topology;
+    GPUPrimitiveTopology            topology;
 
 public:
-                                GPUPipelineDesc();
-                                GPUPipelineDesc(const GPUPipelineDesc& inOther);
+                                    GPUPipelineDesc();
+                                    GPUPipelineDesc(const GPUPipelineDesc& inOther);
 
 };
 
@@ -80,25 +80,68 @@ inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& inOther)
 class GPUPipeline : public GPUObject
 {
 protected:
-                                GPUPipeline(GPUDevice&             inDevice,
-                                            const GPUPipelineDesc& inDesc);
-                                ~GPUPipeline();
+                                    GPUPipeline(GPUDevice&             inDevice,
+                                                const GPUPipelineDesc& inDesc);
+                                    ~GPUPipeline();
 
 public:
-    const GPUPipelineDesc&      GetDesc() const { return mDesc; }
+    const GPUPipelineDesc&          GetDesc() const { return mDesc; }
 
     /** Implementation detail for GPUDevice::CreatePipeline(). */
-    ReferencePtr<GPUPipeline>   CreatePtr(OnlyCalledBy<GPUDevice>);
+    ReferencePtr<GPUPipeline>       CreatePtr(OnlyCalledBy<GPUDevice>);
 
     /** Implementation detail for GPUDevice::DropPipeline(). */
-    void                        Destroy(OnlyCalledBy<GPUDevice>);
+    void                            Destroy(OnlyCalledBy<GPUDevice>);
 
 protected:
-    void                        Released() override;
+    void                            Released() override;
 
 protected:
-    const GPUPipelineDesc       mDesc;
+    const GPUPipelineDesc           mDesc;
 
 };
 
 using GPUPipelinePtr = ReferencePtr<GPUPipeline>;
+
+struct GPUComputePipelineDesc
+{
+    GPUShader*                      shader;
+
+    /**
+     * Argument set layouts for the pipeline. Null indicates that the set is
+     * not used by the pipeline.
+     */
+    GPUArgumentSetLayoutRef         argumentSetLayouts[kMaxArgumentSets];
+
+public:
+                                    GPUComputePipelineDesc();
+
+};
+
+inline GPUComputePipelineDesc::GPUComputePipelineDesc()
+{
+    memset(this, 0, sizeof(*this));
+}
+
+/**
+ * GPU compute pipeline state. This is just a combination of a compute shader
+ * and argument set layouts. For compute pipelines we only support pre-created
+ * pipelines rather than also allowing dynamically creating/caching them as we
+ * do for graphics pipelines.
+ */
+class GPUComputePipeline : public GPUObject
+{
+protected:
+                                    GPUComputePipeline(GPUDevice&                    inDevice,
+                                                       const GPUComputePipelineDesc& inDesc);
+                                    ~GPUComputePipeline();
+
+public:
+    const GPUComputePipelineDesc&   GetDesc() const { return mDesc; }
+
+protected:
+    const GPUComputePipelineDesc    mDesc;
+
+};
+
+using GPUComputePipelinePtr = ReferencePtr<GPUComputePipeline>;

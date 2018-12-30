@@ -272,3 +272,39 @@ VulkanPipeline::~VulkanPipeline()
             vkDestroyPipeline(inDevice.GetHandle(), handle, nullptr);
         });
 }
+
+VulkanComputePipeline::VulkanComputePipeline(VulkanDevice&                 inDevice,
+                                             const GPUComputePipelineDesc& inDesc) :
+    GPUComputePipeline  (inDevice, inDesc),
+    mHandle             (VK_NULL_HANDLE),
+    mLayout             (VK_NULL_HANDLE)
+{
+    VulkanPipelineLayoutKey layoutKey;
+    memcpy(layoutKey.argumentSetLayouts, inDesc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
+    mLayout = GetVulkanDevice().GetPipelineLayout(layoutKey);
+
+    const auto shader = static_cast<VulkanShader*>(inDesc.shader);
+
+    VkComputePipelineCreateInfo createInfo = {};
+    createInfo.sType        = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    createInfo.stage.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    createInfo.stage.stage  = VK_SHADER_STAGE_COMPUTE_BIT;
+    createInfo.stage.module = shader->GetHandle();
+    createInfo.stage.pName  = shader->GetFunction();
+    createInfo.layout       = mLayout;
+
+    VulkanCheck(vkCreateComputePipelines(GetVulkanDevice().GetHandle(),
+                                         GetVulkanDevice().GetDriverPipelineCache(),
+                                         1, &createInfo,
+                                         nullptr,
+                                         &mHandle));
+}
+
+VulkanComputePipeline::~VulkanComputePipeline()
+{
+    GetVulkanDevice().AddFrameCompleteCallback(
+        [handle = mHandle] (VulkanDevice& inDevice)
+        {
+            vkDestroyPipeline(inDevice.GetHandle(), handle, nullptr);
+        });
+}

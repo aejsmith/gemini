@@ -68,6 +68,56 @@ private:
 
 };
 
+class VulkanComputeCommandList final : public GPUComputeCommandList,
+                                       public VulkanCommandList<VulkanComputeCommandList>
+{
+public:
+                                    VulkanComputeCommandList(VulkanContext&                     inContext,
+                                                             const GPUComputeCommandList* const inParent);
+
+                                    ~VulkanComputeCommandList() {}
+
+    /**
+     * GPUComputeCommandList methods.
+     */
+public:
+    void                            Dispatch(const uint32_t inGroupCountX,
+                                             const uint32_t inGroupCountY,
+                                             const uint32_t inGroupCountZ) override;
+
+protected:
+    GPUCommandList*                 CreateChildImpl() override;
+
+    void                            EndImpl() override
+                                        { VulkanCommandList::EndImpl(); }
+
+    void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
+                                                       const size_t           inCount) override
+                                        { VulkanCommandList::SubmitChildrenImpl(inChildren, inCount); }
+
+    void                            SetArgumentsImpl(const uint8_t         inIndex,
+                                                     GPUArgumentSet* const inSet) override
+                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inSet); }
+
+    void                            SetArgumentsImpl(const uint8_t            inIndex,
+                                                     const GPUArgument* const inArguments) override
+                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inArguments); }
+
+    /**
+     * Internal methods.
+     */
+public:
+    void                            BeginCommandBuffer(const VkCommandBuffer inBuffer) const;
+
+    void                            Submit(const VkCommandBuffer inBuffer) const;
+
+private:
+    void                            PreDispatch();
+
+    friend class VulkanCommandList<VulkanComputeCommandList>;
+
+};
+
 class VulkanGraphicsCommandList final : public GPUGraphicsCommandList,
                                         public VulkanCommandList<VulkanGraphicsCommandList>
 {

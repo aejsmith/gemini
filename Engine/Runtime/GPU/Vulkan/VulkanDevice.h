@@ -55,6 +55,8 @@ public:
 
     GPUBufferPtr                        CreateBuffer(const GPUBufferDesc& inDesc) override;
 
+    GPUComputePipelinePtr               CreateComputePipeline(const GPUComputePipelineDesc& inDesc) override;
+
     GPUResourceViewPtr                  CreateResourceView(GPUResource* const         inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 

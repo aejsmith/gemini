@@ -75,3 +75,19 @@ void GPUPipeline::Destroy(OnlyCalledBy<GPUDevice>)
 {
     delete this;
 }
+
+GPUComputePipeline::GPUComputePipeline(GPUDevice&                    inDevice,
+                                       const GPUComputePipelineDesc& inDesc) :
+    GPUObject   (inDevice),
+    mDesc       (inDesc)
+{
+    Assert(mDesc.shader);
+    Assert(mDesc.shader->GetStage() == kGPUShaderStage_Compute);
+
+    mDesc.shader->Retain();
+}
+
+GPUComputePipeline::~GPUComputePipeline()
+{
+    mDesc.shader->Release();
+}

@@ -101,6 +101,8 @@ public:
 
     virtual GPUBufferPtr            CreateBuffer(const GPUBufferDesc& inDesc) = 0;
 
+    virtual GPUComputePipelinePtr   CreateComputePipeline(const GPUComputePipelineDesc& inDesc) = 0;
+
     GPUPipelinePtr                  CreatePipeline(const GPUPipelineDesc& inDesc);
 
     virtual GPUResourceViewPtr      CreateResourceView(GPUResource* const         inResource,

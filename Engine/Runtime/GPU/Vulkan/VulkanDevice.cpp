@@ -361,6 +361,11 @@ GPUBufferPtr VulkanDevice::CreateBuffer(const GPUBufferDesc& inDesc)
     return new VulkanBuffer(*this, inDesc);
 }
 
+GPUComputePipelinePtr VulkanDevice::CreateComputePipeline(const GPUComputePipelineDesc& inDesc)
+{
+    return new VulkanComputePipeline(*this, inDesc);
+}
+
 GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& inDesc)
 {
     return new VulkanPipeline(*this, inDesc);

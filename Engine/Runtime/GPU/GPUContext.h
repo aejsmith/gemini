@@ -157,6 +157,25 @@ public:
     virtual void                    BeginPresent(GPUSwapchain& inSwapchain) = 0;
     virtual void                    EndPresent(GPUSwapchain& inSwapchain) = 0;
 
+    /**
+     * Create a compute pass. This does not perform any work on the context,
+     * rather it returns a GPUComputeCommandList to record the commands for the
+     * pass on. Pass the command list to SubmitComputePass() once all commands
+     * have been recorded.
+     */
+    GPUComputeCommandList*          CreateComputePass();
+
+    /**
+     * Submit a compute pass. Passes need not be submitted in the same order
+     * they were created in, however they must be submitted within the same
+     * frame as they were created.
+     */
+    void                            SubmitComputePass(GPUComputeCommandList* const inCmdList);
+
+protected:
+    virtual GPUComputeCommandList*  CreateComputePassImpl() = 0;
+    virtual void                    SubmitComputePassImpl(GPUComputeCommandList* const inCmdList) = 0;
+
 protected:
     #if ORION_BUILD_DEBUG
 
@@ -183,14 +202,14 @@ public:
      * Create a render pass. This does not perform any work on the context,
      * rather it returns a GPUGraphicsCommandList to record the commands for
      * the pass on. Pass the command list to SubmitRenderPass() once all
-     * commands have been recorded. This will retain all views in the pass.
+     * commands have been recorded.
      */
     GPUGraphicsCommandList*         CreateRenderPass(const GPURenderPass& inRenderPass);
 
     /**
      * Submit a render pass. Passes need not be submitted in the same order
      * they were created in, however they must be submitted within the same
-     * frame as they were created. This will release all views in the pass.
+     * frame as they were created.
      */
     void                            SubmitRenderPass(GPUGraphicsCommandList* const inCmdList);
 
@@ -240,6 +259,27 @@ inline GPUComputeContext::GPUComputeContext(GPUDevice& inDevice) :
 {
     #if ORION_BUILD_DEBUG
         mActivePassCount = 0;
+    #endif
+}
+
+inline GPUComputeCommandList* GPUComputeContext::CreateComputePass()
+{
+    #if ORION_BUILD_DEBUG
+        mActivePassCount++;
+    #endif
+
+    return CreateComputePassImpl();
+}
+
+inline void GPUComputeContext::SubmitComputePass(GPUComputeCommandList* const inCmdList)
+{
+    Assert(!inCmdList->GetParent());
+    Assert(inCmdList->GetState() == GPUCommandList::kState_Ended);
+
+    SubmitComputePassImpl(inCmdList);
+
+    #if ORION_BUILD_DEBUG
+        mActivePassCount--;
     #endif
 }
 

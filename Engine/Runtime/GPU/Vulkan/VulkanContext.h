@@ -81,6 +81,10 @@ public:
     void                            BeginPresent(GPUSwapchain& inSwapchain) override;
     void                            EndPresent(GPUSwapchain& inSwapchain) override;
 
+protected:
+    GPUComputeCommandList*          CreateComputePassImpl() override;
+    void                            SubmitComputePassImpl(GPUComputeCommandList* const inCmdList) override;
+
     /**
      * GPUGraphicsContext methods.
      */

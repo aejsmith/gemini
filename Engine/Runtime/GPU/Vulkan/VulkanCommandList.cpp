@@ -196,6 +196,63 @@ inline void VulkanCommandList<T>::BindDescriptorSets(const VkPipelineBindPoint i
     }
 }
 
+VulkanComputeCommandList::VulkanComputeCommandList(VulkanContext&                     inContext,
+                                                   const GPUComputeCommandList* const inParent) :
+    GPUComputeCommandList   (inContext, inParent)
+{
+}
+
+void VulkanComputeCommandList::BeginCommandBuffer(const VkCommandBuffer inBuffer) const
+{
+    VkCommandBufferInheritanceInfo inheritanceInfo = {};
+    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags            = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    beginInfo.pInheritanceInfo = &inheritanceInfo;
+
+    VulkanCheck(vkBeginCommandBuffer(inBuffer, &beginInfo));
+}
+
+void VulkanComputeCommandList::Submit(const VkCommandBuffer inBuffer) const
+{
+    SubmitImpl(inBuffer);
+}
+
+GPUCommandList* VulkanComputeCommandList::CreateChildImpl()
+{
+    return new VulkanComputeCommandList(GetVulkanContext(), this);
+}
+
+void VulkanComputeCommandList::PreDispatch()
+{
+    const auto pipeline = static_cast<VulkanComputePipeline*>(mPipeline);
+
+    if (mPipelineDirty)
+    {
+        vkCmdBindPipeline(GetCommandBuffer(),
+                          VK_PIPELINE_BIND_POINT_COMPUTE,
+                          pipeline->GetHandle());
+
+        mPipelineDirty = false;
+    }
+
+    BindDescriptorSets(VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->GetLayout());
+}
+
+void VulkanComputeCommandList::Dispatch(const uint32_t inGroupCountX,
+                                        const uint32_t inGroupCountY,
+                                        const uint32_t inGroupCountZ)
+{
+    PreDispatch();
+
+    vkCmdDispatch(GetCommandBuffer(),
+                  inGroupCountX,
+                  inGroupCountY,
+                  inGroupCountZ);
+}
+
 VulkanGraphicsCommandList::VulkanGraphicsCommandList(VulkanContext&                      inContext,
                                                      const GPUGraphicsCommandList* const inParent,
                                                      const GPURenderPass&                inRenderPass) :

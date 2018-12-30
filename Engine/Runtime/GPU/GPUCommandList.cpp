@@ -96,6 +96,36 @@ void GPUCommandList::SetConstants(const uint8_t     inSetIndex,
     }
 }
 
+void GPUCommandList::ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&inLayouts)[kMaxArgumentSets])
+{
+    for (size_t setIndex = 0; setIndex < kMaxArgumentSets; setIndex++)
+    {
+        auto& argumentState = mArgumentState[setIndex];
+
+        const GPUArgumentSetLayoutRef layout = inLayouts[setIndex];
+
+        if (layout != argumentState.layout)
+        {
+            argumentState.layout = layout;
+            argumentState.dirty  = true;
+
+            if (layout->IsConstantOnly())
+            {
+                SetArgumentsImpl(setIndex, static_cast<const GPUArgument*>(nullptr));
+            }
+
+            #if ORION_BUILD_DEBUG
+                argumentState.valid = layout->IsConstantOnly();
+
+                for (auto& constants : argumentState.constants)
+                {
+                    constants = kGPUConstants_Invalid;
+                }
+            #endif
+        }
+    }
+}
+
 #ifdef ORION_BUILD_DEBUG
 
 void GPUCommandList::ValidateArguments() const
@@ -137,6 +167,32 @@ void GPUCommandList::WriteConstants(const uint8_t     inSetIndex,
     argumentState.dirty                      = true;
 }
 
+GPUComputeCommandList::GPUComputeCommandList(GPUComputeContext&                 inContext,
+                                             const GPUComputeCommandList* const inParent) :
+    GPUCommandList  (inContext, inParent),
+    mPipeline       (nullptr),
+    mPipelineDirty  (false)
+{
+}
+
+GPUComputeCommandList::~GPUComputeCommandList()
+{
+}
+
+void GPUComputeCommandList::SetPipeline(GPUComputePipeline* const inPipeline)
+{
+    Assert(inPipeline);
+
+    if (inPipeline != mPipeline)
+    {
+        mPipeline = inPipeline;
+
+        ChangeArgumentLayout(inPipeline->GetDesc().argumentSetLayouts);
+
+        mPipelineDirty = true;
+    }
+}
+
 GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
                                                const GPUGraphicsCommandList* const inParent,
                                                const GPURenderPass&                inRenderPass) :
@@ -176,32 +232,7 @@ void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
     {
         mPipeline = inPipeline;
 
-        for (size_t setIndex = 0; setIndex < kMaxArgumentSets; setIndex++)
-        {
-            auto& argumentState = mArgumentState[setIndex];
-
-            const GPUArgumentSetLayoutRef layout = inPipeline->GetDesc().argumentSetLayouts[setIndex];
-
-            if (layout != argumentState.layout)
-            {
-                argumentState.layout = layout;
-                argumentState.dirty  = true;
-
-                if (layout->IsConstantOnly())
-                {
-                    SetArgumentsImpl(setIndex, static_cast<const GPUArgument*>(nullptr));
-                }
-
-                #if ORION_BUILD_DEBUG
-                    argumentState.valid = layout->IsConstantOnly();
-
-                    for (auto& constants : argumentState.constants)
-                    {
-                        constants = kGPUConstants_Invalid;
-                    }
-                #endif
-            }
-        }
+        ChangeArgumentLayout(inPipeline->GetDesc().argumentSetLayouts);
 
         mDirtyState |= kDirtyState_Pipeline;
     }
@@ -260,10 +291,4 @@ void GPUGraphicsCommandList::SetIndexBuffer(const GPUIndexType inType,
 
         mDirtyState |= kDirtyState_IndexBuffer;
     }
-}
-
-GPUComputeCommandList::GPUComputeCommandList(GPUComputeContext&                 inContext,
-                                             const GPUComputeCommandList* const inParent) :
-    GPUCommandList (inContext, inParent)
-{
 }

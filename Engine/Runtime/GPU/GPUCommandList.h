@@ -25,6 +25,7 @@
 class GPUBuffer;
 class GPUContext;
 class GPUComputeContext;
+class GPUComputePipeline;
 class GPUGraphicsContext;
 class GPUPipeline;
 
@@ -205,6 +206,8 @@ protected:
     };
 
 protected:
+    void                            ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&inLayouts)[kMaxArgumentSets]);
+
     /**
      * Validate that the command list is in the correct state and that it is
      * being used from the correct thread.
@@ -248,6 +251,41 @@ protected:
     std::atomic<size_t>             mActiveChildCount;
 
     #endif
+};
+
+class GPUComputeCommandList : public GPUCommandList
+{
+protected:
+                                    GPUComputeCommandList(GPUComputeContext&                 inContext,
+                                                          const GPUComputeCommandList* const inParent);
+                                    ~GPUComputeCommandList();
+
+public:
+    /**
+     * See GPUCommandList::CreateChild(). This is the same but returns a
+     * GPUComputeCommandList instead.
+     */
+    GPUComputeCommandList*          CreateChild()
+                                        { return static_cast<GPUComputeCommandList*>(GPUCommandList::CreateChild()); }
+
+    /**
+     * Set the compute pipeline to use for subsequent dispatches.
+     *
+     * For each argument set index, if the new pipeline's layout at that index
+     * differs from the old pipeline's, then any bound arguments at that index
+     * will be unbound. Otherwise, bound arguments will remain bound.
+     */
+    void                            SetPipeline(GPUComputePipeline* const inPipeline);
+
+    virtual void                    Dispatch(const uint32_t inGroupCountX,
+                                             const uint32_t inGroupCountY,
+                                             const uint32_t inGroupCountZ) = 0;
+
+protected:
+    GPUComputePipeline*             mPipeline;
+
+    bool                            mPipelineDirty : 1;
+
 };
 
 class GPUGraphicsCommandList : public GPUCommandList
@@ -343,23 +381,6 @@ protected:
     IntRect                         mScissor;
     VertexBuffer                    mVertexBuffers[kMaxVertexAttributes];
     IndexBuffer                     mIndexBuffer;
-
-};
-
-class GPUComputeCommandList : public GPUCommandList
-{
-protected:
-                                    GPUComputeCommandList(GPUComputeContext&                 inContext,
-                                                          const GPUComputeCommandList* const inParent);
-                                    ~GPUComputeCommandList() {}
-
-public:
-    /**
-     * See GPUCommandList::CreateChild(). This is the same but returns a
-     * GPUComputeCommandList instead.
-     */
-    GPUComputeCommandList*          CreateChild()
-                                        { return static_cast<GPUComputeCommandList*>(GPUCommandList::CreateChild()); }
 
 };
 
