@@ -413,23 +413,26 @@ void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
     }
 
     // TODO: Could batch these.
-    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    if (mDirtyVertexBuffers.any())
     {
-        auto& vertexBuffer = mVertexBuffers[i];
-
-        if (vertexBuffer.dirty && vertexBuffer.buffer)
+        for (size_t i = 0; i < kMaxVertexAttributes; i++)
         {
-            const auto buffer         = static_cast<VulkanBuffer*>(vertexBuffer.buffer);
-            const VkBuffer handle     = buffer->GetHandle();
-            const VkDeviceSize offset = vertexBuffer.offset;
+            auto& vertexBuffer = mVertexBuffers[i];
 
-            vkCmdBindVertexBuffers(GetCommandBuffer(),
-                                   i,
-                                   1,
-                                   &handle,
-                                   &offset);
+            if (mDirtyVertexBuffers.test(i) && vertexBuffer.buffer)
+            {
+                const auto buffer         = static_cast<VulkanBuffer*>(vertexBuffer.buffer);
+                const VkBuffer handle     = buffer->GetHandle();
+                const VkDeviceSize offset = vertexBuffer.offset;
 
-            vertexBuffer.dirty = false;
+                vkCmdBindVertexBuffers(GetCommandBuffer(),
+                                    i,
+                                    1,
+                                    &handle,
+                                    &offset);
+
+                mDirtyVertexBuffers.reset(i);
+            }
         }
     }
 

@@ -275,7 +275,8 @@ void GPUGraphicsCommandList::SetVertexBuffer(const uint32_t   inIndex,
     {
         vertexBuffer.buffer = inBuffer;
         vertexBuffer.offset = inOffset;
-        vertexBuffer.dirty  = true;
+
+        mDirtyVertexBuffers.set(inIndex);
     }
 }
 
