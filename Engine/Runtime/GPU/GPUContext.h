@@ -58,6 +58,13 @@ public:
      */
     virtual void                    Wait(GPUContext& inOtherContext) = 0;
 
+protected:
+    /**
+     * Called by every public context method to verify that the context is
+     * being used from the main thread. Does nothing on non-debug builds.
+     */
+    void                            ValidateContext() const;
+
 };
 
 class GPUTransferContext : public GPUContext
@@ -226,6 +233,11 @@ inline GPUContext::GPUContext(GPUDevice& inDevice) :
 {
 }
 
+inline void GPUContext::ValidateContext() const
+{
+    Assert(Thread::IsMain());
+}
+
 inline GPUTransferContext::GPUTransferContext(GPUDevice& inDevice) :
     GPUContext          (inDevice)
 {
@@ -270,6 +282,8 @@ inline GPUComputeContext::GPUComputeContext(GPUDevice& inDevice) :
 
 inline GPUComputeCommandList* GPUComputeContext::CreateComputePass()
 {
+    ValidateContext();
+
     #if ORION_BUILD_DEBUG
         mActivePassCount++;
     #endif
@@ -279,6 +293,8 @@ inline GPUComputeCommandList* GPUComputeContext::CreateComputePass()
 
 inline void GPUComputeContext::SubmitComputePass(GPUComputeCommandList* const inCmdList)
 {
+    ValidateContext();
+
     Assert(!inCmdList->GetParent());
     Assert(inCmdList->GetState() == GPUCommandList::kState_Ended);
 
@@ -296,6 +312,8 @@ inline GPUGraphicsContext::GPUGraphicsContext(GPUDevice& inDevice) :
 
 inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURenderPass& inRenderPass)
 {
+    ValidateContext();
+
     #if ORION_BUILD_DEBUG
         mActivePassCount++;
         inRenderPass.Validate();
@@ -306,6 +324,8 @@ inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURen
 
 inline void GPUGraphicsContext::SubmitRenderPass(GPUGraphicsCommandList* const inCmdList)
 {
+    ValidateContext();
+
     Assert(!inCmdList->GetParent());
     Assert(inCmdList->GetState() == GPUCommandList::kState_Ended);
 

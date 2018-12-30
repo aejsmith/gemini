@@ -433,6 +433,8 @@ inline GPUCommandList* GPUCommandList::CreateChild()
 inline void GPUCommandList::SubmitChildren(GPUCommandList** const inChildren,
                                            const size_t           inCount)
 {
+    ValidateCommand();
+
     #if ORION_BUILD_DEBUG
         for (size_t i = 0; i < inCount; i++)
         {

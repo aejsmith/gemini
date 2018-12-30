@@ -147,6 +147,8 @@ void VulkanContext::Wait(const VkSemaphore inSemaphore)
 
 void VulkanContext::Wait(GPUContext& inOtherContext)
 {
+    ValidateContext();
+
     Fatal("TODO");
 }
 
@@ -180,6 +182,8 @@ void VulkanContext::EndFrame()
 
 void VulkanContext::BeginPresent(GPUSwapchain& inSwapchain)
 {
+    ValidateContext();
+
     auto& swapchain = static_cast<VulkanSwapchain&>(inSwapchain);
 
     /* Get a semaphore to be signalled when the swapchain image is available to
@@ -196,6 +200,8 @@ void VulkanContext::BeginPresent(GPUSwapchain& inSwapchain)
 
 void VulkanContext::EndPresent(GPUSwapchain& inSwapchain)
 {
+    ValidateContext();
+
     auto& swapchain = static_cast<VulkanSwapchain&>(inSwapchain);
 
     /* We need to signal a semaphore after rendering to the swapchain is
@@ -212,6 +218,8 @@ void VulkanContext::EndPresent(GPUSwapchain& inSwapchain)
 void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
                                     const size_t                    inCount)
 {
+    ValidateContext();
+
     Assert(inCount > 0);
 
     /* Determine how many barrier structures we're going to need. */
@@ -436,6 +444,8 @@ void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
                                  const GPUTextureClearData& inData,
                                  const GPUSubresourceRange& inRange)
 {
+    ValidateContext();
+
     auto texture = static_cast<VulkanTexture*>(inTexture);
     auto range   = texture->GetExactSubresourceRange(inRange);
 
@@ -495,6 +505,8 @@ void VulkanContext::UploadBuffer(GPUBuffer* const        inDestBuffer,
                                  const uint32_t          inDestOffset,
                                  const uint32_t          inSourceOffset)
 {
+    ValidateContext();
+
     Assert(inSourceBuffer.IsFinalised());
     Assert(inSourceBuffer.GetAccess() == kGPUStagingAccess_Write);
 
@@ -515,6 +527,8 @@ void VulkanContext::UploadBuffer(GPUBuffer* const        inDestBuffer,
 void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
                                   const GPUStagingTexture& inSourceTexture)
 {
+    ValidateContext();
+
     Assert(inSourceTexture.IsFinalised());
     Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
     Assert(inDestTexture->SizeMatches(inSourceTexture));
@@ -565,6 +579,8 @@ void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
                                   const GPUSubresource     inSourceSubresource,
                                   const glm::ivec3&        inSourceOffset)
 {
+    ValidateContext();
+
     Assert(inSourceTexture.IsFinalised());
     Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
     Assert(inDestTexture->GetFormat() == inSourceTexture.GetFormat());

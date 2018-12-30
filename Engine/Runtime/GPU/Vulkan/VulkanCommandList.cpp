@@ -63,8 +63,6 @@ inline void VulkanCommandList<T>::SubmitImpl(const VkCommandBuffer inBuffer) con
 template <typename T>
 inline void VulkanCommandList<T>::EndImpl()
 {
-    GetT().ValidateCommand();
-
     if (mCommandBuffer != VK_NULL_HANDLE)
     {
         VulkanCheck(vkEndCommandBuffer(mCommandBuffer));
