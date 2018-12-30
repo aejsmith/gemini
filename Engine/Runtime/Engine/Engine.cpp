@@ -18,6 +18,7 @@
 
 #include "Core/Filesystem.h"
 #include "Core/String.h"
+#include "Core/Thread.h"
 #include "Core/Time.h"
 
 #include "Engine/AssetManager.h"
@@ -49,6 +50,8 @@ Engine::Engine() :
     mFramesSinceFPSUpdate   (0),
     mFPS                    (0.0f)
 {
+    Thread::Init({});
+
     LogInfo("Hello, World!");
 
     /* Find the game class and get the engine configuration from it. */

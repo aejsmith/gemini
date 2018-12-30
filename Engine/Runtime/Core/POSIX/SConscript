@@ -4,6 +4,7 @@ objects = SConscript(dirs = [env['PLATFORM']])
 
 objects += map(env.Object, [
     'Filesystem.cpp',
+    'Thread.cpp',
 ])
 
 Return('objects')

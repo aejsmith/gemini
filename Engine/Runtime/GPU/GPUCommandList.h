@@ -16,11 +16,12 @@
 
 #pragma once
 
+#include "Core/Thread.h"
+
 #include "GPU/GPUArgumentSet.h"
 #include "GPU/GPURenderPass.h"
 
 #include <atomic>
-#include <thread>
 
 class GPUBuffer;
 class GPUContext;
@@ -247,7 +248,7 @@ protected:
 
     #if ORION_BUILD_DEBUG
 
-    std::thread::id                 mOwningThread;
+    ThreadID                        mOwningThread;
     std::atomic<size_t>             mActiveChildCount;
 
     #endif
@@ -392,7 +393,7 @@ inline void GPUCommandList::Begin()
     mState = kState_Begun;
 
     #if ORION_BUILD_DEBUG
-        mOwningThread = std::this_thread::get_id();
+        mOwningThread = Thread::GetCurrentID();
     #endif
 }
 
@@ -408,7 +409,7 @@ inline void GPUCommandList::End()
 inline void GPUCommandList::ValidateCommand() const
 {
     Assert(mState == kState_Begun);
-    Assert(mOwningThread == std::this_thread::get_id());
+    Assert(mOwningThread == Thread::GetCurrentID());
 }
 
 #ifndef ORION_BUILD_DEBUG

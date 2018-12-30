@@ -174,3 +174,6 @@ extern void LogImpl(const LogLevel    inLevel,
 
 #define LogMessage(inLevel, inFormat, ...) \
     LogImpl(inLevel, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+
+/** Type of a thread identifier. */
+using ThreadID = size_t;

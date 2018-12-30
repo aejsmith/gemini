@@ -18,6 +18,7 @@ objects = map(env.Object, [
     'PixelFormat.cpp',
     'RefCounted.cpp',
     'String.cpp',
+    'Thread.cpp',
 ])
 
 manager.AddComponent(
