@@ -267,9 +267,8 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
 VulkanPipeline::~VulkanPipeline()
 {
     GetVulkanDevice().AddFrameCompleteCallback(
-        [handle = mHandle, layout = mLayout] (VulkanDevice& inDevice)
+        [handle = mHandle] (VulkanDevice& inDevice)
         {
-            vkDestroyPipelineLayout(inDevice.GetHandle(), layout, nullptr);
             vkDestroyPipeline(inDevice.GetHandle(), handle, nullptr);
         });
 }
