@@ -33,40 +33,96 @@
 #include "Render/RenderLayer.h"
 #include "Render/ShaderManager.h"
 
+#include <thread>
+
+static const uint32_t kNumColumns  = 100;
+static const uint32_t kNumRows     = 50;
+static const uint32_t kRepeat      = 10;
+static const uint32_t kThreadCount = 4;
+
+/* Leave spacing between them. */
+static const uint32_t kTotalNumColumns = (kNumColumns * 2) + 1;
+static const uint32_t kTotalNumRows    = (kNumRows * 2) + 1;
+
 class TestRenderLayer final : public RenderLayer
 {
 public:
-                            TestRenderLayer();
-                            ~TestRenderLayer() {}
+                                TestRenderLayer();
+                                ~TestRenderLayer() {}
 
 public:
-    void                    Render() override;
+    void                        Initialise();
+
+    void                        Render() override;
 
 private:
-    GPUShaderPtr            mVertexShader;
-    GPUShaderPtr            mPixelShader;
-    GPUArgumentSetLayoutRef mArgumentLayout;
-    GPUBufferPtr            mVertexBuffer;
-    GPUVertexInputStateRef  mVertexInputState;
+    struct Worker
+    {
+        std::thread             thread;
+        std::atomic<bool>       ready       {false};
+        uint32_t                rowOffset;
+        uint32_t                rowCount;
+        GPUGraphicsCommandList* cmdList;
+    };
+
+private:
+    void                        WorkerThread(const uint32_t inIndex);
+
+private:
+    GPUTexturePtr               mDepthBuffer;
+    GPUResourceViewPtr          mDepthView;
+    GPUShaderPtr                mVertexShader;
+    GPUShaderPtr                mPixelShader;
+    GPUArgumentSetLayoutRef     mArgumentLayout;
+    GPUBufferPtr                mVertexBuffer;
+    GPUVertexInputStateRef      mVertexInputState;
+
+    Worker                      mWorkers[kThreadCount];
+    std::atomic<uint32_t>       mThreadsActive;
 };
 
-static const glm::vec2 kVertices[3] =
+struct Vertex
 {
-    glm::vec2(-0.3f, -0.4f),
-    glm::vec2( 0.3f, -0.4f),
-    glm::vec2( 0.0f,  0.4f)
+    glm::vec2                   position;
+    glm::vec4                   colour;
 };
 
-static const glm::vec4 kColours[3] =
+static const Vertex kVertices[3] =
 {
-    glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-    glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
-    glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
+    { glm::vec2(-1.0f, -1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) },
+    { glm::vec2( 1.0f, -1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f) },
+    { glm::vec2( 0.0f,  1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f) },
 };
 
 TestRenderLayer::TestRenderLayer() :
     RenderLayer (RenderLayer::kOrder_World)
 {
+}
+
+void TestRenderLayer::Initialise()
+{
+    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+
+    const auto& colourTexture = static_cast<GPUTexture&>(GetLayerOutput()->GetRenderTargetView()->GetResource());
+
+    GPUTextureDesc depthBufferDesc;
+    depthBufferDesc.type   = kGPUResourceType_Texture2D;
+    depthBufferDesc.usage  = kGPUResourceUsage_DepthStencil;
+    depthBufferDesc.format = PixelFormat::kDepth32;
+    depthBufferDesc.width  = colourTexture.GetWidth();
+    depthBufferDesc.height = colourTexture.GetHeight();
+
+    mDepthBuffer = GPUDevice::Get().CreateTexture(depthBufferDesc);
+
+    graphicsContext.ResourceBarrier(mDepthBuffer, kGPUResourceState_None, kGPUResourceState_DepthStencilWrite);
+
+    GPUResourceViewDesc depthViewDesc;
+    depthViewDesc.type   = kGPUResourceViewType_Texture2D;
+    depthViewDesc.usage  = kGPUResourceUsage_DepthStencil;
+    depthViewDesc.format = depthBufferDesc.format;
+
+    mDepthView = GPUDevice::Get().CreateResourceView(mDepthBuffer, depthViewDesc);
+
     mVertexShader  = ShaderManager::Get().GetShader("Game/Test.hlsl", "VSMain", kGPUShaderStage_Vertex);
     mPixelShader   = ShaderManager::Get().GetShader("Game/Test.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
@@ -82,11 +138,15 @@ TestRenderLayer::TestRenderLayer() :
     mVertexBuffer = GPUDevice::Get().CreateBuffer(vertexBufferDesc);
 
     GPUVertexInputStateDesc vertexInputDesc;
-    vertexInputDesc.buffers[0].stride    = sizeof(glm::vec2);
+    vertexInputDesc.buffers[0].stride    = sizeof(Vertex);
     vertexInputDesc.attributes[0].semantic = kGPUAttributeSemantic_Position;
     vertexInputDesc.attributes[0].format   = kGPUAttributeFormat_R32G32_Float;
     vertexInputDesc.attributes[0].buffer   = 0;
-    vertexInputDesc.attributes[0].offset   = 0;
+    vertexInputDesc.attributes[0].offset   = offsetof(Vertex, position);
+    vertexInputDesc.attributes[1].semantic = kGPUAttributeSemantic_Colour;
+    vertexInputDesc.attributes[1].format   = kGPUAttributeFormat_R32G32B32A32_Float;
+    vertexInputDesc.attributes[1].buffer   = 0;
+    vertexInputDesc.attributes[1].offset   = offsetof(Vertex, colour);
 
     mVertexInputState = GPUVertexInputState::Get(vertexInputDesc);
 
@@ -94,11 +154,86 @@ TestRenderLayer::TestRenderLayer() :
     stagingBuffer.Write(kVertices, sizeof(kVertices));
     stagingBuffer.Finalise();
 
-    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
-
     graphicsContext.UploadBuffer(mVertexBuffer, stagingBuffer, sizeof(kVertices));
 
     graphicsContext.ResourceBarrier(mVertexBuffer, kGPUResourceState_TransferWrite, kGPUResourceState_AllShaderRead);
+
+    for (uint32_t i = 0; i < kThreadCount; i++)
+    {
+        mWorkers[i].thread = std::thread(&TestRenderLayer::WorkerThread, this, i);
+    }
+}
+
+void TestRenderLayer::WorkerThread(const uint32_t inIndex)
+{
+    Worker& worker = mWorkers[inIndex];
+
+    while (true)
+    {
+        while (!worker.ready.load(std::memory_order_acquire))
+        {
+            std::this_thread::yield();
+        }
+
+        worker.ready.store(false, std::memory_order_release);
+
+        GPUGraphicsCommandList* cmdList = worker.cmdList;
+        cmdList->Begin();
+
+        GPUDepthStencilStateDesc depthDesc;
+        depthDesc.depthTestEnable  = true;
+        depthDesc.depthWriteEnable = true;
+        depthDesc.depthCompareOp   = kGPUCompareOp_Less;
+
+        // TODO: Change to pre-created, measure perf.
+        GPUPipelineDesc pipelineDesc;
+        pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
+        pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
+        pipelineDesc.argumentSetLayouts[0]           = mArgumentLayout;
+        pipelineDesc.blendState                      = GPUBlendState::Get(GPUBlendStateDesc());
+        pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(depthDesc);
+        pipelineDesc.rasterizerState                 = GPURasterizerState::Get(GPURasterizerStateDesc());
+        pipelineDesc.renderTargetState               = cmdList->GetRenderTargetState();
+        pipelineDesc.vertexInputState                = mVertexInputState;
+        pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
+
+        cmdList->SetPipeline(pipelineDesc);
+        cmdList->SetVertexBuffer(0, mVertexBuffer);
+
+        const auto& texture       = static_cast<GPUTexture&>(GetLayerOutput()->GetRenderTargetView()->GetResource());
+        const float textureWidth  = static_cast<float>(texture.GetWidth());
+        const float textureHeight = static_cast<float>(texture.GetHeight());
+        const float cellWidth     = 2.0f * ((textureWidth / static_cast<float>(kTotalNumColumns)) / textureWidth);
+        const float cellHeight    = 2.0f * ((textureHeight / static_cast<float>(kTotalNumRows)) / textureHeight);
+
+        Transform transform;
+        transform.SetScale(glm::vec3(cellWidth / 2.0f, cellHeight / 2.0f, 1.0f));
+
+        for (uint32_t y = worker.rowOffset; y < worker.rowOffset + worker.rowCount; y++)
+        {
+            if (!(y & 1)) continue;
+
+            for (uint32_t x = 0; x < kTotalNumColumns; x++)
+            {
+                if (!(x & 1)) continue;
+
+                transform.SetPosition(glm::vec3((cellWidth * (0.5f + x)) - 1.0f,
+                                                (cellHeight * (0.5f + y)) - 1.0f,
+                                                0.0f));
+
+                cmdList->WriteConstants(0, 0, &transform.GetMatrix(), sizeof(transform.GetMatrix()));
+
+                for (uint32_t i = 0; i < kRepeat; i++)
+                {
+                    cmdList->Draw(3);
+                }
+            }
+        }
+
+        cmdList->End();
+
+        mThreadsActive.fetch_sub(1, std::memory_order_release);
+    }
 }
 
 void TestRenderLayer::Render()
@@ -107,27 +242,39 @@ void TestRenderLayer::Render()
 
     GPURenderPass renderPass;
     renderPass.SetColour(0, GetLayerOutput()->GetRenderTargetView());
-    renderPass.ClearColour(0, glm::vec4(0.0f, 0.2f, 0.4f, 1.0f));
+    renderPass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    renderPass.SetDepthStencil(mDepthView);
+    renderPass.ClearDepth(1.0);
 
     GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
     cmdList->Begin();
 
-    GPUPipelineDesc pipelineDesc;
-    pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
-    pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
-    pipelineDesc.argumentSetLayouts[0]           = mArgumentLayout;
-    pipelineDesc.blendState                      = GPUBlendState::Get(GPUBlendStateDesc());
-    pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
-    pipelineDesc.rasterizerState                 = GPURasterizerState::Get(GPURasterizerStateDesc());
-    pipelineDesc.renderTargetState               = cmdList->GetRenderTargetState();
-    pipelineDesc.vertexInputState                = mVertexInputState;
-    pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
+    const uint32_t numRowsRounded = RoundUp(kTotalNumRows, kThreadCount);
+    const uint32_t rowsPerThread  = numRowsRounded / kThreadCount;
 
-    cmdList->SetPipeline(pipelineDesc);
-    cmdList->SetVertexBuffer(0, mVertexBuffer);
-    cmdList->WriteConstants(0, 0, kColours, sizeof(kColours));
+    GPUCommandList* children[kThreadCount];
 
-    cmdList->Draw(3);
+    mThreadsActive.store(kThreadCount);
+
+    for (uint32_t i = 0; i < kThreadCount; i++)
+    {
+        Worker& worker = mWorkers[i];
+
+        worker.rowOffset = i * rowsPerThread;
+        worker.rowCount  = std::min(worker.rowOffset + rowsPerThread, kTotalNumRows) - worker.rowOffset;
+        worker.cmdList   = cmdList->CreateChild();
+
+        children[i] = worker.cmdList;
+
+        worker.ready.store(true, std::memory_order_release);
+    }
+
+    while (mThreadsActive.load(std::memory_order_acquire) > 0)
+    {
+        std::this_thread::yield();
+    }
+
+    cmdList->SubmitChildren(children, kThreadCount);
 
     cmdList->End();
     graphicsContext.SubmitRenderPass(cmdList);
@@ -146,11 +293,12 @@ void TestGame::Init()
 {
     mRenderLayer = new TestRenderLayer;
     mRenderLayer->SetLayerOutput(&MainWindow::Get());
+    mRenderLayer->Initialise();
     mRenderLayer->ActivateLayer();
 
     Engine::Get().LoadWorld("Game/Worlds/Test");
 
-    World* world = Engine::Get().GetWorld();
+    //World* world = Engine::Get().GetWorld();
 
     //Entity* entity1 = world->CreateEntity("Test");
     //entity1->Translate(glm::vec3(0.0f, 1.5f, 0.0f));

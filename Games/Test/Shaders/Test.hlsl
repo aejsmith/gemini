@@ -17,7 +17,7 @@
 struct VSInput
 {
     float2      position    : POSITION;
-    uint        vertexID    : SV_VERTEXID;
+    float4      colour      : COLOR;
 };
 
 struct PSInput
@@ -28,14 +28,14 @@ struct PSInput
 
 cbuffer Constants : register(b0, space0)
 {
-    float4      colours[3];
+    float4x4    transform;
 };
 
 PSInput VSMain(VSInput input)
 {
     PSInput output;
-    output.position = float4(input.position, 0.0, 1.0);
-    output.colour   = colours[input.vertexID % 3];
+    output.position = mul(transform, float4(input.position, 0.0, 1.0));
+    output.colour   = input.colour;
     return output;
 }
 
