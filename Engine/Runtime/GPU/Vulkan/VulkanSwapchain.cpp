@@ -40,7 +40,11 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& inDevice,
 
 VulkanSwapchain::~VulkanSwapchain()
 {
-    mTexture.Reset();
+    delete mRenderTargetView;
+    mRenderTargetView = nullptr;
+
+    delete mTexture;
+    mTexture = nullptr;
 
     if (mHandle != VK_NULL_HANDLE)
     {
@@ -289,11 +293,11 @@ void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
     }
 
     /* Update the texture and views to refer to the current image. */
-    auto& texture = static_cast<VulkanTexture&>(*mTexture);
-    texture.SetImage(mImages[mCurrentImage], {});
+    auto texture = static_cast<VulkanTexture*>(mTexture);
+    texture->SetImage(mImages[mCurrentImage], {});
 
-    auto& view = static_cast<VulkanResourceView&>(*mRenderTargetView);
-    view.SetImageView(mImageViews[mCurrentImage], {});
+    auto view = static_cast<VulkanResourceView*>(mRenderTargetView);
+    view->SetImageView(mImageViews[mCurrentImage], {});
 }
 
 void VulkanSwapchain::Present(const VkQueue     inQueue,

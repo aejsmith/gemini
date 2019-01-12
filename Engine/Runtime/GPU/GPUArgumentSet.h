@@ -128,9 +128,9 @@ protected:
                                                    const GPUArgumentSetLayoutRef inLayout,
                                                    const GPUArgument* const      inArguments);
 
+public:
                                     ~GPUArgumentSet();
 
-public:
     GPUArgumentSetLayoutRef         GetLayout() const { return mLayout; }
 
     static void                     ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
@@ -140,8 +140,6 @@ private:
     const GPUArgumentSetLayoutRef   mLayout;
 
 };
-
-using GPUArgumentSetPtr = ReferencePtr<GPUArgumentSet>;
 
 #ifndef ORION_BUILD_DEBUG
 

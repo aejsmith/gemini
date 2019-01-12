@@ -51,6 +51,7 @@ class ImGUIRenderLayer final : public RenderLayer
 {
 public:
                             ImGUIRenderLayer();
+                            ~ImGUIRenderLayer();
 
 public:
     void                    Render() override;
@@ -59,8 +60,8 @@ private:
     GPUShaderPtr            mVertexShader;
     GPUShaderPtr            mPixelShader;
     GPUPipelinePtr          mPipeline;
-    GPUTexturePtr           mFontTexture;
-    GPUResourceViewPtr      mFontView;
+    GPUTexture*             mFontTexture;
+    GPUResourceView*        mFontView;
     GPUSamplerRef           mSampler;
 
 };
@@ -282,6 +283,12 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
     mSampler = GPUDevice::Get().GetSampler(samplerDesc);
 }
 
+ImGUIRenderLayer::~ImGUIRenderLayer()
+{
+    delete mFontView;
+    delete mFontTexture;
+}
+
 void ImGUIRenderLayer::Render()
 {
     ImGui::Render();
@@ -318,7 +325,7 @@ void ImGUIRenderLayer::Render()
     cmdList->WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
 
     /* Keep created buffers alive until we submit the command list. */
-    std::vector<GPUBufferPtr> buffers;
+    std::vector<GPUBuffer*> buffers;
 
     GPUStagingBuffer stagingBuffer(GPUDevice::Get());
 
@@ -338,7 +345,7 @@ void ImGUIRenderLayer::Render()
         GPUBufferDesc bufferDesc;
         bufferDesc.size = bufferSize;
 
-        GPUBufferPtr buffer = GPUDevice::Get().CreateBuffer(bufferDesc);
+        GPUBuffer* buffer = GPUDevice::Get().CreateBuffer(bufferDesc);
 
         graphicsContext.UploadBuffer(buffer, stagingBuffer, bufferSize);
         graphicsContext.ResourceBarrier(buffer,
@@ -348,7 +355,7 @@ void ImGUIRenderLayer::Render()
         cmdList->SetVertexBuffer(0, buffer, 0);
         cmdList->SetIndexBuffer(kGPUIndexType_16, buffer, vertexDataSize);
 
-        buffers.emplace_back(std::move(buffer));
+        buffers.emplace_back(buffer);
 
         size_t indexOffset = 0;
 
@@ -368,4 +375,9 @@ void ImGUIRenderLayer::Render()
 
     cmdList->End();
     graphicsContext.SubmitRenderPass(cmdList);
+
+    for (GPUBuffer* buffer : buffers)
+    {
+        delete buffer;
+    }
 }

@@ -20,8 +20,6 @@
 
 #include "VulkanDeviceChild.h"
 
-#include "Core/RefCounted.h"
-
 #include <vector>
 
 class VulkanTexture;

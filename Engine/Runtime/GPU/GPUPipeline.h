@@ -77,7 +77,8 @@ inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& inOther)
  * Pre-created pipelines should be preferred, since they won't result in draw-
  * time hitching if a new pipeline needs to be created.
  */
-class GPUPipeline : public GPUObject
+class GPUPipeline : public GPUObject,
+                    public RefCounted
 {
 protected:
                                     GPUPipeline(GPUDevice&             inDevice,
@@ -143,5 +144,3 @@ protected:
     const GPUComputePipelineDesc    mDesc;
 
 };
-
-using GPUComputePipelinePtr = ReferencePtr<GPUComputePipeline>;

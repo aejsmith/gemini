@@ -53,7 +53,8 @@ struct GPUResourceViewDesc
 
 /**
  * A view into a part of a resource, used for binding resources to shaders and
- * for use as a render target.
+ * for use as a render target. A view's resource must be kept alive as long as
+ * the view.
  */
 class GPUResourceView : public GPUObject
 {
@@ -61,9 +62,9 @@ protected:
                                 GPUResourceView(GPUResource&               inResource,
                                                 const GPUResourceViewDesc& inDesc);
 
+public:
                                 ~GPUResourceView() {}
 
-public:
     GPUResource&                GetResource() const         { return *mResource; }
 
     GPUResourceViewType         GetType() const             { return mDesc.type; }
@@ -82,12 +83,10 @@ public:
     GPUSubresourceRange         GetSubresourceRange() const;
 
 protected:
-    ReferencePtr<GPUResource>   mResource;
+    GPUResource*                mResource;
     const GPUResourceViewDesc   mDesc;
 
 };
-
-using GPUResourceViewPtr = ReferencePtr<GPUResourceView>;
 
 inline GPUSubresourceRange GPUResourceView::GetSubresourceRange() const
 {

@@ -53,9 +53,9 @@ protected:
 
                             GPUTexture(GPUSwapchain& inSwapchain);
 
+public:
                             ~GPUTexture() {}
 
-public:
     GPUTextureFlags         GetFlags() const            { return mFlags; }
     bool                    IsCubeCompatible() const    { return mFlags & kGPUTexture_CubeCompatible; }
 
@@ -106,8 +106,6 @@ private:
     GPUSwapchain*           mSwapchain;
 
 };
-
-using GPUTexturePtr = ReferencePtr<GPUTexture>;
 
 inline uint32_t GPUTexture::GetMipWidth(const uint8_t inMip) const
 {

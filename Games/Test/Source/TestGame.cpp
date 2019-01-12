@@ -48,7 +48,7 @@ class TestRenderLayer final : public RenderLayer
 {
 public:
                                 TestRenderLayer();
-                                ~TestRenderLayer() {}
+                                ~TestRenderLayer();
 
 public:
     void                        Initialise();
@@ -69,12 +69,12 @@ private:
     void                        WorkerThread(const uint32_t inIndex);
 
 private:
-    GPUTexturePtr               mDepthBuffer;
-    GPUResourceViewPtr          mDepthView;
+    GPUTexture*                 mDepthBuffer;
+    GPUResourceView*            mDepthView;
     GPUShaderPtr                mVertexShader;
     GPUShaderPtr                mPixelShader;
     GPUArgumentSetLayoutRef     mArgumentLayout;
-    GPUBufferPtr                mVertexBuffer;
+    GPUBuffer*                  mVertexBuffer;
     GPUVertexInputStateRef      mVertexInputState;
 
     Worker                      mWorkers[kThreadCount];
@@ -97,6 +97,13 @@ static const Vertex kVertices[3] =
 TestRenderLayer::TestRenderLayer() :
     RenderLayer (RenderLayer::kOrder_World)
 {
+}
+
+TestRenderLayer::~TestRenderLayer()
+{
+    delete mVertexBuffer;
+    delete mDepthView;
+    delete mDepthBuffer;
 }
 
 void TestRenderLayer::Initialise()

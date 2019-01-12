@@ -17,13 +17,15 @@
 #pragma once
 
 #include "Core/HashTable.h"
+#include "Core/RefCounted.h"
 #include "Core/String.h"
 
 #include "GPU/GPUObject.h"
 
 class GPUPipeline;
 
-class GPUShader : public GPUObject
+class GPUShader : public GPUObject,
+                  public RefCounted
 {
 protected:
                                 GPUShader(GPUDevice&           inDevice,

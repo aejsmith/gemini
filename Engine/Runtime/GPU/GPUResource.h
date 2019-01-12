@@ -18,9 +18,7 @@
 
 #include "GPU/GPUObject.h"
 
-/**
- * Base class for GPU resources (buffers and textures).
- */
+/** Base class for GPU resources (buffers and textures). */
 class GPUResource : public GPUObject
 {
 protected:
@@ -28,9 +26,9 @@ protected:
                                         const GPUResourceType  inType,
                                         const GPUResourceUsage inUsage);
 
+public:
                             ~GPUResource() {}
 
-public:
     GPUResourceType         GetType() const     { return mType; }
     GPUResourceUsage        GetUsage() const    { return mUsage; }
 
@@ -48,8 +46,6 @@ private:
     const GPUResourceUsage  mUsage;
 
 };
-
-using GPUResourcePtr = ReferencePtr<GPUResource>;
 
 #if !ORION_BUILD_DEBUG
 

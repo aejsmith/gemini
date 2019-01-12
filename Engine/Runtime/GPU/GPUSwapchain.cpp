@@ -20,14 +20,19 @@
 
 GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
                            Window&    inWindow) :
-    GPUDeviceChild (inDevice),
-    mWindow        (inWindow),
-    mFormat        (PixelFormat::kUnknown)
+    GPUDeviceChild    (inDevice),
+    mWindow           (inWindow),
+    mFormat           (PixelFormat::kUnknown),
+    mTexture          (nullptr),
+    mRenderTargetView (nullptr)
 {
     mWindow.SetSwapchain(this, {});
 }
 
 GPUSwapchain::~GPUSwapchain()
 {
+    Assert(!mRenderTargetView);
+    Assert(!mTexture);
+
     mWindow.SetSwapchain(nullptr, {});
 }

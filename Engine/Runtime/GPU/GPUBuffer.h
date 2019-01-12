@@ -37,14 +37,12 @@ protected:
                             GPUBuffer(GPUDevice&           inDevice,
                                       const GPUBufferDesc& inDesc);
 
+public:
                             ~GPUBuffer() {}
 
-public:
     uint32_t                GetSize() const { return mSize; }
 
 private:
     const uint32_t          mSize;
 
 };
-
-using GPUBufferPtr = ReferencePtr<GPUBuffer>;

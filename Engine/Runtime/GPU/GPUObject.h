@@ -18,24 +18,14 @@
 
 #include "GPU/GPUDeviceChild.h"
 
-#include "Core/RefCounted.h"
 #include "Core/String.h"
 
-/**
- * A reference counted child object of a GPUDevice.
- *
- * Most functions in the GPU layer take raw pointers/references to GPUObject-
- * derived classes. This is to avoid adding/releasing references around every
- * call. It is expected that if a object is passed to a function, then the
- * caller guarantees that a reference is held somewhere else for the duration
- * of the call.
- */
-class GPUObject : public GPUDeviceChild,
-                  public RefCounted
+/** A named child object of a GPUDevice. */
+class GPUObject : public GPUDeviceChild
 {
 protected:
                             GPUObject(GPUDevice& inDevice);
-                            ~GPUObject() {}
+    virtual                 ~GPUObject() {}
 
 public:
     /**

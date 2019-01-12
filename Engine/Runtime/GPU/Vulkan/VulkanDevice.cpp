@@ -345,8 +345,8 @@ void VulkanDevice::CreateDevice()
     #undef LOAD_OPTIONAL_VULKAN_DEVICE_FUNC
 }
 
-GPUArgumentSetPtr VulkanDevice::CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
-                                                  const GPUArgument* const      inArguments)
+GPUArgumentSet* VulkanDevice::CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
+                                                const GPUArgument* const      inArguments)
 {
     return new VulkanArgumentSet(*this, inLayout, inArguments);
 }
@@ -356,12 +356,12 @@ GPUArgumentSetLayout* VulkanDevice::CreateArgumentSetLayoutImpl(GPUArgumentSetLa
     return new VulkanArgumentSetLayout(*this, std::move(inDesc));
 }
 
-GPUBufferPtr VulkanDevice::CreateBuffer(const GPUBufferDesc& inDesc)
+GPUBuffer* VulkanDevice::CreateBuffer(const GPUBufferDesc& inDesc)
 {
     return new VulkanBuffer(*this, inDesc);
 }
 
-GPUComputePipelinePtr VulkanDevice::CreateComputePipeline(const GPUComputePipelineDesc& inDesc)
+GPUComputePipeline* VulkanDevice::CreateComputePipeline(const GPUComputePipelineDesc& inDesc)
 {
     return new VulkanComputePipeline(*this, inDesc);
 }
@@ -371,8 +371,8 @@ GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& inDesc)
     return new VulkanPipeline(*this, inDesc);
 }
 
-GPUResourceViewPtr VulkanDevice::CreateResourceView(GPUResource* const         inResource,
-                                                    const GPUResourceViewDesc& inDesc)
+GPUResourceView* VulkanDevice::CreateResourceView(GPUResource* const         inResource,
+                                                  const GPUResourceViewDesc& inDesc)
 {
     return new VulkanResourceView(*inResource, inDesc);
 }
@@ -394,7 +394,7 @@ void VulkanDevice::CreateSwapchain(Window& inWindow)
     new VulkanSwapchain(*this, inWindow);
 }
 
-GPUTexturePtr VulkanDevice::CreateTexture(const GPUTextureDesc& inDesc)
+GPUTexture* VulkanDevice::CreateTexture(const GPUTextureDesc& inDesc)
 {
     return new VulkanTexture(*this, inDesc);
 }

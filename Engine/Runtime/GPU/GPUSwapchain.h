@@ -64,7 +64,7 @@ protected:
     Window&                     mWindow;
     PixelFormat                 mFormat;
 
-    GPUTexturePtr               mTexture;
-    GPUResourceViewPtr          mRenderTargetView;
+    GPUTexture*                 mTexture;
+    GPUResourceView*            mRenderTargetView;
 
 };

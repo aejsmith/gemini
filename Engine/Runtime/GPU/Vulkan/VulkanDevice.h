@@ -50,14 +50,14 @@ public:
      * GPUDevice methods.
      */
 public:
-    GPUArgumentSetPtr                   CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
+    GPUArgumentSet*                     CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
                                                           const GPUArgument* const      inArguments) override;
 
-    GPUBufferPtr                        CreateBuffer(const GPUBufferDesc& inDesc) override;
+    GPUBuffer*                          CreateBuffer(const GPUBufferDesc& inDesc) override;
 
-    GPUComputePipelinePtr               CreateComputePipeline(const GPUComputePipelineDesc& inDesc) override;
+    GPUComputePipeline*                 CreateComputePipeline(const GPUComputePipelineDesc& inDesc) override;
 
-    GPUResourceViewPtr                  CreateResourceView(GPUResource* const         inResource,
+    GPUResourceView*                    CreateResourceView(GPUResource* const         inResource,
                                                            const GPUResourceViewDesc& inDesc) override;
 
     GPUShaderPtr                        CreateShader(const GPUShaderStage inStage,
@@ -66,7 +66,7 @@ public:
 
     void                                CreateSwapchain(Window& inWindow) override;
 
-    GPUTexturePtr                       CreateTexture(const GPUTextureDesc& inDesc) override;
+    GPUTexture*                         CreateTexture(const GPUTextureDesc& inDesc) override;
 
 protected:
     GPUArgumentSetLayout*               CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) override;

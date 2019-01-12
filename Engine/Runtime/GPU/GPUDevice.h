@@ -96,16 +96,16 @@ public:
      * resource view arguments. The owner of the set must ensure that the
      * arguments remain alive while the set is still being used.
      */
-    virtual GPUArgumentSetPtr       CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
+    virtual GPUArgumentSet*         CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
                                                       const GPUArgument* const      inArguments) = 0;
 
-    virtual GPUBufferPtr            CreateBuffer(const GPUBufferDesc& inDesc) = 0;
+    virtual GPUBuffer*              CreateBuffer(const GPUBufferDesc& inDesc) = 0;
 
-    virtual GPUComputePipelinePtr   CreateComputePipeline(const GPUComputePipelineDesc& inDesc) = 0;
+    virtual GPUComputePipeline*     CreateComputePipeline(const GPUComputePipelineDesc& inDesc) = 0;
 
     GPUPipelinePtr                  CreatePipeline(const GPUPipelineDesc& inDesc);
 
-    virtual GPUResourceViewPtr      CreateResourceView(GPUResource* const         inResource,
+    virtual GPUResourceView*        CreateResourceView(GPUResource* const         inResource,
                                                        const GPUResourceViewDesc& inDesc) = 0;
 
     virtual GPUShaderPtr            CreateShader(const GPUShaderStage inStage,
@@ -119,7 +119,7 @@ public:
      */
     virtual void                    CreateSwapchain(Window& inWindow) = 0;
 
-    virtual GPUTexturePtr           CreateTexture(const GPUTextureDesc& inDesc) = 0;
+    virtual GPUTexture*             CreateTexture(const GPUTextureDesc& inDesc) = 0;
 
     GPUArgumentSetLayoutRef         GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc);
 
