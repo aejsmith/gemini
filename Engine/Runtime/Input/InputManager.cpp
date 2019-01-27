@@ -57,6 +57,7 @@ bool InputManager::GetButtonState(const InputCode inCode)
 
     AssertMsg(inputInfo, "Input code %d is invalid", inCode);
     AssertMsg(inputInfo->type == kInputType_Button, "Input %d is not a button", inCode);
+    Unused(inputInfo);
 
     if (inCode >= kInputCodeKeyboardFirst && inCode <= kInputCodeKeyboardLast)
     {
