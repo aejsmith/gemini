@@ -23,6 +23,7 @@
 
 #include "Engine/AssetManager.h"
 #include "Engine/DebugManager.h"
+#include "Engine/FrameAllocator.h"
 #include "Engine/Game.h"
 #include "Engine/ImGUI.h"
 #include "Engine/Window.h"
@@ -184,6 +185,9 @@ void Engine::Run()
         RenderManager::Get().Render({});
 
         GPUDevice::Get().EndFrame();
+
+        /* This must be the very last call. */
+        FrameAllocator::EndFrame({});
     }
 }
 

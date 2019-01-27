@@ -13,6 +13,7 @@ Export('env')
 
 objects = map(env.Object, [
     'DataStream.cpp',
+    'LinearAllocator.cpp',
     'Log.cpp',
     'Path.cpp',
     'PixelFormat.cpp',

@@ -20,6 +20,7 @@ objects += map(env.Object, [
     'DebugManager.cpp',
     'Engine.cpp',
     'Entity.cpp',
+    'FrameAllocator.cpp',
     'ImGUI.cpp',
     'JSONSerialiser.cpp',
     'Main.cpp',
