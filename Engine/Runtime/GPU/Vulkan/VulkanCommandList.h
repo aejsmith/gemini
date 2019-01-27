@@ -62,6 +62,7 @@ private:
     VkCommandBuffer                 mCommandBuffer;
 
     /** Flattened array of completed command buffers, in submission order. */
+    // FIXME: Use FrameAllocator for this.
     std::vector<VkCommandBuffer>    mCommandBuffers;
 
     VkDescriptorSet                 mDescriptorSets[kMaxArgumentSets];

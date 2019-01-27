@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "Engine/FrameAllocator.h"
+
 #include "VulkanCommandList.h"
 
 #include "VulkanArgumentSet.h"
@@ -88,7 +90,7 @@ inline void VulkanCommandList<T>::SubmitChildrenImpl(GPUCommandList** const inCh
                                cmdList->mCommandBuffers.begin(),
                                cmdList->mCommandBuffers.end());
 
-        delete cmdList;
+        FrameAllocator::Delete(cmdList);
     }
 }
 
@@ -220,7 +222,7 @@ void VulkanComputeCommandList::Submit(const VkCommandBuffer inBuffer) const
 
 GPUCommandList* VulkanComputeCommandList::CreateChildImpl()
 {
-    return new VulkanComputeCommandList(GetVulkanContext(), this);
+    return FrameAllocator::New<VulkanComputeCommandList>(GetVulkanContext(), this);
 }
 
 void VulkanComputeCommandList::PreDispatch()
@@ -357,7 +359,7 @@ void VulkanGraphicsCommandList::Submit(const VkCommandBuffer inBuffer) const
 
 GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
 {
-    return new VulkanGraphicsCommandList(GetVulkanContext(), this, mRenderPass);
+    return FrameAllocator::New<VulkanGraphicsCommandList>(GetVulkanContext(), this, mRenderPass);
 }
 
 void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)

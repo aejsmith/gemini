@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "Engine/FrameAllocator.h"
+
 #include "VulkanContext.h"
 
 #include "VulkanBuffer.h"
@@ -590,29 +592,24 @@ void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
 
 GPUComputeCommandList* VulkanContext::CreateComputePassImpl()
 {
-    // TODO: Command lists should be allocated with a temporary frame allocator
-    // that just gets cleared in one go at the end of frame. Need to make sure
-    // destruction gets done properly to release the views. Also should be
-    // used for storage within the command lists e.g. mCommandBuffers.
-    return new VulkanComputeCommandList(*this, nullptr);
+    return FrameAllocator::New<VulkanComputeCommandList>(*this, nullptr);
 }
 
 void VulkanContext::SubmitComputePassImpl(GPUComputeCommandList* const inCmdList)
 {
     auto cmdList = static_cast<VulkanComputeCommandList*>(inCmdList);
     cmdList->Submit(GetCommandBuffer());
-    delete cmdList;
+    FrameAllocator::Delete(cmdList);
 }
 
 GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& inRenderPass)
 {
-    // TODO: See above.
-    return new VulkanGraphicsCommandList(*this, nullptr, inRenderPass);
+    return FrameAllocator::New<VulkanGraphicsCommandList>(*this, nullptr, inRenderPass);
 }
 
 void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList)
 {
     auto cmdList = static_cast<VulkanGraphicsCommandList*>(inCmdList);
     cmdList->Submit(GetCommandBuffer());
-    delete cmdList;
+    FrameAllocator::Delete(cmdList);
 }
