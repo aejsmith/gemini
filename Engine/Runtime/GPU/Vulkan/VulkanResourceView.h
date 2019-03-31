@@ -40,17 +40,6 @@ public:
      */
     const VkBufferView&         GetBufferView() const;
 
-    /**
-     * Interface from VulkanSwapchain to create/set a view that corresponds
-     * to the texture's current image.
-     */
-    void                        CreateImageView(OnlyCalledBy<VulkanSwapchain>)
-                                    { CreateImageView(); }
-
-    void                        SetImageView(const VkImageView inImageView,
-                                             OnlyCalledBy<VulkanSwapchain>)
-                                    { mImageView = inImageView; }
-
 private:
     void                        CreateImageView();
 

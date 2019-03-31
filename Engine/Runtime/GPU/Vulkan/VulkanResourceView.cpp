@@ -33,13 +33,7 @@ VulkanResourceView::VulkanResourceView(GPUResource&               inResource,
     }
     else if (GetType() != kGPUResourceViewType_Buffer)
     {
-        auto& texture = static_cast<VulkanTexture&>(GetResource());
-
-        /* Swapchain texture views have special handling. */
-        if (!texture.IsSwapchain())
-        {
-            CreateImageView();
-        }
+        CreateImageView();
     }
 }
 

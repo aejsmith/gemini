@@ -56,7 +56,7 @@ public:
                                          OnlyCalledBy<GPUSwapchain>);
 
 protected:
-    GPUResourceView*        GetRenderTargetView() const override;
+    GPUTexture*             GetTexture() const override;
     GPUResourceState        GetFinalState() const override;
     void                    BeginRender() override;
     void                    EndRender() override;

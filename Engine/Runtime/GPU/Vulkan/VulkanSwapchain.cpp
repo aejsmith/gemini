@@ -40,20 +40,11 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& inDevice,
 
 VulkanSwapchain::~VulkanSwapchain()
 {
-    delete mRenderTargetView;
-    mRenderTargetView = nullptr;
-
     delete mTexture;
     mTexture = nullptr;
 
     if (mHandle != VK_NULL_HANDLE)
     {
-        for (const VkImageView view : mImageViews)
-        {
-            GetVulkanDevice().InvalidateFramebuffers(view);
-            vkDestroyImageView(GetVulkanDevice().GetHandle(), view, nullptr);
-        }
-
         vkDestroySwapchainKHR(GetVulkanDevice().GetHandle(), mHandle, nullptr);
     }
 
@@ -231,32 +222,6 @@ void VulkanSwapchain::CreateTexture()
 {
     auto texture = new VulkanTexture(*this, {});
     mTexture = texture;
-
-    /* Create the render target view object. This will not create a real image
-     * view to begin with due to this being a swapchain texture. */
-    GPUResourceViewDesc viewDesc = {};
-    viewDesc.type         = kGPUResourceViewType_Texture2D;
-    viewDesc.usage        = kGPUResourceUsage_RenderTarget;
-    viewDesc.format       = GetFormat();
-    viewDesc.mipCount     = 1;
-    viewDesc.elementCount = 1;
-
-    auto view = new VulkanResourceView(*texture, viewDesc);
-    mRenderTargetView = view;
-
-    /* For each image, create a corresponding view that we can use whenever we
-     * acquire that image index. */
-    mImageViews.resize(mImages.size());
-    for (size_t i = 0; i < mImages.size(); i++)
-    {
-        texture->SetImage(mImages[i], {});
-
-        view->CreateImageView({});
-        mImageViews[i] = view->GetImageView();
-    }
-
-    texture->SetImage(VK_NULL_HANDLE, {});
-    view->SetImageView(VK_NULL_HANDLE, {});
 }
 
 void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
@@ -292,12 +257,9 @@ void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
 
     }
 
-    /* Update the texture and views to refer to the current image. */
+    /* Update the texture to refer to the current image. */
     auto texture = static_cast<VulkanTexture*>(mTexture);
     texture->SetImage(mImages[mCurrentImage], {});
-
-    auto view = static_cast<VulkanResourceView*>(mRenderTargetView);
-    view->SetImageView(mImageViews[mCurrentImage], {});
 }
 
 void VulkanSwapchain::Present(const VkQueue     inQueue,
@@ -339,4 +301,6 @@ void VulkanSwapchain::Present(const VkQueue     inQueue,
     }
 
     mCurrentImage = std::numeric_limits<uint32_t>::max();
+
+    OnEndPresent();
 }

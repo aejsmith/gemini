@@ -74,10 +74,10 @@ void Window::SetSwapchain(GPUSwapchain* const inSwapchain,
     }
 }
 
-GPUResourceView* Window::GetRenderTargetView() const
+GPUTexture* Window::GetTexture() const
 {
     Assert(mSwapchain);
-    return mSwapchain->GetRenderTargetView();
+    return mSwapchain->GetTexture();
 }
 
 GPUResourceState Window::GetFinalState() const

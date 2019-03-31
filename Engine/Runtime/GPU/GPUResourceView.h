@@ -23,7 +23,7 @@ struct GPUResourceViewDesc
     GPUResourceViewType         type;
 
     /**
-     * Usage flag indicating what this view will be used for. Only 1 flag can
+     * Usage flag indicating what this view will be used for. Only one flag can
      * be set, and the resource the view refers to must allow this usage.
      */
     GPUResourceUsage            usage;
@@ -63,7 +63,7 @@ protected:
                                                 const GPUResourceViewDesc& inDesc);
 
 public:
-                                ~GPUResourceView() {}
+                                ~GPUResourceView();
 
     GPUResource&                GetResource() const         { return *mResource; }
 

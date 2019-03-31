@@ -22,6 +22,8 @@
 #include "GPU/GPUResourceView.h"
 #include "GPU/GPUTexture.h"
 
+#include <atomic>
+
 class Window;
 
 /**
@@ -45,26 +47,45 @@ public:
      * Get a texture referring to the swapchain. This is a special texture
      * which has restricted usage.
      *
-     * Firstly, it is not allowed to create arbitrary views of this texture: if
-     * you wish to render to it, you must use the view given by
-     * GetRenderTargetView().
+     * It is only valid to use the texture between calls to
+     * GPUComputeContext::BeginPresent() and GPUComputeContext::EndPresent().
+     * This is because the backend may need to explicitly acquire a new texture
+     * to use from the window system, and also insert synchronisation around
+     * its usage. This restriction therefore allows these steps to be done only
+     * around where they really need to be. Usage of the texture must then
+     * occur only on the context where BeginPresent() was called.
      *
-     * Secondly, it is only valid to use the texture (or the view) between calls
-     * to GPUComputeContext::BeginPresent() and GPUComputeContext::EndPresent().
-     * This is because the backend may need to explicitly acquire a new
-     * texture to use from the window system, and also insert synchronisation
-     * around its usage. This restriction therefore allows these steps to be
-     * done only around where they really need to be. Usage of the texture
-     * must then occur only on the context where BeginPresent() was called.
+     * Views to the texture must be created each frame, after BeginPresent() is
+     * called, so that they can be made to refer to correct texture for the
+     * frame. Views must be destroyed before EndPresent() is called.
      */
-    GPUTexture*                 GetTexture() const          { return mTexture; }
-    GPUResourceView*            GetRenderTargetView() const { return mRenderTargetView; }
+    GPUTexture*                 GetTexture() const { return mTexture; }
+
+protected:
+    void                        OnEndPresent() const;
 
 protected:
     Window&                     mWindow;
     PixelFormat                 mFormat;
-
     GPUTexture*                 mTexture;
-    GPUResourceView*            mRenderTargetView;
 
+    #if ORION_BUILD_DEBUG
+
+    /**
+     * Count of views referring to the swapchain to validate that no views
+     * exist outside BeginPresent()/EndPresent().
+     */
+    std::atomic<uint32_t>       mViewCount;
+
+    #endif
+
+    friend class GPUResourceView;
 };
+
+inline void GPUSwapchain::OnEndPresent() const
+{
+    #if ORION_BUILD_DEBUG
+        AssertMsg(mViewCount.load(std::memory_order_relaxed) == 0,
+                  "Swapchain views still exist at call to EndPresent()");
+    #endif
+}

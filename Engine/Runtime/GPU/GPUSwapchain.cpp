@@ -20,18 +20,20 @@
 
 GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
                            Window&    inWindow) :
-    GPUDeviceChild    (inDevice),
-    mWindow           (inWindow),
-    mFormat           (PixelFormat::kUnknown),
-    mTexture          (nullptr),
-    mRenderTargetView (nullptr)
+    GPUDeviceChild (inDevice),
+    mWindow        (inWindow),
+    mFormat        (PixelFormat::kUnknown),
+    mTexture       (nullptr)
 {
     mWindow.SetSwapchain(this, {});
+
+    #if ORION_BUILD_DEBUG
+        mViewCount.store(0, std::memory_order_release);
+    #endif
 }
 
 GPUSwapchain::~GPUSwapchain()
 {
-    Assert(!mRenderTargetView);
     Assert(!mTexture);
 
     mWindow.SetSwapchain(nullptr, {});

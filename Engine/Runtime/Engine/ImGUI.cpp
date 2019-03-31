@@ -301,8 +301,15 @@ void ImGUIRenderLayer::Render()
 
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
+    GPUResourceViewDesc viewDesc;
+    viewDesc.type   = kGPUResourceViewType_Texture2D;
+    viewDesc.usage  = kGPUResourceUsage_RenderTarget;
+    viewDesc.format = GetLayerOutput()->GetTexture()->GetFormat();
+
+    std::unique_ptr<GPUResourceView> view(GPUDevice::Get().CreateResourceView(GetLayerOutput()->GetTexture(), viewDesc));
+
     GPURenderPass renderPass;
-    renderPass.SetColour(0, GetLayerOutput()->GetRenderTargetView());
+    renderPass.SetColour(0, view.get());
 
     GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
     cmdList->Begin();
@@ -325,7 +332,7 @@ void ImGUIRenderLayer::Render()
     cmdList->WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
 
     /* Keep created buffers alive until we submit the command list. */
-    std::vector<GPUBuffer*> buffers;
+    std::vector<std::unique_ptr<GPUBuffer>> buffers;
 
     GPUStagingBuffer stagingBuffer(GPUDevice::Get());
 
@@ -375,9 +382,4 @@ void ImGUIRenderLayer::Render()
 
     cmdList->End();
     graphicsContext.SubmitRenderPass(cmdList);
-
-    for (GPUBuffer* buffer : buffers)
-    {
-        delete buffer;
-    }
 }

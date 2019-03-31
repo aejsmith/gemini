@@ -58,8 +58,6 @@ private:
     VkSurfaceFormatKHR          mSurfaceFormat;
 
     std::vector<VkImage>        mImages;
-    std::vector<VkImageView>    mImageViews;
-
     uint32_t                    mCurrentImage;
 
 };

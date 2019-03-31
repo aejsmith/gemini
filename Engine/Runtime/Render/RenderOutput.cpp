@@ -39,7 +39,7 @@ void RenderOutput::Render(OnlyCalledBy<RenderManager>)
     BeginRender();
 
     // TODO: Will be handled by render graph.
-    GPUGraphicsContext::Get().ResourceBarrier(GetRenderTargetView(),
+    GPUGraphicsContext::Get().ResourceBarrier(GetTexture(),
                                               GetFinalState(),
                                               kGPUResourceState_RenderTarget);
 
@@ -49,7 +49,7 @@ void RenderOutput::Render(OnlyCalledBy<RenderManager>)
     }
 
     // TODO: Same as above.
-    GPUGraphicsContext::Get().ResourceBarrier(GetRenderTargetView(),
+    GPUGraphicsContext::Get().ResourceBarrier(GetTexture(),
                                               kGPUResourceState_RenderTarget,
                                               GetFinalState());
 

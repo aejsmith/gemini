@@ -20,7 +20,7 @@
 
 #include <list>
 
-class GPUResourceView;
+class GPUTexture;
 class RenderLayer;
 class RenderManager;
 
@@ -48,8 +48,8 @@ public:
     void                        UnregisterLayer(RenderLayer* const inLayer,
                                                 OnlyCalledBy<RenderLayer>);
 
-    /** Get a render target view referring to this output. */
-    virtual GPUResourceView*    GetRenderTargetView() const = 0;
+    /** Get the texture for this output. */
+    virtual GPUTexture*         GetTexture() const = 0;
 
 protected:
     void                        RegisterOutput();

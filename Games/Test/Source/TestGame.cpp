@@ -110,14 +110,14 @@ void TestRenderLayer::Initialise()
 {
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
-    const auto& colourTexture = static_cast<GPUTexture&>(GetLayerOutput()->GetRenderTargetView()->GetResource());
+    const GPUTexture* colourTexture = GetLayerOutput()->GetTexture();
 
     GPUTextureDesc depthBufferDesc;
     depthBufferDesc.type   = kGPUResourceType_Texture2D;
     depthBufferDesc.usage  = kGPUResourceUsage_DepthStencil;
     depthBufferDesc.format = PixelFormat::kDepth32;
-    depthBufferDesc.width  = colourTexture.GetWidth();
-    depthBufferDesc.height = colourTexture.GetHeight();
+    depthBufferDesc.width  = colourTexture->GetWidth();
+    depthBufferDesc.height = colourTexture->GetHeight();
 
     mDepthBuffer = GPUDevice::Get().CreateTexture(depthBufferDesc);
 
@@ -207,9 +207,9 @@ void TestRenderLayer::WorkerThread(const uint32_t inIndex)
         cmdList->SetPipeline(pipelineDesc);
         cmdList->SetVertexBuffer(0, mVertexBuffer);
 
-        const auto& texture       = static_cast<GPUTexture&>(GetLayerOutput()->GetRenderTargetView()->GetResource());
-        const float textureWidth  = static_cast<float>(texture.GetWidth());
-        const float textureHeight = static_cast<float>(texture.GetHeight());
+        const GPUTexture* texture = GetLayerOutput()->GetTexture();
+        const float textureWidth  = static_cast<float>(texture->GetWidth());
+        const float textureHeight = static_cast<float>(texture->GetHeight());
         const float cellWidth     = 2.0f * ((textureWidth / static_cast<float>(kTotalNumColumns)) / textureWidth);
         const float cellHeight    = 2.0f * ((textureHeight / static_cast<float>(kTotalNumRows)) / textureHeight);
 
@@ -247,8 +247,15 @@ void TestRenderLayer::Render()
 {
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
+    GPUResourceViewDesc viewDesc;
+    viewDesc.type   = kGPUResourceViewType_Texture2D;
+    viewDesc.usage  = kGPUResourceUsage_RenderTarget;
+    viewDesc.format = GetLayerOutput()->GetTexture()->GetFormat();
+
+    std::unique_ptr<GPUResourceView> view(GPUDevice::Get().CreateResourceView(GetLayerOutput()->GetTexture(), viewDesc));
+
     GPURenderPass renderPass;
-    renderPass.SetColour(0, GetLayerOutput()->GetRenderTargetView());
+    renderPass.SetColour(0, view.get());
     renderPass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     renderPass.SetDepthStencil(mDepthView);
     renderPass.ClearDepth(1.0);

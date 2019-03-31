@@ -52,7 +52,6 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
 
             const auto& texture = static_cast<const GPUTexture&>(GetResource());
 
-            Assert(!texture.IsSwapchain() || !texture.GetSwapchain()->GetRenderTargetView());
             Assert(GetUsage() == kGPUResourceUsage_ShaderRead || GetMipCount() == 1);
             Assert(GetMipOffset() + GetMipCount() <= texture.GetNumMipLevels());
 
@@ -67,6 +66,26 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
                                 GetType() == kGPUResourceViewType_TextureCubeArray;
 
             Assert(!isCube || ((GetElementOffset() % 6) == 0 && (GetElementCount() % 6) == 0));
+
+            if (texture.IsSwapchain())
+            {
+                texture.GetSwapchain()->mViewCount.fetch_add(1, std::memory_order_relaxed);
+            }
+        }
+    #endif
+}
+
+GPUResourceView::~GPUResourceView()
+{
+    #if ORION_BUILD_DEBUG
+        if (GetResource().IsTexture())
+        {
+            const auto& texture = static_cast<const GPUTexture&>(GetResource());
+
+            if (texture.IsSwapchain())
+            {
+                texture.GetSwapchain()->mViewCount.fetch_sub(1, std::memory_order_relaxed);
+            }
         }
     #endif
 }
