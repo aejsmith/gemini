@@ -21,6 +21,7 @@
 #include <list>
 
 class GPUTexture;
+class RenderGraph;
 class RenderLayer;
 class RenderManager;
 
@@ -32,7 +33,8 @@ class RenderManager;
  * world, a layer for game UI, and an ImGUI layer. Registered layers on an
  * output are called based on their specified order to add their passes to the
  * render graph, with the effect that they will be composited in that order to
- * produce the final output.
+ * produce the final output (each layer receives a resource handle referring to
+ * the result of the layer below).
  */
 class RenderOutput
 {
@@ -41,7 +43,8 @@ protected:
                                 ~RenderOutput();
 
 public:
-    void                        Render(OnlyCalledBy<RenderManager>);
+    void                        AddPasses(RenderGraph& inGraph,
+                                          OnlyCalledBy<RenderManager>);
 
     void                        RegisterLayer(RenderLayer* const inLayer,
                                               OnlyCalledBy<RenderLayer>);

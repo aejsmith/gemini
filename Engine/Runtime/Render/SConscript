@@ -1,6 +1,7 @@
 Import('env')
 
 objects = map(env.Object, [
+    'RenderGraph.cpp',
     'RenderLayer.cpp',
     'RenderManager.cpp',
     'RenderOutput.cpp',

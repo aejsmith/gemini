@@ -30,6 +30,7 @@
 #include "GPU/GPUStagingResource.h"
 #include "GPU/GPUSwapchain.h"
 
+#include "Render/RenderGraph.h"
 #include "Render/RenderLayer.h"
 #include "Render/ShaderManager.h"
 
@@ -52,6 +53,10 @@ public:
 
 public:
     void                        Initialise();
+
+    void                        AddPasses(RenderGraph&               inGraph,
+                                          const RenderResourceHandle inTexture,
+                                          RenderResourceHandle&      outNewTexture) override;
 
     void                        Render() override;
 
@@ -241,6 +246,13 @@ void TestRenderLayer::WorkerThread(const uint32_t inIndex)
 
         mThreadsActive.fetch_sub(1, std::memory_order_release);
     }
+}
+
+void TestRenderLayer::AddPasses(RenderGraph&               inGraph,
+                                const RenderResourceHandle inTexture,
+                                RenderResourceHandle&      outNewTexture)
+{
+    Fatal("TODO");
 }
 
 void TestRenderLayer::Render()

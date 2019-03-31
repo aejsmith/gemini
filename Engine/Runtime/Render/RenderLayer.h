@@ -18,7 +18,9 @@
 
 #include "Render/RenderDefs.h"
 
+class RenderGraph;
 class RenderOutput;
+struct RenderResourceHandle;
 
 /**
  * Layer on a RenderOutput. See RenderOutput for more details.
@@ -56,6 +58,15 @@ public:
     void                    ActivateLayer();
     void                    DeactivateLayer();
     bool                    IsLayerActive() const   { return mActive; }
+
+    /**
+     * Add render passes to the render graph for this layer. The supplied
+     * handle is the texture that the layer output should be written to. If the
+     * layer has anything to render, a new resource handle should be returned.
+     */
+    virtual void            AddPasses(RenderGraph&               inGraph,
+                                      const RenderResourceHandle inTexture,
+                                      RenderResourceHandle&      outNewTexture) = 0;
 
     // TODO: Temporary interface before render graph.
     virtual void            Render() = 0;

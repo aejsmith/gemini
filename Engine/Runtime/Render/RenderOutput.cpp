@@ -18,6 +18,7 @@
 
 #include "GPU/GPUContext.h"
 
+#include "Render/RenderGraph.h"
 #include "Render/RenderLayer.h"
 #include "Render/RenderManager.h"
 
@@ -32,28 +33,21 @@ RenderOutput::~RenderOutput()
     UnregisterOutput();
 }
 
-void RenderOutput::Render(OnlyCalledBy<RenderManager>)
+void RenderOutput::AddPasses(RenderGraph& inGraph,
+                             OnlyCalledBy<RenderManager>)
 {
-    // TODO: Only want to call this around final access from render graph to
-    // avoid acquiring swapchain image earlier than it needs to be.
-    BeginRender();
+    /* Import our output texture into the render graph. */
+    RenderResourceHandle outputTexture = inGraph.ImportResource(GetTexture(),
+                                                                GetFinalState(),
+                                                                [this] () { BeginRender(); },
+                                                                [this] () { EndRender(); });
 
-    // TODO: Will be handled by render graph.
-    GPUGraphicsContext::Get().ResourceBarrier(GetTexture(),
-                                              GetFinalState(),
-                                              kGPUResourceState_RenderTarget);
-
+    /* Each layer gets the previous layer's result handle as its target, so
+     * that they get rendered on top of each other in order. */
     for (RenderLayer* layer : mLayers)
     {
-        layer->Render();
+        layer->AddPasses(inGraph, outputTexture, outputTexture);
     }
-
-    // TODO: Same as above.
-    GPUGraphicsContext::Get().ResourceBarrier(GetTexture(),
-                                              kGPUResourceState_RenderTarget,
-                                              GetFinalState());
-
-    EndRender();
 }
 
 void RenderOutput::RegisterLayer(RenderLayer* const inLayer,

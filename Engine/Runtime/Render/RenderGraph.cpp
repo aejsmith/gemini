@@ -14,42 +14,34 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Render/RenderManager.h"
-
 #include "Render/RenderGraph.h"
-#include "Render/RenderLayer.h"
-#include "Render/RenderOutput.h"
 
-SINGLETON_IMPL(RenderManager);
+/**
+ * TODO:
+ *  - GPU memory aliasing based on required resource lifetimes.
+ *  - Use FrameAllocator for internal allocations (including STL stuff). Also
+ *    could do with a way to get GPU layer objects (resources, views) to be
+ *    allocated with it as well.
+ */
 
-RenderManager::RenderManager()
+RenderGraph::RenderGraph()
+{
+
+}
+
+RenderGraph::~RenderGraph()
 {
 }
 
-RenderManager::~RenderManager()
+void RenderGraph::Execute()
 {
+    Fatal("TODO");
 }
 
-void RenderManager::Render(OnlyCalledBy<Engine>)
+RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResource,
+                                                 const GPUResourceState inState,
+                                                 std::function<void ()> inBeginCallback,
+                                                 std::function<void ()> inEndCallback)
 {
-    RenderGraph graph;
-
-    for (RenderOutput* output : mOutputs)
-    {
-        output->AddPasses(graph, {});
-    }
-
-    graph.Execute();
-}
-
-void RenderManager::RegisterOutput(RenderOutput* const inOutput,
-                                   OnlyCalledBy<RenderOutput>)
-{
-    mOutputs.emplace_back(inOutput);
-}
-
-void RenderManager::UnregisterOutput(RenderOutput* const inOutput,
-                                     OnlyCalledBy<RenderOutput>)
-{
-    mOutputs.remove(inOutput);
+    return { 0 };
 }

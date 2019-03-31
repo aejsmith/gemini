@@ -28,6 +28,7 @@
 #include "Input/InputHandler.h"
 #include "Input/InputManager.h"
 
+#include "Render/RenderGraph.h"
 #include "Render/RenderLayer.h"
 #include "Render/RenderOutput.h"
 #include "Render/ShaderManager.h"
@@ -54,6 +55,10 @@ public:
                             ~ImGUIRenderLayer();
 
 public:
+    void                    AddPasses(RenderGraph&               inGraph,
+                                      const RenderResourceHandle inTexture,
+                                      RenderResourceHandle&      outNewTexture) override;
+
     void                    Render() override;
 
 private:
@@ -287,6 +292,13 @@ ImGUIRenderLayer::~ImGUIRenderLayer()
 {
     delete mFontView;
     delete mFontTexture;
+}
+
+void ImGUIRenderLayer::AddPasses(RenderGraph&               inGraph,
+                                 const RenderResourceHandle inTexture,
+                                 RenderResourceHandle&      outNewTexture)
+{
+    Fatal("TODO");
 }
 
 void ImGUIRenderLayer::Render()
