@@ -97,7 +97,6 @@ void Window::EndRender()
     GPUGraphicsContext::Get().EndPresent(*mSwapchain);
 }
 
-
 MainWindow::MainWindow(const glm::ivec2& inSize,
                        const uint32_t    inFlags) :
     Window (Game::Get().GetName(),

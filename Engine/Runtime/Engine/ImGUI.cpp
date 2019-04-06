@@ -59,8 +59,6 @@ public:
                                       const RenderResourceHandle inTexture,
                                       RenderResourceHandle&      outNewTexture) override;
 
-    void                    Render() override;
-
 private:
     GPUShaderPtr            mVertexShader;
     GPUShaderPtr            mPixelShader;
@@ -298,100 +296,100 @@ void ImGUIRenderLayer::AddPasses(RenderGraph&               inGraph,
                                  const RenderResourceHandle inTexture,
                                  RenderResourceHandle&      outNewTexture)
 {
-    Fatal("TODO");
-}
+    /*
+     * TODO: I don't think it's really a good idea to have ImGUI drawn through
+     * the render graph. We want it done as late in the frame as possible,
+     * probably in Window::EndRender() instead. The way we do the vertex buffer
+     * creation/upload here is also a bit icky, correct thing to do would be
+     * declare the vertex buffer as a graph resource but determining the size
+     * would mean calling ImGui::Render() during the graph build phase which is
+     * way too early. I'll move it later, but for now I'm using it as a test
+     * case for the graph.
+     */
 
-void ImGUIRenderLayer::Render()
-{
-    ImGui::Render();
+    RenderGraphPass& pass = inGraph.AddPass("ImGUI", kRenderGraphPassType_Render);
 
-    const ImDrawData* const drawData = ImGui::GetDrawData();
-    if (!drawData)
+    pass.SetColour(0, inTexture, &outNewTexture);
+
+    pass.SetFunction([this] (const RenderGraph&        inGraph,
+                             const RenderGraphContext& inContext,
+                             GPUGraphicsCommandList&   inCmdList)
     {
-        return;
-    }
+        ImGui::Render();
 
-    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
-
-    GPUResourceViewDesc viewDesc;
-    viewDesc.type   = kGPUResourceViewType_Texture2D;
-    viewDesc.usage  = kGPUResourceUsage_RenderTarget;
-    viewDesc.format = GetLayerOutput()->GetTexture()->GetFormat();
-
-    std::unique_ptr<GPUResourceView> view(GPUDevice::Get().CreateResourceView(GetLayerOutput()->GetTexture(), viewDesc));
-
-    GPURenderPass renderPass;
-    renderPass.SetColour(0, view.get());
-
-    GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
-    cmdList->Begin();
-    cmdList->SetPipeline(mPipeline);
-
-    GPUArgument arguments[3] = {};
-    arguments[0].view    = mFontView;
-    arguments[1].sampler = mSampler;
-
-    cmdList->SetArguments(0, arguments);
-
-    const glm::ivec2 winSize = MainWindow::Get().GetSize();
-
-    const glm::mat4 projectionMatrix(
-         2.0f / winSize.x, 0.0f,               0.0f, 0.0f,
-         0.0f,             2.0f / -winSize.y,  0.0f, 0.0f,
-         0.0f,             0.0f,              -1.0f, 0.0f,
-        -1.0f,             1.0f,               0.0f, 1.0f);
-
-    cmdList->WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
-
-    /* Keep created buffers alive until we submit the command list. */
-    std::vector<std::unique_ptr<GPUBuffer>> buffers;
-
-    GPUStagingBuffer stagingBuffer(GPUDevice::Get());
-
-    for (int i = 0; i < drawData->CmdListsCount; i++)
-    {
-        const ImDrawList* const imCmdList = drawData->CmdLists[i];
-
-        const uint32_t vertexDataSize = imCmdList->VtxBuffer.size() * sizeof(ImDrawVert);
-        const uint32_t indexDataSize  = imCmdList->IdxBuffer.size() * sizeof(ImDrawIdx);
-        const uint32_t bufferSize     = vertexDataSize + indexDataSize;
-
-        stagingBuffer.Initialise(kGPUStagingAccess_Write, bufferSize);
-        stagingBuffer.Write(&imCmdList->VtxBuffer.front(), vertexDataSize, 0);
-        stagingBuffer.Write(&imCmdList->IdxBuffer.front(), indexDataSize, vertexDataSize);
-        stagingBuffer.Finalise();
-
-        GPUBufferDesc bufferDesc;
-        bufferDesc.size = bufferSize;
-
-        GPUBuffer* buffer = GPUDevice::Get().CreateBuffer(bufferDesc);
-
-        graphicsContext.UploadBuffer(buffer, stagingBuffer, bufferSize);
-        graphicsContext.ResourceBarrier(buffer,
-                                        kGPUResourceState_TransferWrite,
-                                        kGPUResourceState_IndexBufferRead | kGPUResourceState_VertexBufferRead);
-
-        cmdList->SetVertexBuffer(0, buffer, 0);
-        cmdList->SetIndexBuffer(kGPUIndexType_16, buffer, vertexDataSize);
-
-        buffers.emplace_back(buffer);
-
-        size_t indexOffset = 0;
-
-        for (const ImDrawCmd* cmd = imCmdList->CmdBuffer.begin(); cmd != imCmdList->CmdBuffer.end(); cmd++)
+        const ImDrawData* const drawData = ImGui::GetDrawData();
+        if (!drawData)
         {
-            const IntRect scissor(cmd->ClipRect.x,
-                                  cmd->ClipRect.y,
-                                  cmd->ClipRect.z - cmd->ClipRect.x,
-                                  cmd->ClipRect.w - cmd->ClipRect.y);
-
-            cmdList->SetScissor(scissor);
-            cmdList->DrawIndexed(cmd->ElemCount, indexOffset);
-
-            indexOffset += cmd->ElemCount;
+            return;
         }
-    }
 
-    cmdList->End();
-    graphicsContext.SubmitRenderPass(cmdList);
+        inCmdList.SetPipeline(mPipeline);
+
+        GPUArgument arguments[3] = {};
+        arguments[0].view    = mFontView;
+        arguments[1].sampler = mSampler;
+
+        inCmdList.SetArguments(0, arguments);
+
+        const glm::ivec2 winSize = MainWindow::Get().GetSize();
+
+        const glm::mat4 projectionMatrix(
+            2.0f / winSize.x, 0.0f,               0.0f, 0.0f,
+            0.0f,             2.0f / -winSize.y,  0.0f, 0.0f,
+            0.0f,             0.0f,              -1.0f, 0.0f,
+           -1.0f,             1.0f,               0.0f, 1.0f);
+
+        inCmdList.WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
+
+        /* Keep created buffers alive until we submit the command list. */
+        std::vector<std::unique_ptr<GPUBuffer>> buffers;
+
+        GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+
+        GPUStagingBuffer stagingBuffer(GPUDevice::Get());
+
+        for (int i = 0; i < drawData->CmdListsCount; i++)
+        {
+            const ImDrawList* const imCmdList = drawData->CmdLists[i];
+
+            const uint32_t vertexDataSize = imCmdList->VtxBuffer.size() * sizeof(ImDrawVert);
+            const uint32_t indexDataSize  = imCmdList->IdxBuffer.size() * sizeof(ImDrawIdx);
+            const uint32_t bufferSize     = vertexDataSize + indexDataSize;
+
+            stagingBuffer.Initialise(kGPUStagingAccess_Write, bufferSize);
+            stagingBuffer.Write(&imCmdList->VtxBuffer.front(), vertexDataSize, 0);
+            stagingBuffer.Write(&imCmdList->IdxBuffer.front(), indexDataSize, vertexDataSize);
+            stagingBuffer.Finalise();
+
+            GPUBufferDesc bufferDesc;
+            bufferDesc.size = bufferSize;
+
+            GPUBuffer* buffer = GPUDevice::Get().CreateBuffer(bufferDesc);
+
+            graphicsContext.UploadBuffer(buffer, stagingBuffer, bufferSize);
+            graphicsContext.ResourceBarrier(buffer,
+                                            kGPUResourceState_TransferWrite,
+                                            kGPUResourceState_IndexBufferRead | kGPUResourceState_VertexBufferRead);
+
+            inCmdList.SetVertexBuffer(0, buffer, 0);
+            inCmdList.SetIndexBuffer(kGPUIndexType_16, buffer, vertexDataSize);
+
+            buffers.emplace_back(buffer);
+
+            size_t indexOffset = 0;
+
+            for (const ImDrawCmd* cmd = imCmdList->CmdBuffer.begin(); cmd != imCmdList->CmdBuffer.end(); cmd++)
+            {
+                const IntRect scissor(cmd->ClipRect.x,
+                                      cmd->ClipRect.y,
+                                      cmd->ClipRect.z - cmd->ClipRect.x,
+                                      cmd->ClipRect.w - cmd->ClipRect.y);
+
+                inCmdList.SetScissor(scissor);
+                inCmdList.DrawIndexed(cmd->ElemCount, indexOffset);
+
+                indexOffset += cmd->ElemCount;
+            }
+        }
+    });
 }

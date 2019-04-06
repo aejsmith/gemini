@@ -68,9 +68,6 @@ public:
                                       const RenderResourceHandle inTexture,
                                       RenderResourceHandle&      outNewTexture) = 0;
 
-    // TODO: Temporary interface before render graph.
-    virtual void            Render() = 0;
-
 private:
     const uint8_t           mOrder;
     RenderOutput*           mOutput;

@@ -58,8 +58,6 @@ public:
                                           const RenderResourceHandle inTexture,
                                           RenderResourceHandle&      outNewTexture) override;
 
-    void                        Render() override;
-
 private:
     struct Worker
     {
@@ -74,8 +72,6 @@ private:
     void                        WorkerThread(const uint32_t inIndex);
 
 private:
-    GPUTexture*                 mDepthBuffer;
-    GPUResourceView*            mDepthView;
     GPUShaderPtr                mVertexShader;
     GPUShaderPtr                mPixelShader;
     GPUArgumentSetLayoutRef     mArgumentLayout;
@@ -107,33 +103,11 @@ TestRenderLayer::TestRenderLayer() :
 TestRenderLayer::~TestRenderLayer()
 {
     delete mVertexBuffer;
-    delete mDepthView;
-    delete mDepthBuffer;
 }
 
 void TestRenderLayer::Initialise()
 {
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
-
-    const GPUTexture* colourTexture = GetLayerOutput()->GetTexture();
-
-    GPUTextureDesc depthBufferDesc;
-    depthBufferDesc.type   = kGPUResourceType_Texture2D;
-    depthBufferDesc.usage  = kGPUResourceUsage_DepthStencil;
-    depthBufferDesc.format = kPixelFormat_Depth32;
-    depthBufferDesc.width  = colourTexture->GetWidth();
-    depthBufferDesc.height = colourTexture->GetHeight();
-
-    mDepthBuffer = GPUDevice::Get().CreateTexture(depthBufferDesc);
-
-    graphicsContext.ResourceBarrier(mDepthBuffer, kGPUResourceState_None, kGPUResourceState_DepthStencilWrite);
-
-    GPUResourceViewDesc depthViewDesc;
-    depthViewDesc.type   = kGPUResourceViewType_Texture2D;
-    depthViewDesc.usage  = kGPUResourceUsage_DepthStencil;
-    depthViewDesc.format = depthBufferDesc.format;
-
-    mDepthView = GPUDevice::Get().CreateResourceView(mDepthBuffer, depthViewDesc);
 
     mVertexShader  = ShaderManager::Get().GetShader("Game/Test.hlsl", "VSMain", kGPUShaderStage_Vertex);
     mPixelShader   = ShaderManager::Get().GetShader("Game/Test.hlsl", "PSMain", kGPUShaderStage_Pixel);
@@ -252,58 +226,50 @@ void TestRenderLayer::AddPasses(RenderGraph&               inGraph,
                                 const RenderResourceHandle inTexture,
                                 RenderResourceHandle&      outNewTexture)
 {
-    Fatal("TODO");
-}
+    RenderGraphPass& pass = inGraph.AddPass("Test", kRenderGraphPassType_Render);
 
-void TestRenderLayer::Render()
-{
-    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+    RenderTextureDesc depthStencilDesc(inGraph.GetTextureDesc(inTexture));
+    depthStencilDesc.format = kPixelFormat_Depth32;
 
-    GPUResourceViewDesc viewDesc;
-    viewDesc.type   = kGPUResourceViewType_Texture2D;
-    viewDesc.usage  = kGPUResourceUsage_RenderTarget;
-    viewDesc.format = GetLayerOutput()->GetTexture()->GetFormat();
+    RenderResourceHandle depthStencil = inGraph.CreateTexture(depthStencilDesc);
 
-    std::unique_ptr<GPUResourceView> view(GPUDevice::Get().CreateResourceView(GetLayerOutput()->GetTexture(), viewDesc));
+    pass.SetColour(0, inTexture, &outNewTexture);
+    pass.SetDepthStencil(depthStencil, kGPUResourceState_DepthStencilWrite);
 
-    GPURenderPass renderPass;
-    renderPass.SetColour(0, view.get());
-    renderPass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    renderPass.SetDepthStencil(mDepthView);
-    renderPass.ClearDepth(1.0);
+    pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    pass.ClearDepth(1.0f);
 
-    GPUGraphicsCommandList* cmdList = graphicsContext.CreateRenderPass(renderPass);
-    cmdList->Begin();
-
-    const uint32_t numRowsRounded = RoundUp(kTotalNumRows, kThreadCount);
-    const uint32_t rowsPerThread  = numRowsRounded / kThreadCount;
-
-    GPUCommandList* children[kThreadCount];
-
-    mThreadsActive.store(kThreadCount);
-
-    for (uint32_t i = 0; i < kThreadCount; i++)
+    pass.SetFunction([this] (const RenderGraph&        inGraph,
+                             const RenderGraphContext& inContext,
+                             GPUGraphicsCommandList&   inCmdList)
     {
-        Worker& worker = mWorkers[i];
+        const uint32_t numRowsRounded = RoundUp(kTotalNumRows, kThreadCount);
+        const uint32_t rowsPerThread  = numRowsRounded / kThreadCount;
 
-        worker.rowOffset = i * rowsPerThread;
-        worker.rowCount  = std::min(worker.rowOffset + rowsPerThread, kTotalNumRows) - worker.rowOffset;
-        worker.cmdList   = cmdList->CreateChild();
+        GPUCommandList* children[kThreadCount];
 
-        children[i] = worker.cmdList;
+        mThreadsActive.store(kThreadCount);
 
-        worker.ready.store(true, std::memory_order_release);
-    }
+        for (uint32_t i = 0; i < kThreadCount; i++)
+        {
+            Worker& worker = mWorkers[i];
 
-    while (mThreadsActive.load(std::memory_order_acquire) > 0)
-    {
-        std::this_thread::yield();
-    }
+            worker.rowOffset = i * rowsPerThread;
+            worker.rowCount  = std::min(worker.rowOffset + rowsPerThread, kTotalNumRows) - worker.rowOffset;
+            worker.cmdList   = inCmdList.CreateChild();
 
-    cmdList->SubmitChildren(children, kThreadCount);
+            children[i] = worker.cmdList;
 
-    cmdList->End();
-    graphicsContext.SubmitRenderPass(cmdList);
+            worker.ready.store(true, std::memory_order_release);
+        }
+
+        while (mThreadsActive.load(std::memory_order_acquire) > 0)
+        {
+            std::this_thread::yield();
+        }
+
+        inCmdList.SubmitChildren(children, kThreadCount);
+    });
 }
 
 TestGame::TestGame()

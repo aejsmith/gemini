@@ -234,17 +234,22 @@ enum GPUResourceState : uint32_t
      * only be applied to textures with kGPUResourceUsage_DepthStencil.
      *
      * kGPUResourceState_DepthStencilWrite is mutually exclusive. The others
-     * can be combined with shader read states, which makes it possible to read
-     * from the portion of the texture which is indicated read-only in these
-     * states. For example, kGPUResourceState_DepthReadStencilWrite can be
-     * combined with kGPUResourceState_PixelShaderRead to allow reading the
-     * depth portion of the texture while it is bound in the current render
-     * pass.
+     * can be combined with shader read states (but mutually exclusive with
+     * each other), which makes it possible to read from the portion of the
+     * texture which is indicated read-only in these states. For example,
+     * kGPUResourceState_DepthReadStencilWrite can be combined with
+     * kGPUResourceState_PixelShaderRead to allow reading the depth portion of
+     * the texture while it is bound in the current render pass.
      */
     kGPUResourceState_DepthStencilWrite         = (1 << 13),
     kGPUResourceState_DepthReadStencilWrite     = (1 << 14),
     kGPUResourceState_DepthWriteStencilRead     = (1 << 15),
     kGPUResourceState_DepthStencilRead          = (1 << 16),
+
+    kGPUResourceState_AllDepthStencil           = kGPUResourceState_DepthStencilWrite |
+                                                  kGPUResourceState_DepthReadStencilWrite |
+                                                  kGPUResourceState_DepthWriteStencilRead |
+                                                  kGPUResourceState_DepthStencilRead,
 
     /**
      * Transfer states. These are each mutually exclusive. Used for any

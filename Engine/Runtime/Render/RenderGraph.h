@@ -44,8 +44,29 @@ enum RenderResourceType
 
 struct RenderResourceHandle
 {
+public:
+                                    RenderResourceHandle();
+
+                                    operator bool() const;
+
+private:
     uint32_t                        index;
+    uint32_t                        version;
+
+    friend class RenderGraph;
+    friend class RenderGraphPass;
 };
+
+inline RenderResourceHandle::RenderResourceHandle() :
+    index   (std::numeric_limits<uint32_t>::max()),
+    version (0)
+{
+}
+
+inline RenderResourceHandle::operator bool() const
+{
+    return index != std::numeric_limits<uint32_t>::max();
+}
 
 /**
  * Descriptor for a texture render graph resource. Similar to GPUTextureDesc,
@@ -106,8 +127,27 @@ struct RenderViewDesc
 
 struct RenderViewHandle
 {
-    // TODO. Should be simple, it's passed by value.
+public:
+                                    RenderViewHandle();
+
+                                    operator bool() const;
+
+private:
+    uint32_t                        index;
+
+    friend class RenderGraph;
+    friend class RenderGraphPass;
 };
+
+inline RenderViewHandle::RenderViewHandle() :
+    index (std::numeric_limits<uint32_t>::max())
+{
+}
+
+inline RenderViewHandle::operator bool() const
+{
+    return index != std::numeric_limits<uint32_t>::max();
+}
 
 class RenderGraphPass : Uncopyable
 {
@@ -139,9 +179,10 @@ public:
      * usage does not require a view to be created. When a view is needed, use
      * one of the view creation methods instead.
      *
-     * If the specified resource state is writeable, outNewResource must be
-     * non-null, where a new handle referring to the resource after the pass
-     * will be returned.
+     * If the specified resource state is writeable, and outNewResource is non-
+     * null, a new handle referring to the resource after the pass will be
+     * returned there. It is valid to pass null if the resource is writeable
+     * but it is not needed after the pass, e.g. it is just transient storage.
      */
     void                            UseResource(const RenderResourceHandle inResource,
                                                 const GPUResourceState     inState,
@@ -158,9 +199,12 @@ public:
 
     /**
      * For a render pass, creates a view of a resource and sets this as a
-     * colour attachment for the pass. State must be
-     * kGPUResourceState_RenderTarget, which is a writeable state and therefore
-     * outNewResource must be non-null.
+     * colour attachment for the pass. The first version is a shortcut which
+     * will just target level/layer 0 of the resource. The second allows more
+     * control by providing view properties. The state must be set to
+     * kGPUResourceState_RenderTarget. outNewResource must be non-null for both
+     * uses since a colour target is a write access, and there is no use in
+     * writing to a colour target and not consuming the output.
      *
      * The render pass load/store ops will be configured automatically by
      * default. If the subresource has no previous writes, the load op will be
@@ -169,19 +213,31 @@ public:
      * op will be set to discard if no subsequent passes use the resource after
      * the pass, otherwise it will be set to store.
      */
-    RenderViewHandle                CreateColourView(const uint8_t              inIndex,
-                                                     const RenderResourceHandle inResource,
-                                                     const RenderViewDesc&      inDesc,
-                                                     RenderResourceHandle*      outNewResource);
+    void                            SetColour(const uint8_t              inIndex,
+                                              const RenderResourceHandle inResource,
+                                              RenderResourceHandle*      outNewResource);
+    void                            SetColour(const uint8_t              inIndex,
+                                              const RenderResourceHandle inResource,
+                                              const RenderViewDesc&      inDesc,
+                                              RenderResourceHandle*      outNewResource);
 
     /**
      * For a render pass, creates a view of a resource and sets this as the
      * depth/stencil attachment for the pass. See CreateColourView() regarding
-     * load/store ops.
+     * load/store ops.  The first version is a shortcut which will just target
+     * level/layer 0 of the resource. A depth/stencil resource state must be
+     * specified which determines the writeability of the resource. The second
+     * version allows more control by providing full view properties. If state
+     * is kGPUResourceState_DepthStencilRead, then outNewResource must be null.
+     * Otherwise, it can be non-null if the contents will be needed after the
+     * pass, but can still be null if the depth buffer is just transient.
      */
-    RenderViewHandle                CreateDepthStencilView(const RenderResourceHandle inResource,
-                                                           const RenderViewDesc&      inDesc,
-                                                           RenderResourceHandle*      outNewResource = nullptr);
+    void                            SetDepthStencil(const RenderResourceHandle inResource,
+                                                    const GPUResourceState     inState,
+                                                    RenderResourceHandle*      outNewResource = nullptr);
+    void                            SetDepthStencil(const RenderResourceHandle inResource,
+                                                    const RenderViewDesc&      inDesc,
+                                                    RenderResourceHandle*      outNewResource = nullptr);
 
     /**
      * Clear an attachment to a specific value. If the attachment will always
@@ -197,7 +253,52 @@ public:
                                                 const glm::vec4& inValue);
     void                            ClearDepth(const float inValue);
     void                            ClearStencil(const uint32_t inValue);
+
+private:
+    struct Attachment
+    {
+        RenderViewHandle            view;
+        GPUTextureClearData         clearData;
+    };
+
+private:
+                                    RenderGraphPass(RenderGraph&              inGraph,
+                                                    std::string               inName,
+                                                    const RenderGraphPassType inType);
+                                    ~RenderGraphPass() {}
+
+private:
+    RenderGraph&                    mGraph;
+    const std::string               mName;
+    const RenderGraphPassType       mType;
+
+    RenderPassFunction              mRenderPassFunction;
+    ComputePassFunction             mComputePassFunction;
+    TransferPassFunction            mTransferPassFunction;
+
+    Attachment                      mColour[kMaxRenderPassColourAttachments];
+    Attachment                      mDepthStencil;
+
+    friend class RenderGraph;
 };
+
+inline void RenderGraphPass::SetFunction(RenderPassFunction inFunction)
+{
+    Assert(mType == kRenderGraphPassType_Render);
+    mRenderPassFunction = std::move(inFunction);
+}
+
+inline void RenderGraphPass::SetFunction(ComputePassFunction inFunction)
+{
+    Assert(mType == kRenderGraphPassType_Compute);
+    mComputePassFunction = std::move(inFunction);
+}
+
+inline void RenderGraphPass::SetFunction(TransferPassFunction inFunction)
+{
+    Assert(mType == kRenderGraphPassType_Transfer);
+    mTransferPassFunction = std::move(inFunction);
+}
 
 /**
  * Rendering is driven by the render graph. To render the content of a
@@ -244,6 +345,8 @@ public:
                                     ~RenderGraph();
 
     RenderResourceType              GetResourceType(const RenderResourceHandle inHandle) const;
+    const RenderBufferDesc&         GetBufferDesc(const RenderResourceHandle inHandle) const;
+    const RenderTextureDesc&        GetTextureDesc(const RenderResourceHandle inHandle) const;
 
     /**
      * Graph build methods.
@@ -316,18 +419,41 @@ private:
             RenderTextureDesc       texture;
             RenderBufferDesc        buffer;
         };
+
+        /** Imported resources. */
+        GPUResource*                imported;
+        GPUResourceState            originalState;
+        std::function<void ()>      beginCallback;
+        std::function<void ()>      endCallback;
+
+    public:
+                                    Resource() : texture() {}
+
     };
 
 private:
     std::vector<RenderGraphPass*>   mPasses;
-    std::vector<Resource>           mResources;
+    std::vector<Resource*>          mResources;
 
+    friend class RenderGraphPass;
 };
 
 inline RenderResourceType RenderGraph::GetResourceType(const RenderResourceHandle inHandle) const
 {
     Assert(inHandle.index < mResources.size());
-    return mResources[inHandle.index].type;
+    return mResources[inHandle.index]->type;
+}
+
+inline const RenderBufferDesc& RenderGraph::GetBufferDesc(const RenderResourceHandle inHandle) const
+{
+    Assert(GetResourceType(inHandle) == kRenderResourceType_Buffer);
+    return mResources[inHandle.index]->buffer;
+}
+
+inline const RenderTextureDesc& RenderGraph::GetTextureDesc(const RenderResourceHandle inHandle) const
+{
+    Assert(GetResourceType(inHandle) == kRenderResourceType_Texture);
+    return mResources[inHandle.index]->texture;
 }
 
 #if 0
