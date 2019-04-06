@@ -34,8 +34,8 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
         Assert(IsOnlyOneBitSet(GetUsage()));
         Assert(GetResource().GetUsage() & GetUsage());
 
-        Assert(GetType() != kGPUResourceViewType_Buffer || GetFormat() == PixelFormat::kUnknown);
-        Assert(GetType() == kGPUResourceViewType_Buffer || GetFormat() != PixelFormat::kUnknown);
+        Assert(GetType() != kGPUResourceViewType_Buffer || GetFormat() == kPixelFormat_Unknown);
+        Assert(GetType() == kGPUResourceViewType_Buffer || GetFormat() != kPixelFormat_Unknown);
 
         if (GetType() == kGPUResourceViewType_Buffer || GetType() == kGPUResourceViewType_TextureBuffer)
         {

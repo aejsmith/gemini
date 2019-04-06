@@ -58,7 +58,7 @@ struct RenderTextureDesc
 
     GPUResourceType                 type            = kGPUResourceType_Texture2D;
     GPUTextureFlags                 flags           = kGPUTexture_None;
-    PixelFormat                     format          = PixelFormat::kUnknown;
+    PixelFormat                     format          = kPixelFormat_Unknown;
 
     uint32_t                        width           = 1;
     uint32_t                        height          = 1;
@@ -96,7 +96,7 @@ struct RenderViewDesc
      */
     GPUResourceState                state;
 
-    PixelFormat                     format          = PixelFormat::kUnknown;
+    PixelFormat                     format          = kPixelFormat_Unknown;
 
     uint32_t                        mipOffset       = 0;
     uint32_t                        mipCount        = 1;
@@ -346,7 +346,7 @@ void AddExampleComputePass(RenderGraph&          inGraph,
     RenderTextureDesc textureDesc;
     textureDesc.name   = "Example";
     textureDesc.type   = kGPUResourceType_Texture2D;
-    textureDesc.format = PixelFormat::kR8G8B8A8;
+    textureDesc.format = kPixelFormat_R8G8B8A8;
     textureDesc.width  = 1024;
     textureDesc.height = 1024;
 

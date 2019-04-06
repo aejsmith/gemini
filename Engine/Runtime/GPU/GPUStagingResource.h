@@ -166,7 +166,7 @@ public:
      * be finalised, and must have been initialised with kGPUStagingAccess_Write.
      * Data layout is linear: consecutive pixels of a row are contiguous in
      * memory, and each row is contiguous. Number of bytes per pixel is as
-     * reported by PixelFormat::BytesPerPixel().
+     * reported by PixelFormatInfo::BytesPerPixel().
      */
     void*                   MapWrite(const GPUSubresource inSubresource);
 

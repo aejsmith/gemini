@@ -16,9 +16,9 @@
 
 #include "Core/PixelFormat.h"
 
-PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
+PixelFormatInfo::Format PixelFormatInfo::sInfo[kPixelFormatCount] =
 {
-    /* kUnknown */
+    /* kPixelFormat_Unknown */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -27,7 +27,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 0,
     },
 
-    /* kR8G8B8A8 */
+    /* kPixelFormat_R8G8B8A8 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -36,7 +36,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kR8G8B8A8sRGB */
+    /* kPixelFormat_R8G8B8A8sRGB */
     {
         /* isSRGB         */ true,
         /* isFloat        */ false,
@@ -45,7 +45,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kR8G8 */
+    /* kPixelFormat_R8G8 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -54,7 +54,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 2,
     },
 
-    /* kR8 */
+    /* kPixelFormat_R8 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -63,7 +63,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 1,
     },
 
-    /* kB8G8R8A8 */
+    /* kPixelFormat_B8G8R8A8 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -72,7 +72,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kB8G8R8A8sRGB */
+    /* kPixelFormat_B8G8R8A8sRGB */
     {
         /* isSRGB         */ true,
         /* isFloat        */ false,
@@ -81,7 +81,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kR10G10B10A2 */
+    /* kPixelFormat_R10G10B10A2 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -90,7 +90,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kFloatR16G16B16A16 */
+    /* kPixelFormat_FloatR16G16B16A16 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -99,7 +99,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 8,
     },
 
-    /* kFloatR16G16B16 */
+    /* kPixelFormat_FloatR16G16B16 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -108,7 +108,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 6,
     },
 
-    /* kFloatR16G16 */
+    /* kPixelFormat_FloatR16G16 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -117,7 +117,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kFloatR16 */
+    /* kPixelFormat_FloatR16 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -126,7 +126,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 2,
     },
 
-    /* kFloatR32G32B32A32 */
+    /* kPixelFormat_FloatR32G32B32A32 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -135,7 +135,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 16,
     },
 
-    /* kFloatR32G32B32 */
+    /* kPixelFormat_FloatR32G32B32 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -144,7 +144,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 12,
     },
 
-    /* kFloatR32G32 */
+    /* kPixelFormat_FloatR32G32 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -153,7 +153,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 8,
     },
 
-    /* kFloatR32 */
+    /* kPixelFormat_FloatR32 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ true,
@@ -162,7 +162,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kDepth16 */
+    /* kPixelFormat_Depth16 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -171,7 +171,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 2,
     },
 
-    /* kDepth32 */
+    /* kPixelFormat_Depth32 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -180,7 +180,7 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
         /* bytesPerPixel  */ 4,
     },
 
-    /* kDepth32Stencil8 */
+    /* kPixelFormat_Depth32Stencil8 */
     {
         /* isSRGB         */ false,
         /* isFloat        */ false,
@@ -190,15 +190,15 @@ PixelFormat::Info PixelFormat::sInfo[PixelFormat::kNumFormats] =
     }
 };
 
-PixelFormat PixelFormat::GetSRGBEquivalent(const PixelFormat inFormat)
+PixelFormat PixelFormatInfo::GetSRGBEquivalent(const PixelFormat inFormat)
 {
     switch (inFormat)
     {
-        case PixelFormat::kR8G8B8A8:
-            return PixelFormat::kR8G8B8A8sRGB;
+        case kPixelFormat_R8G8B8A8:
+            return kPixelFormat_R8G8B8A8sRGB;
 
-        case PixelFormat::kB8G8R8A8:
-            return PixelFormat::kB8G8R8A8sRGB;
+        case kPixelFormat_B8G8R8A8:
+            return kPixelFormat_B8G8R8A8sRGB;
 
         default:
             return inFormat;
@@ -206,15 +206,15 @@ PixelFormat PixelFormat::GetSRGBEquivalent(const PixelFormat inFormat)
     }
 }
 
-PixelFormat PixelFormat::GetNonSRGBEquivalent(const PixelFormat inFormat)
+PixelFormat PixelFormatInfo::GetNonSRGBEquivalent(const PixelFormat inFormat)
 {
     switch (inFormat)
     {
-        case PixelFormat::kR8G8B8A8sRGB:
-            return PixelFormat::kR8G8B8A8;
+        case kPixelFormat_R8G8B8A8sRGB:
+            return kPixelFormat_R8G8B8A8;
 
-        case PixelFormat::kB8G8R8A8sRGB:
-            return PixelFormat::kB8G8R8A8;
+        case kPixelFormat_B8G8R8A8sRGB:
+            return kPixelFormat_B8G8R8A8;
 
         default:
             return inFormat;

@@ -187,7 +187,7 @@ static void ConvertBlendState(const GPUPipelineDesc&               inDesc,
 
     for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
     {
-        if (rtStateDesc.colour[i] != PixelFormat::kUnknown)
+        if (rtStateDesc.colour[i] != kPixelFormat_Unknown)
         {
             outBlendInfo.attachmentCount = i + 1;
             outBlendInfo.pAttachments    = outBlendAttachments;

@@ -98,7 +98,7 @@ void VulkanSwapchain::ChooseFormat()
 
     /* Now we need to convert this back to a generic pixel format definition. */
     mFormat = VulkanFormat::GetPixelFormat(mSurfaceFormat.format);
-    if (mFormat == PixelFormat::kUnknown)
+    if (mFormat == kPixelFormat_Unknown)
     {
         Fatal("Vulkan surface format is unrecognised");
     }

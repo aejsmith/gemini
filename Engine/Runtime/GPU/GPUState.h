@@ -209,13 +209,13 @@ struct GPURenderTargetStateDesc
 {
     /**
      * Format of colour attachments. Unused attachments are indicated by
-     * PixelFormat::kUnknown.
+     * kPixelFormat_Unknown.
      */
     PixelFormat                 colour[kMaxRenderPassColourAttachments];
 
     /**
      * Format of the depth/stencil attachment. No depth/stencil is indicated by
-     * PixelFormat::kUnknown.
+     * kPixelFormat_Unknown.
      */
     PixelFormat                 depthStencil;
 

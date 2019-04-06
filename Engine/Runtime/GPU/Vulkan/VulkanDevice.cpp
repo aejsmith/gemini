@@ -571,7 +571,7 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
             [&] (const VulkanRenderPassKey::Attachment& inSrcAttachment,
                  VkAttachmentReference&                 outReference) -> bool
             {
-                const bool result = inSrcAttachment.format != PixelFormat::kUnknown;
+                const bool result = inSrcAttachment.format != kPixelFormat_Unknown;
 
                 if (result)
                 {

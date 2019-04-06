@@ -120,7 +120,7 @@ void TestRenderLayer::Initialise()
     GPUTextureDesc depthBufferDesc;
     depthBufferDesc.type   = kGPUResourceType_Texture2D;
     depthBufferDesc.usage  = kGPUResourceUsage_DepthStencil;
-    depthBufferDesc.format = PixelFormat::kDepth32;
+    depthBufferDesc.format = kPixelFormat_Depth32;
     depthBufferDesc.width  = colourTexture->GetWidth();
     depthBufferDesc.height = colourTexture->GetHeight();
 

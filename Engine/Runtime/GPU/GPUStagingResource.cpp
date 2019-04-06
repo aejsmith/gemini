@@ -56,7 +56,7 @@ void GPUStagingTexture::Initialise(const GPUStagingAccess inAccess,
     const uint32_t subresourceCount = GetNumMipLevels() * GetArraySize();
     mSubresourceOffsets.resize(subresourceCount);
 
-    const uint32_t bytesPerPixel = PixelFormat::BytesPerPixel(GetFormat());
+    const uint32_t bytesPerPixel = PixelFormatInfo::BytesPerPixel(GetFormat());
 
     uint32_t bufferSize       = 0;
     uint32_t subresourceIndex = 0;

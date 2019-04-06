@@ -22,7 +22,7 @@ GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
                            Window&    inWindow) :
     GPUDeviceChild (inDevice),
     mWindow        (inWindow),
-    mFormat        (PixelFormat::kUnknown),
+    mFormat        (kPixelFormat_Unknown),
     mTexture       (nullptr)
 {
     mWindow.SetSwapchain(this, {});

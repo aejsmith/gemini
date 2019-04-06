@@ -29,10 +29,10 @@ struct GPUResourceViewDesc
     GPUResourceUsage            usage;
 
     /**
-     * View format. Must be PixelFormat::kUnknown for raw buffer views,
+     * View format. Must be kPixelFormat_Unknown for raw buffer views,
      * otherwise must be compatible with the underlying resource format.
      */
-    PixelFormat                 format          = PixelFormat::kUnknown;
+    PixelFormat                 format          = kPixelFormat_Unknown;
 
     /**
      * Base mip level and mip count. mipCount must be 1 for anything other

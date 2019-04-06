@@ -258,7 +258,7 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
     GPUTextureDesc textureDesc;
     textureDesc.type   = kGPUResourceType_Texture2D;
     textureDesc.usage  = kGPUResourceUsage_ShaderRead;
-    textureDesc.format = PixelFormat::kR8G8B8A8;
+    textureDesc.format = kPixelFormat_R8G8B8A8;
     textureDesc.width  = width;
     textureDesc.height = height;
 

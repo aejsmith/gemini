@@ -71,7 +71,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& inPass)
         }
         else
         {
-            dstAttachment.format = PixelFormat::kUnknown;
+            dstAttachment.format = kPixelFormat_Unknown;
         }
     }
 
@@ -85,7 +85,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& inPass)
         dstAttachment.loadOp  = srcAttachment.loadOp;
         dstAttachment.storeOp = srcAttachment.storeOp;
 
-        if (PixelFormat::IsDepthStencil(dstAttachment.format))
+        if (PixelFormatInfo::IsDepthStencil(dstAttachment.format))
         {
             dstAttachment.stencilLoadOp  = srcAttachment.stencilLoadOp;
             dstAttachment.stencilStoreOp = srcAttachment.stencilStoreOp;
@@ -93,7 +93,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& inPass)
     }
     else
     {
-        dstAttachment.format = PixelFormat::kUnknown;
+        dstAttachment.format = kPixelFormat_Unknown;
     }
 }
 
@@ -108,7 +108,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderTargetStateDesc& 
 
         dstAttachment.format = inState.colour[i];
 
-        if (dstAttachment.format != PixelFormat::kUnknown)
+        if (dstAttachment.format != kPixelFormat_Unknown)
         {
             /* Fill out other parts with sensible defaults. There's a reasonable
              * chance this render pass might actually be used for real, rather
@@ -123,13 +123,13 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderTargetStateDesc& 
 
     dstAttachment.format = inState.depthStencil;
 
-    if (dstAttachment.format != PixelFormat::kUnknown)
+    if (dstAttachment.format != kPixelFormat_Unknown)
     {
         dstAttachment.state   = kGPUResourceState_DepthStencilWrite;
         dstAttachment.loadOp  = kGPULoadOp_Load;
         dstAttachment.storeOp = kGPUStoreOp_Store;
 
-        if (PixelFormat::IsDepthStencil(dstAttachment.format))
+        if (PixelFormatInfo::IsDepthStencil(dstAttachment.format))
         {
             dstAttachment.stencilLoadOp  = kGPULoadOp_Load;
             dstAttachment.stencilStoreOp = kGPUStoreOp_Store;

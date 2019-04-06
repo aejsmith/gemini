@@ -535,7 +535,7 @@ void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
     Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
     Assert(inDestTexture->SizeMatches(inSourceTexture));
     Assert(inDestTexture->GetFormat() == inSourceTexture.GetFormat());
-    Assert(PixelFormat::IsColour(inDestTexture->GetFormat()));
+    Assert(PixelFormatInfo::IsColour(inDestTexture->GetFormat()));
 
     auto destTexture      = static_cast<VulkanTexture*>(inDestTexture);
     auto sourceAllocation = static_cast<VulkanStagingAllocation*>(inSourceTexture.GetHandle());

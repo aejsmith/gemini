@@ -27,11 +27,11 @@ VulkanTexture::VulkanTexture(VulkanDevice&         inDevice,
     mAllocation (VK_NULL_HANDLE),
     mAspectMask (0)
 {
-    if (PixelFormat::IsDepth(GetFormat()))
+    if (PixelFormatInfo::IsDepth(GetFormat()))
     {
         mAspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
 
-        if (PixelFormat::IsDepthStencil(GetFormat()))
+        if (PixelFormatInfo::IsDepthStencil(GetFormat()))
         {
             mAspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
         }
