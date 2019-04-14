@@ -50,22 +50,22 @@ public:
                                     operator bool() const;
 
 private:
-    uint32_t                        index;
-    uint32_t                        version;
+    uint16_t                        index;
+    uint16_t                        version;
 
     friend class RenderGraph;
     friend class RenderGraphPass;
 };
 
 inline RenderResourceHandle::RenderResourceHandle() :
-    index   (std::numeric_limits<uint32_t>::max()),
+    index   (std::numeric_limits<uint16_t>::max()),
     version (0)
 {
 }
 
 inline RenderResourceHandle::operator bool() const
 {
-    return index != std::numeric_limits<uint32_t>::max();
+    return index != std::numeric_limits<uint16_t>::max();
 }
 
 /**
@@ -133,20 +133,20 @@ public:
                                     operator bool() const;
 
 private:
-    uint32_t                        index;
+    uint16_t                        index;
 
     friend class RenderGraph;
     friend class RenderGraphPass;
 };
 
 inline RenderViewHandle::RenderViewHandle() :
-    index (std::numeric_limits<uint32_t>::max())
+    index (std::numeric_limits<uint16_t>::max())
 {
 }
 
 inline RenderViewHandle::operator bool() const
 {
-    return index != std::numeric_limits<uint32_t>::max();
+    return index != std::numeric_limits<uint16_t>::max();
 }
 
 class RenderGraphPass : Uncopyable
@@ -279,6 +279,8 @@ private:
     const std::string               mName;
     const RenderGraphPassType       mType;
 
+    bool                            mRequired;
+
     std::vector<UsedResource>       mUsedResources;
 
     RenderPassFunction              mRenderPassFunction;
@@ -290,6 +292,8 @@ private:
 
     friend class RenderGraph;
 };
+
+using RenderGraphPassArray = std::vector<RenderGraphPass*>;
 
 inline void RenderGraphPass::SetFunction(RenderPassFunction inFunction)
 {
@@ -333,14 +337,7 @@ inline void RenderGraphPass::SetFunction(TransferPassFunction inFunction)
  * resource (it specifies a writeable state for its usage of the resource), a
  * new handle is produced. This handle refers to the content of the resource
  * after the pass has finished executing. Any subsequently added passes which
- * depend on that content must use the new handle.
- *
- * For example, say pass A is added which writes to resource handle 1. The
- * declaration of the write produces resource handle 2. If we subsequently add
- * pass B which reads resource handle 2, then pass B will execute after pass A
- * and read the result it produced. If we subsequently add pass C which reads
- * resource handle 1, then pass C will execute *before* pass A and read the
- * content of the resource before pass A.
+ * use the resource must use the new handle.
  *
  * There can only be one write access to a given resource handle. Read and
  * write to the same resource within a pass is only allowed on non-overlapping
@@ -429,7 +426,11 @@ private:
             RenderBufferDesc        buffer;
         };
 
-        uint32_t                    currentVersion;
+        /** Current version, incremented on each write. */
+        uint16_t                    currentVersion;
+
+        /** Array of passes which produced each version. */
+        RenderGraphPassArray        producers;
 
         /** Imported resources. */
         GPUResource*                imported;
@@ -437,19 +438,23 @@ private:
         std::function<void ()>      beginCallback;
         std::function<void ()>      endCallback;
 
-    public:
-                                    Resource() : texture() {}
+        bool                        required;
 
+    public:
+                                    Resource();
     };
 
     struct View
     {
-        uint32_t                    index;
+        uint16_t                    resourceIndex;
         RenderViewDesc              desc;
     };
 
 private:
-    std::vector<RenderGraphPass*>   mPasses;
+    void                            DetermineRequiredPasses();
+
+private:
+    RenderGraphPassArray            mPasses;
     std::vector<Resource*>          mResources;
     std::vector<View>               mViews;
 

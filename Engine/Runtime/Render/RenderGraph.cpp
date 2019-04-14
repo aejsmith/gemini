@@ -25,17 +25,35 @@
  *  - Could add some helper functions for transfer passes for common cases,
  *    e.g. just copying a texture.
  *  - GPU memory aliasing based on required resource lifetimes.
+ *  - Optimisation of barriers. Initial implementation just does barriers
+ *    as needed before each pass during execution, but since we have a view of
+ *    the whole frame, we should be able to move them earlier and batch them
+ *    together (including using a union of compatible read states if read
+ *    by multiple later passes, and potentially use split barriers/events).
  *  - Use FrameAllocator for internal allocations (including STL stuff). Also
  *    could do with a way to get GPU layer objects (resources, views) to be
  *    allocated with it as well.
+ *  - We currently do not allow passes to declare usage of a resource version
+ *    older than the current: doing so would require the ability to reorder
+ *    passes so that the newly added one is executed at the right time to see
+ *    the older content. However, this also introduces some ways to declare
+ *    impossible scenarios: for example, we could declare pass Z that consumes
+ *    resource A version 1 produced by pass X, and resource B version 1
+ *    produced by pass Y, but pass Y also produces resource A version 2. Z
+ *    needs to execute after Y to see B1, but at that point it would also get
+ *    A2 rather than A1. We would need an earlier copy of A1 for Z to use to
+ *    resolve it. We would need to detect this situation and either reject it
+ *    (require an explicit copy of A) or do a copy internally. For now I'm not
+ *    bothering to solve it until we have a use case (if ever).
  */
 
 RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
                                  std::string               inName,
                                  const RenderGraphPassType inType) :
-    mGraph  (inGraph),
-    mName   (inName),
-    mType   (inType)
+    mGraph      (inGraph),
+    mName       (inName),
+    mType       (inType),
+    mRequired   (false)
 {
 }
 
@@ -50,8 +68,8 @@ void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
 
     AssertMsg(isWrite || !outNewHandle,
               "outNewHandle must be null for a read-only access");
-    AssertMsg(!isWrite || resource->currentVersion == inHandle.version,
-              "Write access must be to current resource version");
+    AssertMsg(resource->currentVersion == inHandle.version,
+              "Resource access must be to current version (see TODO)");
 
     for (const auto& otherUse : mUsedResources)
     {
@@ -71,6 +89,10 @@ void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
     if (isWrite)
     {
         resource->currentVersion++;
+
+        Assert(resource->producers.size() == resource->currentVersion);
+
+        resource->producers.emplace_back(this);
 
         if (outNewHandle)
         {
@@ -108,8 +130,8 @@ RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle
 
     mGraph.mViews.emplace_back();
     RenderGraph::View& view = mGraph.mViews.back();
-    view.index = inHandle.index;
-    view.desc  = inDesc;
+    view.resourceIndex      = inHandle.index;
+    view.desc               = inDesc;
 
     return viewHandle;
 }
@@ -238,14 +260,22 @@ RenderGraphPass& RenderGraph::AddPass(std::string               inName,
     return *pass;
 }
 
+RenderGraph::Resource::Resource() :
+    texture         (),
+    currentVersion  (0),
+    imported        (nullptr),
+    originalState   (kGPUResourceState_None),
+    required        (false)
+{
+    /* Nothing produced the initial version. */
+    producers.emplace_back(nullptr);
+}
+
 RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
 {
-    Resource* resource       = new Resource;
-    resource->type           = kRenderResourceType_Buffer;
-    resource->buffer         = inDesc;
-    resource->currentVersion = 0;
-    resource->imported       = nullptr;
-    resource->originalState  = kGPUResourceState_None;
+    Resource* resource = new Resource;
+    resource->type     = kRenderResourceType_Buffer;
+    resource->buffer   = inDesc;
 
     RenderResourceHandle handle;
     handle.index   = mResources.size();
@@ -258,12 +288,9 @@ RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
 
 RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& inDesc)
 {
-    Resource* resource       = new Resource;
-    resource->type           = kRenderResourceType_Texture;
-    resource->texture        = inDesc;
-    resource->currentVersion = 0;
-    resource->imported       = nullptr;
-    resource->originalState  = kGPUResourceState_None;
+    Resource* resource = new Resource;
+    resource->type     = kRenderResourceType_Texture;
+    resource->texture  = inDesc;
 
     RenderResourceHandle handle;
     handle.index   = mResources.size();
@@ -279,12 +306,11 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
                                                  std::function<void ()> inBeginCallback,
                                                  std::function<void ()> inEndCallback)
 {
-    Resource* resource       = new Resource;
-    resource->currentVersion = 0;
-    resource->imported       = inResource;
-    resource->originalState  = inState;
-    resource->beginCallback  = std::move(inBeginCallback);
-    resource->endCallback    = std::move(inEndCallback);
+    Resource* resource      = new Resource;
+    resource->imported      = inResource;
+    resource->originalState = inState;
+    resource->beginCallback = std::move(inBeginCallback);
+    resource->endCallback   = std::move(inEndCallback);
 
     if (inResource->IsTexture())
     {
@@ -323,8 +349,61 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
     return handle;
 }
 
+void RenderGraph::DetermineRequiredPasses()
+{
+    /*
+     * This function determines which passes are actually required to produce
+     * the final outputs of the graph. The final outputs are all imported
+     * resources that are written by a graph pass.
+     *
+     * Therefore, we will need the passes that write the final version of each
+     * imported resource to be executed. We then work back from there, and mark
+     * the passes that produce each of their dependencies as required, and so
+     * on.
+     */
+
+    RenderGraphPass** const passes = AllocateStackArray(RenderGraphPass*, mPasses.size());
+    uint16_t passCount             = 0;
+
+    /* Get the passes producing imported resources. */
+    for (const Resource* const resource : mResources)
+    {
+        if (resource->imported && resource->currentVersion > 0)
+        {
+            passes[passCount++] = resource->producers[resource->currentVersion];
+        }
+    }
+
+    while (passCount > 0)
+    {
+        RenderGraphPass* const pass = passes[--passCount];
+
+        pass->mRequired = true;
+
+        for (const auto& use : pass->mUsedResources)
+        {
+            Resource* const resource = mResources[use.handle.index];
+
+            resource->required = true;
+
+            RenderGraphPass* const producer = resource->producers[use.handle.version];
+            Assert(producer || use.handle.version == 0);
+
+            /* Don't revisit passes we've already been to. */
+            if (producer && !producer->mRequired)
+            {
+                passes[passCount++] = producer;
+            }
+        }
+    }
+}
+
 void RenderGraph::Execute()
 {
+    DetermineRequiredPasses();
+
+    //AllocateResources();
+
     Fatal("TODO");
 }
 
