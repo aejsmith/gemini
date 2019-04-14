@@ -39,49 +39,108 @@ RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
 {
 }
 
-void RenderGraphPass::UseResource(const RenderResourceHandle inResource,
-                                  const GPUResourceState     inState,
+void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
                                   const GPUSubresourceRange& inRange,
-                                  RenderResourceHandle*      outNewResource)
+                                  const GPUResourceState     inState,
+                                  RenderResourceHandle*      outNewHandle)
 {
-//subresources! think about usage tracking
-    Fatal("TODO");
+    RenderGraph::Resource* resource = mGraph.mResources[inHandle.index];
+
+    const bool isWrite = inState & kGPUResourceState_AllWrite;
+
+    AssertMsg(isWrite || !outNewHandle,
+              "outNewHandle must be null for a read-only access");
+    AssertMsg(!isWrite || resource->currentVersion == inHandle.version,
+              "Write access must be to current resource version");
+
+    for (const auto& otherUse : mUsedResources)
+    {
+        if (otherUse.handle.index == inHandle.index)
+        {
+            AssertMsg(!otherUse.range.Overlaps(inRange),
+                      "Subresources cannot be used multiple times in the same pass");
+        }
+    }
+
+    mUsedResources.emplace_back();
+    UsedResource& use = mUsedResources.back();
+    use.handle        = inHandle;
+    use.range         = inRange;
+    use.state         = inState;
+
+    if (isWrite)
+    {
+        resource->currentVersion++;
+
+        if (outNewHandle)
+        {
+            outNewHandle->index   = inHandle.index;
+            outNewHandle->version = resource->currentVersion;
+        }
+    }
 }
 
-RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inResource,
+RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle,
                                              const RenderViewDesc&      inDesc,
-                                             RenderResourceHandle*      outNewResource)
+                                             RenderResourceHandle*      outNewHandle)
 {
-    Fatal("TODO");
+    GPUSubresourceRange range = { 0, 1, 0, 1 };
+
+    if (mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture)
+    {
+        range.mipOffset   = inDesc.mipOffset;
+        range.mipCount    = inDesc.mipCount;
+        range.layerOffset = inDesc.elementOffset;
+        range.layerCount  = inDesc.elementCount;
+    }
+    else
+    {
+        Assert(inDesc.mipOffset == 0 && inDesc.mipCount == 1);
+    }
+
+    UseResource(inHandle,
+                range,
+                inDesc.state,
+                outNewHandle);
+
+    RenderViewHandle viewHandle;
+    viewHandle.index = mGraph.mViews.size();
+
+    mGraph.mViews.emplace_back();
+    RenderGraph::View& view = mGraph.mViews.back();
+    view.index = inHandle.index;
+    view.desc  = inDesc;
+
+    return viewHandle;
 }
 
 void RenderGraphPass::SetColour(const uint8_t              inIndex,
-                                const RenderResourceHandle inResource,
-                                RenderResourceHandle*      outNewResource)
+                                const RenderResourceHandle inHandle,
+                                RenderResourceHandle*      outNewHandle)
 {
-    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(inResource);
+    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(inHandle);
 
     RenderViewDesc viewDesc;
     viewDesc.type   = kGPUResourceViewType_Texture2D;
     viewDesc.state  = kGPUResourceState_RenderTarget;
     viewDesc.format = textureDesc.format;
 
-    SetColour(inIndex, inResource, viewDesc, outNewResource);
+    SetColour(inIndex, inHandle, viewDesc, outNewHandle);
 }
 
 void RenderGraphPass::SetColour(const uint8_t              inIndex,
-                                const RenderResourceHandle inResource,
+                                const RenderResourceHandle inHandle,
                                 const RenderViewDesc&      inDesc,
-                                RenderResourceHandle*      outNewResource)
+                                RenderResourceHandle*      outNewHandle)
 {
     Assert(inIndex < kMaxRenderPassColourAttachments);
-    Assert(mGraph.GetResourceType(inResource) == kRenderResourceType_Texture);
+    Assert(mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture);
     Assert(inDesc.state == kGPUResourceState_RenderTarget);
     Assert(PixelFormatInfo::IsColour(inDesc.format));
-    Assert(outNewResource);
+    Assert(outNewHandle);
 
     Attachment& attachment = mColour[inIndex];
-    attachment.view = CreateView(inResource, inDesc, outNewResource);
+    attachment.view = CreateView(inHandle, inDesc, outNewHandle);
 
     /* If this is the first version of the resource, it will be cleared, so set
      * a default clear value. */
@@ -89,29 +148,29 @@ void RenderGraphPass::SetColour(const uint8_t              inIndex,
     attachment.clearData.colour = glm::vec4(0.0f);
 }
 
-void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inResource,
+void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inHandle,
                                       const GPUResourceState     inState,
-                                      RenderResourceHandle*      outNewResource)
+                                      RenderResourceHandle*      outNewHandle)
 {
-    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(inResource);
+    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(inHandle);
 
     RenderViewDesc viewDesc;
     viewDesc.type   = kGPUResourceViewType_Texture2D;
     viewDesc.state  = inState;
     viewDesc.format = textureDesc.format;
 
-    SetDepthStencil(inResource, viewDesc, outNewResource);
+    SetDepthStencil(inHandle, viewDesc, outNewHandle);
 }
 
-void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inResource,
+void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inHandle,
                                       const RenderViewDesc&      inDesc,
-                                      RenderResourceHandle*      outNewResource)
+                                      RenderResourceHandle*      outNewHandle)
 {
-    Assert(mGraph.GetResourceType(inResource) == kRenderResourceType_Texture);
+    Assert(mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture);
     Assert(inDesc.state & kGPUResourceState_AllDepthStencil && IsOnlyOneBitSet(inDesc.state));
     Assert(PixelFormatInfo::IsDepth(inDesc.format));
 
-    mDepthStencil.view = CreateView(inResource, inDesc, outNewResource);
+    mDepthStencil.view = CreateView(inHandle, inDesc, outNewHandle);
 
     /* If this is the first version of the resource, it will be cleared, so set
      * a default clear value. */
@@ -181,15 +240,16 @@ RenderGraphPass& RenderGraph::AddPass(std::string               inName,
 
 RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
 {
-    Resource* resource      = new Resource;
-    resource->type          = kRenderResourceType_Buffer;
-    resource->buffer        = inDesc;
-    resource->imported      = nullptr;
-    resource->originalState = kGPUResourceState_None;
+    Resource* resource       = new Resource;
+    resource->type           = kRenderResourceType_Buffer;
+    resource->buffer         = inDesc;
+    resource->currentVersion = 0;
+    resource->imported       = nullptr;
+    resource->originalState  = kGPUResourceState_None;
 
     RenderResourceHandle handle;
     handle.index   = mResources.size();
-    handle.version = 0;
+    handle.version = resource->currentVersion;
 
     mResources.emplace_back(resource);
 
@@ -198,15 +258,16 @@ RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
 
 RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& inDesc)
 {
-    Resource* resource      = new Resource;
-    resource->type          = kRenderResourceType_Texture;
-    resource->texture       = inDesc;
-    resource->imported      = nullptr;
-    resource->originalState = kGPUResourceState_None;
+    Resource* resource       = new Resource;
+    resource->type           = kRenderResourceType_Texture;
+    resource->texture        = inDesc;
+    resource->currentVersion = 0;
+    resource->imported       = nullptr;
+    resource->originalState  = kGPUResourceState_None;
 
     RenderResourceHandle handle;
     handle.index   = mResources.size();
-    handle.version = 0;
+    handle.version = resource->currentVersion;
 
     mResources.emplace_back(resource);
 
@@ -218,11 +279,12 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
                                                  std::function<void ()> inBeginCallback,
                                                  std::function<void ()> inEndCallback)
 {
-    Resource* resource      = new Resource;
-    resource->imported      = inResource;
-    resource->originalState = inState;
-    resource->beginCallback = std::move(inBeginCallback);
-    resource->endCallback   = std::move(inEndCallback);
+    Resource* resource       = new Resource;
+    resource->currentVersion = 0;
+    resource->imported       = inResource;
+    resource->originalState  = inState;
+    resource->beginCallback  = std::move(inBeginCallback);
+    resource->endCallback    = std::move(inEndCallback);
 
     if (inResource->IsTexture())
     {
@@ -254,7 +316,7 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
 
     RenderResourceHandle handle;
     handle.index   = mResources.size();
-    handle.version = 0;
+    handle.version = resource->currentVersion;
 
     mResources.emplace_back(resource);
 

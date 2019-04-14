@@ -179,30 +179,30 @@ public:
      * usage does not require a view to be created. When a view is needed, use
      * one of the view creation methods instead.
      *
-     * If the specified resource state is writeable, and outNewResource is non-
+     * If the specified resource state is writeable, and outNewHandle is non-
      * null, a new handle referring to the resource after the pass will be
      * returned there. It is valid to pass null if the resource is writeable
      * but it is not needed after the pass, e.g. it is just transient storage.
      */
-    void                            UseResource(const RenderResourceHandle inResource,
-                                                const GPUResourceState     inState,
+    void                            UseResource(const RenderResourceHandle inHandle,
                                                 const GPUSubresourceRange& inRange,
-                                                RenderResourceHandle*      outNewResource = nullptr);
+                                                const GPUResourceState     inState,
+                                                RenderResourceHandle*      outNewHandle = nullptr);
 
     /**
      * Create a view to use a resource within the pass. See UseResource()
-     * regarding outNewResource.
+     * regarding outNewHandle.
      */
-    RenderViewHandle                CreateView(const RenderResourceHandle inResource,
+    RenderViewHandle                CreateView(const RenderResourceHandle inHandle,
                                                const RenderViewDesc&      inDesc,
-                                               RenderResourceHandle*      outNewResource = nullptr);
+                                               RenderResourceHandle*      outNewHandle = nullptr);
 
     /**
      * For a render pass, creates a view of a resource and sets this as a
      * colour attachment for the pass. The first version is a shortcut which
      * will just target level/layer 0 of the resource. The second allows more
      * control by providing view properties. The state must be set to
-     * kGPUResourceState_RenderTarget. outNewResource must be non-null for both
+     * kGPUResourceState_RenderTarget. outNewHandle must be non-null for both
      * uses since a colour target is a write access, and there is no use in
      * writing to a colour target and not consuming the output.
      *
@@ -214,12 +214,12 @@ public:
      * the pass, otherwise it will be set to store.
      */
     void                            SetColour(const uint8_t              inIndex,
-                                              const RenderResourceHandle inResource,
-                                              RenderResourceHandle*      outNewResource);
+                                              const RenderResourceHandle inHandle,
+                                              RenderResourceHandle*      outNewHandle);
     void                            SetColour(const uint8_t              inIndex,
-                                              const RenderResourceHandle inResource,
+                                              const RenderResourceHandle inHandle,
                                               const RenderViewDesc&      inDesc,
-                                              RenderResourceHandle*      outNewResource);
+                                              RenderResourceHandle*      outNewHandle);
 
     /**
      * For a render pass, creates a view of a resource and sets this as the
@@ -228,16 +228,16 @@ public:
      * level/layer 0 of the resource. A depth/stencil resource state must be
      * specified which determines the writeability of the resource. The second
      * version allows more control by providing full view properties. If state
-     * is kGPUResourceState_DepthStencilRead, then outNewResource must be null.
+     * is kGPUResourceState_DepthStencilRead, then outNewHandle must be null.
      * Otherwise, it can be non-null if the contents will be needed after the
      * pass, but can still be null if the depth buffer is just transient.
      */
-    void                            SetDepthStencil(const RenderResourceHandle inResource,
+    void                            SetDepthStencil(const RenderResourceHandle inHandle,
                                                     const GPUResourceState     inState,
-                                                    RenderResourceHandle*      outNewResource = nullptr);
-    void                            SetDepthStencil(const RenderResourceHandle inResource,
+                                                    RenderResourceHandle*      outNewHandle = nullptr);
+    void                            SetDepthStencil(const RenderResourceHandle inHandle,
                                                     const RenderViewDesc&      inDesc,
-                                                    RenderResourceHandle*      outNewResource = nullptr);
+                                                    RenderResourceHandle*      outNewHandle = nullptr);
 
     /**
      * Clear an attachment to a specific value. If the attachment will always
@@ -255,6 +255,13 @@ public:
     void                            ClearStencil(const uint32_t inValue);
 
 private:
+    struct UsedResource
+    {
+        RenderResourceHandle        handle;
+        GPUSubresourceRange         range;
+        GPUResourceState            state;
+    };
+
     struct Attachment
     {
         RenderViewHandle            view;
@@ -271,6 +278,8 @@ private:
     RenderGraph&                    mGraph;
     const std::string               mName;
     const RenderGraphPassType       mType;
+
+    std::vector<UsedResource>       mUsedResources;
 
     RenderPassFunction              mRenderPassFunction;
     ComputePassFunction             mComputePassFunction;
@@ -420,6 +429,8 @@ private:
             RenderBufferDesc        buffer;
         };
 
+        uint32_t                    currentVersion;
+
         /** Imported resources. */
         GPUResource*                imported;
         GPUResourceState            originalState;
@@ -431,9 +442,16 @@ private:
 
     };
 
+    struct View
+    {
+        uint32_t                    index;
+        RenderViewDesc              desc;
+    };
+
 private:
     std::vector<RenderGraphPass*>   mPasses;
     std::vector<Resource*>          mResources;
+    std::vector<View>               mViews;
 
     friend class RenderGraphPass;
 };

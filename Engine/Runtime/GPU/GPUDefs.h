@@ -138,7 +138,25 @@ struct GPUSubresourceRange
     uint32_t                    mipCount;
     uint32_t                    layerOffset;
     uint32_t                    layerCount;
+
+public:
+    bool                        Overlaps(const GPUSubresourceRange& inOther) const;
+
 };
+
+inline bool GPUSubresourceRange::Overlaps(const GPUSubresourceRange& inOther) const
+{
+    const uint32_t thisMipEnd    = this->mipOffset + this->mipCount;
+    const uint32_t thisLayerEnd  = this->layerOffset + this->layerCount;
+
+    const uint32_t otherMipEnd   = inOther.mipOffset + inOther.mipCount;
+    const uint32_t otherLayerEnd = inOther.layerOffset + inOther.layerCount;
+
+    return (this->mipOffset   >= inOther.mipOffset   && this->mipOffset   <  otherMipEnd) ||
+           (thisMipEnd        >  inOther.mipOffset   && thisMipEnd        <= otherMipEnd) ||
+           (this->layerOffset >= inOther.layerOffset && this->layerOffset <  otherLayerEnd) ||
+           (thisLayerEnd      >  inOther.layerOffset && thisLayerEnd      <= otherLayerEnd);
+}
 
 /**
  * States for a resource. A resource must be in an appropriate state for how it
@@ -264,6 +282,25 @@ enum GPUResourceState : uint32_t
      * for more details.
      */
     kGPUResourceState_Present                   = (1 << 19),
+
+    /**
+     * Helper definitions for all read/write states.
+     */
+
+    kGPUResourceState_AllRead                   = kGPUResourceState_AllShaderRead |
+                                                  kGPUResourceState_AllShaderConstantRead |
+                                                  kGPUResourceState_IndirectBufferRead |
+                                                  kGPUResourceState_VertexBufferRead |
+                                                  kGPUResourceState_IndexBufferRead |
+                                                  kGPUResourceState_DepthStencilRead |
+                                                  kGPUResourceState_TransferRead |
+                                                  kGPUResourceState_Present,
+    kGPUResourceState_AllWrite                  = kGPUResourceState_AllShaderWrite |
+                                                  kGPUResourceState_RenderTarget |
+                                                  kGPUResourceState_DepthStencilWrite |
+                                                  kGPUResourceState_DepthReadStencilWrite |
+                                                  kGPUResourceState_DepthWriteStencilRead |
+                                                  kGPUResourceState_TransferWrite,
 };
 
 DEFINE_ENUM_BITWISE_OPS(GPUResourceState);
