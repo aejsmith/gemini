@@ -32,6 +32,10 @@ static const char* kRequiredInstanceExtensions[] =
     VK_KHR_SURFACE_EXTENSION_NAME,
 };
 
+#if ORION_VULKAN_VALIDATION
+static bool sBreakOnValidationErrors = true;
+#endif
+
 SINGLETON_IMPL(VulkanInstance);
 
 VulkanInstance::VulkanInstance() :
@@ -59,6 +63,8 @@ VulkanInstance::~VulkanInstance()
 
     CloseLoader();
 }
+
+#if ORION_VULKAN_VALIDATION
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL
 DebugReportCallback(VkDebugReportFlagsEXT      flags,
@@ -110,13 +116,15 @@ DebugReportCallback(VkDebugReportFlagsEXT      flags,
             "%s",
             pMessage);
 
-    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
+    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT && sBreakOnValidationErrors)
     {
         DebugBreak();
     }
 
     return VK_FALSE;
 }
+
+#endif
 
 void VulkanInstance::CreateInstance()
 {
