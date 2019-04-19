@@ -228,6 +228,8 @@ void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
 {
     Assert(mCurrentImage == std::numeric_limits<uint32_t>::max());
 
+    OnBeginPresent();
+
     VkResult result = vkAcquireNextImageKHR(GetVulkanDevice().GetHandle(),
                                             mHandle,
                                             std::numeric_limits<uint64_t>::max(),

@@ -16,6 +16,7 @@ objects = map(env.Object, [
     'GPUState.cpp',
     'GPUSwapchain.cpp',
     'GPUTexture.cpp',
+    'GPUUtils.cpp',
 
     'Vulkan/VulkanArgumentSet.cpp',
     'Vulkan/VulkanBuffer.cpp',

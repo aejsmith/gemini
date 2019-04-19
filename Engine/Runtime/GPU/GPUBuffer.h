@@ -31,6 +31,12 @@ struct GPUBufferDesc
     uint32_t                size;
 };
 
+inline bool operator==(const GPUBufferDesc& a, const GPUBufferDesc& b)
+{
+    return a.usage == b.usage &&
+           a.size  == b.size;
+}
+
 class GPUBuffer : public GPUResource
 {
 protected:

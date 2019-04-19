@@ -69,6 +69,7 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
 
             if (texture.IsSwapchain())
             {
+                Assert(texture.GetSwapchain()->mIsInPresent);
                 texture.GetSwapchain()->mViewCount.fetch_add(1, std::memory_order_relaxed);
             }
         }

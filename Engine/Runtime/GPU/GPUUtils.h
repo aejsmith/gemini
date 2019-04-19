@@ -14,27 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "GPU/GPUResource.h"
+#pragma once
 
-#include "GPU/GPUUtils.h"
+#include "GPU/GPUDefs.h"
 
-GPUResource::GPUResource(GPUDevice&             inDevice,
-                         const GPUResourceType  inType,
-                         const GPUResourceUsage inUsage) :
-    GPUObject (inDevice),
-    mType     (inType),
-    mUsage    (inUsage)
+namespace GPUUtils
 {
+    /**
+     * Validate a resource state combination. Does not do anything on non-debug
+     * builds.
+     */
+    void                ValidateResourceState(const GPUResourceState inState,
+                                              const bool             inIsTexture);
 }
 
-#if ORION_BUILD_DEBUG
+#if !ORION_BUILD_DEBUG
 
-void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
+inline void GPUUtils::ValidateResourceState(const GPUResourceState inState,
+                                            const bool             inIsTexture)
 {
-    GPUUtils::ValidateResourceState(inBarrier.newState,
-                                    inBarrier.resource->IsTexture());
-
-    // TODO: Could validate against the resource usage flags as well?
 }
 
 #endif

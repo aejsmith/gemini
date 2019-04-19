@@ -240,7 +240,6 @@ void TestRenderLayer::AddPasses(RenderGraph&               inGraph,
     pass.ClearDepth(1.0f);
 
     pass.SetFunction([this] (const RenderGraph&        inGraph,
-                             const RenderGraphContext& inContext,
                              GPUGraphicsCommandList&   inCmdList)
     {
         const uint32_t numRowsRounded = RoundUp(kTotalNumRows, kThreadCount);

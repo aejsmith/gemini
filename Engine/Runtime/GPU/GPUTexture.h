@@ -42,8 +42,20 @@ struct GPUTextureDesc
      * chain.
      */
     uint8_t                 numMipLevels    = 1;
-
 };
+
+inline bool operator==(const GPUTextureDesc& a, const GPUTextureDesc& b)
+{
+    return a.type         == b.type         &&
+           a.usage        == b.usage        &&
+           a.flags        == b.flags        &&
+           a.format       == b.format       &&
+           a.width        == b.width        &&
+           a.height       == b.height       &&
+           a.depth        == b.depth        &&
+           a.arraySize    == b.arraySize    &&
+           a.numMipLevels == b.numMipLevels;
+}
 
 class GPUTexture : public GPUResource
 {

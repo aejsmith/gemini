@@ -17,11 +17,17 @@
 #include "Render/RenderGraph.h"
 
 #include "GPU/GPUBuffer.h"
+#include "GPU/GPUDevice.h"
 #include "GPU/GPURenderPass.h"
 #include "GPU/GPUTexture.h"
+#include "GPU/GPUUtils.h"
+
+#include "Render/RenderManager.h"
 
 /**
  * TODO:
+ *  - Reading depth from shader while bound as depth target doesn't work
+ *    currently: have to declare 2 uses, they will conflict.
  *  - Could add some helper functions for transfer passes for common cases,
  *    e.g. just copying a texture.
  *  - GPU memory aliasing based on required resource lifetimes.
@@ -57,6 +63,35 @@ RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
 {
 }
 
+static GPUResourceUsage ResourceUsageFromState(const GPUResourceState inState)
+{
+    GPUResourceUsage usage = kGPUResourceUsage_Standard;
+
+    if (inState & kGPUResourceState_AllShaderRead)
+    {
+        usage |= kGPUResourceUsage_ShaderRead;
+    }
+
+    if (inState & kGPUResourceState_AllShaderWrite)
+    {
+        usage |= kGPUResourceUsage_ShaderWrite;
+    }
+
+    if (inState & kGPUResourceState_RenderTarget)
+    {
+        usage |= kGPUResourceUsage_RenderTarget;
+    }
+
+    if (inState & kGPUResourceState_AllDepthStencil)
+    {
+        usage |= kGPUResourceUsage_DepthStencil;
+    }
+
+    Assert(IsOnlyOneBitSet(usage));
+
+    return usage;
+}
+
 void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
                                   const GPUSubresourceRange& inRange,
                                   const GPUResourceState     inState,
@@ -70,6 +105,8 @@ void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
               "outNewHandle must be null for a read-only access");
     AssertMsg(resource->currentVersion == inHandle.version,
               "Resource access must be to current version (see TODO)");
+
+    GPUUtils::ValidateResourceState(inState, resource->type == kRenderResourceType_Texture);
 
     for (const auto& otherUse : mUsedResources)
     {
@@ -85,6 +122,9 @@ void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
     use.handle        = inHandle;
     use.range         = inRange;
     use.state         = inState;
+
+    /* Add required usage flags for this resource state. */
+    resource->usage |= ResourceUsageFromState(inState);
 
     if (isWrite)
     {
@@ -132,6 +172,7 @@ RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle
     RenderGraph::View& view = mGraph.mViews.back();
     view.resourceIndex      = inHandle.index;
     view.desc               = inDesc;
+    view.view               = nullptr;
 
     return viewHandle;
 }
@@ -231,7 +272,8 @@ void RenderGraphPass::ClearStencil(const uint32_t inValue)
     mDepthStencil.clearData.stencil = inValue;
 }
 
-RenderGraph::RenderGraph()
+RenderGraph::RenderGraph() :
+    mIsExecuting    (false)
 {
 }
 
@@ -263,9 +305,11 @@ RenderGraphPass& RenderGraph::AddPass(std::string               inName,
 RenderGraph::Resource::Resource() :
     texture         (),
     currentVersion  (0),
-    imported        (nullptr),
     originalState   (kGPUResourceState_None),
-    required        (false)
+    imported        (false),
+    required        (false),
+    usage           (kGPUResourceUsage_Standard),
+    resource        (nullptr)
 {
     /* Nothing produced the initial version. */
     producers.emplace_back(nullptr);
@@ -307,7 +351,8 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
                                                  std::function<void ()> inEndCallback)
 {
     Resource* resource      = new Resource;
-    resource->imported      = inResource;
+    resource->imported      = true;
+    resource->resource      = inResource;
     resource->originalState = inState;
     resource->beginCallback = std::move(inBeginCallback);
     resource->endCallback   = std::move(inEndCallback);
@@ -354,7 +399,7 @@ void RenderGraph::DetermineRequiredPasses()
     /*
      * This function determines which passes are actually required to produce
      * the final outputs of the graph. The final outputs are all imported
-     * resources that are written by a graph pass.
+     * resources that are written by any graph pass.
      *
      * Therefore, we will need the passes that write the final version of each
      * imported resource to be executed. We then work back from there, and mark
@@ -398,29 +443,88 @@ void RenderGraph::DetermineRequiredPasses()
     }
 }
 
+void RenderGraph::AllocateResources()
+{
+    for (Resource* resource : mResources)
+    {
+        if (!resource->required || resource->imported)
+        {
+            continue;
+        }
+
+        switch (resource->type)
+        {
+            case kRenderResourceType_Buffer:
+            {
+                GPUBufferDesc desc;
+                desc.usage = resource->usage;
+                desc.size  = resource->buffer.size;
+
+                resource->resource = RenderManager::Get().GetTransientBuffer(desc, {});
+
+                break;
+            }
+
+            case kRenderResourceType_Texture:
+            {
+                GPUTextureDesc desc;
+                desc.type         = resource->texture.type;
+                desc.usage        = resource->usage;
+                desc.flags        = resource->texture.flags;
+                desc.format       = resource->texture.format;
+                desc.width        = resource->texture.width;
+                desc.height       = resource->texture.height;
+                desc.depth        = resource->texture.depth;
+                desc.arraySize    = resource->texture.arraySize;
+                desc.numMipLevels = resource->texture.numMipLevels;
+
+                resource->resource = RenderManager::Get().GetTransientTexture(desc, {});
+
+                break;
+            }
+
+            default:
+            {
+                Unreachable();
+                break;
+            }
+        }
+    }
+}
+
 void RenderGraph::Execute()
 {
     DetermineRequiredPasses();
+    AllocateResources();
 
-    //AllocateResources();
+    // Don't forget to call begin/end callbacks.
 
     Fatal("TODO");
 }
 
-GPUBuffer* RenderGraph::GetBuffer(const RenderGraphContext&  inContext,
-                                  const RenderResourceHandle inHandle)
+GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle)
 {
-    Fatal("TODO");
+    Assert(mIsExecuting);
+    Assert(GetResourceType(inHandle) == kRenderResourceType_Buffer);
+    AssertMsg(mResources[inHandle.index]->resource, "Attempt to use culled resource");
+
+    return static_cast<GPUBuffer*>(mResources[inHandle.index]->resource);
 }
 
-GPUTexture* RenderGraph::GetTexture(const RenderGraphContext&  inContext,
-                                    const RenderResourceHandle inHandle)
+GPUTexture* RenderGraph::GetTexture(const RenderResourceHandle inHandle)
 {
-    Fatal("TODO");
+    Assert(mIsExecuting);
+    Assert(GetResourceType(inHandle) == kRenderResourceType_Texture);
+    AssertMsg(mResources[inHandle.index]->resource, "Attempt to use culled resource");
+
+    return static_cast<GPUTexture*>(mResources[inHandle.index]->resource);
 }
 
-GPUResourceView* RenderGraph::GetView(const RenderGraphContext& inContext,
-                                      const RenderViewHandle    inHandle)
+GPUResourceView* RenderGraph::GetView(const RenderViewHandle inHandle)
 {
-    Fatal("TODO");
+    Assert(mIsExecuting);
+    Assert(inHandle.index < mViews.size());
+    AssertMsg(mViews[inHandle.index].view, "Attempt to use view of culled resource");
+
+    return mViews[inHandle.index].view;
 }

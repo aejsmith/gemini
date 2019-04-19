@@ -59,10 +59,11 @@ public:
      * called, so that they can be made to refer to correct texture for the
      * frame. Views must be destroyed before EndPresent() is called.
      */
-    GPUTexture*                 GetTexture() const { return mTexture; }
+    GPUTexture*                 GetTexture() const  { return mTexture; }
 
 protected:
-    void                        OnEndPresent() const;
+    void                        OnBeginPresent();
+    void                        OnEndPresent();
 
 protected:
     Window&                     mWindow;
@@ -70,6 +71,8 @@ protected:
     GPUTexture*                 mTexture;
 
     #if ORION_BUILD_DEBUG
+
+    bool                        mIsInPresent;
 
     /**
      * Count of views referring to the swapchain to validate that no views
@@ -82,10 +85,19 @@ protected:
     friend class GPUResourceView;
 };
 
-inline void GPUSwapchain::OnEndPresent() const
+inline void GPUSwapchain::OnBeginPresent()
+{
+    #if ORION_BUILD_DEBUG
+        mIsInPresent = true;
+    #endif
+}
+
+inline void GPUSwapchain::OnEndPresent()
 {
     #if ORION_BUILD_DEBUG
         AssertMsg(mViewCount.load(std::memory_order_relaxed) == 0,
                   "Swapchain views still exist at call to EndPresent()");
+
+        mIsInPresent = false;
     #endif
 }

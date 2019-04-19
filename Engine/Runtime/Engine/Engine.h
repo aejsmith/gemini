@@ -35,6 +35,9 @@ public:
 public:
     void                    Run();
 
+    /** Get the frame start time, in nanoseconds. */
+    uint64_t                GetFrameStartTime() const   { return mFrameStartTime; }
+
     /** Get the last frame time, in nanoseconds. */
     uint64_t                GetLastFrameTime() const    { return mLastFrameTime; }
 

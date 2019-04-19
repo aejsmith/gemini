@@ -27,7 +27,6 @@ class GPUResourceView;
 class GPUTexture;
 class GPUTransferContext;
 class RenderGraph;
-class RenderGraphContext;
 
 enum RenderGraphPassType
 {
@@ -153,15 +152,12 @@ class RenderGraphPass : Uncopyable
 {
 public:
     using RenderPassFunction      = std::function<void (const RenderGraph&,
-                                                        const RenderGraphContext&,
                                                         GPUGraphicsCommandList&)>;
 
     using ComputePassFunction     = std::function<void (const RenderGraph&,
-                                                        const RenderGraphContext&,
                                                         GPUComputeCommandList&)>;
 
     using TransferPassFunction    = std::function<void (const RenderGraph&,
-                                                        const RenderGraphContext&,
                                                         GPUTransferContext&)>;
 
 public:
@@ -408,12 +404,9 @@ public:
      * Methods to retrieve the real resource from a handle inside a pass
      * function.
      */
-    GPUBuffer*                      GetBuffer(const RenderGraphContext&  inContext,
-                                              const RenderResourceHandle inHandle);
-    GPUTexture*                     GetTexture(const RenderGraphContext&  inContext,
-                                               const RenderResourceHandle inHandle);
-    GPUResourceView*                GetView(const RenderGraphContext& inContext,
-                                            const RenderViewHandle    inHandle);
+    GPUBuffer*                      GetBuffer(const RenderResourceHandle inHandle);
+    GPUTexture*                     GetTexture(const RenderResourceHandle inHandle);
+    GPUResourceView*                GetView(const RenderViewHandle inHandle);
 
 private:
     struct Resource
@@ -432,13 +425,16 @@ private:
         /** Array of passes which produced each version. */
         RenderGraphPassArray        producers;
 
-        /** Imported resources. */
-        GPUResource*                imported;
+        /** Imported resource details. */
         GPUResourceState            originalState;
         std::function<void ()>      beginCallback;
         std::function<void ()>      endCallback;
 
-        bool                        required;
+        bool                        imported : 1;
+        bool                        required : 1;
+
+        GPUResourceUsage            usage;
+        GPUResource*                resource;
 
     public:
                                     Resource();
@@ -448,15 +444,19 @@ private:
     {
         uint16_t                    resourceIndex;
         RenderViewDesc              desc;
+        GPUResourceView*            view;
     };
 
 private:
     void                            DetermineRequiredPasses();
+    void                            AllocateResources();
 
 private:
     RenderGraphPassArray            mPasses;
     std::vector<Resource*>          mResources;
     std::vector<View>               mViews;
+
+    bool                            mIsExecuting;
 
     friend class RenderGraphPass;
 };
@@ -512,7 +512,6 @@ void AddExampleComputePass(RenderGraph&          inGraph,
     resources.textureView = pass.CreateView(texture, viewDesc, &outResult);
 
     pass.SetFunction([resources] (const RenderGraph&        inGraph,
-                                  const RenderGraphContext& inContext,
                                   GPUComputeCommandList&    inCmdList)
     {
         /* Context has context information for the current pass that might be
@@ -544,7 +543,6 @@ void AddExampleInPlaceComputePass(RenderGraph&          inGraph,
     resources.textureView = pass.CreateView(ioTexture, viewDesc, &ioTexture);
 
     pass.SetFunction([resources] (const RenderGraph&        inGraph,
-                                  const RenderGraphContext& inContext,
                                   GPUComputeCommandList&    inCmdList)
     {
         GPUResourceView* const view = inGraph.GetView(inContext, resources.textureView);
@@ -610,7 +608,6 @@ void AddGBufferPass(RenderGraph&                       inGraph,
     pass.ClearDepth(1.0f);
 
     pass.SetFunction([resources] (const RenderGraph&        inGraph,
-                                  const RenderGraphContext& inContext,
                                   GPUGraphicsCommandList&   inCmdList)
     {
         ...
@@ -649,7 +646,6 @@ void AddFXAAPass(RenderGraph&          inGraph,
     pass.CreateColourView(0, texture, viewDesc, &ioResource);
 
     pass.SetFunction([resources] (const RenderGraph&        inGraph,
-                                  const RenderGraphContext& inContext,
                                   GPUGraphicsCommandList&   inCmdList)
     {
         GPUResourceView* const view = inGraph.GetView(inContext, resources.shaderView);
