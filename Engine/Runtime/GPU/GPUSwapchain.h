@@ -88,6 +88,7 @@ protected:
 inline void GPUSwapchain::OnBeginPresent()
 {
     #if ORION_BUILD_DEBUG
+        Assert(!mIsInPresent);
         mIsInPresent = true;
     #endif
 }
@@ -95,6 +96,7 @@ inline void GPUSwapchain::OnBeginPresent()
 inline void GPUSwapchain::OnEndPresent()
 {
     #if ORION_BUILD_DEBUG
+        Assert(mIsInPresent);
         AssertMsg(mViewCount.load(std::memory_order_relaxed) == 0,
                   "Swapchain views still exist at call to EndPresent()");
 

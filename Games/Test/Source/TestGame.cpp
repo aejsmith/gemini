@@ -239,8 +239,9 @@ void TestRenderLayer::AddPasses(RenderGraph&               inGraph,
     pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     pass.ClearDepth(1.0f);
 
-    pass.SetFunction([this] (const RenderGraph&        inGraph,
-                             GPUGraphicsCommandList&   inCmdList)
+    pass.SetFunction([this] (const RenderGraph&      inGraph,
+                             const RenderGraphPass&  inPass,
+                             GPUGraphicsCommandList& inCmdList)
     {
         const uint32_t numRowsRounded = RoundUp(kTotalNumRows, kThreadCount);
         const uint32_t rowsPerThread  = numRowsRounded / kThreadCount;

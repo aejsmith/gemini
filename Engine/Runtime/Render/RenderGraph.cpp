@@ -108,7 +108,7 @@ void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
 
     GPUUtils::ValidateResourceState(inState, resource->type == kRenderResourceType_Texture);
 
-    for (const auto& otherUse : mUsedResources)
+    for (const RenderGraphPass::UsedResource& otherUse : mUsedResources)
     {
         if (otherUse.handle.index == inHandle.index)
         {
@@ -166,10 +166,11 @@ RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle
                 outNewHandle);
 
     RenderViewHandle viewHandle;
-    viewHandle.index = mGraph.mViews.size();
+    viewHandle.pass  = this;
+    viewHandle.index = mViews.size();
 
-    mGraph.mViews.emplace_back();
-    RenderGraph::View& view = mGraph.mViews.back();
+    mViews.emplace_back();
+    View& view = mViews.back();
     view.resourceIndex      = inHandle.index;
     view.desc               = inDesc;
     view.view               = nullptr;
@@ -272,6 +273,16 @@ void RenderGraphPass::ClearStencil(const uint32_t inValue)
     mDepthStencil.clearData.stencil = inValue;
 }
 
+GPUResourceView* RenderGraphPass::GetView(const RenderViewHandle inHandle) const
+{
+    Assert(inHandle.pass == this);
+    Assert(mGraph.mIsExecuting);
+    Assert(inHandle.index < mViews.size());
+    AssertMsg(mViews[inHandle.index].view, "Attempt to use view of culled resource");
+
+    return mViews[inHandle.index].view;
+}
+
 RenderGraph::RenderGraph() :
     mIsExecuting    (false)
 {
@@ -304,11 +315,14 @@ RenderGraphPass& RenderGraph::AddPass(std::string               inName,
 
 RenderGraph::Resource::Resource() :
     texture         (),
+    usage           (kGPUResourceUsage_Standard),
     currentVersion  (0),
     originalState   (kGPUResourceState_None),
     imported        (false),
     required        (false),
-    usage           (kGPUResourceUsage_Standard),
+    begun           (false),
+    firstPass       (nullptr),
+    lastPass        (nullptr),
     resource        (nullptr)
 {
     /* Nothing produced the initial version. */
@@ -425,7 +439,7 @@ void RenderGraph::DetermineRequiredPasses()
 
         pass->mRequired = true;
 
-        for (const auto& use : pass->mUsedResources)
+        for (const RenderGraphPass::UsedResource& use : pass->mUsedResources)
         {
             Resource* const resource = mResources[use.handle.index];
 
@@ -438,6 +452,27 @@ void RenderGraph::DetermineRequiredPasses()
             if (producer && !producer->mRequired)
             {
                 passes[passCount++] = producer;
+            }
+        }
+    }
+
+    /* Set the first and last required pass using each resource. Passes are in
+     * execution order. */
+    for (RenderGraphPass* pass : mPasses)
+    {
+        if (pass->mRequired)
+        {
+            for (const RenderGraphPass::UsedResource& use : pass->mUsedResources)
+            {
+                Resource* const resource = mResources[use.handle.index];
+
+                if (!resource->firstPass)
+                {
+                    Assert(use.handle.version == 0);
+                    resource->firstPass = pass;
+                }
+
+                resource->lastPass = pass;
             }
         }
     }
@@ -492,17 +527,104 @@ void RenderGraph::AllocateResources()
     }
 }
 
+void RenderGraph::BeginResources(RenderGraphPass& inPass)
+{
+    /* If this is the first pass to use a resource that has a begin callback,
+     * call that now. */
+    for (const RenderGraphPass::UsedResource& use : inPass.mUsedResources)
+    {
+        Resource* const resource = mResources[use.handle.index];
+
+        /* Could have multiple uses of a resource within the pass, only begin
+         * once. */
+        if (resource->firstPass == &inPass && !resource->begun)
+        {
+            if (resource->beginCallback)
+            {
+                resource->beginCallback();
+            }
+
+            resource->begun = true;
+        }
+    }
+}
+
+void RenderGraph::EndResources(RenderGraphPass& inPass)
+{
+    /* If this is the last pass to use a resource that has an end callback,
+     * call that now. */
+    for (const RenderGraphPass::UsedResource& use : inPass.mUsedResources)
+    {
+        Resource* const resource = mResources[use.handle.index];
+
+        /* Same as earlier. */
+        if (resource->lastPass == &inPass && resource->begun)
+        {
+            if (resource->endCallback)
+            {
+                resource->endCallback();
+            }
+
+            resource->begun = false;
+        }
+    }
+}
+
+void RenderGraph::CreateViews(RenderGraphPass& inPass)
+{
+    for (RenderGraphPass::View& view : inPass.mViews)
+    {
+        Resource* const resource = mResources[view.resourceIndex];
+
+        if (!resource->required)
+        {
+            continue;
+        }
+
+        GPUResourceViewDesc desc;
+        desc.type          = view.desc.type;
+        desc.usage         = ResourceUsageFromState(view.desc.state);
+        desc.format        = view.desc.format;
+        desc.mipOffset     = view.desc.mipOffset;
+        desc.mipCount      = view.desc.mipCount;
+        desc.elementOffset = view.desc.elementOffset;
+        desc.elementCount  = view.desc.elementCount;
+
+        view.view = GPUDevice::Get().CreateResourceView(resource->resource, desc);
+    }
+}
+
+void RenderGraph::DestroyViews(RenderGraphPass& inPass)
+{
+    for (RenderGraphPass::View& view : inPass.mViews)
+    {
+        delete view.view;
+        view.view = nullptr;
+    }
+}
+
 void RenderGraph::Execute()
 {
     DetermineRequiredPasses();
     AllocateResources();
 
-    // Don't forget to call begin/end callbacks.
+    for (RenderGraphPass* pass : mPasses)
+    {
+        if (pass->mRequired)
+        {
+            BeginResources(*pass);
+            CreateViews(*pass);
 
-    Fatal("TODO");
+            // Set up resource states.
+            // Call function.
+
+            DestroyViews(*pass);
+            EndResources(*pass);
+        }
+    }
 }
 
-GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle)
+GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle) const
 {
     Assert(mIsExecuting);
     Assert(GetResourceType(inHandle) == kRenderResourceType_Buffer);
@@ -511,20 +633,11 @@ GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle)
     return static_cast<GPUBuffer*>(mResources[inHandle.index]->resource);
 }
 
-GPUTexture* RenderGraph::GetTexture(const RenderResourceHandle inHandle)
+GPUTexture* RenderGraph::GetTexture(const RenderResourceHandle inHandle) const
 {
     Assert(mIsExecuting);
     Assert(GetResourceType(inHandle) == kRenderResourceType_Texture);
     AssertMsg(mResources[inHandle.index]->resource, "Attempt to use culled resource");
 
     return static_cast<GPUTexture*>(mResources[inHandle.index]->resource);
-}
-
-GPUResourceView* RenderGraph::GetView(const RenderViewHandle inHandle)
-{
-    Assert(mIsExecuting);
-    Assert(inHandle.index < mViews.size());
-    AssertMsg(mViews[inHandle.index].view, "Attempt to use view of culled resource");
-
-    return mViews[inHandle.index].view;
 }

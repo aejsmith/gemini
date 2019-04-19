@@ -311,8 +311,9 @@ void ImGUIRenderLayer::AddPasses(RenderGraph&               inGraph,
 
     pass.SetColour(0, inTexture, &outNewTexture);
 
-    pass.SetFunction([this] (const RenderGraph&        inGraph,
-                             GPUGraphicsCommandList&   inCmdList)
+    pass.SetFunction([this] (const RenderGraph&      inGraph,
+                             const RenderGraphPass&  inPass,
+                             GPUGraphicsCommandList& inCmdList)
     {
         ImGui::Render();
 

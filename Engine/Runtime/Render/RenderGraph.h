@@ -27,6 +27,7 @@ class GPUResourceView;
 class GPUTexture;
 class GPUTransferContext;
 class RenderGraph;
+class RenderGraphPass;
 
 enum RenderGraphPassType
 {
@@ -41,6 +42,10 @@ enum RenderResourceType
     kRenderResourceType_Buffer,
 };
 
+/**
+ * Handle to a resource. This is a small opaque type intended to be passed by
+ * value.
+ */
 struct RenderResourceHandle
 {
 public:
@@ -124,6 +129,10 @@ struct RenderViewDesc
     uint32_t                        elementCount    = 1;
 };
 
+/**
+ * Handle to a view within a pass, specific to that pass. This is a small
+ * opaque type intended to be passed by value.
+ */
 struct RenderViewHandle
 {
 public:
@@ -132,6 +141,7 @@ public:
                                     operator bool() const;
 
 private:
+    RenderGraphPass*                pass;
     uint16_t                        index;
 
     friend class RenderGraph;
@@ -152,12 +162,15 @@ class RenderGraphPass : Uncopyable
 {
 public:
     using RenderPassFunction      = std::function<void (const RenderGraph&,
+                                                        const RenderGraphPass&,
                                                         GPUGraphicsCommandList&)>;
 
     using ComputePassFunction     = std::function<void (const RenderGraph&,
+                                                        const RenderGraphPass&,
                                                         GPUComputeCommandList&)>;
 
     using TransferPassFunction    = std::function<void (const RenderGraph&,
+                                                        const RenderGraphPass&,
                                                         GPUTransferContext&)>;
 
 public:
@@ -250,12 +263,26 @@ public:
     void                            ClearDepth(const float inValue);
     void                            ClearStencil(const uint32_t inValue);
 
+    /**
+     * Graph execution methods.
+     */
+
+    /** Retrieve a view from the pass. Only valid inside the pass function. */
+    GPUResourceView*                GetView(const RenderViewHandle inHandle) const;
+
 private:
     struct UsedResource
     {
         RenderResourceHandle        handle;
         GPUSubresourceRange         range;
         GPUResourceState            state;
+    };
+
+    struct View
+    {
+        uint16_t                    resourceIndex;
+        RenderViewDesc              desc;
+        GPUResourceView*            view;
     };
 
     struct Attachment
@@ -278,6 +305,7 @@ private:
     bool                            mRequired;
 
     std::vector<UsedResource>       mUsedResources;
+    std::vector<View>               mViews;
 
     RenderPassFunction              mRenderPassFunction;
     ComputePassFunction             mComputePassFunction;
@@ -404,9 +432,8 @@ public:
      * Methods to retrieve the real resource from a handle inside a pass
      * function.
      */
-    GPUBuffer*                      GetBuffer(const RenderResourceHandle inHandle);
-    GPUTexture*                     GetTexture(const RenderResourceHandle inHandle);
-    GPUResourceView*                GetView(const RenderViewHandle inHandle);
+    GPUBuffer*                      GetBuffer(const RenderResourceHandle inHandle) const;
+    GPUTexture*                     GetTexture(const RenderResourceHandle inHandle) const;
 
 private:
     struct Resource
@@ -418,6 +445,8 @@ private:
             RenderTextureDesc       texture;
             RenderBufferDesc        buffer;
         };
+
+        GPUResourceUsage            usage;
 
         /** Current version, incremented on each write. */
         uint16_t                    currentVersion;
@@ -432,29 +461,29 @@ private:
 
         bool                        imported : 1;
         bool                        required : 1;
+        bool                        begun : 1;
 
-        GPUResourceUsage            usage;
+        /** First and last users, set by DetermineRequiredPasses(). */
+        RenderGraphPass*            firstPass;
+        RenderGraphPass*            lastPass;
+
         GPUResource*                resource;
 
     public:
                                     Resource();
     };
 
-    struct View
-    {
-        uint16_t                    resourceIndex;
-        RenderViewDesc              desc;
-        GPUResourceView*            view;
-    };
-
 private:
     void                            DetermineRequiredPasses();
     void                            AllocateResources();
+    void                            BeginResources(RenderGraphPass& inPass);
+    void                            EndResources(RenderGraphPass& inPass);
+    void                            CreateViews(RenderGraphPass& inPass);
+    void                            DestroyViews(RenderGraphPass& inPass);
 
 private:
     RenderGraphPassArray            mPasses;
     std::vector<Resource*>          mResources;
-    std::vector<View>               mViews;
 
     bool                            mIsExecuting;
 
