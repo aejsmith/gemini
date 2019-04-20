@@ -77,7 +77,7 @@ private:
          * and also whether the resource is available for reuse in the current
          * frame.
          */
-        uint32_t                lastUsedFrameStartTime;
+        uint64_t                lastUsedFrameStartTime;
     };
 
     struct TransientBuffer : TransientResource
