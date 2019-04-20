@@ -161,15 +161,15 @@ inline RenderViewHandle::operator bool() const
 class RenderGraphPass : Uncopyable
 {
 public:
-    using RenderPassFunction      = std::function<void (const RenderGraph&,
+    using RenderFunction          = std::function<void (const RenderGraph&,
                                                         const RenderGraphPass&,
                                                         GPUGraphicsCommandList&)>;
 
-    using ComputePassFunction     = std::function<void (const RenderGraph&,
+    using ComputeFunction         = std::function<void (const RenderGraph&,
                                                         const RenderGraphPass&,
                                                         GPUComputeCommandList&)>;
 
-    using TransferPassFunction    = std::function<void (const RenderGraph&,
+    using TransferFunction        = std::function<void (const RenderGraph&,
                                                         const RenderGraphPass&,
                                                         GPUTransferContext&)>;
 
@@ -179,9 +179,9 @@ public:
      * to the type of the pass. The function will be executed on the main
      * thread.
      */
-    void                            SetFunction(RenderPassFunction inFunction);
-    void                            SetFunction(ComputePassFunction inFunction);
-    void                            SetFunction(TransferPassFunction inFunction);
+    void                            SetFunction(RenderFunction inFunction);
+    void                            SetFunction(ComputeFunction inFunction);
+    void                            SetFunction(TransferFunction inFunction);
 
     /**
      * Declare usage of a resource in the pass. This is to be used when the
@@ -280,7 +280,7 @@ private:
 
     struct View
     {
-        uint16_t                    resourceIndex;
+        RenderResourceHandle        resource;
         RenderViewDesc              desc;
         GPUResourceView*            view;
     };
@@ -307,9 +307,9 @@ private:
     std::vector<UsedResource>       mUsedResources;
     std::vector<View>               mViews;
 
-    RenderPassFunction              mRenderPassFunction;
-    ComputePassFunction             mComputePassFunction;
-    TransferPassFunction            mTransferPassFunction;
+    RenderFunction                  mRenderFunction;
+    ComputeFunction                 mComputeFunction;
+    TransferFunction                mTransferFunction;
 
     Attachment                      mColour[kMaxRenderPassColourAttachments];
     Attachment                      mDepthStencil;
@@ -319,22 +319,22 @@ private:
 
 using RenderGraphPassArray = std::vector<RenderGraphPass*>;
 
-inline void RenderGraphPass::SetFunction(RenderPassFunction inFunction)
+inline void RenderGraphPass::SetFunction(RenderFunction inFunction)
 {
     Assert(mType == kRenderGraphPassType_Render);
-    mRenderPassFunction = std::move(inFunction);
+    mRenderFunction = std::move(inFunction);
 }
 
-inline void RenderGraphPass::SetFunction(ComputePassFunction inFunction)
+inline void RenderGraphPass::SetFunction(ComputeFunction inFunction)
 {
     Assert(mType == kRenderGraphPassType_Compute);
-    mComputePassFunction = std::move(inFunction);
+    mComputeFunction = std::move(inFunction);
 }
 
-inline void RenderGraphPass::SetFunction(TransferPassFunction inFunction)
+inline void RenderGraphPass::SetFunction(TransferFunction inFunction)
 {
     Assert(mType == kRenderGraphPassType_Transfer);
-    mTransferPassFunction = std::move(inFunction);
+    mTransferFunction = std::move(inFunction);
 }
 
 /**
@@ -343,12 +343,10 @@ inline void RenderGraphPass::SetFunction(TransferPassFunction inFunction)
  * order to add the render passes (and declare the resources needed by those
  * passes) that they need to produce their output to the graph.
  *
- * Once all passes and resources have been declared (the build phase), the
- * graph determines the execution order of passes based on resource
- * dependencies between passes, and then executes them via the function that
- * was given for the pass (the execute phase). Passes which are determined to
- * not have any contribution to the final output (resources that they write are
- * not consumed) will be removed.
+ * Once all passes and resources have been declared (the build phase), we
+ * determine the passes that are actually going to contribute to the final
+ * output, and then execute those passes via the function that was given for
+ * them (the execute phase).
  *
  * During the build phase, we only declare resources and how each pass will
  * use them; no memory is allocated. The real resources are allocated during
@@ -469,23 +467,35 @@ private:
 
         GPUResource*                resource;
 
+        // TODO: Per-subresource state tracking.
+        GPUResourceState            currentState;
+
     public:
                                     Resource();
     };
 
 private:
+    void                            TransitionResource(Resource&                  inResource,
+                                                       const GPUSubresourceRange& inRange,
+                                                       const GPUResourceState     inState);
+
+    void                            FlushBarriers();
+
     void                            DetermineRequiredPasses();
     void                            AllocateResources();
-    void                            BeginResources(RenderGraphPass& inPass);
-    void                            EndResources(RenderGraphPass& inPass);
+    void                            EndResources();
+    void                            PrepareResources(RenderGraphPass& inPass);
     void                            CreateViews(RenderGraphPass& inPass);
     void                            DestroyViews(RenderGraphPass& inPass);
+    void                            ExecutePass(RenderGraphPass& inPass);
 
 private:
     RenderGraphPassArray            mPasses;
     std::vector<Resource*>          mResources;
 
     bool                            mIsExecuting;
+
+    std::vector<GPUResourceBarrier> mBarriers;
 
     friend class RenderGraphPass;
 };

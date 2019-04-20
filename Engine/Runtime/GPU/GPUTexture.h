@@ -82,6 +82,8 @@ public:
     uint32_t                GetMipHeight(const uint8_t inMip) const;
     uint32_t                GetMipDepth(const uint8_t inMip) const;
 
+    GPUSubresourceRange     GetSubresourceRange() const override;
+
     /**
      * It is valid to specify 0 counts in a GPUSubresourceRange to specify the
      * whole image. This is for internal use to replace this with the exact

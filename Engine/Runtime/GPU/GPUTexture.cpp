@@ -77,3 +77,8 @@ GPUTexture::GPUTexture(GPUSwapchain& inSwapchain) :
     mSwapchain      (&inSwapchain)
 {
 }
+
+GPUSubresourceRange GPUTexture::GetSubresourceRange() const
+{
+    return { 0, mNumMipLevels, 0, mArraySize };
+}

@@ -48,6 +48,8 @@ public:
 
     uint32_t                GetSize() const { return mSize; }
 
+    GPUSubresourceRange     GetSubresourceRange() const override;
+
 private:
     const uint32_t          mSize;
 

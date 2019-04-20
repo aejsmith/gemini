@@ -23,3 +23,8 @@ GPUBuffer::GPUBuffer(GPUDevice&           inDevice,
 {
     Assert(!(GetUsage() & (kGPUResourceUsage_RenderTarget | kGPUResourceUsage_DepthStencil)));
 }
+
+GPUSubresourceRange GPUBuffer::GetSubresourceRange() const
+{
+    return { 0, 1, 0, 1 };
+}

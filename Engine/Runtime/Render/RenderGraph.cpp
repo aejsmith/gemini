@@ -17,6 +17,7 @@
 #include "Render/RenderGraph.h"
 
 #include "GPU/GPUBuffer.h"
+#include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
 #include "GPU/GPURenderPass.h"
 #include "GPU/GPUTexture.h"
@@ -27,7 +28,8 @@
 /**
  * TODO:
  *  - Reading depth from shader while bound as depth target doesn't work
- *    currently: have to declare 2 uses, they will conflict.
+ *    currently: have to declare 2 uses, they will conflict. Should combine
+ *    them into one use with the union of the states.
  *  - Could add some helper functions for transfer passes for common cases,
  *    e.g. just copying a texture.
  *  - GPU memory aliasing based on required resource lifetimes.
@@ -51,6 +53,7 @@
  *    resolve it. We would need to detect this situation and either reject it
  *    (require an explicit copy of A) or do a copy internally. For now I'm not
  *    bothering to solve it until we have a use case (if ever).
+ *  - Asynchronous compute support.
  */
 
 RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
@@ -171,9 +174,9 @@ RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle
 
     mViews.emplace_back();
     View& view = mViews.back();
-    view.resourceIndex      = inHandle.index;
-    view.desc               = inDesc;
-    view.view               = nullptr;
+    view.resource = inHandle;
+    view.desc     = inDesc;
+    view.view     = nullptr;
 
     return viewHandle;
 }
@@ -197,6 +200,7 @@ void RenderGraphPass::SetColour(const uint8_t              inIndex,
                                 const RenderViewDesc&      inDesc,
                                 RenderResourceHandle*      outNewHandle)
 {
+    Assert(mType == kRenderGraphPassType_Render);
     Assert(inIndex < kMaxRenderPassColourAttachments);
     Assert(mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture);
     Assert(inDesc.state == kGPUResourceState_RenderTarget);
@@ -230,6 +234,7 @@ void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inHandle,
                                       const RenderViewDesc&      inDesc,
                                       RenderResourceHandle*      outNewHandle)
 {
+    Assert(mType == kRenderGraphPassType_Render);
     Assert(mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture);
     Assert(inDesc.state & kGPUResourceState_AllDepthStencil && IsOnlyOneBitSet(inDesc.state));
     Assert(PixelFormatInfo::IsDepth(inDesc.format));
@@ -248,27 +253,36 @@ void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inHandle,
 void RenderGraphPass::ClearColour(const uint8_t    inIndex,
                                   const glm::vec4& inValue)
 {
-    /* TODO: Validate that view is first version of resource. */
     Assert(inIndex < kMaxRenderPassColourAttachments);
 
     Attachment& attachment = mColour[inIndex];
     Assert(attachment.view);
+
+    View& view = mViews[attachment.view.index];
+    Assert(view.resource.version == 0);
+    Unused(view);
 
     attachment.clearData.colour = inValue;
 }
 
 void RenderGraphPass::ClearDepth(const float inValue)
 {
-    /* TODO: Validate that view is first version of resource. */
     Assert(mDepthStencil.view);
+
+    View& view = mViews[mDepthStencil.view.index];
+    Assert(view.resource.version == 0);
+    Unused(view);
 
     mDepthStencil.clearData.depth = inValue;
 }
 
 void RenderGraphPass::ClearStencil(const uint32_t inValue)
 {
-    /* TODO: Validate that view is first version of resource. */
     Assert(mDepthStencil.view);
+
+    View& view = mViews[mDepthStencil.view.index];
+    Assert(view.resource.version == 0);
+    Unused(view);
 
     mDepthStencil.clearData.stencil = inValue;
 }
@@ -323,7 +337,8 @@ RenderGraph::Resource::Resource() :
     begun           (false),
     firstPass       (nullptr),
     lastPass        (nullptr),
-    resource        (nullptr)
+    resource        (nullptr),
+    currentState    (kGPUResourceState_None)
 {
     /* Nothing produced the initial version. */
     producers.emplace_back(nullptr);
@@ -368,6 +383,7 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
     resource->imported      = true;
     resource->resource      = inResource;
     resource->originalState = inState;
+    resource->currentState  = inState;
     resource->beginCallback = std::move(inBeginCallback);
     resource->endCallback   = std::move(inEndCallback);
 
@@ -406,6 +422,42 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
     mResources.emplace_back(resource);
 
     return handle;
+}
+
+void RenderGraph::TransitionResource(Resource&                  inResource,
+                                     const GPUSubresourceRange& inRange,
+                                     const GPUResourceState     inState)
+{
+    const bool isWholeResource = inRange == inResource.resource->GetSubresourceRange();
+
+    if (!isWholeResource)
+    {
+        Fatal("TODO: Per-subresource state tracking");
+    }
+
+    if (inResource.currentState != inState)
+    {
+        mBarriers.emplace_back();
+        GPUResourceBarrier& barrier = mBarriers.back();
+        barrier.resource     = inResource.resource;
+        barrier.range        = inRange;
+        barrier.currentState = inResource.currentState;
+        barrier.newState     = inState;
+
+        /* Discard if state is currently none, i.e. this is first use. */
+        barrier.discard = inResource.currentState == kGPUResourceState_None;
+
+        inResource.currentState = inState;
+    }
+}
+
+void RenderGraph::FlushBarriers()
+{
+    if (!mBarriers.empty())
+    {
+        GPUGraphicsContext::Get().ResourceBarrier(mBarriers.data(), mBarriers.size());
+        mBarriers.clear();
+    }
 }
 
 void RenderGraph::DetermineRequiredPasses()
@@ -527,16 +579,43 @@ void RenderGraph::AllocateResources()
     }
 }
 
-void RenderGraph::BeginResources(RenderGraphPass& inPass)
+void RenderGraph::EndResources()
 {
-    /* If this is the first pass to use a resource that has a begin callback,
-     * call that now. */
+    /* Transition imported resources back to the original state. */
+    for (Resource* resource : mResources)
+    {
+        if (resource->begun && resource->imported)
+        {
+            TransitionResource(*resource,
+                               resource->resource->GetSubresourceRange(),
+                               resource->originalState);
+        }
+    }
+
+    /* Flush those barriers. This may need to be done before end callbacks. */
+    FlushBarriers();
+
+    for (Resource* resource : mResources)
+    {
+        if (resource->begun)
+        {
+            if (resource->endCallback)
+            {
+                resource->endCallback();
+            }
+        }
+    }
+}
+
+void RenderGraph::PrepareResources(RenderGraphPass& inPass)
+{
     for (const RenderGraphPass::UsedResource& use : inPass.mUsedResources)
     {
         Resource* const resource = mResources[use.handle.index];
 
-        /* Could have multiple uses of a resource within the pass, only begin
-         * once. */
+        /* If this is the first pass to use the resource and it has a begin
+         * callback, call that now. Could have multiple uses of a resource
+         * within the pass, only begin once. */
         if (resource->firstPass == &inPass && !resource->begun)
         {
             if (resource->beginCallback)
@@ -546,35 +625,18 @@ void RenderGraph::BeginResources(RenderGraphPass& inPass)
 
             resource->begun = true;
         }
+
+        TransitionResource(*resource, use.range, use.state);
     }
-}
 
-void RenderGraph::EndResources(RenderGraphPass& inPass)
-{
-    /* If this is the last pass to use a resource that has an end callback,
-     * call that now. */
-    for (const RenderGraphPass::UsedResource& use : inPass.mUsedResources)
-    {
-        Resource* const resource = mResources[use.handle.index];
-
-        /* Same as earlier. */
-        if (resource->lastPass == &inPass && resource->begun)
-        {
-            if (resource->endCallback)
-            {
-                resource->endCallback();
-            }
-
-            resource->begun = false;
-        }
-    }
+    FlushBarriers();
 }
 
 void RenderGraph::CreateViews(RenderGraphPass& inPass)
 {
     for (RenderGraphPass::View& view : inPass.mViews)
     {
-        Resource* const resource = mResources[view.resourceIndex];
+        Resource* const resource = mResources[view.resource.index];
 
         if (!resource->required)
         {
@@ -603,6 +665,125 @@ void RenderGraph::DestroyViews(RenderGraphPass& inPass)
     }
 }
 
+void RenderGraph::ExecutePass(RenderGraphPass& inPass)
+{
+    switch (inPass.mType)
+    {
+        case kRenderGraphPassType_Render:
+        {
+            Assert(inPass.mRenderFunction);
+
+            GPUGraphicsContext& context = GPUGraphicsContext::Get();
+
+            GPURenderPass renderPass;
+
+            for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
+            {
+                RenderGraphPass::Attachment& colourAtt = inPass.mColour[i];
+
+                if (colourAtt.view)
+                {
+                    RenderGraphPass::View& view = inPass.mViews[colourAtt.view.index];
+
+                    renderPass.SetColour(i, view.view);
+
+                    /* If this is the first pass to use the resource, clear it.
+                     * If it is the last, discard it, unless it is an imported
+                     * resource. TODO: Wouldn't always want to clear imported
+                     * resources, but do sometimes. */
+                    Resource* const resource = mResources[view.resource.index];
+
+                    if (resource->firstPass == &inPass)
+                    {
+                        renderPass.ClearColour(i, colourAtt.clearData.colour);
+                    }
+
+                    if (!resource->imported && resource->lastPass == &inPass)
+                    {
+                        renderPass.DiscardColour(i);
+                    }
+                }
+            }
+
+            RenderGraphPass::Attachment& depthAtt = inPass.mDepthStencil;
+
+            if (depthAtt.view)
+            {
+                RenderGraphPass::View& view = inPass.mViews[depthAtt.view.index];
+
+                renderPass.SetDepthStencil(view.view);
+
+                Resource* const resource = mResources[view.resource.index];
+
+                if (resource->firstPass == &inPass)
+                {
+                    renderPass.ClearDepth(depthAtt.clearData.depth);
+
+                    if (PixelFormatInfo::IsDepthStencil(resource->texture.format))
+                    {
+                        renderPass.ClearStencil(depthAtt.clearData.stencil);
+                    }
+                }
+
+                if (!resource->imported && resource->lastPass == &inPass)
+                {
+                    renderPass.DiscardDepth();
+
+                    if (PixelFormatInfo::IsDepthStencil(resource->texture.format))
+                    {
+                        renderPass.DiscardStencil();
+                    }
+                }
+            }
+
+            GPUGraphicsCommandList* const cmdList = context.CreateRenderPass(renderPass);
+            cmdList->Begin();
+
+            inPass.mRenderFunction(*this, inPass, *cmdList);
+
+            cmdList->End();
+            context.SubmitRenderPass(cmdList);
+            break;
+        }
+
+        case kRenderGraphPassType_Compute:
+        {
+            Assert(inPass.mComputeFunction);
+
+            /* TODO: Async compute. */
+            GPUComputeContext& context = GPUGraphicsContext::Get();
+
+            GPUComputeCommandList* const cmdList = context.CreateComputePass();
+            cmdList->Begin();
+
+            inPass.mComputeFunction(*this, inPass, *cmdList);
+
+            cmdList->End();
+            context.SubmitComputePass(cmdList);
+            break;
+        }
+
+        case kRenderGraphPassType_Transfer:
+        {
+            Assert(inPass.mTransferFunction);
+
+            /* Transfer passes are just executed on the main graphics context.
+             * Not worth using a transfer queue for mid-frame transfers, it'll
+             * just add synchronisation overhead. TODO: Any use case for doing
+             * transfers on the async compute queue, i.e. between async compute
+             * passes? */
+            inPass.mTransferFunction(*this, inPass, GPUGraphicsContext::Get());
+            break;
+        }
+
+        default:
+        {
+            Unreachable();
+            break;
+        }
+    }
+}
+
 void RenderGraph::Execute()
 {
     DetermineRequiredPasses();
@@ -612,16 +793,16 @@ void RenderGraph::Execute()
     {
         if (pass->mRequired)
         {
-            BeginResources(*pass);
+            PrepareResources(*pass);
             CreateViews(*pass);
 
-            // Set up resource states.
-            // Call function.
+            ExecutePass(*pass);
 
             DestroyViews(*pass);
-            EndResources(*pass);
         }
     }
+
+    EndResources();
 }
 
 GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle) const

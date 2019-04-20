@@ -158,6 +158,14 @@ inline bool GPUSubresourceRange::Overlaps(const GPUSubresourceRange& inOther) co
            (thisLayerEnd      >  inOther.layerOffset && thisLayerEnd      <= otherLayerEnd);
 }
 
+inline bool operator==(const GPUSubresourceRange& a, const GPUSubresourceRange& b)
+{
+    return a.mipOffset   == b.mipOffset   &&
+           a.mipCount    == b.mipCount    &&
+           a.layerOffset == b.layerOffset &&
+           a.layerCount  == b.layerCount;
+}
+
 /**
  * States for a resource. A resource must be in an appropriate state for how it
  * is going to be used at any given point, and resource barriers must be used

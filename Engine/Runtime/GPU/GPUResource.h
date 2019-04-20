@@ -22,28 +22,31 @@
 class GPUResource : public GPUObject
 {
 protected:
-                            GPUResource(GPUDevice&             inDevice,
-                                        const GPUResourceType  inType,
-                                        const GPUResourceUsage inUsage);
+                                GPUResource(GPUDevice&             inDevice,
+                                            const GPUResourceType  inType,
+                                            const GPUResourceUsage inUsage);
 
 public:
-                            ~GPUResource() {}
+                                ~GPUResource() {}
 
-    GPUResourceType         GetType() const     { return mType; }
-    GPUResourceUsage        GetUsage() const    { return mUsage; }
+    GPUResourceType             GetType() const     { return mType; }
+    GPUResourceUsage            GetUsage() const    { return mUsage; }
 
-    bool                    IsTexture() const   { return mType != kGPUResourceType_Buffer; }
-    bool                    IsBuffer() const    { return mType == kGPUResourceType_Buffer; }
+    bool                        IsTexture() const   { return mType != kGPUResourceType_Buffer; }
+    bool                        IsBuffer() const    { return mType == kGPUResourceType_Buffer; }
+
+    /** Get the whole subresource range for the resource. */
+    virtual GPUSubresourceRange GetSubresourceRange() const = 0;
 
     /**
      * Function called from GPUContext implementations to check that a barrier
      * is valid for this resource. A no-op on non-debug builds.
      */
-    void                    ValidateBarrier(const GPUResourceBarrier& inBarrier) const;
+    void                        ValidateBarrier(const GPUResourceBarrier& inBarrier) const;
 
 private:
-    const GPUResourceType   mType;
-    const GPUResourceUsage  mUsage;
+    const GPUResourceType       mType;
+    const GPUResourceUsage      mUsage;
 
 };
 
