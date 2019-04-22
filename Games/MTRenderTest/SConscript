@@ -1,0 +1,14 @@
+Import('manager')
+
+env = manager.CreateEnvironment(depends = ['Engine/Base'])
+
+objects = map(env.ObjectGenHeader, [
+    'Source/MTRenderTestGame.h',
+])
+
+objects += map(env.Object, [
+    'Source/MTRenderTestGame.cpp',
+])
+
+target = env.OrionGame(name = 'MTRenderTest', sources = objects)
+Return('target')
