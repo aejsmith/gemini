@@ -12,6 +12,7 @@ env = manager.CreateEnvironment(depends = depends)
 Export('env')
 
 objects = map(env.Object, [
+    'Math/Frustum.cpp',
     'DataStream.cpp',
     'LinearAllocator.cpp',
     'Log.cpp',

@@ -48,7 +48,6 @@ public:
     SDL_Window*             GetSDLWindow() const    { return mSDLWindow; }
     GPUSwapchain*           GetSwapchain() const    { return mSwapchain; }
 
-    const glm::ivec2&       GetSize() const         { return mSize; }
     bool                    IsFullscreen() const    { return mFlags & kWindow_Fullscreen; }
     bool                    IsHidden() const        { return mFlags & kWindow_Hidden; }
 
@@ -66,7 +65,6 @@ private:
     GPUSwapchain*           mSwapchain;
 
     std::string             mTitle;
-    glm::ivec2              mSize;
     uint32_t                mFlags;
 
 };

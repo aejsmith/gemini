@@ -18,11 +18,14 @@
 
 #include "Engine/Object.h"
 
+#include "Render/RenderGraph.h"
+#include "Render/RenderView.h"
+
 /**
  * This is the base class for a render pipeline, which implements the process
  * for rendering a world. A camera contains a render pipeline, which, when
- * enabled, it will call into from the render graph to add all passes needed
- * to the graph to render the world.
+ * enabled, will call into from the render graph to add all passes needed to
+ * the graph to render the world.
  *
  * The pipeline is a persistent object, and is serialised with the camera that
  * owns it, so that persistent configuration of the rendering process can be
@@ -36,9 +39,20 @@ class RenderPipeline : public Object
     CLASS();
 
 public:
-                                ~RenderPipeline();
+                            ~RenderPipeline();
+
+    /**
+     * Add render graph passes to render everything visible from the given view
+     * into the texture. The supplied handle is the texture that the view
+     * should be rendered to. A new resource handle should be returned
+     * referring to the rendered output.
+     */
+    virtual void            Render(const RenderView&          inView,
+                                   RenderGraph&               inGraph,
+                                   const RenderResourceHandle inTexture,
+                                   RenderResourceHandle&      outNewTexture) = 0;
 
 protected:
-                                RenderPipeline();
+                            RenderPipeline();
 
 };

@@ -23,3 +23,21 @@ BasicRenderPipeline::BasicRenderPipeline()
 BasicRenderPipeline::~BasicRenderPipeline()
 {
 }
+
+void BasicRenderPipeline::Render(const RenderView&          inView,
+                                 RenderGraph&               inGraph,
+                                 const RenderResourceHandle inTexture,
+                                 RenderResourceHandle&      outNewTexture)
+{
+    RenderGraphPass& pass = inGraph.AddPass("Clear", kRenderGraphPassType_Render);
+
+    pass.SetColour(0, inTexture, &outNewTexture);
+    pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+    pass.SetFunction([] (const RenderGraph&      inGraph,
+                         const RenderGraphPass&  inPass,
+                         GPUGraphicsCommandList& inCmdList)
+    {
+
+    });
+}

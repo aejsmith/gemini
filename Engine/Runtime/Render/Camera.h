@@ -41,6 +41,17 @@ public:
     ObjectPtr<RenderPipeline>   renderPipeline;
 
     /**
+     * Projection configuration. TODO: Orthographic support.
+     */
+
+    /** Vertical field of view, in degrees. */
+    PROPERTY() float            verticalFOV;
+
+    /** Near/far plane distance. */
+    PROPERTY() float            zNear;
+    PROPERTY() float            zFar;
+
+    /**
      * Output configuration.
      */
 

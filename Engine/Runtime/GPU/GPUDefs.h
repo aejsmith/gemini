@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Core/Math.h"
+#include "Core/Math/Rect.h"
 #include "Core/PixelFormat.h"
 #include "Core/Utility.h"
 

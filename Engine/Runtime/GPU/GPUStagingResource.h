@@ -40,7 +40,8 @@
  *
  * In future, if needed, we could add a transient mode to buffers which would
  * allow data to be written directly by the CPU once per frame, but we'd need
- * to handle argument sets/descriptors for this differently.
+ * to handle argument sets/descriptors for this differently. Could do vertex
+ * and index buffers only without having to care about descriptors, though.
  *
  * Usage for uploading data is:
  *  - Call Initialise(). This specifies the resource properties and allocates

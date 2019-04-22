@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Core/Math/Base.h"
+#include "Core/Math.h"
 
 template <typename T>
 struct RectImpl

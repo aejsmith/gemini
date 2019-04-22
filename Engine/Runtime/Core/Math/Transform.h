@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Core/Math/Base.h"
+#include "Core/Math.h"
 
 /**
  * This class encapsulates a 3D object transformation (position, orientation

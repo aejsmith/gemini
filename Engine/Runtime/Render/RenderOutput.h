@@ -38,10 +38,6 @@ class RenderManager;
  */
 class RenderOutput
 {
-protected:
-                                RenderOutput();
-                                ~RenderOutput();
-
 public:
     void                        AddPasses(RenderGraph& inGraph,
                                           OnlyCalledBy<RenderManager>);
@@ -51,10 +47,16 @@ public:
     void                        UnregisterLayer(RenderLayer* const inLayer,
                                                 OnlyCalledBy<RenderLayer>);
 
+    /** Get the size of the output. */
+    const glm::ivec2&           GetSize() const { return mSize; }
+
     /** Get the texture for this output. */
     virtual GPUTexture*         GetTexture() const = 0;
 
 protected:
+                                RenderOutput(const glm::ivec2& inSize);
+                                ~RenderOutput();
+
     void                        RegisterOutput();
     void                        UnregisterOutput();
 
@@ -73,6 +75,7 @@ protected:
     virtual void                EndRender()     {}
 
 private:
+    const glm::ivec2            mSize;
     std::list<RenderLayer*>     mLayers;
 
 };

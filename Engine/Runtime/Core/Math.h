@@ -16,5 +16,6 @@
 
 #pragma once
 
-#include "Core/Math/Base.h"
-#include "Core/Math/Rect.h"
+#include "Core/CoreDefs.h"
+
+#include <glm.h>

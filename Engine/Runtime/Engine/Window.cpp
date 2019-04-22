@@ -29,11 +29,11 @@ SINGLETON_IMPL(MainWindow);
 Window::Window(std::string       inTitle,
                const glm::ivec2& inSize,
                const uint32_t    inFlags) :
-    mSDLWindow (nullptr),
-    mSwapchain (nullptr),
-    mTitle     (std::move(inTitle)),
-    mSize      (inSize),
-    mFlags     (inFlags)
+    RenderOutput    (inSize),
+    mSDLWindow      (nullptr),
+    mSwapchain      (nullptr),
+    mTitle          (std::move(inTitle)),
+    mFlags          (inFlags)
 {
     uint32_t sdlFlags = 0;
 
@@ -42,7 +42,7 @@ Window::Window(std::string       inTitle,
 
     mSDLWindow = SDL_CreateWindow(mTitle.c_str(),
                                   SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                  mSize.x, mSize.y,
+                                  GetSize().x, GetSize().y,
                                   sdlFlags);
     if (!mSDLWindow)
     {

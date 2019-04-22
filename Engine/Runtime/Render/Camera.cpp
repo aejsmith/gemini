@@ -25,7 +25,7 @@
 class CameraRenderLayer final : public RenderLayer
 {
 public:
-                            CameraRenderLayer(Camera& inCamera);
+                            CameraRenderLayer(const Camera& inCamera);
 
 protected:
      void                   AddPasses(RenderGraph&               inGraph,
@@ -33,11 +33,11 @@ protected:
                                       RenderResourceHandle&      outNewTexture) override;
 
 private:
-    Camera&                 mCamera;
+    const Camera&           mCamera;
 
 };
 
-CameraRenderLayer::CameraRenderLayer(Camera& inCamera) :
+CameraRenderLayer::CameraRenderLayer(const Camera& inCamera) :
     RenderLayer (RenderLayer::kOrder_World),
     mCamera     (inCamera)
 {
@@ -47,21 +47,27 @@ void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,
                                   const RenderResourceHandle inTexture,
                                   RenderResourceHandle&      outNewTexture)
 {
-    RenderGraphPass& pass = inGraph.AddPass("Clear", kRenderGraphPassType_Render);
+    Assert(mCamera.renderPipeline);
 
-    pass.SetColour(0, inTexture, &outNewTexture);
-    pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+    const RenderView view =
+        RenderView::CreatePerspective(mCamera.GetWorldPosition(),
+                                      mCamera.GetWorldOrientation(),
+                                      mCamera.verticalFOV,
+                                      mCamera.zNear,
+                                      mCamera.zFar,
+                                      GetLayerOutput()->GetSize());
 
-    pass.SetFunction([] (const RenderGraph&      inGraph,
-                         const RenderGraphPass&  inPass,
-                         GPUGraphicsCommandList& inCmdList)
-    {
-
-    });
+    mCamera.renderPipeline->Render(view,
+                                   inGraph,
+                                   inTexture,
+                                   outNewTexture);
 }
 
 Camera::Camera() :
     renderPipeline  (new BasicRenderPipeline()),
+    verticalFOV     (75.0f),
+    zNear           (0.1f),
+    zFar            (500.0f),
     mRenderLayer    (new CameraRenderLayer(*this))
 {
     mRenderLayer->SetLayerOutput(&MainWindow::Get());
