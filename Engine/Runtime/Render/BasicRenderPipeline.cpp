@@ -14,21 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "Render/BasicRenderPipeline.h"
 
-#include "Engine/Game.h"
-
-class TestGame final : public Game
+BasicRenderPipeline::BasicRenderPipeline()
 {
-    CLASS();
+}
 
-public:
-                                TestGame();
-                                ~TestGame();
-
-public:
-    void                        Init() override;
-
-    const char*                 GetName() const override;
-
-};
+BasicRenderPipeline::~BasicRenderPipeline()
+{
+}

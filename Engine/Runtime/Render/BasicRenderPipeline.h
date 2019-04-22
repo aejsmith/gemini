@@ -16,19 +16,18 @@
 
 #pragma once
 
-#include "Engine/Game.h"
+#include "Render/RenderPipeline.h"
 
-class TestGame final : public Game
+/**
+ * Extremely basic render pipeline implementation which renders the objects in
+ * the world with no lighting etc.
+ */
+class BasicRenderPipeline final : public RenderPipeline
 {
     CLASS();
 
 public:
-                                TestGame();
-                                ~TestGame();
-
-public:
-    void                        Init() override;
-
-    const char*                 GetName() const override;
+                                BasicRenderPipeline();
+                                ~BasicRenderPipeline();
 
 };

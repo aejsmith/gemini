@@ -54,7 +54,7 @@ public:
                             ImGUIRenderLayer();
                             ~ImGUIRenderLayer();
 
-public:
+protected:
     void                    AddPasses(RenderGraph&               inGraph,
                                       const RenderResourceHandle inTexture,
                                       RenderResourceHandle&      outNewTexture) override;

@@ -59,6 +59,7 @@ public:
     void                    DeactivateLayer();
     bool                    IsLayerActive() const   { return mActive; }
 
+protected:
     /**
      * Add render passes to the render graph for this layer. The supplied
      * handle is the texture that the layer output should be written to. If the
@@ -73,4 +74,5 @@ private:
     RenderOutput*           mOutput;
     bool                    mActive;
 
+    friend class RenderOutput;
 };

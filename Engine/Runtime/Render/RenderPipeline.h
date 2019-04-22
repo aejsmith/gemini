@@ -16,19 +16,29 @@
 
 #pragma once
 
-#include "Engine/Game.h"
+#include "Engine/Object.h"
 
-class TestGame final : public Game
+/**
+ * This is the base class for a render pipeline, which implements the process
+ * for rendering a world. A camera contains a render pipeline, which, when
+ * enabled, it will call into from the render graph to add all passes needed
+ * to the graph to render the world.
+ *
+ * The pipeline is a persistent object, and is serialised with the camera that
+ * owns it, so that persistent configuration of the rendering process can be
+ * stored on it.
+ *
+ * Transient per-frame rendering state is stored in the RenderContext (or a
+ * pipeline-specific derived implementation of that).
+ */
+class RenderPipeline : public Object
 {
     CLASS();
 
 public:
-                                TestGame();
-                                ~TestGame();
+                                ~RenderPipeline();
 
-public:
-    void                        Init() override;
-
-    const char*                 GetName() const override;
+protected:
+                                RenderPipeline();
 
 };
