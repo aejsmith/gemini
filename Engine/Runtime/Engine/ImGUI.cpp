@@ -299,12 +299,8 @@ void ImGUIRenderLayer::AddPasses(RenderGraph&               inGraph,
     /*
      * TODO: I don't think it's really a good idea to have ImGUI drawn through
      * the render graph. We want it done as late in the frame as possible,
-     * probably in Window::EndRender() instead. The way we do the vertex buffer
-     * creation/upload here is also a bit icky, correct thing to do would be
-     * declare the vertex buffer as a graph resource but determining the size
-     * would mean calling ImGui::Render() during the graph build phase which is
-     * way too early. I'll move it later, but for now I'm using it as a test
-     * case for the graph.
+     * probably in Window::EndRender() instead. I'll move it later, but for now
+     * I'm using it as a test case for the graph.
      */
 
     RenderGraphPass& pass = inGraph.AddPass("ImGUI", kRenderGraphPassType_Render);
