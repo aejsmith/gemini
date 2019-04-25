@@ -54,6 +54,9 @@
  *    (require an explicit copy of A) or do a copy internally. For now I'm not
  *    bothering to solve it until we have a use case (if ever).
  *  - Asynchronous compute support.
+ *  - Render pass combining. If we have passes that execute consecutively and
+ *    have the same render target configuration, combine them into one pass,
+ *    which avoids unnecessary store/load between the passes.
  */
 
 RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
