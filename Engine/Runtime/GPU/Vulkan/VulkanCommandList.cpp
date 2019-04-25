@@ -24,6 +24,7 @@
 #include "VulkanContext.h"
 #include "VulkanDevice.h"
 #include "VulkanPipeline.h"
+#include "VulkanTransientPool.h"
 
 template <typename T>
 inline VulkanCommandList<T>::VulkanCommandList() :
@@ -421,17 +422,20 @@ void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
         {
             auto& vertexBuffer = mVertexBuffers[i];
 
-            if (mDirtyVertexBuffers.test(i) && vertexBuffer.buffer)
+            if (mDirtyVertexBuffers.test(i) && vertexBuffer.offset != kInvalidBuffer)
             {
-                const auto buffer         = static_cast<VulkanBuffer*>(vertexBuffer.buffer);
-                const VkBuffer handle     = buffer->GetHandle();
+                const VkBuffer handle =
+                    (vertexBuffer.buffer)
+                        ? static_cast<VulkanBuffer*>(vertexBuffer.buffer)->GetHandle()
+                        : GetVulkanDevice().GetGeometryPool().GetHandle();
+
                 const VkDeviceSize offset = vertexBuffer.offset;
 
                 vkCmdBindVertexBuffers(GetCommandBuffer(),
-                                    i,
-                                    1,
-                                    &handle,
-                                    &offset);
+                                       i,
+                                       1,
+                                       &handle,
+                                       &offset);
 
                 mDirtyVertexBuffers.reset(i);
             }
@@ -440,13 +444,20 @@ void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
 
     if (inIsIndexed && mDirtyState & kDirtyState_IndexBuffer)
     {
-        const auto buffer           = static_cast<VulkanBuffer*>(mIndexBuffer.buffer);
-        const VkIndexType indexType = (mIndexBuffer.type == kGPUIndexType_32)
-                                          ? VK_INDEX_TYPE_UINT32
-                                          : VK_INDEX_TYPE_UINT16;
+        Assert(mIndexBuffer.offset != kInvalidBuffer);
+
+        const VkBuffer handle =
+            (mIndexBuffer.buffer)
+                ? static_cast<VulkanBuffer*>(mIndexBuffer.buffer)->GetHandle()
+                : GetVulkanDevice().GetGeometryPool().GetHandle();
+
+        const VkIndexType indexType =
+            (mIndexBuffer.type == kGPUIndexType_32)
+                ? VK_INDEX_TYPE_UINT32
+                : VK_INDEX_TYPE_UINT16;
 
         vkCmdBindIndexBuffer(GetCommandBuffer(),
-                             buffer->GetHandle(),
+                             handle,
                              mIndexBuffer.offset,
                              indexType);
 
@@ -478,4 +489,10 @@ void VulkanGraphicsCommandList::DrawIndexed(const uint32_t inIndexCount,
                      inFirstIndex,
                      inVertexOffset,
                      0);
+}
+
+uint32_t VulkanGraphicsCommandList::AllocateTransientBuffer(const size_t inSize,
+                                                            void*&       outMapping)
+{
+    return GetVulkanDevice().GetGeometryPool().Allocate(inSize, outMapping);
 }

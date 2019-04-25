@@ -337,12 +337,35 @@ public:
                                                    GPUBuffer* const   inBuffer,
                                                    const uint32_t     inOffset = 0);
 
+    /**
+     * Transient vertex/index data interface. Set{Vertex,Index}Buffer() use
+     * persistent resources, whereas these will copy the supplied data into
+     * temporary GPU-accessible memory (which is recycled once a frame is
+     * completed), and bind that.
+     */
+    void                            WriteVertexBuffer(const uint32_t    inIndex,
+                                                      const void* const inData,
+                                                      const size_t      inSize);
+
+    void                            WriteIndexBuffer(const GPUIndexType inType,
+                                                     const void* const  inData,
+                                                     const size_t       inSize);
+
     virtual void                    Draw(const uint32_t inVertexCount,
                                          const uint32_t inFirstVertex = 0) = 0;
 
     virtual void                    DrawIndexed(const uint32_t inIndexCount,
                                                 const uint32_t inFirstIndex  = 0,
                                                 const int32_t  inVertexOffset = 0) = 0;
+
+protected:
+    /**
+     * Implementation for Write{Vertex,Index}Buffer(). Returns an offset for
+     * the data in the implementation's transient buffer, is set in the buffer
+     * state (and the GPUBuffer pointer is set to null).
+     */
+    virtual uint32_t                AllocateTransientBuffer(const size_t inSize,
+                                                            void*&       outMapping) = 0;
 
 protected:
     enum DirtyState
@@ -358,19 +381,21 @@ protected:
                                   kDirtyState_IndexBuffer
     };
 
+    static constexpr uint32_t       kInvalidBuffer = std::numeric_limits<uint32_t>::max();
+
     struct VertexBuffer
     {
-        GPUBuffer*                  buffer;
-        uint32_t                    offset;
+        GPUBuffer*                  buffer  = nullptr;
+        uint32_t                    offset  = kInvalidBuffer;
     };
 
     using VertexBufferBitset      = std::bitset<kMaxVertexAttributes>;
 
     struct IndexBuffer
     {
-        GPUIndexType                type;
-        GPUBuffer*                  buffer;
-        uint32_t                    offset;
+        GPUIndexType                type    = kGPUIndexType_16;
+        GPUBuffer*                  buffer  = nullptr;
+        uint32_t                    offset  = kInvalidBuffer;
     };
 
 protected:

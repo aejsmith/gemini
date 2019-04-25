@@ -202,9 +202,7 @@ GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&              
                              ? inParent->GetRenderTargetState()
                              : mRenderPass.GetRenderTargetState()),
     mDirtyState         (0),
-    mPipeline           (nullptr),
-    mVertexBuffers      {},
-    mIndexBuffer        {}
+    mPipeline           (nullptr)
 {
     /* Initialise the viewport and scissor to the size of the render target. */
     uint32_t width, height, layers;
@@ -292,4 +290,37 @@ void GPUGraphicsCommandList::SetIndexBuffer(const GPUIndexType inType,
 
         mDirtyState |= kDirtyState_IndexBuffer;
     }
+}
+
+void GPUGraphicsCommandList::WriteVertexBuffer(const uint32_t    inIndex,
+                                               const void* const inData,
+                                               const size_t      inSize)
+{
+    Assert(inIndex < kMaxVertexAttributes);
+
+    auto& vertexBuffer = mVertexBuffers[inIndex];
+
+    void* mapping;
+
+    vertexBuffer.buffer = nullptr;
+    vertexBuffer.offset = AllocateTransientBuffer(inSize, mapping);
+
+    memcpy(mapping, inData, inSize);
+
+    mDirtyVertexBuffers.set(inIndex);
+}
+
+void GPUGraphicsCommandList::WriteIndexBuffer(const GPUIndexType inType,
+                                              const void* const  inData,
+                                              const size_t       inSize)
+{
+    void* mapping;
+
+    mIndexBuffer.type   = inType;
+    mIndexBuffer.buffer = nullptr;
+    mIndexBuffer.offset = AllocateTransientBuffer(inSize, mapping);
+
+    memcpy(mapping, inData, inSize);
+
+    mDirtyState |= kDirtyState_IndexBuffer;
 }

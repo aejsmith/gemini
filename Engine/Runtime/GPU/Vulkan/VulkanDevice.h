@@ -31,6 +31,7 @@
 class VulkanArgumentSetLayout;
 class VulkanContext;
 class VulkanDescriptorPool;
+class VulkanGeometryPool;
 class VulkanMemoryManager;
 
 class VulkanDevice final : public GPUDevice
@@ -95,6 +96,7 @@ public:
 
     VulkanMemoryManager&                GetMemoryManager() const        { return *mMemoryManager; }
     VulkanDescriptorPool&               GetDescriptorPool() const       { return *mDescriptorPool; }
+    VulkanGeometryPool&                 GetGeometryPool() const         { return *mGeometryPool; }
 
     bool                                HasCap(const Caps inCap) const
                                             { return (mCaps & inCap) == inCap; }
@@ -197,6 +199,7 @@ private:
 
     VulkanMemoryManager*                mMemoryManager;
     VulkanDescriptorPool*               mDescriptorPool;
+    VulkanGeometryPool*                 mGeometryPool;
 
     /**
      * Per-frame data. Indexed by mCurrentFrame, which is a value between 0

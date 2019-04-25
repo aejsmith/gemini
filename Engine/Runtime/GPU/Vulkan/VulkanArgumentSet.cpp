@@ -17,12 +17,12 @@
 #include "VulkanArgumentSet.h"
 
 #include "VulkanBuffer.h"
-#include "VulkanConstantPool.h"
 #include "VulkanDescriptorPool.h"
 #include "VulkanDevice.h"
 #include "VulkanResourceView.h"
 #include "VulkanSampler.h"
 #include "VulkanTexture.h"
+#include "VulkanTransientPool.h"
 
 static VkDescriptorType kArgumentTypeMapping[kGPUArgumentTypeCount] =
 {

@@ -18,7 +18,6 @@
 
 #include "VulkanArgumentSet.h"
 #include "VulkanBuffer.h"
-#include "VulkanConstantPool.h"
 #include "VulkanContext.h"
 #include "VulkanDescriptorPool.h"
 #include "VulkanFormat.h"
@@ -31,6 +30,7 @@
 #include "VulkanStagingPool.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
+#include "VulkanTransientPool.h"
 #include "VulkanUtils.h"
 
 #include "Core/Utility.h"
@@ -93,6 +93,7 @@ VulkanDevice::VulkanDevice() :
     mDescriptorPool = new VulkanDescriptorPool(*this);
     mStagingPool    = new VulkanStagingPool(*this);
     mConstantPool   = new VulkanConstantPool(*this);
+    mGeometryPool   = new VulkanGeometryPool(*this);
 
     /* See GetPipelineLayout() for details of what this is for. */
     GPUArgumentSetLayoutDesc layoutDesc;
@@ -146,6 +147,7 @@ VulkanDevice::~VulkanDevice()
         delete context;
     }
 
+    delete mGeometryPool;
     delete static_cast<VulkanConstantPool*>(mConstantPool);
     delete static_cast<VulkanStagingPool*>(mStagingPool);
     delete mDescriptorPool;

@@ -158,6 +158,9 @@ protected:
                                                      const GPUArgument* const inArguments) override
                                         { VulkanCommandList::SetArgumentsImpl(inIndex, inArguments); }
 
+    uint32_t                        AllocateTransientBuffer(const size_t inSize,
+                                                            void*&       outMapping) override;
+
     /**
      * Internal methods.
      */

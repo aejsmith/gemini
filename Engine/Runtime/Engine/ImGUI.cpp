@@ -341,40 +341,17 @@ void ImGUIRenderLayer::AddPasses(RenderGraph&               inGraph,
 
         inCmdList.WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
 
-        /* Keep created buffers alive until we submit the command list. */
-        std::vector<std::unique_ptr<GPUBuffer>> buffers;
-
-        GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
-
-        GPUStagingBuffer stagingBuffer(GPUDevice::Get());
-
         for (int i = 0; i < drawData->CmdListsCount; i++)
         {
             const ImDrawList* const imCmdList = drawData->CmdLists[i];
 
-            const uint32_t vertexDataSize = imCmdList->VtxBuffer.size() * sizeof(ImDrawVert);
-            const uint32_t indexDataSize  = imCmdList->IdxBuffer.size() * sizeof(ImDrawIdx);
-            const uint32_t bufferSize     = vertexDataSize + indexDataSize;
+            inCmdList.WriteVertexBuffer(0,
+                                        &imCmdList->VtxBuffer.front(),
+                                        imCmdList->VtxBuffer.size() * sizeof(ImDrawVert));
 
-            stagingBuffer.Initialise(kGPUStagingAccess_Write, bufferSize);
-            stagingBuffer.Write(&imCmdList->VtxBuffer.front(), vertexDataSize, 0);
-            stagingBuffer.Write(&imCmdList->IdxBuffer.front(), indexDataSize, vertexDataSize);
-            stagingBuffer.Finalise();
-
-            GPUBufferDesc bufferDesc;
-            bufferDesc.size = bufferSize;
-
-            GPUBuffer* buffer = GPUDevice::Get().CreateBuffer(bufferDesc);
-
-            graphicsContext.UploadBuffer(buffer, stagingBuffer, bufferSize);
-            graphicsContext.ResourceBarrier(buffer,
-                                            kGPUResourceState_TransferWrite,
-                                            kGPUResourceState_IndexBufferRead | kGPUResourceState_VertexBufferRead);
-
-            inCmdList.SetVertexBuffer(0, buffer, 0);
-            inCmdList.SetIndexBuffer(kGPUIndexType_16, buffer, vertexDataSize);
-
-            buffers.emplace_back(buffer);
+            inCmdList.WriteIndexBuffer(kGPUIndexType_16,
+                                       &imCmdList->IdxBuffer.front(),
+                                       imCmdList->IdxBuffer.size() * sizeof(ImDrawIdx));
 
             size_t indexOffset = 0;
 

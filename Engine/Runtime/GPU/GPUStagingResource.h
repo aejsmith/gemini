@@ -34,14 +34,11 @@
  *    This would involve a lot more usage tracking in the backend, and have
  *    implications for pre-creating descriptor sets etc.
  *
- * So, for now, we just update all resources (aside from constants, which are
- * handled differently by GPUConstantPool) by writing the data into a staging
- * buffer and using a GPU copy command to transfer to the real resource.
- *
- * In future, if needed, we could add a transient mode to buffers which would
- * allow data to be written directly by the CPU once per frame, but we'd need
- * to handle argument sets/descriptors for this differently. Could do vertex
- * and index buffers only without having to care about descriptors, though.
+ * So, for now, we just update all persistent resources by writing the data
+ * into a staging buffer and using a GPU copy command to transfer to the real
+ * resource. Note that vertex and index buffers do have a transient path
+ * (GPUGraphicsCommandList::Write*Buffer()), which does not require a GPUBuffer
+ * to be created.
  *
  * Usage for uploading data is:
  *  - Call Initialise(). This specifies the resource properties and allocates
