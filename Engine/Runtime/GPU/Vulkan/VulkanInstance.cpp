@@ -66,6 +66,13 @@ VulkanInstance::~VulkanInstance()
 
 #if ORION_VULKAN_VALIDATION
 
+static const char* const kMessageFilters[] =
+{
+    /* VMA causes this when mapping allocations containing both buffers and
+     * images but it is fine to ignore. */
+    "Mapping an image with layout",
+};
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL
 DebugReportCallback(VkDebugReportFlagsEXT      flags,
                     VkDebugReportObjectTypeEXT objectType,
@@ -78,6 +85,14 @@ DebugReportCallback(VkDebugReportFlagsEXT      flags,
 {
     LogLevel level = kLogLevel_Debug;
     std::string flagsString;
+
+    for (const char* filter : kMessageFilters)
+    {
+        if (strstr(pMessage, filter))
+        {
+            return VK_FALSE;
+        }
+    }
 
     if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
     {
