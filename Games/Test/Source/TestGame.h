@@ -24,11 +24,12 @@ class TestGame final : public Game
 
 public:
                                 TestGame();
-                                ~TestGame();
 
 public:
     void                        Init() override;
 
     const char*                 GetName() const override;
 
+protected:
+                                ~TestGame();
 };

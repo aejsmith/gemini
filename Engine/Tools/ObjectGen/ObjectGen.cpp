@@ -143,6 +143,7 @@ public:
 
 public:
     bool                            isObjectDerived;
+    CX_CXXAccessSpecifier           destructorAccess;
     ParsedClass*                    parentClass;
 
     ParsedPropertyList              properties;
@@ -254,6 +255,26 @@ static void ParseError(CXCursor          inCursor,
     fprintf(stderr, "\n");
 
     gParseErrorOccurred = true;
+}
+
+static void ParseWarning(CXCursor          inCursor,
+                         const char* const inFormat,
+                         ...)
+{
+    CXSourceLocation location = clang_getCursorLocation(inCursor);
+    CXFile file;
+    unsigned line, column;
+    clang_getSpellingLocation(location, &file, &line, &column, nullptr);
+    CXString fileName = clang_getFileName(file);
+
+    fprintf(stderr, "%s:%u:%u: warning: ", clang_getCString(fileName), line, column);
+
+    va_list args;
+    va_start(args, inFormat);
+    vfprintf(stderr, inFormat, args);
+    va_end(args);
+
+    fprintf(stderr, "\n");
 }
 
 /**
@@ -610,11 +631,12 @@ void ParsedProperty::Dump(const unsigned inDepth) const
 
 ParsedClass::ParsedClass(CXCursor          inCursor,
                          ParsedDecl* const inParent) :
-    ParsedDecl      (inCursor, inParent, true),
-    isObjectDerived (name.compare("Object") == 0),
-    parentClass     (nullptr),
-    mConstructable  (kConstructability_Default),
-    mOnMetaClass    (false)
+    ParsedDecl          (inCursor, inParent, true),
+    isObjectDerived     (name.compare("Object") == 0),
+    destructorAccess    (CX_CXXPublic),
+    parentClass         (nullptr),
+    mConstructable      (kConstructability_Default),
+    mOnMetaClass        (false)
 {
 }
 
@@ -787,6 +809,12 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
                 }
             }
 
+            break;
+        }
+
+        case CXCursor_Destructor:
+        {
+            this->destructorAccess = clang_getCXXAccessSpecifier(inCursor);
             break;
         }
 
@@ -1025,6 +1053,12 @@ void ParsedTranslationUnit::HandleChild(CXCursor     inCursor,
 
                 if (parsedClass->IsObject())
                 {
+                    if (parsedClass->destructorAccess == CX_CXXPublic)
+                    {
+                        ParseWarning(parsedClass->cursor,
+                                     "Object-derived class has public destructor; this should be hidden with reference counting used instead");
+                    }
+
                     this->classes.insert(std::make_pair(parsedClass->name, std::move(parsedClass)));
                 }
             }

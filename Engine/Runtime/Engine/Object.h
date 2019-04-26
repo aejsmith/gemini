@@ -537,6 +537,7 @@ public:
 
 protected:
                                     Object() {}
+                                    ~Object() {}
 
 protected:
     /**

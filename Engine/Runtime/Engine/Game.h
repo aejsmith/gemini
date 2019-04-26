@@ -39,5 +39,6 @@ public:
 
 protected:
                                 Game() {}
+                                ~Game() {}
 
 };

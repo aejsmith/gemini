@@ -28,11 +28,12 @@ class BasicRenderPipeline final : public RenderPipeline
 
 public:
                             BasicRenderPipeline();
-                            ~BasicRenderPipeline();
 
     void                    Render(const RenderView&          inView,
                                    RenderGraph&               inGraph,
                                    const RenderResourceHandle inTexture,
                                    RenderResourceHandle&      outNewTexture) override;
 
+protected:
+                            ~BasicRenderPipeline();
 };
