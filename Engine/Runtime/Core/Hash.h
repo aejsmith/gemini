@@ -20,8 +20,9 @@
 
 #include <xxHash.h>
 
-#include <type_traits>
+#include <cstring>
 #include <string>
+#include <type_traits>
 
 inline size_t HashData(const void*    inData,
                        const size_t   inSize,
