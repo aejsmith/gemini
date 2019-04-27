@@ -54,7 +54,8 @@ buildTypes = {
     },
     'Sanitize': {
         'CPPDEFINES': {
-            'ORION_BUILD_DEBUG': 1
+            'ORION_BUILD_DEBUG': 1,
+            'ORION_SANITIZE': 1
         },
     },
     'Release': {
