@@ -18,7 +18,8 @@
 
 #include "Engine/Serialiser.h"
 
-Component::Component()
+Component::Component() :
+    mActive (false)
 {
 }
 
