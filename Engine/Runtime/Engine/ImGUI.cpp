@@ -272,7 +272,7 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
 
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
-    GPUStagingTexture stagingTexture(GPUDevice::Get(), kGPUStagingAccess_Write, textureDesc);
+    GPUStagingTexture stagingTexture(kGPUStagingAccess_Write, textureDesc);
     memcpy(stagingTexture.MapWrite({0, 0}), pixels, width * height * 4);
     stagingTexture.Finalise();
 

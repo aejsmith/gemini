@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "GPU/GPUDevice.h"
 #include "GPU/GPUTexture.h"
 
 /**
@@ -62,7 +63,7 @@
 class GPUStagingResource : public GPUDeviceChild
 {
 protected:
-                            GPUStagingResource(GPUDevice& inDevice);
+                            GPUStagingResource();
                             ~GPUStagingResource();
 
 public:
@@ -90,10 +91,9 @@ protected:
 class GPUStagingBuffer : public GPUStagingResource
 {
 public:
-                            GPUStagingBuffer(GPUDevice& inDevice);
+                            GPUStagingBuffer();
 
-                            GPUStagingBuffer(GPUDevice&             inDevice,
-                                             const GPUStagingAccess inAccess,
+                            GPUStagingBuffer(const GPUStagingAccess inAccess,
                                              const uint32_t         inSize);
 
                             ~GPUStagingBuffer() {}
@@ -131,10 +131,9 @@ private:
 class GPUStagingTexture : public GPUStagingResource
 {
 public:
-                            GPUStagingTexture(GPUDevice& inDevice);
+                            GPUStagingTexture();
 
-                            GPUStagingTexture(GPUDevice&             inDevice,
-                                              const GPUStagingAccess inAccess,
+                            GPUStagingTexture(const GPUStagingAccess inAccess,
                                               const GPUTextureDesc&  inDesc);
 
                             ~GPUStagingTexture();
@@ -211,8 +210,8 @@ public:
 
 };
 
-inline GPUStagingResource::GPUStagingResource(GPUDevice& inDevice) :
-    GPUDeviceChild  (inDevice),
+inline GPUStagingResource::GPUStagingResource() :
+    GPUDeviceChild  (GPUDevice::Get()),
     mHandle         (nullptr),
     mMapping        (nullptr),
     mFinalised      (false)
@@ -227,16 +226,15 @@ inline void GPUStagingResource::Finalise()
     mFinalised = true;
 }
 
-inline GPUStagingBuffer::GPUStagingBuffer(GPUDevice& inDevice) :
-    GPUStagingResource  (inDevice),
+inline GPUStagingBuffer::GPUStagingBuffer() :
+    GPUStagingResource  (),
     mSize               (0)
 {
 }
 
-inline GPUStagingBuffer::GPUStagingBuffer(GPUDevice&             inDevice,
-                                          const GPUStagingAccess inAccess,
+inline GPUStagingBuffer::GPUStagingBuffer(const GPUStagingAccess inAccess,
                                           const uint32_t         inSize) :
-    GPUStagingBuffer    (inDevice)
+    GPUStagingBuffer    ()
 {
     Initialise(inAccess, inSize);
 }
@@ -268,10 +266,9 @@ inline void GPUStagingBuffer::Write(const void*    inData,
     memcpy(reinterpret_cast<uint8_t*>(mMapping) + inOffset, inData, inSize);
 }
 
-inline GPUStagingTexture::GPUStagingTexture(GPUDevice&             inDevice,
-                                            const GPUStagingAccess inAccess,
+inline GPUStagingTexture::GPUStagingTexture(const GPUStagingAccess inAccess,
                                             const GPUTextureDesc&  inDesc) :
-    GPUStagingTexture   (inDevice)
+    GPUStagingTexture   ()
 {
     Initialise(inAccess, inDesc);
 }

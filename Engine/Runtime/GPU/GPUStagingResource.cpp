@@ -39,8 +39,8 @@ void GPUStagingResource::Allocate(const GPUStagingAccess inAccess,
     mFinalised = false;
 }
 
-GPUStagingTexture::GPUStagingTexture(GPUDevice& inDevice) :
-    GPUStagingResource  (inDevice)
+GPUStagingTexture::GPUStagingTexture() :
+    GPUStagingResource  ()
 {
 }
 
