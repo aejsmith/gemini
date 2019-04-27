@@ -35,7 +35,7 @@ public:
 
 protected:
                                     AssetLoader();
-                                    ~AssetLoader() {}
+                                    ~AssetLoader();
 
     virtual AssetPtr                Load() = 0;
 
@@ -44,12 +44,3 @@ protected:
     const char*                     mPath;
 
 };
-
-inline AssetPtr AssetLoader::Load(DataStream* const inData,
-                                  const char* const inPath)
-{
-    mData = inData;
-    mPath = inPath;
-
-    return Load();
-}

@@ -18,6 +18,25 @@
 
 #include <map>
 
+AssetLoader::AssetLoader() :
+    mData   (nullptr),
+    mPath   (nullptr)
+{
+}
+
+AssetLoader::~AssetLoader()
+{
+}
+
+AssetPtr AssetLoader::Load(DataStream* const inData,
+                           const char* const inPath)
+{
+    mData = inData;
+    mPath = inPath;
+
+    return Load();
+}
+
 ObjectPtr<AssetLoader> AssetLoader::Create(const std::string& inExtension)
 {
     /* Map of file types to loader class. */
