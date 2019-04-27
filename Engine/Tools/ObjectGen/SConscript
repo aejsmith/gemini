@@ -38,6 +38,13 @@ def GenMustacheHeader(target, source, env):
         targetFile.write(';\n')
 env.Command('ObjectGen.mustache.h', 'ObjectGen.mustache', Action(GenMustacheHeader, '$GENCOMSTR'))
 
+# Suppress sanitizers while running ObjectGen since libclang triggers a bunch
+# of errors, and we get a bunch of leak warnings that we don't really care
+# about.
+if env['BUILD'] == 'Sanitize':
+    env['CCFLAGS'] = [x for x in env['CCFLAGS'] if x.find('-fsanitize') == -1]
+    manager.baseEnv['ENV']['ASAN_OPTIONS'] = 'leak_check_at_exit=0,halt_on_error=0'
+
 manager.baseEnv['OBJECTGEN'] = env.OrionTool(
     name = 'ObjectGen',
     sources = ['ObjectGen.cpp'])

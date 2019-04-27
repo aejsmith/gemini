@@ -52,6 +52,11 @@ buildTypes = {
             'ORION_BUILD_DEBUG': 1
         },
     },
+    'Sanitize': {
+        'CPPDEFINES': {
+            'ORION_BUILD_DEBUG': 1
+        },
+    },
     'Release': {
         'CPPDEFINES': {
             'ORION_BUILD_RELEASE': 1,
@@ -75,6 +80,10 @@ if sys.platform.startswith('linux'):
         'Debug': {
             'CCFLAGS': ['-g'],
             'LINKFLAGS': [],
+        },
+        'Sanitize': {
+            'CCFLAGS': ['-g', '-fsanitize=undefined', '-fsanitize=address'],
+            'LINKFLAGS': ['-fsanitize=undefined', '-fsanitize=address'],
         },
         'Release': {
             'CCFLAGS': ['-O3', '-g'],
