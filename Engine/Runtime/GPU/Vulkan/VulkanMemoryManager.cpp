@@ -38,6 +38,8 @@ VulkanMemoryManager::VulkanMemoryManager(VulkanDevice& inDevice) :
     functions.vkFreeMemory                        = vkFreeMemory;
     functions.vkMapMemory                         = vkMapMemory;
     functions.vkUnmapMemory                       = vkUnmapMemory;
+    functions.vkFlushMappedMemoryRanges           = vkFlushMappedMemoryRanges;
+    functions.vkInvalidateMappedMemoryRanges      = vkInvalidateMappedMemoryRanges;
     functions.vkBindBufferMemory                  = vkBindBufferMemory;
     functions.vkBindImageMemory                   = vkBindImageMemory;
     functions.vkGetBufferMemoryRequirements       = vkGetBufferMemoryRequirements;
