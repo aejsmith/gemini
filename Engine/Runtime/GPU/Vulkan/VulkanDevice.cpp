@@ -460,6 +460,7 @@ void VulkanDevice::EndFrameImpl()
     }
 
     static_cast<VulkanConstantPool&>(GetConstantPool()).BeginFrame();
+    mGeometryPool->BeginFrame();
 }
 
 void VulkanDevice::AddFrameCompleteCallback(FrameCompleteCallback inCallback)
