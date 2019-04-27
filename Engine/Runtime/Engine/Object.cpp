@@ -309,6 +309,8 @@ struct SerialisationBuffer
         {
             reinterpret_cast<ReferencePtr<RefCounted>*>(this->data)->~ReferencePtr();
         }
+
+        delete[] this->data;
     }
 };
 
