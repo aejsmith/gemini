@@ -37,19 +37,19 @@ public:
     static bool                     HasInstance();
 
 private:
-    static T*                       sInstance;
+    static Singleton<T>*            sInstance;
 
 };
 
 #define SINGLETON_IMPL(T) \
-    template <> T* Singleton<T>::sInstance = nullptr
+    template <> Singleton<T>* Singleton<T>::sInstance = nullptr
 
 template <typename T>
 Singleton<T>::Singleton()
 {
     Assert(!sInstance);
 
-    sInstance = static_cast<T*>(this);
+    sInstance = this;
 }
 
 template <typename T>
@@ -57,7 +57,7 @@ Singleton<T>::~Singleton()
 {
     Assert(sInstance == this);
 
-    sInstance = static_cast<T*>(this);
+    sInstance = this;
 }
 
 template <typename T>
@@ -65,7 +65,7 @@ T& Singleton<T>::Get()
 {
     Assert(HasInstance());
 
-    return *sInstance;
+    return static_cast<T&>(*sInstance);
 }
 
 template <typename T>
