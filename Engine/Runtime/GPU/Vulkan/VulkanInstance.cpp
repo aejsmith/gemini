@@ -258,18 +258,24 @@ void VulkanInstance::CreateInstance()
 
     /* Enable validation extensions if requested and present. */
     #if ORION_VULKAN_VALIDATION
-        if (EnableLayer("VK_LAYER_LUNARG_standard_validation", kCap_Validation))
-        {
-            LogInfo("Enabling Vulkan validation layers");
+        const char* const env = getenv("ORION_VULKAN_VALIDATION");
+        bool enable = !env || strcmp(env, "0") != 0;
 
-            if (!EnableExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, kCap_DebugReport))
-            {
-                LogWarning("Vulkan validation layers are enabled, but debug report unavailable");
-            }
-        }
-        else
+        if (enable)
         {
-            LogWarning("Vulkan validation layers are not present, not enabling");
+            if (EnableLayer("VK_LAYER_LUNARG_standard_validation", kCap_Validation))
+            {
+                LogInfo("Enabling Vulkan validation layers");
+
+                if (!EnableExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, kCap_DebugReport))
+                {
+                    LogWarning("Vulkan validation layers are enabled, but debug report unavailable");
+                }
+            }
+            else
+            {
+                LogWarning("Vulkan validation layers are not present, not enabling");
+            }
         }
     #endif
 
