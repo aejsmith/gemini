@@ -32,7 +32,20 @@ struct GPUState<D>::Cache
      * reads - only need to lock for writing if we need to cache a new state.
      */
     std::shared_mutex               lock;
+
+public:
+                                    ~Cache();
+
 };
+
+template <typename D>
+GPUState<D>::Cache::~Cache()
+{
+    for (const auto& it : this->cache)
+    {
+        delete it.second;
+    }
+}
 
 template <typename D>
 const GPUState<D>* GPUState<D>::Get(const Desc& inDesc)
