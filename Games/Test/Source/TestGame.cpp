@@ -16,9 +16,11 @@
 
 #include "TestGame.h"
 
+#include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
 #include "Engine/Entity.h"
 #include "Engine/JSONSerialiser.h"
+#include "Engine/Mesh.h"
 #include "Engine/World.h"
 
 #include "Render/Camera.h"
@@ -42,6 +44,8 @@ void TestGame::Init()
 
     Camera* camera = playerEntity->CreateComponent<Camera>();
     camera->SetActive(true);
+
+    MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
 
     //Entity* entity1 = world->CreateEntity("Test");
     //entity1->Translate(glm::vec3(0.0f, 1.5f, 0.0f));

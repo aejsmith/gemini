@@ -1,6 +1,6 @@
 Import('manager')
 
-env = manager.CreateEnvironment(depends = ['Engine/Base'])
+env = manager.CreateEnvironment(depends = ['Engine'])
 
 objects = map(env.ObjectGenHeader, [
     'Source/TestGame.h',
