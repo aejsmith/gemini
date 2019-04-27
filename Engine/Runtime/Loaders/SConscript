@@ -1,0 +1,11 @@
+Import('env')
+
+objects = map(env.ObjectGenHeader, [
+    'OBJLoader.h',
+])
+
+objects += map(env.Object, [
+    'OBJLoader.cpp',
+])
+
+Return('objects')

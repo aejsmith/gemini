@@ -20,6 +20,7 @@
 #include "Core/PixelFormat.h"
 #include "Core/Utility.h"
 
+#include <bitset>
 #include <vector>
 
 class GPUResource;
@@ -45,6 +46,8 @@ static constexpr uint32_t kMaxConstantsSize = 65536;
  */
 using GPUConstants = uint32_t;
 static constexpr GPUConstants kGPUConstants_Invalid = std::numeric_limits<uint32_t>::max();
+
+using GPUVertexBufferBitset = std::bitset<kMaxVertexAttributes>;
 
 enum GPUVendor : uint8_t
 {

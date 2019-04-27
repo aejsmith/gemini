@@ -14,6 +14,7 @@ baseComponents = [
 
 # Remaining components making up the full engine.
 extraComponents = [
+    'Loaders',
 ]
 
 allComponents = ['Core'] + baseComponents + extraComponents
@@ -74,5 +75,4 @@ Export('env')
 manager.AddComponent(
     name = 'Engine',
     depends = depends,
-    objects = [])
-# SConscript(dirs = [os.path.join('runtime', c) for c in extraComponents]))
+    objects = SConscript(dirs = [os.path.join('Runtime', c) for c in extraComponents]))

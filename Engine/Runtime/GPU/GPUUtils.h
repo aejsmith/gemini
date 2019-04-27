@@ -20,12 +20,27 @@
 
 namespace GPUUtils
 {
+    size_t              GetIndexSize(const GPUIndexType inType);
+
     /**
      * Validate a resource state combination. Does not do anything on non-debug
      * builds.
      */
     void                ValidateResourceState(const GPUResourceState inState,
                                               const bool             inIsTexture);
+}
+
+inline size_t GPUUtils::GetIndexSize(const GPUIndexType inType)
+{
+    switch (inType)
+    {
+        case kGPUIndexType_16: return 2;
+        case kGPUIndexType_32: return 4;
+
+        default:
+            UnreachableMsg("Unknown index type");
+
+    }
 }
 
 #if !ORION_BUILD_DEBUG

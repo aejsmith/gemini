@@ -8,6 +8,7 @@ objects = map(env.ObjectGenHeader, [
     'Component.h',
     'Entity.h',
     'Game.h',
+    'Mesh.h',
     'Object.h',
     'World.h',
 ])
@@ -24,6 +25,7 @@ objects += map(env.Object, [
     'ImGUI.cpp',
     'JSONSerialiser.cpp',
     'Main.cpp',
+    'Mesh.cpp',
     'Object.cpp',
     'Serialiser.cpp',
     'Version.cpp',

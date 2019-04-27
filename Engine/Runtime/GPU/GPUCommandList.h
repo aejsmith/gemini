@@ -22,7 +22,6 @@
 #include "GPU/GPURenderPass.h"
 
 #include <atomic>
-#include <bitset>
 
 class GPUBuffer;
 class GPUContext;
@@ -389,8 +388,6 @@ protected:
         uint32_t                    offset  = kInvalidBuffer;
     };
 
-    using VertexBufferBitset      = std::bitset<kMaxVertexAttributes>;
-
     struct IndexBuffer
     {
         GPUIndexType                type    = kGPUIndexType_16;
@@ -408,7 +405,7 @@ protected:
     GPUViewport                     mViewport;
     IntRect                         mScissor;
     VertexBuffer                    mVertexBuffers[kMaxVertexAttributes];
-    VertexBufferBitset              mDirtyVertexBuffers;
+    GPUVertexBufferBitset           mDirtyVertexBuffers;
     IndexBuffer                     mIndexBuffer;
 
 };
