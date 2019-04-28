@@ -555,11 +555,42 @@ VkPipelineLayout VulkanDevice::GetPipelineLayout(const VulkanPipelineLayoutKey& 
     return cachedLayout;
 }
 
+/**
+ * Standard render pass dependencies. We always use explicit external barriers
+ * rather than handling synchronisation and layout transitions with the render
+ * pass. However, when no external dependencies are specified in a pass, there
+ * are some implicitly defined default ones. These don't really do much of
+ * value, but do cause some extra synchronisation on some drivers. Therefore,
+ * override them with truly useless barriers to avoid this extra sync.
+ */
+static const VkSubpassDependency kDefaultRenderPassDependencies[] =
+{
+    {
+        VK_SUBPASS_EXTERNAL,
+        0,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        0,
+        0,
+        0
+    },
+    {
+        0,
+        VK_SUBPASS_EXTERNAL,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        0,
+        0,
+        0
+    },
+};
+
 VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
 {
     std::unique_lock lock(mCacheLock);
 
     VkRenderPass& cachedRenderPass = mRenderPassCache[inKey];
+
     if (cachedRenderPass == VK_NULL_HANDLE)
     {
         /* VkRenderPassCreateInfo requires a tightly packed attachment array,
@@ -570,66 +601,65 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
         VkAttachmentReference colourReferences[kMaxRenderPassColourAttachments];
         VkAttachmentReference depthStencilReference;
 
-        auto AddAttachment =
-            [&] (const VulkanRenderPassKey::Attachment& inSrcAttachment,
-                 VkAttachmentReference&                 outReference) -> bool
+        auto AddAttachment = [&] (const VulkanRenderPassKey::Attachment& inSrcAttachment,
+                                  VkAttachmentReference&                 outReference) -> bool
+        {
+            const bool result = inSrcAttachment.format != kPixelFormat_Unknown;
+
+            if (result)
             {
-                const bool result = inSrcAttachment.format != kPixelFormat_Unknown;
+                createInfo.pAttachments = attachments;
 
-                if (result)
+                VkImageLayout layout;
+
+                switch (inSrcAttachment.state)
                 {
-                    createInfo.pAttachments = attachments;
+                    case kGPUResourceState_RenderTarget:
+                        layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                        break;
 
-                    VkImageLayout layout;
+                    case kGPUResourceState_DepthStencilWrite:
+                        layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                        break;
 
-                    switch (inSrcAttachment.state)
-                    {
-                        case kGPUResourceState_RenderTarget:
-                            layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                            break;
+                    case kGPUResourceState_DepthReadStencilWrite:
+                        layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+                        break;
 
-                        case kGPUResourceState_DepthStencilWrite:
-                            layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                            break;
+                    case kGPUResourceState_DepthWriteStencilRead:
+                        layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+                        break;
 
-                        case kGPUResourceState_DepthReadStencilWrite:
-                            layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
-                            break;
+                    case kGPUResourceState_DepthStencilRead:
+                        layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                        break;
 
-                        case kGPUResourceState_DepthWriteStencilRead:
-                            layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
-                            break;
+                    default:
+                        UnreachableMsg("Invalid GPUResourceState for attachment");
 
-                        case kGPUResourceState_DepthStencilRead:
-                            layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-                            break;
-
-                        default:
-                            UnreachableMsg("Invalid GPUResourceState for attachment");
-
-                    }
-
-                    outReference.attachment = createInfo.attachmentCount;
-                    outReference.layout     = layout;
-
-                    auto& attachment = attachments[createInfo.attachmentCount++];
-
-                    attachment.format         = VulkanFormat::GetVulkanFormat(inSrcAttachment.format);
-                    attachment.samples        = VK_SAMPLE_COUNT_1_BIT; // TODO
-                    attachment.loadOp         = VulkanUtils::ConvertLoadOp(inSrcAttachment.loadOp);
-                    attachment.stencilLoadOp  = VulkanUtils::ConvertLoadOp(inSrcAttachment.stencilLoadOp);
-                    attachment.storeOp        = VulkanUtils::ConvertStoreOp(inSrcAttachment.storeOp);
-                    attachment.stencilStoreOp = VulkanUtils::ConvertStoreOp(inSrcAttachment.stencilStoreOp);
-                    attachment.initialLayout  = layout;
-                    attachment.finalLayout    = layout;
-                }
-                else
-                {
-                    outReference.attachment = VK_ATTACHMENT_UNUSED;
                 }
 
-                return result;
-            };
+                outReference.attachment = createInfo.attachmentCount;
+                outReference.layout     = layout;
+
+                auto& attachment = attachments[createInfo.attachmentCount++];
+
+                attachment.format         = VulkanFormat::GetVulkanFormat(inSrcAttachment.format);
+                attachment.samples        = VK_SAMPLE_COUNT_1_BIT; // TODO
+                attachment.loadOp         = VulkanUtils::ConvertLoadOp(inSrcAttachment.loadOp);
+                attachment.stencilLoadOp  = VulkanUtils::ConvertLoadOp(inSrcAttachment.stencilLoadOp);
+                attachment.storeOp        = VulkanUtils::ConvertStoreOp(inSrcAttachment.storeOp);
+                attachment.stencilStoreOp = VulkanUtils::ConvertStoreOp(inSrcAttachment.stencilStoreOp);
+                attachment.initialLayout  = layout;
+                attachment.finalLayout    = layout;
+            }
+            else
+            {
+                outReference.attachment = VK_ATTACHMENT_UNUSED;
+            }
+
+            return result;
+        };
 
         for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
         {
@@ -647,9 +677,11 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
 
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
-        createInfo.sType        = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        createInfo.subpassCount = 1;
-        createInfo.pSubpasses   = &subpass;
+        createInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        createInfo.subpassCount    = 1;
+        createInfo.pSubpasses      = &subpass;
+        createInfo.dependencyCount = ArraySize(kDefaultRenderPassDependencies);
+        createInfo.pDependencies   = kDefaultRenderPassDependencies;
 
         VulkanCheck(vkCreateRenderPass(GetHandle(),
                                        &createInfo,
@@ -673,6 +705,7 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
     std::unique_lock lock(mCacheLock);
 
     VkFramebuffer& cachedFramebuffer = mFramebufferCache[framebufferKey];
+
     if (cachedFramebuffer == VK_NULL_HANDLE)
     {
         /* Same as above. The indices into the view array here must match up
