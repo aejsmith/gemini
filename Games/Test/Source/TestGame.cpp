@@ -24,6 +24,7 @@
 #include "Engine/World.h"
 
 #include "Render/Camera.h"
+#include "Render/MeshRenderer.h"
 
 TestGame::TestGame()
 {
@@ -46,6 +47,14 @@ void TestGame::Init()
     camera->SetActive(true);
 
     MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
+
+    Entity* cubeEntity = world->CreateEntity("Cube");
+    cubeEntity->Translate(glm::vec3(0.0f, 0.0f, -3.0f));
+    cubeEntity->SetActive(true);
+
+    MeshRenderer* meshRenderer = cubeEntity->CreateComponent<MeshRenderer>();
+    meshRenderer->SetMesh(mesh);
+    meshRenderer->SetActive(true);
 
     //Entity* entity1 = world->CreateEntity("Test");
     //entity1->Translate(glm::vec3(0.0f, 1.5f, 0.0f));

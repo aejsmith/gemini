@@ -16,26 +16,33 @@
 
 #pragma once
 
-#include "GPU/GPUDefs.h"
+#include "Render/Renderer.h"
+
+#include "Engine/Mesh.h"
 
 /**
- * Type of a pass within a shader pipeline. A render pipeline will render
- * visible entities one or more times in render passes. Each of these passes
- * may need to render the entity in a different way and therefore need
- * different shaders, pipeline state, etc.
- *
- * A shader pipeline contains multiple passes for each type of render pass that
- * it will be used with, the type is specified by this enum. The pass type
- * defines defaults for pipeline state (blend, depth/stencil, rasterizer,
- * render target) as well as shader variant flags. Some pipeline state can be
- * overridden by the shader pipeline.
+ * Renderer component that renders a Mesh.
  */
-enum ShaderPassType
+class MeshRenderer final : public Renderer
 {
-    /**
-     * Basic pass without any lighting etc.
-     */
-    kShaderPassType_Basic,
+    CLASS();
 
-    kShaderPassTypeCount,
+public:
+                                    MeshRenderer();
+
+    /** Mesh that will be rendered. */
+    VPROPERTY(MeshPtr, mesh);
+    void                            SetMesh(Mesh* const inMesh);
+    Mesh*                           GetMesh() const { return mMesh; }
+
+    // TODO: Materials
+
+protected:
+                                    ~MeshRenderer();
+
+    RenderEntityArray               CreateRenderEntities() override;
+
+private:
+    MeshPtr                         mMesh;
+
 };

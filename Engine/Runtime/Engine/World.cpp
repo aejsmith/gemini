@@ -19,9 +19,12 @@
 #include "Engine/Entity.h"
 #include "Engine/Serialiser.h"
 
+#include "Render/RenderWorld.h"
+
 static constexpr char kRootEntityName[] = "Root";
 
-World::World()
+World::World() :
+    mRenderWorld    (new RenderWorld)
 {
     mRoot         = new Entity();
     mRoot->mName  = kRootEntityName;
@@ -33,6 +36,8 @@ World::World()
 World::~World()
 {
     mRoot->Destroy();
+
+    delete mRenderWorld;
 }
 
 void World::Serialise(Serialiser& inSerialiser) const

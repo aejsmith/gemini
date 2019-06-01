@@ -19,6 +19,7 @@
 #include "Engine/Asset.h"
 
 class Entity;
+class RenderWorld;
 
 /**
  * This class holds the entire game world. It holds a hierarchical view of all
@@ -32,10 +33,13 @@ class World final : public Asset
     CLASS();
 
 public:
-    Entity*                 GetRoot() const { return mRoot; }
+    Entity*                 GetRoot()           { return mRoot; }
+    const Entity*           GetRoot() const     { return mRoot; }
 
     /** Create a new entity at the root of the hierarchy. */
     Entity*                 CreateEntity(std::string inName);
+
+    RenderWorld*            GetRenderWorld()    { return mRenderWorld; }
 
 protected:
                             World();
@@ -46,6 +50,8 @@ protected:
 
 private:
     ObjectPtr<Entity>       mRoot;
+
+    RenderWorld* const      mRenderWorld;
 
     friend class Engine;
 };

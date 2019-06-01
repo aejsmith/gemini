@@ -39,7 +39,7 @@ class RenderPipeline : public Object
     CLASS();
 
 public:
-/**
+    /**
      * Add render graph passes to render everything visible from the given view
      * into the texture. The supplied handle is the texture that the view
      * should be rendered to. A new resource handle should be returned

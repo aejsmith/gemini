@@ -78,6 +78,11 @@ class Mesh final : public Asset
 public:
                                 Mesh();
 
+    size_t                      GetSubMeshCount() const
+                                    { return mSubMeshes.size(); }
+    const SubMesh&              GetSubMesh(const size_t inIndex) const
+                                    { Assert(inIndex < GetSubMeshCount()); return *mSubMeshes[inIndex]; }
+
     bool                        GetMaterial(const std::string& inName,
                                             uint32_t&          outIndex);
 
