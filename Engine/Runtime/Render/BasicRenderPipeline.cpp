@@ -16,8 +16,17 @@
 
 #include "Render/BasicRenderPipeline.h"
 
-#include "Render/RenderView.h"
+#include "Render/RenderContext.h"
 #include "Render/RenderWorld.h"
+
+struct BasicRenderContext : public RenderContext
+{
+    RenderCullResults           cullResults;
+
+public:
+    using RenderContext::RenderContext;
+
+};
 
 BasicRenderPipeline::BasicRenderPipeline()
 {
@@ -33,23 +42,24 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
                                  const RenderResourceHandle inTexture,
                                  RenderResourceHandle&      outNewTexture)
 {
-    RenderCullResults cullResults;
-    inWorld.Cull(inView, cullResults);
+    BasicRenderContext* const context = inGraph.NewTransient<BasicRenderContext>(inWorld, inView);
 
-    for (const RenderEntity* entity : cullResults.entities)
-    {
-        LogDebug("Render %p", entity);
-    }
+    inWorld.Cull(inView, context->cullResults);
 
     RenderGraphPass& pass = inGraph.AddPass("Scene", kRenderGraphPassType_Render);
 
     pass.SetColour(0, inTexture, &outNewTexture);
     pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
-    pass.SetFunction([] (const RenderGraph&      inGraph,
-                         const RenderGraphPass&  inPass,
-                         GPUGraphicsCommandList& inCmdList)
+    pass.SetFunction([context] (const RenderGraph&      inGraph,
+                                const RenderGraphPass&  inPass,
+                                GPUGraphicsCommandList& inCmdList)
     {
-// debug renderer bounding boxes
+        for (const RenderEntity* entity : context->cullResults.entities)
+        {
+            LogDebug("Render %p", entity);
+        }
+
+        // debug renderer bounding boxes
     });
 }

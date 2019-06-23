@@ -806,6 +806,11 @@ void RenderGraph::Execute()
     }
 
     EndResources();
+
+    for (const Destructor& destructor : mDestructors)
+    {
+        destructor();
+    }
 }
 
 GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle) const
@@ -824,4 +829,9 @@ GPUTexture* RenderGraph::GetTexture(const RenderResourceHandle inHandle) const
     AssertMsg(mResources[inHandle.index]->resource, "Attempt to use culled resource");
 
     return static_cast<GPUTexture*>(mResources[inHandle.index]->resource);
+}
+
+void RenderGraph::AddDestructor(Destructor inDestructor)
+{
+    mDestructors.emplace_back(std::move(inDestructor));
 }

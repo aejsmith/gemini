@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "Engine/FrameAllocator.h"
+
 #include "Render/RenderDefs.h"
 
 #include <functional>
@@ -421,6 +423,16 @@ public:
                                                    std::function<void ()> inEndCallback = {});
 
     /**
+     * Allocate a transient object that needs to remain alive until graph
+     * execution is completed and be properly destroyed via its destructor. It
+     * will be allocated via the frame allocator, the destructor will be called
+     * at the end of graph allocation. Trivially destructible types can just
+     * use the frame allocator directly
+     */
+    template <typename T, typename... Args>
+    T*                              NewTransient(Args&&... inArgs);
+
+    /**
      * Graph execution methods.
      */
 
@@ -474,7 +486,11 @@ private:
                                     Resource();
     };
 
+    using Destructor              = std::function<void()>;
+
 private:
+    void                            AddDestructor(Destructor inDestructor);
+
     void                            TransitionResource(Resource&                  inResource,
                                                        const GPUSubresourceRange& inRange,
                                                        const GPUResourceState     inState);
@@ -497,6 +513,8 @@ private:
 
     std::vector<GPUResourceBarrier> mBarriers;
 
+    std::vector<Destructor>         mDestructors;
+
     friend class RenderGraphPass;
 };
 
@@ -516,4 +534,12 @@ inline const RenderTextureDesc& RenderGraph::GetTextureDesc(const RenderResource
 {
     Assert(GetResourceType(inHandle) == kRenderResourceType_Texture);
     return mResources[inHandle.index]->texture;
+}
+
+template <typename T, typename... Args>
+inline T* RenderGraph::NewTransient(Args&&... inArgs)
+{
+    T* const result = FrameAllocator::New<T>(std::forward<Args>(inArgs)...);
+    AddDestructor([result] () { FrameAllocator::Delete(result); });
+    return result;
 }
