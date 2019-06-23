@@ -284,6 +284,10 @@ struct GPUVertexInputStateDesc
 public:
                                 GPUVertexInputStateDesc();
                                 GPUVertexInputStateDesc(const GPUVertexInputStateDesc& inOther);
+
+    const Attribute*            FindAttribute(const GPUAttributeSemantic inSemantic,
+                                              const uint8_t              inIndex = 0) const;
+
 };
 
 DEFINE_HASH_MEM_OPS(GPUVertexInputStateDesc);
@@ -297,6 +301,23 @@ inline GPUVertexInputStateDesc::GPUVertexInputStateDesc()
 inline GPUVertexInputStateDesc::GPUVertexInputStateDesc(const GPUVertexInputStateDesc& inOther)
 {
     memcpy(this, &inOther, sizeof(*this));
+}
+
+inline const GPUVertexInputStateDesc::Attribute*
+GPUVertexInputStateDesc::FindAttribute(const GPUAttributeSemantic inSemantic,
+                                       const uint8_t              inIndex) const
+{
+    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    {
+        const Attribute& attribute = attributes[i];
+
+        if (attribute.semantic == inSemantic && attribute.index == inIndex)
+        {
+            return &attribute;
+        }
+    }
+
+    return nullptr;
 }
 
 using GPUVertexInputState    = GPUState<GPUVertexInputStateDesc>;

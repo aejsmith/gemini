@@ -17,6 +17,7 @@
 #pragma once
 
 #include "Core/ByteArray.h"
+#include "Core/Math/BoundingBox.h"
 
 #include "Engine/Asset.h"
 
@@ -31,6 +32,8 @@ class SubMesh
 private:
                                 SubMesh(Mesh& inParent) : mParent (inParent) {}
                                 ~SubMesh() {}
+
+    const BoundingBox&          GetBoundingBox() const { return mBoundingBox; }
 
 private:
     Mesh&                       mParent;
@@ -48,6 +51,7 @@ private:
     };
 
     GPUBuffer*                  mIndexBuffer;
+    BoundingBox                 mBoundingBox;
 
     /** CPU-side index data. This is discarded after the mesh is built. */
     ByteArray                   mIndexData;
@@ -147,6 +151,16 @@ private:
 
 private:
                                 ~Mesh();
+
+    void                        CalculateBoundingBox(SubMesh* const inSubMesh);
+
+    glm::vec4                   LoadAttribute(const GPUAttributeSemantic inSemantic,
+                                              const uint8_t              inSemanticIndex,
+                                              const SubMesh* const       inSubMesh,
+                                              const uint32_t             inIndex);
+    glm::vec4                   LoadAttribute(const GPUAttributeSemantic inSemantic,
+                                              const uint8_t              inSemanticIndex,
+                                              const uint32_t             inVertexIndex);
 
 private:
     bool                        mIsBuilt;

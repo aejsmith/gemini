@@ -68,6 +68,8 @@ void Mesh::SetVertexLayout(const GPUVertexInputStateDesc& inDesc,
     mVertexInputState = GPUVertexInputState::Get(inDesc);
     mVertexCount      = inCount;
 
+    bool hasPosition = false;
+
     for (size_t i = 0; i < kMaxVertexAttributes; i++)
     {
         const auto& attribute = inDesc.attributes[i];
@@ -75,8 +77,18 @@ void Mesh::SetVertexLayout(const GPUVertexInputStateDesc& inDesc,
         if (attribute.semantic != kGPUAttributeSemantic_Unknown)
         {
             mUsedVertexBuffers.set(attribute.buffer);
+
+            if (attribute.semantic == kGPUAttributeSemantic_Position)
+            {
+                AssertMsg(!hasPosition && attribute.index == 0,
+                          "Vertex layout must have only one position at index 0");
+
+                hasPosition = true;
+            }
         }
     }
+
+    AssertMsg(hasPosition, "Vertex layout must have a position");
 }
 
 void Mesh::SetVertexData(const uint32_t inIndex,
@@ -185,7 +197,34 @@ void Mesh::Build()
      * list. Also use transfer queue when available. */
     Assert(Thread::IsMain());
 
-    /* Upload vertex buffers. */
+    for (SubMesh* subMesh : mSubMeshes)
+    {
+        CalculateBoundingBox(subMesh);
+
+        if (subMesh->mIndexed)
+        {
+            GPUBufferDesc bufferDesc;
+            bufferDesc.usage = kGPUResourceUsage_Standard;
+            bufferDesc.size  = subMesh->mIndexData.GetSize();
+
+            subMesh->mIndexBuffer = GPUDevice::Get().CreateBuffer(bufferDesc);
+
+            GPUStagingBuffer stagingBuffer(kGPUStagingAccess_Write, bufferDesc.size);
+            stagingBuffer.Write(subMesh->mIndexData.Get(), bufferDesc.size);
+            stagingBuffer.Finalise();
+
+            GPUGraphicsContext::Get().UploadBuffer(subMesh->mIndexBuffer,
+                                                   stagingBuffer,
+                                                   bufferDesc.size);
+
+            GPUGraphicsContext::Get().ResourceBarrier(subMesh->mIndexBuffer,
+                                                      kGPUResourceState_TransferWrite,
+                                                      kGPUResourceState_IndexBufferRead);
+
+            subMesh->mIndexData.Clear();
+        }
+    }
+
     for (size_t i = 0; i < kMaxVertexAttributes; i++)
     {
         if (mUsedVertexBuffers.test(i))
@@ -213,31 +252,106 @@ void Mesh::Build()
             mVertexData[i].Clear();
         }
     }
+}
 
-    /* Upload index buffers. */
-    for (SubMesh* subMesh : mSubMeshes)
+void Mesh::CalculateBoundingBox(SubMesh* const inSubMesh)
+{
+    Assert(inSubMesh->mCount != 0);
+
+    glm::vec3 minimum( std::numeric_limits<float>::max());
+    glm::vec3 maximum(-std::numeric_limits<float>::max());
+
+    for (uint32_t i = 0; i < inSubMesh->mCount; i++)
     {
-        if (subMesh->mIndexed)
+        const glm::vec3 position = glm::vec3(LoadAttribute(kGPUAttributeSemantic_Position, 0, inSubMesh, i));
+
+        minimum = glm::min(minimum, position);
+        maximum = glm::max(maximum, position);
+    }
+
+    inSubMesh->mBoundingBox = BoundingBox(minimum, maximum);
+}
+
+glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic inSemantic,
+                              const uint8_t              inSemanticIndex,
+                              const SubMesh* const       inSubMesh,
+                              const uint32_t             inIndex)
+{
+    Assert(inIndex < inSubMesh->mCount);
+
+    uint32_t vertexIndex;
+
+    if (inSubMesh->mIndexed)
+    {
+        switch (inSubMesh->mIndexType)
         {
-            GPUBufferDesc bufferDesc;
-            bufferDesc.usage = kGPUResourceUsage_Standard;
-            bufferDesc.size  = subMesh->mIndexData.GetSize();
+            case kGPUIndexType_16:
+            {
+                vertexIndex = reinterpret_cast<const uint16_t*>(inSubMesh->mIndexData.Get())[inIndex];
+                break;
+            }
 
-            subMesh->mIndexBuffer = GPUDevice::Get().CreateBuffer(bufferDesc);
+            case kGPUIndexType_32:
+            {
+                vertexIndex = reinterpret_cast<const uint32_t*>(inSubMesh->mIndexData.Get())[inIndex];
+                break;
+            }
 
-            GPUStagingBuffer stagingBuffer(kGPUStagingAccess_Write, bufferDesc.size);
-            stagingBuffer.Write(subMesh->mIndexData.Get(), bufferDesc.size);
-            stagingBuffer.Finalise();
-
-            GPUGraphicsContext::Get().UploadBuffer(subMesh->mIndexBuffer,
-                                                   stagingBuffer,
-                                                   bufferDesc.size);
-
-            GPUGraphicsContext::Get().ResourceBarrier(subMesh->mIndexBuffer,
-                                                      kGPUResourceState_TransferWrite,
-                                                      kGPUResourceState_IndexBufferRead);
-
-            subMesh->mIndexData.Clear();
+            default:
+            {
+                Unreachable();
+            }
         }
     }
+    else
+    {
+        vertexIndex = inSubMesh->mVertexOffset + inIndex;
+    }
+
+    return LoadAttribute(inSemantic, inSemanticIndex, vertexIndex);
+}
+
+glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic inSemantic,
+                              const uint8_t              inSemanticIndex,
+                              const uint32_t             inVertexIndex)
+{
+    Assert(inVertexIndex < mVertexCount);
+
+    const GPUVertexInputStateDesc::Attribute* attributeDesc =
+        mVertexInputState->GetDesc().FindAttribute(inSemantic, inSemanticIndex);
+
+    Assert(attributeDesc);
+
+    const GPUVertexInputStateDesc::Buffer* bufferDesc =
+        &mVertexInputState->GetDesc().buffers[attributeDesc->buffer];
+
+    Assert(!bufferDesc->perInstance);
+    Assert(mVertexData[attributeDesc->buffer]);
+
+    const auto data =
+        reinterpret_cast<const float*>(mVertexData[attributeDesc->buffer].Get() +
+                                       (inVertexIndex * bufferDesc->stride) +
+                                       attributeDesc->offset);
+
+    /* Zero components which aren't present. */
+    glm::vec4 result(0.0f);
+
+    switch (attributeDesc->format)
+    {
+        case kGPUAttributeFormat_R32G32B32A32_Float:
+            result.a = data[3];
+        case kGPUAttributeFormat_R32G32B32_Float:
+            result.b = data[2];
+        case kGPUAttributeFormat_R32G32_Float:
+            result.g = data[1];
+        case kGPUAttributeFormat_R32_Float:
+            result.r = data[0];
+            break;
+
+        default:
+            UnreachableMsg("Unhandled GPUAttributeFormat");
+            break;
+    }
+
+    return result;
 }
