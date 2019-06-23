@@ -17,10 +17,12 @@
 #include "Render/Camera.h"
 
 #include "Engine/Window.h"
+#include "Engine/World.h"
 
 #include "Render/BasicRenderPipeline.h"
 #include "Render/RenderGraph.h"
 #include "Render/RenderLayer.h"
+#include "Render/RenderView.h"
 
 class CameraRenderLayer final : public RenderLayer
 {
@@ -57,7 +59,8 @@ void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,
                                       mCamera.zFar,
                                       GetLayerOutput()->GetSize());
 
-    mCamera.renderPipeline->Render(view,
+    mCamera.renderPipeline->Render(*mCamera.GetEntity()->GetWorld()->GetRenderWorld(),
+                                   view,
                                    inGraph,
                                    inTexture,
                                    outNewTexture);

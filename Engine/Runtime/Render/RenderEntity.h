@@ -17,6 +17,7 @@
 #pragma once
 
 #include "Core/IntrusiveList.h"
+#include "Core/Math/BoundingBox.h"
 #include "Core/Math/Transform.h"
 
 #include "Render/RenderDefs.h"
@@ -35,17 +36,26 @@ class RenderEntity
 public:
     virtual                         ~RenderEntity();
 
-    const Renderer&                 GetRenderer() const { return mRenderer; }
+    const Renderer&                 GetRenderer() const         { return mRenderer; }
 
     void                            SetTransform(const Transform& inTransform);
-    const Transform&                GetTransform() const    { return mTransform; }
+    const Transform&                GetTransform() const        { return mTransform; }
+
+    const BoundingBox&              GetWorldBoundingBox() const { return mWorldBoundingBox; }
 
 protected:
                                     RenderEntity(const Renderer& inRenderer);
 
+    /**
+     * Get the entity-local bounding box, will be transformed by the entity
+     * transform to produce a world bounding box.
+     */
+    virtual BoundingBox             GetLocalBoundingBox() = 0;
+
 private:
     const Renderer&                 mRenderer;
     Transform                       mTransform;
+    BoundingBox                     mWorldBoundingBox;
 
 public:
     IntrusiveListNode               mWorldListNode;

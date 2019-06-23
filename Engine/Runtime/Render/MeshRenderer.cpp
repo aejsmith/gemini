@@ -25,6 +25,9 @@ public:
                                                     const Mesh&         inMesh,
                                                     const SubMesh&      inSubMesh);
 
+protected:
+    BoundingBox                 GetLocalBoundingBox() override;
+
 private:
     const MeshRenderer&         GetMeshRenderer() const
                                     { return static_cast<const MeshRenderer&>(GetRenderer()); }
@@ -42,6 +45,11 @@ SubMeshRenderEntity::SubMeshRenderEntity(const MeshRenderer& inRenderer,
     mMesh           (inMesh),
     mSubMesh        (inSubMesh)
 {
+}
+
+BoundingBox SubMeshRenderEntity::GetLocalBoundingBox()
+{
+    return mSubMesh.GetBoundingBox();
 }
 
 MeshRenderer::MeshRenderer()

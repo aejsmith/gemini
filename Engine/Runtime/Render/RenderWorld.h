@@ -17,6 +17,12 @@
 #pragma once
 
 #include "Render/RenderEntity.h"
+#include "Render/RenderView.h"
+
+struct RenderCullResults
+{
+    std::vector<const RenderEntity*>    entities;
+};
 
 /**
  * Representation of the world from the renderer's point of view, to be used to
@@ -33,16 +39,19 @@
 class RenderWorld
 {
 public:
-                                    RenderWorld();
-                                    ~RenderWorld();
+                                        RenderWorld();
+                                        ~RenderWorld();
 
-    void                            AddEntity(RenderEntity* const inEntity);
-    void                            RemoveEntity(RenderEntity* const inEntity);
+    void                                AddEntity(RenderEntity* const inEntity);
+    void                                RemoveEntity(RenderEntity* const inEntity);
+
+    void                                Cull(const RenderView&  inView,
+                                             RenderCullResults& outResults) const;
 
 private:
-    using RenderEntityList        = IntrusiveList<RenderEntity, &RenderEntity::mWorldListNode>;
+    using RenderEntityList            = IntrusiveList<RenderEntity, &RenderEntity::mWorldListNode>;
 
 private:
-    RenderEntityList                mEntities;
+    RenderEntityList                    mEntities;
 
 };

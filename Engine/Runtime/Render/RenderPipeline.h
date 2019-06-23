@@ -19,7 +19,9 @@
 #include "Engine/Object.h"
 
 #include "Render/RenderGraph.h"
-#include "Render/RenderView.h"
+
+class RenderView;
+class RenderWorld;
 
 /**
  * This is the base class for a render pipeline, which implements the process
@@ -45,7 +47,8 @@ public:
      * should be rendered to. A new resource handle should be returned
      * referring to the rendered output.
      */
-    virtual void            Render(const RenderView&          inView,
+    virtual void            Render(const RenderWorld&         inWorld,
+                                   const RenderView&          inView,
                                    RenderGraph&               inGraph,
                                    const RenderResourceHandle inTexture,
                                    RenderResourceHandle&      outNewTexture) = 0;

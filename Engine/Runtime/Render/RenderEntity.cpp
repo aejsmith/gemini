@@ -27,5 +27,6 @@ RenderEntity::~RenderEntity()
 
 void RenderEntity::SetTransform(const Transform& inTransform)
 {
-    mTransform = inTransform;
+    mTransform        = inTransform;
+    mWorldBoundingBox = GetLocalBoundingBox().Transform(inTransform);
 }

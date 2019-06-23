@@ -16,6 +16,8 @@
 
 #include "Render/RenderWorld.h"
 
+#include "Core/Math/Intersect.h"
+
 RenderWorld::RenderWorld()
 {
 }
@@ -33,4 +35,19 @@ void RenderWorld::AddEntity(RenderEntity* const inEntity)
 void RenderWorld::RemoveEntity(RenderEntity* const inEntity)
 {
     mEntities.Remove(inEntity);
+}
+
+void RenderWorld::Cull(const RenderView&  inView,
+                       RenderCullResults& outResults) const
+{
+    const Frustum& frustum = inView.GetFrustum();
+
+    for (const RenderEntity* entity : mEntities)
+    {
+        if (Math::Intersect(frustum, entity->GetWorldBoundingBox()))
+        {
+            // TODO: Allocation overhead, this reallocates every insertion.
+            outResults.entities.emplace_back(entity);
+        }
+    }
 }

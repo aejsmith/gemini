@@ -18,6 +18,8 @@
 
 #include "Core/Math.h"
 
+class Transform;
+
 /**
  * Class definining an axis-aligned bounding box (AABB).
  */
@@ -44,6 +46,7 @@ public:
     glm::vec3                   CalculateNVertex(const glm::vec3& inNormal) const;
 
     BoundingBox                 Transform(const glm::mat4& inMatrix) const;
+    BoundingBox                 Transform(const class Transform& inTransform) const;
 
 private:
     glm::vec3                   mMinimum;

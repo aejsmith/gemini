@@ -16,6 +16,9 @@
 
 #include "Render/BasicRenderPipeline.h"
 
+#include "Render/RenderView.h"
+#include "Render/RenderWorld.h"
+
 BasicRenderPipeline::BasicRenderPipeline()
 {
 }
@@ -24,12 +27,21 @@ BasicRenderPipeline::~BasicRenderPipeline()
 {
 }
 
-void BasicRenderPipeline::Render(const RenderView&          inView,
+void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
+                                 const RenderView&          inView,
                                  RenderGraph&               inGraph,
                                  const RenderResourceHandle inTexture,
                                  RenderResourceHandle&      outNewTexture)
 {
-    RenderGraphPass& pass = inGraph.AddPass("Clear", kRenderGraphPassType_Render);
+    RenderCullResults cullResults;
+    inWorld.Cull(inView, cullResults);
+
+    for (const RenderEntity* entity : cullResults.entities)
+    {
+        LogDebug("Render %p", entity);
+    }
+
+    RenderGraphPass& pass = inGraph.AddPass("Scene", kRenderGraphPassType_Render);
 
     pass.SetColour(0, inTexture, &outNewTexture);
     pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
@@ -38,6 +50,6 @@ void BasicRenderPipeline::Render(const RenderView&          inView,
                          const RenderGraphPass&  inPass,
                          GPUGraphicsCommandList& inCmdList)
     {
-
+// debug renderer bounding boxes
     });
 }

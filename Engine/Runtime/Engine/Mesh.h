@@ -29,11 +29,12 @@ class Mesh;
 /** Sub-component of a mesh. */
 class SubMesh
 {
+public:
+    const BoundingBox&          GetBoundingBox() const { return mBoundingBox; }
+
 private:
                                 SubMesh(Mesh& inParent) : mParent (inParent) {}
                                 ~SubMesh() {}
-
-    const BoundingBox&          GetBoundingBox() const { return mBoundingBox; }
 
 private:
     Mesh&                       mParent;

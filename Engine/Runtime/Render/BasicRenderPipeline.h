@@ -29,7 +29,8 @@ class BasicRenderPipeline final : public RenderPipeline
 public:
                             BasicRenderPipeline();
 
-    void                    Render(const RenderView&          inView,
+    void                    Render(const RenderWorld&         inWorld,
+                                   const RenderView&          inView,
                                    RenderGraph&               inGraph,
                                    const RenderResourceHandle inTexture,
                                    RenderResourceHandle&      outNewTexture) override;

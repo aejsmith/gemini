@@ -16,6 +16,8 @@
 
 #include "Core/Math/BoundingBox.h"
 
+#include "Core/Math/Transform.h"
+
 glm::vec3 BoundingBox::CalculatePVertex(const glm::vec3& inNormal) const
 {
     glm::vec3 p = mMinimum;
@@ -75,4 +77,9 @@ BoundingBox BoundingBox::Transform(const glm::mat4& inMatrix) const
     glm::vec3 maximum(glm::max(xa, xb) + glm::max(ya, yb) + glm::max(za, zb) + glm::vec3(inMatrix[3]));
 
     return BoundingBox(minimum, maximum);
+}
+
+BoundingBox BoundingBox::Transform(const class Transform& inTransform) const
+{
+    return Transform(inTransform.GetMatrix());
 }
