@@ -88,6 +88,13 @@ void EntityDrawList::Draw(GPUGraphicsCommandList& inCmdList) const
     // and execute in parallel, combine command lists in order at the end.
     // Would need handling for certain bits of state that we don't override
     // from the EntityDrawCall (viewport/scissor).
+    //
+    // An additional thing that we could do is add some support in the render
+    // graph for this, so for example we can tell the graph that it needs to
+    // wait for a given set of jobs to complete and submit them into the
+    // command list for the pass, before submitting that to the context. That
+    // would let us return out of here without waiting for completion of all
+    // the jobs, and continue execution of subsequent passes on this thread.
 
     for (const Entry& entry : mEntries)
     {

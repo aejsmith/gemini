@@ -68,7 +68,7 @@ void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,
 
 Camera::Camera() :
     renderPipeline  (new BasicRenderPipeline()),
-    verticalFOV     (75.0f),
+    verticalFOV     (60.0f),
     zNear           (0.1f),
     zFar            (500.0f),
     mRenderLayer    (new CameraRenderLayer(*this))

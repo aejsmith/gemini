@@ -16,9 +16,14 @@
 
 #include "Render/BasicRenderPipeline.h"
 
+#include "GPU/GPUConstantPool.h"
+#include "GPU/GPUDevice.h"
+#include "GPU/GPUPipeline.h"
+
 #include "Render/EntityDrawList.h"
 #include "Render/RenderContext.h"
 #include "Render/RenderWorld.h"
+#include "Render/ShaderManager.h"
 
 class BasicRenderContext : public RenderContext
 {
@@ -32,10 +37,20 @@ public:
 BasicRenderPipeline::BasicRenderPipeline() :
     clearColour (0.0f, 0.0f, 0.0f, 1.0f)
 {
+    // Temporary.
+    mVertexShader = ShaderManager::Get().GetShader("Engine/BasicRenderPipeline.hlsl", "VSMain", kGPUShaderStage_Vertex);
+    mPixelShader  = ShaderManager::Get().GetShader("Engine/BasicRenderPipeline.hlsl", "PSMain", kGPUShaderStage_Pixel);
+
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
+    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Constants;
+
+    mArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+    mArgumentSet       = GPUDevice::Get().CreateArgumentSet(mArgumentSetLayout, nullptr);
 }
 
 BasicRenderPipeline::~BasicRenderPipeline()
 {
+    delete mArgumentSet;
 }
 
 void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
@@ -50,9 +65,46 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     inWorld.Cull(inView, context->cullResults);
 
     /* Build a draw list for the entities. */
+    context->drawList.Reserve(context->cullResults.entities.size());
     for (const RenderEntity* entity : context->cullResults.entities)
     {
-        // TODO: Move into the entity.
+        // TODO: Materials, move all this to the entity (GetDrawCall()).
+
+        const glm::mat4 mvpMatrix    = inView.GetViewProjectionMatrix() * entity->GetTransform().GetMatrix();
+        const GPUConstants constants = GPUDevice::Get().GetConstantPool().Write(&mvpMatrix, sizeof(mvpMatrix));
+
+        const RenderTextureDesc& textureDesc = inGraph.GetTextureDesc(inTexture);
+
+        // To pre-create the PSO in the entity we will need to have the render
+        // target state/formats known somewhere - they will be defined for the
+        // ShaderPassType that the PSO is for.
+        GPURenderTargetStateDesc renderTargetDesc;
+        renderTargetDesc.colour[0] = textureDesc.format;
+
+        GPUPipelineDesc pipelineDesc;
+        pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
+        pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
+        pipelineDesc.argumentSetLayouts[0]           = mArgumentSetLayout;
+        pipelineDesc.blendState                      = GPUBlendState::Get(GPUBlendStateDesc());
+        pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
+        pipelineDesc.rasterizerState                 = GPURasterizerState::Get(GPURasterizerStateDesc());
+        pipelineDesc.renderTargetState               = GPURenderTargetState::Get(renderTargetDesc);
+        pipelineDesc.vertexInputState                = entity->GetVertexInputState();
+        pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
+
+        // This has been exposed temporarily, hide it again later.
+        GPUPipeline* const pipeline = GPUDevice::Get().GetPipeline(pipelineDesc);
+
+        const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
+        EntityDrawCall& drawCall = context->drawList.Add(sortKey);
+
+        drawCall.pipeline = pipeline;
+
+        drawCall.arguments[0].argumentSet                = mArgumentSet;
+        drawCall.arguments[0].constants[0].argumentIndex = 0;
+        drawCall.arguments[0].constants[0].constants     = constants;
+
+        entity->GetGeometry(drawCall);
     }
 
     /* Sort them. */

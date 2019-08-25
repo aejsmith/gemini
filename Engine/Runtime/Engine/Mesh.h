@@ -30,7 +30,19 @@ class Mesh;
 class SubMesh
 {
 public:
-    const BoundingBox&          GetBoundingBox() const { return mBoundingBox; }
+    bool                        IsIndexed() const       { return mIndexed; }
+    uint32_t                    GetCount() const        { return mCount; }
+
+    uint32_t                    GetVertexOffset() const
+                                    { Assert(!mIndexed); return mVertexOffset; }
+
+    GPUIndexType                GetIndexType() const
+                                    { Assert(mIndexed); return mIndexType; }
+
+    GPUBuffer*                  GetIndexBuffer() const
+                                    { Assert(mIndexed); return mIndexBuffer; }
+
+    const BoundingBox&          GetBoundingBox() const  { return mBoundingBox; }
 
 private:
                                 SubMesh(Mesh& inParent) : mParent (inParent) {}
@@ -87,6 +99,13 @@ public:
                                     { return mSubMeshes.size(); }
     const SubMesh&              GetSubMesh(const size_t inIndex) const
                                     { Assert(inIndex < GetSubMeshCount()); return *mSubMeshes[inIndex]; }
+
+    GPUVertexInputStateRef      GetVertexInputState() const
+                                    { Assert(mIsBuilt); return mVertexInputState; }
+    GPUVertexBufferBitset       GetUsedVertexBuffers() const
+                                    { Assert(mIsBuilt); return mUsedVertexBuffers; }
+    GPUBuffer*                  GetVertexBuffer(const size_t inIndex) const
+                                    { Assert(mIsBuilt); return mVertexBuffers[inIndex]; }
 
     bool                        GetMaterial(const std::string& inName,
                                             uint32_t&          outIndex);

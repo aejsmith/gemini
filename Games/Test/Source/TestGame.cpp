@@ -53,7 +53,9 @@ void TestGame::Init()
     MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
 
     Entity* cubeEntity = world->CreateEntity("Cube");
-    cubeEntity->Translate(glm::vec3(0.0f, 0.0f, -3.0f));
+    cubeEntity->Translate(glm::vec3(0.0f, -0.75f, -4.0f));
+    cubeEntity->SetScale(glm::vec3(0.2f, 0.2f, 0.2f));
+    cubeEntity->Rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     cubeEntity->SetActive(true);
 
     MeshRenderer* meshRenderer = cubeEntity->CreateComponent<MeshRenderer>();

@@ -75,6 +75,10 @@ public:
                                                 OnlyCalledBy<GPUGraphicsCommandList>)
                                         { return GetPipelineImpl(inDesc); }
 
+    // TODO: Temporary
+    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& inDesc)
+                                        { return GetPipelineImpl(inDesc); }
+
     /** Callback from GPUShader destructor to drop pipelines using the shader. */
     void                            DropPipeline(GPUPipeline* const inPipeline,
                                                  OnlyCalledBy<GPUShader>);

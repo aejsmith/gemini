@@ -16,6 +16,7 @@
 
 #include "Render/MeshRenderer.h"
 
+#include "Render/EntityDrawList.h"
 #include "Render/RenderEntity.h"
 
 class SubMeshRenderEntity final : public RenderEntity
@@ -24,6 +25,9 @@ public:
                                 SubMeshRenderEntity(const MeshRenderer& inRenderer,
                                                     const Mesh&         inMesh,
                                                     const SubMesh&      inSubMesh);
+
+    GPUVertexInputStateRef      GetVertexInputState() const;
+    void                        GetGeometry(EntityDrawCall& ioDrawCall) const;
 
 protected:
     BoundingBox                 GetLocalBoundingBox() override;
@@ -50,6 +54,36 @@ SubMeshRenderEntity::SubMeshRenderEntity(const MeshRenderer& inRenderer,
 BoundingBox SubMeshRenderEntity::GetLocalBoundingBox()
 {
     return mSubMesh.GetBoundingBox();
+}
+
+GPUVertexInputStateRef SubMeshRenderEntity::GetVertexInputState() const
+{
+    return mMesh.GetVertexInputState();
+}
+
+void SubMeshRenderEntity::GetGeometry(EntityDrawCall& ioDrawCall) const
+{
+    const GPUVertexBufferBitset usedVertexBuffers = mMesh.GetUsedVertexBuffers();
+
+    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    {
+        if (usedVertexBuffers.test(i))
+        {
+            ioDrawCall.vertexBuffers[i].buffer = mMesh.GetVertexBuffer(i);
+        }
+    }
+
+    if (mSubMesh.IsIndexed())
+    {
+        ioDrawCall.indexBuffer.buffer = mSubMesh.GetIndexBuffer();
+        ioDrawCall.indexType          = mSubMesh.GetIndexType();
+    }
+    else
+    {
+        ioDrawCall.vertexOffset = mSubMesh.GetVertexOffset();
+    }
+
+    ioDrawCall.vertexCount = mSubMesh.GetCount();
 }
 
 MeshRenderer::MeshRenderer()

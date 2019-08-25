@@ -20,9 +20,13 @@
 #include "Core/Math/BoundingBox.h"
 #include "Core/Math/Transform.h"
 
+#include "GPU/GPUState.h"
+
 #include "Render/RenderDefs.h"
 
 class Renderer;
+
+struct EntityDrawCall;
 
 /**
  * This class is the base for a renderable entity in the world. Renderer
@@ -42,6 +46,10 @@ public:
     const Transform&                GetTransform() const        { return mTransform; }
 
     const BoundingBox&              GetWorldBoundingBox() const { return mWorldBoundingBox; }
+
+    // Temporary.
+    virtual GPUVertexInputStateRef  GetVertexInputState() const = 0;
+    virtual void                    GetGeometry(EntityDrawCall& ioDrawCall) const = 0;
 
 protected:
                                     RenderEntity(const Renderer& inRenderer);
