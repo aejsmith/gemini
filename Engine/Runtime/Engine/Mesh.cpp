@@ -252,6 +252,8 @@ void Mesh::Build()
             mVertexData[i].Clear();
         }
     }
+
+    mIsBuilt = true;
 }
 
 void Mesh::CalculateBoundingBox(SubMesh* const inSubMesh)
