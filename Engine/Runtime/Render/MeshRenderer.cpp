@@ -26,8 +26,8 @@ public:
                                                     const Mesh&         inMesh,
                                                     const SubMesh&      inSubMesh);
 
-    GPUVertexInputStateRef      GetVertexInputState() const;
-    void                        GetGeometry(EntityDrawCall& ioDrawCall) const;
+    GPUVertexInputStateRef      GetVertexInputState() const override;
+    void                        GetGeometry(EntityDrawCall& ioDrawCall) const override;
 
 protected:
     BoundingBox                 GetLocalBoundingBox() override;
