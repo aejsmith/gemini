@@ -37,8 +37,8 @@ void RenderWorld::RemoveEntity(RenderEntity* const inEntity)
     mEntities.Remove(inEntity);
 }
 
-void RenderWorld::Cull(const RenderView&  inView,
-                       RenderCullResults& outResults) const
+void RenderWorld::Cull(const RenderView& inView,
+                       CullResults&      outResults) const
 {
     const Frustum& frustum = inView.GetFrustum();
 

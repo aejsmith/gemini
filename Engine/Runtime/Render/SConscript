@@ -11,6 +11,7 @@ objects = map(env.ObjectGenHeader, [
 objects += map(env.Object, [
     'BasicRenderPipeline.cpp',
     'Camera.cpp',
+    'EntityDrawList.cpp',
     'MeshRenderer.cpp',
     'RenderEntity.cpp',
     'Renderer.cpp',

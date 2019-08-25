@@ -19,7 +19,7 @@
 #include "Render/RenderEntity.h"
 #include "Render/RenderView.h"
 
-struct RenderCullResults
+struct CullResults
 {
     std::vector<const RenderEntity*>    entities;
 };
@@ -45,8 +45,8 @@ public:
     void                                AddEntity(RenderEntity* const inEntity);
     void                                RemoveEntity(RenderEntity* const inEntity);
 
-    void                                Cull(const RenderView&  inView,
-                                             RenderCullResults& outResults) const;
+    void                                Cull(const RenderView& inView,
+                                             CullResults&      outResults) const;
 
 private:
     using RenderEntityList            = IntrusiveList<RenderEntity, &RenderEntity::mWorldListNode>;

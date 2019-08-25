@@ -426,7 +426,7 @@ public:
      * Allocate a transient object that needs to remain alive until graph
      * execution is completed and be properly destroyed via its destructor. It
      * will be allocated via the frame allocator, the destructor will be called
-     * at the end of graph allocation. Trivially destructible types can just
+     * at the end of graph execution. Trivially destructible types can just
      * use the frame allocator directly
      */
     template <typename T, typename... Args>

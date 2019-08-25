@@ -16,19 +16,21 @@
 
 #include "Render/BasicRenderPipeline.h"
 
+#include "Render/EntityDrawList.h"
 #include "Render/RenderContext.h"
 #include "Render/RenderWorld.h"
 
-struct BasicRenderContext : public RenderContext
+class BasicRenderContext : public RenderContext
 {
-    RenderCullResults           cullResults;
-
 public:
     using RenderContext::RenderContext;
 
+    CullResults                 cullResults;
+    EntityDrawList              drawList;
 };
 
-BasicRenderPipeline::BasicRenderPipeline()
+BasicRenderPipeline::BasicRenderPipeline() :
+    clearColour (0.0f, 0.0f, 0.0f, 1.0f)
 {
 }
 
@@ -44,21 +46,29 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
 {
     BasicRenderContext* const context = inGraph.NewTransient<BasicRenderContext>(inWorld, inView);
 
+    /* Get the visible entities. */
     inWorld.Cull(inView, context->cullResults);
 
+    /* Build a draw list for the entities. */
+    for (const RenderEntity* entity : context->cullResults.entities)
+    {
+        // TODO: Move into the entity.
+    }
+
+    /* Sort them. */
+    context->drawList.Sort();
+
+    /* Add the main pass. */
     RenderGraphPass& pass = inGraph.AddPass("Scene", kRenderGraphPassType_Render);
 
     pass.SetColour(0, inTexture, &outNewTexture);
-    pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+    pass.ClearColour(0, this->clearColour);
 
     pass.SetFunction([context] (const RenderGraph&      inGraph,
                                 const RenderGraphPass&  inPass,
                                 GPUGraphicsCommandList& inCmdList)
     {
-        for (const RenderEntity* entity : context->cullResults.entities)
-        {
-            LogDebug("Render %p", entity);
-        }
+        context->drawList.Draw(inCmdList);
 
         // debug renderer bounding boxes
     });

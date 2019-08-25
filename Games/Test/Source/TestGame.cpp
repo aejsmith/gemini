@@ -23,6 +23,7 @@
 #include "Engine/Mesh.h"
 #include "Engine/World.h"
 
+#include "Render/BasicRenderPipeline.h"
 #include "Render/Camera.h"
 #include "Render/MeshRenderer.h"
 
@@ -45,6 +46,9 @@ void TestGame::Init()
 
     Camera* camera = playerEntity->CreateComponent<Camera>();
     camera->SetActive(true);
+
+    auto renderPipeline = static_cast<BasicRenderPipeline*>(camera->renderPipeline.Get());
+    renderPipeline->clearColour = glm::vec4(0.0f, 0.0f, 0.2f, 1.0f);
 
     MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
 

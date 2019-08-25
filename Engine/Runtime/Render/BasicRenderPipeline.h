@@ -18,6 +18,8 @@
 
 #include "Render/RenderPipeline.h"
 
+class BasicRenderContext;
+
 /**
  * Extremely basic render pipeline implementation which renders the objects in
  * the world with no lighting etc.
@@ -28,6 +30,10 @@ class BasicRenderPipeline final : public RenderPipeline
 
 public:
                             BasicRenderPipeline();
+
+    /** Colour to clear the background to. */
+    PROPERTY()
+    glm::vec4               clearColour;
 
     void                    Render(const RenderWorld&         inWorld,
                                    const RenderView&          inView,
