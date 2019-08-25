@@ -18,10 +18,26 @@
 
 #include "GPU/GPUDevice.h"
 
+static std::atomic<GPUShaderID> gNextShaderID{0};
+
+static GPUShaderID AllocateShaderID()
+{
+    const GPUShaderID id = gNextShaderID.fetch_add(1, std::memory_order_relaxed);
+
+    if (id == std::numeric_limits<GPUShaderID>::max())
+    {
+        /* TODO: ID reuse. */
+        Fatal("Ran out of shader IDs");
+    }
+
+    return id;
+}
+
 GPUShader::GPUShader(GPUDevice&           inDevice,
                      const GPUShaderStage inStage,
                      GPUShaderCode        inCode) :
     GPUObject   (inDevice),
+    mID         (AllocateShaderID()),
     mStage      (inStage),
     mCode       (std::move(inCode))
 {

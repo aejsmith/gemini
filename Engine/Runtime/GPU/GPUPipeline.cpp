@@ -16,11 +16,33 @@
 
 #include "GPU/GPUPipeline.h"
 
+static std::atomic<GPUPipelineID> gNextPipelineID{0};
+
+static GPUPipelineID AllocatePipelineID()
+{
+    const GPUPipelineID id = gNextPipelineID.fetch_add(1, std::memory_order_relaxed);
+
+    if (id == std::numeric_limits<GPUPipelineID>::max())
+    {
+        /* TODO: ID reuse. */
+        Fatal("Ran out of pipeline IDs");
+    }
+
+    return id;
+}
+
 GPUPipeline::GPUPipeline(GPUDevice&             inDevice,
                          const GPUPipelineDesc& inDesc) :
     GPUObject   (inDevice),
-    mDesc       (inDesc)
+    mDesc       (inDesc),
+    mID         (AllocatePipelineID())
 {
+    for (size_t stage = 0; stage < kGPUShaderStage_NumGraphics; stage++)
+    {
+        mShaderIDs[stage] = (mDesc.shaders[stage])
+                                ? mDesc.shaders[stage]->GetID()
+                                : std::numeric_limits<GPUShaderID>::max();
+    }
 }
 
 GPUPipeline::~GPUPipeline()

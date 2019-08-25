@@ -173,8 +173,8 @@ public:
      * valid until the argument set layout at the given set index changes (i.e.
      * due to a pipeline change).
      */
-    void                            SetConstants(const uint8_t     inSetIndex,
-                                                 const uint8_t     inArgumentIndex,
+    void                            SetConstants(const uint8_t      inSetIndex,
+                                                 const uint8_t      inArgumentIndex,
                                                  const GPUConstants inConstants);
 
     /**

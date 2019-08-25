@@ -87,6 +87,14 @@ protected:
 
 public:
     const GPUPipelineDesc&          GetDesc() const { return mDesc; }
+    GPUPipelineID                   GetID() const   { return mID; }
+
+    /**
+     * Return the ID of the shader for a given stage. If the stage is not
+     * present, returns numeric_limits<GPUShaderID>::max().
+     */
+    GPUShaderID                     GetShaderID(const GPUShaderStage inStage) const
+                                        { return mShaderIDs[inStage]; }
 
     /** Implementation detail for GPUDevice::CreatePipeline(). */
     ReferencePtr<GPUPipeline>       CreatePtr(OnlyCalledBy<GPUDevice>);
@@ -100,6 +108,8 @@ protected:
 protected:
     const GPUPipelineDesc           mDesc;
 
+    const GPUPipelineID             mID;
+    GPUShaderID                     mShaderIDs[kGPUShaderStage_NumGraphics];
 };
 
 using GPUPipelinePtr = ReferencePtr<GPUPipeline>;

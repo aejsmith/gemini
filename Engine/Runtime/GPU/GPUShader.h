@@ -35,6 +35,7 @@ protected:
                                 ~GPUShader();
 
 public:
+    GPUShaderID                 GetID() const       { return mID; }
     GPUShaderStage              GetStage() const    { return mStage; }
     const GPUShaderCode&        GetCode() const     { return mCode; }
 
@@ -45,6 +46,7 @@ public:
                                                OnlyCalledBy<GPUPipeline>);
 
 private:
+    const GPUShaderID           mID;
     const GPUShaderStage        mStage;
     const GPUShaderCode         mCode;
 

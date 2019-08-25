@@ -49,6 +49,9 @@ static constexpr GPUConstants kGPUConstants_Invalid = std::numeric_limits<uint32
 
 using GPUVertexBufferBitset = std::bitset<kMaxVertexAttributes>;
 
+using GPUShaderID   = uint16_t;
+using GPUPipelineID = uint16_t;
+
 enum GPUVendor : uint8_t
 {
     kGPUVendor_Unknown,

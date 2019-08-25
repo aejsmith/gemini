@@ -78,8 +78,8 @@ void GPUCommandList::SetArguments(const uint8_t            inIndex,
     #endif
 }
 
-void GPUCommandList::SetConstants(const uint8_t     inSetIndex,
-                                  const uint8_t     inArgumentIndex,
+void GPUCommandList::SetConstants(const uint8_t      inSetIndex,
+                                  const uint8_t      inArgumentIndex,
                                   const GPUConstants inConstants)
 {
     auto& argumentState = mArgumentState[inSetIndex];
