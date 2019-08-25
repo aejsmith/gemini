@@ -66,9 +66,9 @@ inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& inOther)
  *
  * There are two mechanisms for setting pipeline state on a command list.
  *
- *   1. Using pre-created GPUPipeline objects. The pipeline state is created
- *      ahead of time, therefore at draw time the state can just be immediately
- *      set without needing any sort of creation.
+ *   1. Using pre-created GPUPipeline objects (GPUDevice::GetPipeline()). The
+ *      pipeline state is created ahead of time, therefore at draw time the
+ *      state can just be immediately set without needing any sort of creation.
  *   2. Dynamically through the pipeline cache. The command list is supplied
  *      with a GPUPipelineDesc describing the pipeline state, and internally a
  *      matching pipeline will be looked up in the cache. If no matching
@@ -77,8 +77,7 @@ inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& inOther)
  * Pre-created pipelines should be preferred, since they won't result in draw-
  * time hitching if a new pipeline needs to be created.
  */
-class GPUPipeline : public GPUObject,
-                    public RefCounted
+class GPUPipeline : public GPUObject
 {
 protected:
                                     GPUPipeline(GPUDevice&             inDevice,
@@ -96,14 +95,8 @@ public:
     GPUShaderID                     GetShaderID(const GPUShaderStage inStage) const
                                         { return mShaderIDs[inStage]; }
 
-    /** Implementation detail for GPUDevice::CreatePipeline(). */
-    ReferencePtr<GPUPipeline>       CreatePtr(OnlyCalledBy<GPUDevice>);
-
     /** Implementation detail for GPUDevice::DropPipeline(). */
     void                            Destroy(OnlyCalledBy<GPUDevice>);
-
-protected:
-    void                            Released() override;
 
 protected:
     const GPUPipelineDesc           mDesc;
@@ -111,8 +104,6 @@ protected:
     const GPUPipelineID             mID;
     GPUShaderID                     mShaderIDs[kGPUShaderStage_NumGraphics];
 };
-
-using GPUPipelinePtr = ReferencePtr<GPUPipeline>;
 
 struct GPUComputePipelineDesc
 {

@@ -56,43 +56,6 @@ GPUPipeline::~GPUPipeline()
     }
 }
 
-GPUPipelinePtr GPUPipeline::CreatePtr(OnlyCalledBy<GPUDevice>)
-{
-    /* See GPUDevice::GetPipelineImpl() for details. This is called from
-     * CreatePipeline() to reference the shaders if this is the initial public
-     * reference to the pipeline. */
-    if (Retain() == 1)
-    {
-        for (auto shader : mDesc.shaders)
-        {
-            if (shader)
-            {
-                shader->Retain();
-            }
-        }
-    }
-
-    /* Take over the reference we just added. */
-    GPUPipelinePtr ptr;
-    ptr.Reset(this, false);
-    return ptr;
-}
-
-void GPUPipeline::Released()
-{
-    /* We are no longer publically acessible, drop the shader references. This
-     * may trigger our destruction if a shader gets destroyed, otherwise we
-     * remain in the cache for later use, until one of the shaders does get
-     * destroyed. */
-    for (auto shader : mDesc.shaders)
-    {
-        if (shader)
-        {
-            shader->Release();
-        }
-    }
-}
-
 void GPUPipeline::Destroy(OnlyCalledBy<GPUDevice>)
 {
     delete this;

@@ -70,15 +70,6 @@ public:
      */
     void                            EndFrame();
 
-    /** Helper to look up a cached pipeline for GPUGraphicsCommandList. */
-    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& inDesc,
-                                                OnlyCalledBy<GPUGraphicsCommandList>)
-                                        { return GetPipelineImpl(inDesc); }
-
-    // TODO: Temporary
-    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& inDesc)
-                                        { return GetPipelineImpl(inDesc); }
-
     /** Callback from GPUShader destructor to drop pipelines using the shader. */
     void                            DropPipeline(GPUPipeline* const inPipeline,
                                                  OnlyCalledBy<GPUShader>);
@@ -107,8 +98,6 @@ public:
 
     virtual GPUComputePipeline*     CreateComputePipeline(const GPUComputePipelineDesc& inDesc) = 0;
 
-    GPUPipelinePtr                  CreatePipeline(const GPUPipelineDesc& inDesc);
-
     virtual GPUResourceView*        CreateResourceView(GPUResource* const         inResource,
                                                        const GPUResourceViewDesc& inDesc) = 0;
 
@@ -126,6 +115,17 @@ public:
     virtual GPUTexture*             CreateTexture(const GPUTextureDesc& inDesc) = 0;
 
     GPUArgumentSetLayoutRef         GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc);
+
+    /**
+     * Get a pipeline matching the given descriptor, creating it if it doesn't
+     * exist. See GPUPipeline for more details.
+     *
+     * The returned pipeline object is guaranteed to remain alive while the
+     * shaders it refers to are still alive, but once one of the shaders is
+     * destroyed, the pipeline will be destroyed. Therefore, users of this must
+     * keep a reference to their shaders to ensure the pipeline remains alive.
+     */
+    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& inDesc);
 
     GPUSamplerRef                   GetSampler(const GPUSamplerDesc& inDesc);
 
@@ -150,9 +150,6 @@ private:
     using ArgumentSetLayoutCache  = HashMap<size_t, GPUArgumentSetLayout*>;
     using PipelineCache           = HashMap<size_t, GPUPipeline*>;
     using SamplerCache            = HashMap<size_t, GPUSampler*>;
-
-private:
-    GPUPipeline*                    GetPipelineImpl(const GPUPipelineDesc& inDesc);
 
 private:
     std::shared_mutex               mResourceCacheLock;

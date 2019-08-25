@@ -62,7 +62,7 @@ protected:
 private:
     GPUShaderPtr            mVertexShader;
     GPUShaderPtr            mPixelShader;
-    GPUPipelinePtr          mPipeline;
+    GPUPipeline*            mPipeline;
     GPUTexture*             mFontTexture;
     GPUResourceView*        mFontView;
     GPUSamplerRef           mSampler;
@@ -245,7 +245,7 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
     pipelineDesc.vertexInputState                = GPUVertexInputState::Get(vertexInputDesc);
     pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
 
-    mPipeline = GPUDevice::Get().CreatePipeline(pipelineDesc);
+    mPipeline = GPUDevice::Get().GetPipeline(pipelineDesc);
 
     /* We use RGBA rather than just alpha here since the same shader supports
      * displaying custom textures. */

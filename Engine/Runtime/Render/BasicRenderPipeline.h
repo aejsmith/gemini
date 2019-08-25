@@ -16,12 +16,10 @@
 
 #pragma once
 
-#include "GPU/GPUPipeline.h"
+#include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUShader.h"
 
 #include "Render/RenderPipeline.h"
-
-class GPUArgumentSet;
 
 /**
  * Extremely basic render pipeline implementation which renders the objects in
@@ -50,7 +48,6 @@ protected:
     // Temporary.
     GPUShaderPtr            mVertexShader;
     GPUShaderPtr            mPixelShader;
-    GPUPipelinePtr          mPipeline;
     GPUArgumentSetLayoutRef mArgumentSetLayout;
     GPUArgumentSet*         mArgumentSet;
 

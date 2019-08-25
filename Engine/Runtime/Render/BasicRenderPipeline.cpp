@@ -92,7 +92,6 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
         pipelineDesc.vertexInputState                = entity->GetVertexInputState();
         pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
 
-        // This has been exposed temporarily, hide it again later.
         GPUPipeline* const pipeline = GPUDevice::Get().GetPipeline(pipelineDesc);
 
         const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);

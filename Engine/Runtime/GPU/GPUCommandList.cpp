@@ -238,7 +238,7 @@ void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
 
 void GPUGraphicsCommandList::SetPipeline(const GPUPipelineDesc& inDesc)
 {
-    SetPipeline(GetDevice().GetPipeline(inDesc, {}));
+    SetPipeline(GetDevice().GetPipeline(inDesc));
 }
 
 void GPUGraphicsCommandList::SetViewport(const GPUViewport& inViewport)

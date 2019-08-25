@@ -105,23 +105,8 @@ GPUArgumentSetLayoutRef GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc
     return layout;
 }
 
-GPUPipeline* GPUDevice::GetPipelineImpl(const GPUPipelineDesc& inDesc)
+GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& inDesc)
 {
-    /*
-     * Pre-created pipelines go through the cache used for dynamically created
-     * pipelines. This is to avoid potentially duplicating pipelines if we have
-     * the same pipeline pre-created and dynamically created.
-     *
-     * Pipelines are destroyed when any shader they refer to is destroyed. To
-     * prevent pre-created pipelines from being destroyed while any reference
-     * is still held to them, when the reference count of a pipeline is non-
-     * zero it holds a reference to its shaders. When the reference count of
-     * a pipeline drops to zero, we release those references to the shaders,
-     * but do not destroy the pipeline. Releasing the shaders may trigger
-     * destruction of the pipeline, but if not, the pipeline is kept around in
-     * the cache for later use.
-     */
-
     const size_t hash = HashValue(inDesc);
 
     /* Check whether we have a copy of the descriptor stored. Lock for reading
@@ -146,8 +131,6 @@ GPUPipeline* GPUDevice::GetPipelineImpl(const GPUPipelineDesc& inDesc)
         /* Pipeline creation may take a long time, do it outside the lock to
          * allow parallel creation of pipelines on other threads. */
         pipeline = CreatePipelineImpl(inDesc);
-
-        Assert(pipeline->GetRefCount() == 0);
 
         std::unique_lock lock(mResourceCacheLock);
 
@@ -182,11 +165,6 @@ GPUPipeline* GPUDevice::GetPipelineImpl(const GPUPipelineDesc& inDesc)
 void GPUDevice::DropPipeline(GPUPipeline* const inPipeline,
                              OnlyCalledBy<GPUShader>)
 {
-    /* If the shader is being destroyed, we shouldn't have any references
-     * left on the pipeline, since whenver the pipeline refcount is non-zero,
-     * a reference is held to the shaders. */
-    Assert(inPipeline->GetRefCount() == 0);
-
     const size_t hash = HashValue(inPipeline->GetDesc());
 
     std::unique_lock lock(mResourceCacheLock);
@@ -200,13 +178,6 @@ void GPUDevice::DropPipeline(GPUPipeline* const inPipeline,
     /* Destroy the pipeline. We must do this with the lock held, since the lock
      * guards access to all shaders' mPipelines set. */
     inPipeline->Destroy({});
-}
-
-GPUPipelinePtr GPUDevice::CreatePipeline(const GPUPipelineDesc& inDesc)
-{
-    /* See GetPipelineImpl() for details. */
-    GPUPipeline* const pipeline = GetPipelineImpl(inDesc);
-    return pipeline->CreatePtr({});
 }
 
 GPUSamplerRef GPUDevice::GetSampler(const GPUSamplerDesc& inDesc)
