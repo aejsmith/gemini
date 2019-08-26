@@ -79,14 +79,20 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
         // target state/formats known somewhere - they will be defined for the
         // ShaderPassType that the PSO is for.
         GPURenderTargetStateDesc renderTargetDesc;
-        renderTargetDesc.colour[0] = textureDesc.format;
+        renderTargetDesc.colour[0]    = textureDesc.format;
+        renderTargetDesc.depthStencil = kPixelFormat_Depth32;
+
+        GPUDepthStencilStateDesc depthDesc;
+        depthDesc.depthTestEnable  = true;
+        depthDesc.depthWriteEnable = true;
+        depthDesc.depthCompareOp   = kGPUCompareOp_LessOrEqual;
 
         GPUPipelineDesc pipelineDesc;
         pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
         pipelineDesc.argumentSetLayouts[0]           = mArgumentSetLayout;
         pipelineDesc.blendState                      = GPUBlendState::Get(GPUBlendStateDesc());
-        pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
+        pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(depthDesc);
         pipelineDesc.rasterizerState                 = GPURasterizerState::Get(GPURasterizerStateDesc());
         pipelineDesc.renderTargetState               = GPURenderTargetState::Get(renderTargetDesc);
         pipelineDesc.vertexInputState                = entity->GetVertexInputState();
@@ -112,8 +118,16 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     /* Add the main pass. */
     RenderGraphPass& pass = inGraph.AddPass("Scene", kRenderGraphPassType_Render);
 
+    RenderTextureDesc depthTextureDesc(inGraph.GetTextureDesc(inTexture));
+    depthTextureDesc.format = kPixelFormat_Depth32;
+
+    RenderResourceHandle depthTexture = inGraph.CreateTexture(depthTextureDesc);
+
     pass.SetColour(0, inTexture, &outNewTexture);
+    pass.SetDepthStencil(depthTexture, kGPUResourceState_DepthStencilWrite);
+
     pass.ClearColour(0, this->clearColour);
+    pass.ClearDepth(1.0f);
 
     pass.SetFunction([context] (const RenderGraph&      inGraph,
                                 const RenderGraphPass&  inPass,
