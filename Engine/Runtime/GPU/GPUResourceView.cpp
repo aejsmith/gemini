@@ -29,7 +29,7 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
     mResource   (&inResource),
     mDesc       (inDesc)
 {
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         /* Only one usage flag should be set. */
         Assert(IsOnlyOneBitSet(GetUsage()));
         Assert(GetResource().GetUsage() & GetUsage());
@@ -78,7 +78,7 @@ GPUResourceView::GPUResourceView(GPUResource&               inResource,
 
 GPUResourceView::~GPUResourceView()
 {
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         if (GetResource().IsTexture())
         {
             const auto& texture = static_cast<const GPUTexture&>(GetResource());

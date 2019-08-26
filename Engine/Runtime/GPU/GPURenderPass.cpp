@@ -58,7 +58,7 @@ GPURenderTargetStateRef GPURenderPass::GetRenderTargetState() const
     return GPURenderTargetState::Get(desc);
 }
 
-#if ORION_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
 
 void GPURenderPass::Validate() const
 {

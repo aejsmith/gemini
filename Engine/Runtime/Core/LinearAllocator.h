@@ -64,7 +64,7 @@ private:
     std::atomic<size_t>         mCurrentOffset;
     size_t                      mMaxSize;
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
     std::atomic<uint32_t>       mOutstandingDeletions;
     #endif
 };
@@ -108,7 +108,7 @@ inline T* LinearAllocator::New(Args&&... inArgs)
     static_assert(!std::is_trivially_destructible<T>::value,
                   "T must not be trivially destructible - use Allocate() instead");
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mOutstandingDeletions.fetch_add(1, std::memory_order_relaxed);
     #endif
 
@@ -122,7 +122,7 @@ inline void LinearAllocator::Delete(T* const inObject)
 {
     inObject->~T();
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mOutstandingDeletions.fetch_sub(1, std::memory_order_relaxed);
     #endif
 }

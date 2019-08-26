@@ -40,9 +40,9 @@ using ObjectPtr = ReferencePtr<T>;
  */
 
 /** Macro to define an annotation attribute for ObjectGen. */
-#ifdef ORION_OBJGEN
+#ifdef GEMINI_OBJGEN
     #define META_ATTRIBUTE(type, ...) \
-        __attribute__((annotate("orion:" type ":" #__VA_ARGS__)))
+        __attribute__((annotate("gemini:" type ":" #__VA_ARGS__)))
 #else
     #define META_ATTRIBUTE(type, ...)
 #endif

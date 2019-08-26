@@ -32,7 +32,7 @@ static const char* kRequiredInstanceExtensions[] =
     VK_KHR_SURFACE_EXTENSION_NAME,
 };
 
-#if ORION_VULKAN_VALIDATION
+#if GEMINI_VULKAN_VALIDATION
 static bool sBreakOnValidationErrors = true;
 #endif
 
@@ -49,7 +49,7 @@ VulkanInstance::VulkanInstance() :
 
 VulkanInstance::~VulkanInstance()
 {
-    #if ORION_VULKAN_VALIDATION
+    #if GEMINI_VULKAN_VALIDATION
         if (mCaps & kCap_DebugReport)
         {
             vkDestroyDebugReportCallbackEXT(mHandle, mDebugReportCallback, nullptr);
@@ -64,7 +64,7 @@ VulkanInstance::~VulkanInstance()
     CloseLoader();
 }
 
-#if ORION_VULKAN_VALIDATION
+#if GEMINI_VULKAN_VALIDATION
 
 static const char* const kMessageFilters[] =
 {
@@ -257,8 +257,8 @@ void VulkanInstance::CreateInstance()
     }
 
     /* Enable validation extensions if requested and present. */
-    #if ORION_VULKAN_VALIDATION
-        const char* const env = getenv("ORION_VULKAN_VALIDATION");
+    #if GEMINI_VULKAN_VALIDATION
+        const char* const env = getenv("GEMINI_VULKAN_VALIDATION");
         bool enable = !env || strcmp(env, "0") != 0;
 
         if (enable)
@@ -283,7 +283,7 @@ void VulkanInstance::CreateInstance()
     VkApplicationInfo applicationInfo = {};
     applicationInfo.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.pApplicationName = Game::Get().GetName();
-    applicationInfo.pEngineName      = "Orion";
+    applicationInfo.pEngineName      = "Gemini";
     applicationInfo.apiVersion       = VK_API_VERSION_1_1;
 
     VkInstanceCreateInfo createInfo = {};
@@ -301,7 +301,7 @@ void VulkanInstance::CreateInstance()
     ENUMERATE_VULKAN_INSTANCE_EXTENSION_FUNCS(LOAD_OPTIONAL_VULKAN_INSTANCE_FUNC);
 
     /* Register a debug report callback. */
-    #if ORION_VULKAN_VALIDATION
+    #if GEMINI_VULKAN_VALIDATION
         if (HasCap(kCap_DebugReport))
         {
             VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};

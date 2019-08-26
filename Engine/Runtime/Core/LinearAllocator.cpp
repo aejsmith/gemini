@@ -84,7 +84,7 @@ void* LinearAllocator::Allocate(const size_t inSize,
 
 void LinearAllocator::Reset()
 {
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         if (mOutstandingDeletions.load(std::memory_order_relaxed))
         {
             Fatal("LinearAllocator still has undeleted allocations at reset");

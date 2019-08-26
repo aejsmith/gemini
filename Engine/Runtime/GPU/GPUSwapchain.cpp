@@ -27,7 +27,7 @@ GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
 {
     mWindow.SetSwapchain(this, {});
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mIsInPresent = false;
         mViewCount.store(0, std::memory_order_release);
     #endif

@@ -63,7 +63,7 @@ private:
 
     std::vector<const char*>    mEnabledLayers;
 
-    #if ORION_VULKAN_VALIDATION
+    #if GEMINI_VULKAN_VALIDATION
     VkDebugReportCallbackEXT    mDebugReportCallback;
     #endif
 

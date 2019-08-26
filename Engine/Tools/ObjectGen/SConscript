@@ -45,7 +45,7 @@ if env['BUILD'] == 'Sanitize':
     env['CCFLAGS'] = [x for x in env['CCFLAGS'] if x.find('-fsanitize') == -1]
     manager.baseEnv['ENV']['ASAN_OPTIONS'] = 'leak_check_at_exit=0,halt_on_error=0'
 
-manager.baseEnv['OBJECTGEN'] = env.OrionTool(
+manager.baseEnv['OBJECTGEN'] = env.GeminiTool(
     name = 'ObjectGen',
     sources = ['ObjectGen.cpp'])
 

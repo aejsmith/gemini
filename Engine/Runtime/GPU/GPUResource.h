@@ -50,7 +50,7 @@ private:
 
 };
 
-#if !ORION_BUILD_DEBUG
+#if !GEMINI_BUILD_DEBUG
 
 inline void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
 {

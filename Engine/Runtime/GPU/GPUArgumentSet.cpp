@@ -53,7 +53,7 @@ GPUArgumentSet::~GPUArgumentSet()
 {
 }
 
-#ifdef ORION_BUILD_DEBUG
+#ifdef GEMINI_BUILD_DEBUG
 
 void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
                                        const GPUArgument* const      inArguments)

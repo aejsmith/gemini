@@ -118,7 +118,7 @@ bool Path::IsRoot() const
 
 bool Path::IsAbsoluteRoot() const
 {
-    #ifdef ORION_PLATFORM_WIN32
+    #ifdef GEMINI_PLATFORM_WIN32
         return mPath.length() == 3 && mPath[1] == ':' && mPath[2] == '/';
     #else
         return mPath.length() == 1 && mPath[0] == '/';
@@ -132,7 +132,7 @@ bool Path::IsRelative() const
 
 bool Path::IsAbsolute() const
 {
-    #ifdef ORION_PLATFORM_WIN32
+    #ifdef GEMINI_PLATFORM_WIN32
         return mPath.length() >= 3 && mPath[1] == ':' && mPath[2] == '/';
     #else
         return mPath[0] == '/';

@@ -186,7 +186,7 @@ protected:
     virtual void                    SubmitComputePassImpl(GPUComputeCommandList* const inCmdList) = 0;
 
 protected:
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
 
     /** Number of active passes (used to ensure command lists don't leak). */
     uint32_t                        mActivePassCount;
@@ -275,7 +275,7 @@ inline void GPUTransferContext::ResourceBarrier(GPUResourceView* const inView,
 inline GPUComputeContext::GPUComputeContext(GPUDevice& inDevice) :
     GPUTransferContext  (inDevice)
 {
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mActivePassCount = 0;
     #endif
 }
@@ -284,7 +284,7 @@ inline GPUComputeCommandList* GPUComputeContext::CreateComputePass()
 {
     ValidateContext();
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mActivePassCount++;
     #endif
 
@@ -300,7 +300,7 @@ inline void GPUComputeContext::SubmitComputePass(GPUComputeCommandList* const in
 
     SubmitComputePassImpl(inCmdList);
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mActivePassCount--;
     #endif
 }
@@ -314,7 +314,7 @@ inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURen
 {
     ValidateContext();
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mActivePassCount++;
         inRenderPass.Validate();
     #endif
@@ -331,7 +331,7 @@ inline void GPUGraphicsContext::SubmitRenderPass(GPUGraphicsCommandList* const i
 
     SubmitRenderPassImpl(inCmdList);
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mActivePassCount--;
     #endif
 }

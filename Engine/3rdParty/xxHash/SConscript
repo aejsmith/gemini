@@ -4,7 +4,7 @@ Import('manager')
 
 env = manager.CreateEnvironment()
 
-env['CPPDEFINES'].update({'XXH_NAMESPACE': 'Orion_'})
+env['CPPDEFINES'].update({'XXH_NAMESPACE': 'Gemini_'})
 
 objects = map(env.Object, [
     'Repo/xxhash.c',

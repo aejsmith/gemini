@@ -46,7 +46,7 @@
  */
 
 /** Break into the debugger. */
-#if ORION_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
     #define DebugBreak() \
         __asm__ volatile("int3")
 #else
@@ -87,7 +87,7 @@ extern void FatalLogImpl(const char* const inFile,
  * Check that a condition is true. If it is not, the engine will abort with an
  * error message giving the condition that failed.
  */
-#if ORION_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
     #define Assert(inCondition) \
         do \
         { \
@@ -107,7 +107,7 @@ extern void FatalLogImpl(const char* const inFile,
  * Check that a condition is true. If it is not, the engine will abort with the
  * specified error message.
  */
-#if ORION_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
     #define AssertMsg(inCondition, inFormat, ...) \
         do \
         { \
@@ -128,7 +128,7 @@ extern void FatalLogImpl(const char* const inFile,
  * If it is reached then a fatal error will be raised in debug, otherwise in
  * release it will be undefined behaviour.
  */
-#if ORION_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
     #define Unreachable() \
         Fatal("Unreachable() statement was reached");
     #define UnreachableMsg(...) \

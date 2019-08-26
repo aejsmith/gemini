@@ -43,7 +43,7 @@ inline size_t GPUUtils::GetIndexSize(const GPUIndexType inType)
     }
 }
 
-#if !ORION_BUILD_DEBUG
+#if !GEMINI_BUILD_DEBUG
 
 inline void GPUUtils::ValidateResourceState(const GPUResourceState inState,
                                             const bool             inIsTexture)

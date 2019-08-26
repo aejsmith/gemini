@@ -16,5 +16,5 @@
 
 #pragma once
 
-#define XXH_NAMESPACE Orion_
+#define XXH_NAMESPACE Gemini_
 #include "../Repo/xxhash.h"

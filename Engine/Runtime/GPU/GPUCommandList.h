@@ -201,7 +201,7 @@ protected:
          */
         bool                        dirty : 1;
 
-        #if ORION_BUILD_DEBUG
+        #if GEMINI_BUILD_DEBUG
         bool                        valid : 1;
         #endif
     };
@@ -246,7 +246,7 @@ protected:
     /** Bound shader argument state. */
     ArgumentState                   mArgumentState[kMaxArgumentSets];
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
 
     ThreadID                        mOwningThread;
     std::atomic<size_t>             mActiveChildCount;
@@ -417,7 +417,7 @@ inline void GPUCommandList::Begin()
     BeginImpl();
     mState = kState_Begun;
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mOwningThread = Thread::GetCurrentID();
     #endif
 }
@@ -437,7 +437,7 @@ inline void GPUCommandList::ValidateCommand() const
     Assert(mOwningThread == Thread::GetCurrentID());
 }
 
-#ifndef ORION_BUILD_DEBUG
+#ifndef GEMINI_BUILD_DEBUG
 
 inline void GPUCommandList::ValidateArguments() const
 {
@@ -448,7 +448,7 @@ inline void GPUCommandList::ValidateArguments() const
 
 inline GPUCommandList* GPUCommandList::CreateChild()
 {
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mActiveChildCount.fetch_add(1, std::memory_order_relaxed);
     #endif
 
@@ -460,7 +460,7 @@ inline void GPUCommandList::SubmitChildren(GPUCommandList** const inChildren,
 {
     ValidateCommand();
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         for (size_t i = 0; i < inCount; i++)
         {
             Assert(inChildren[i]->GetState() == GPUCommandList::kState_Ended);

@@ -224,7 +224,7 @@ void ShaderCompiler::Compile()
     options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1);
     options.SetHlslFunctionality1(true);
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         options.SetGenerateDebugInfo();
     #endif
 

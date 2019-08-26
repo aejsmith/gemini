@@ -240,7 +240,7 @@ using namespace VulkanFuncs;
  * builds as the layers currently cause a lot of leak errors that get in the
  * way of being able to see stuff that we care about.
  */
-#define ORION_VULKAN_VALIDATION     (ORION_BUILD_DEBUG && !ORION_SANITIZE)
+#define GEMINI_VULKAN_VALIDATION    (GEMINI_BUILD_DEBUG && !GEMINI_SANITIZE)
 
 /**
  * Number of in-flight frames allowed. Currently 2: previous frame is left to

@@ -16,7 +16,7 @@
 
 #include "GPU/GPUUtils.h"
 
-#if ORION_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
 
 void GPUUtils::ValidateResourceState(const GPUResourceState inState,
                                      const bool             inIsTexture)

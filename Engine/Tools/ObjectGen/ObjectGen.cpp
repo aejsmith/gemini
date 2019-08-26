@@ -38,7 +38,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 
-#ifdef ORION_PLATFORM_WIN32
+#ifdef GEMINI_PLATFORM_WIN32
     #include <windows.h>
     #include <tchar.h>
 #endif
@@ -349,7 +349,7 @@ static bool ParseAnnotation(CXCursor             inCursor,
     std::vector<std::string> tokens;
     StringUtils::Tokenize(annotation, tokens, ":", 3, false);
 
-    if (tokens[0].compare("orion"))
+    if (tokens[0].compare("gemini"))
     {
         /* Don't raise an error for annotations that aren't marked as being for
          * us, could be annotations for other reasons. */
@@ -1233,8 +1233,8 @@ int main(const int          argc,
     clangArgs.push_back("-x");
     clangArgs.push_back("c++");
     clangArgs.push_back("-std=c++14");
-    clangArgs.push_back("-DORION_OBJGEN=1");
-    #if ORION_PLATFORM_WIN32
+    clangArgs.push_back("-DGEMINI_OBJGEN=1");
+    #if GEMINI_PLATFORM_WIN32
         clangArgs.push_back("-fms-compatibility-version=19");
     #endif
 

@@ -49,18 +49,18 @@ if not ARGUMENTS.get('V'):
 buildTypes = {
     'Debug': {
         'CPPDEFINES': {
-            'ORION_BUILD_DEBUG': 1
+            'GEMINI_BUILD_DEBUG': 1
         },
     },
     'Sanitize': {
         'CPPDEFINES': {
-            'ORION_BUILD_DEBUG': 1,
-            'ORION_SANITIZE': 1
+            'GEMINI_BUILD_DEBUG': 1,
+            'GEMINI_SANITIZE': 1
         },
     },
     'Release': {
         'CPPDEFINES': {
-            'ORION_BUILD_RELEASE': 1,
+            'GEMINI_BUILD_RELEASE': 1,
             'NDEBUG': None
         },
     }
@@ -75,7 +75,7 @@ env['LIBS'] = []
 
 if sys.platform.startswith('linux'):
     env['PLATFORM'] = 'Linux'
-    env['CPPDEFINES'] = {'ORION_PLATFORM_LINUX': 1}
+    env['CPPDEFINES'] = {'GEMINI_PLATFORM_LINUX': 1}
 
     platformBuildTypes = {
         'Debug': {
@@ -108,7 +108,7 @@ if sys.platform.startswith('linux'):
     env['LIBS'] += ['dl']
 elif sys.platform.startswith('win32'):
     env['PLATFORM'] = 'win32'
-    env['CPPDEFINES'] = {'ORION_PLATFORM_WIN32': 1}
+    env['CPPDEFINES'] = {'GEMINI_PLATFORM_WIN32': 1}
 
     platformBuildTypes = {
         'Debug': {
@@ -206,7 +206,7 @@ class BuildManager:
 manager = BuildManager(env)
 Export('manager')
 
-def OrionApplicationMethod(env, dir, **kwargs):
+def GeminiApplicationMethod(env, dir, **kwargs):
     name = kwargs['name']
     sources = kwargs['sources']
     flags = kwargs['flags'] if 'flags' in kwargs else {}
@@ -219,14 +219,14 @@ def OrionApplicationMethod(env, dir, **kwargs):
 
     return target
 
-def OrionGameMethod(env, **kwargs):
-    return OrionApplicationMethod(env, env['GAME_DIR'], **kwargs)
+def GeminiGameMethod(env, **kwargs):
+    return GeminiApplicationMethod(env, env['GAME_DIR'], **kwargs)
 
-def OrionToolMethod(env, **kwargs):
-    return OrionApplicationMethod(env, Dir('.'), **kwargs)
+def GeminiToolMethod(env, **kwargs):
+    return GeminiApplicationMethod(env, Dir('.'), **kwargs)
 
-env.AddMethod(OrionGameMethod, 'OrionGame')
-env.AddMethod(OrionToolMethod, 'OrionTool')
+env.AddMethod(GeminiGameMethod, 'GeminiGame')
+env.AddMethod(GeminiToolMethod, 'GeminiTool')
 
 #########################
 # External dependencies #

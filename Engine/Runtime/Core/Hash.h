@@ -28,7 +28,7 @@ inline size_t HashData(const void*    inData,
                        const size_t   inSize,
                        const uint64_t inSeed = 0)
 {
-    return Orion_XXH64(inData, inSize, inSeed);
+    return Gemini_XXH64(inData, inSize, inSeed);
 }
 
 template <typename T>

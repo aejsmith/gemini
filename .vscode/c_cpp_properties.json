@@ -21,7 +21,7 @@
                 "${workspaceFolder}/Dependencies/Common/shaderc/Include",
                 "/usr/include/SDL2"
             ],
-            "defines": ["ORION_BUILD_DEBUG=1"],
+            "defines": ["GEMINI_BUILD_DEBUG=1"],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",

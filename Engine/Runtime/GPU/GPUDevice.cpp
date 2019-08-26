@@ -63,7 +63,7 @@ void GPUDevice::EndFrame()
 {
     Assert(Thread::IsMain());
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         Assert(mGraphicsContext->mActivePassCount == 0);
         //Assert(!mComputeContext || mComputeContext->mActivePassCount == 0);
     #endif

@@ -27,7 +27,7 @@ GPUResource::GPUResource(GPUDevice&             inDevice,
 {
 }
 
-#if ORION_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
 
 void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
 {

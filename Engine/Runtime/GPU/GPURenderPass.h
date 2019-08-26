@@ -107,7 +107,7 @@ public:
     /** Returns a render target state matching this pass. */
     GPURenderTargetStateRef     GetRenderTargetState() const;
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
 
     void                        Validate() const;
 

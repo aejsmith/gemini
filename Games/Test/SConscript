@@ -10,5 +10,5 @@ objects += map(env.Object, [
     'Source/TestGame.cpp',
 ])
 
-target = env.OrionGame(name = 'Test', sources = objects)
+target = env.GeminiGame(name = 'Test', sources = objects)
 Return('target')

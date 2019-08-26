@@ -1,5 +1,4 @@
 *~
-*.sublime-workspace
 *.pyc
 .DS_Store
 /Build

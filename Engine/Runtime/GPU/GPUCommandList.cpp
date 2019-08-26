@@ -32,7 +32,7 @@ GPUCommandList::GPUCommandList(GPUContext&                 inContext,
     {
         argumentState.dirty = true;
 
-        #if ORION_BUILD_DEBUG
+        #if GEMINI_BUILD_DEBUG
             argumentState.valid = false;
 
             for (auto& constants : argumentState.constants)
@@ -42,7 +42,7 @@ GPUCommandList::GPUCommandList(GPUContext&                 inContext,
         #endif
     }
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mActiveChildCount.store(0, std::memory_order_relaxed);
     #endif
 }
@@ -56,7 +56,7 @@ void GPUCommandList::SetArguments(const uint8_t         inIndex,
 
     SetArgumentsImpl(inIndex, inSet);
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mArgumentState[inIndex].valid = true;
     #endif
 }
@@ -73,7 +73,7 @@ void GPUCommandList::SetArguments(const uint8_t            inIndex,
 
     SetArgumentsImpl(inIndex, inArguments);
 
-    #if ORION_BUILD_DEBUG
+    #if GEMINI_BUILD_DEBUG
         mArgumentState[inIndex].valid = true;
     #endif
 }
@@ -114,7 +114,7 @@ void GPUCommandList::ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&inLayo
                 SetArgumentsImpl(setIndex, static_cast<const GPUArgument*>(nullptr));
             }
 
-            #if ORION_BUILD_DEBUG
+            #if GEMINI_BUILD_DEBUG
                 argumentState.valid = layout->IsConstantOnly();
 
                 for (auto& constants : argumentState.constants)
@@ -126,7 +126,7 @@ void GPUCommandList::ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&inLayo
     }
 }
 
-#ifdef ORION_BUILD_DEBUG
+#ifdef GEMINI_BUILD_DEBUG
 
 void GPUCommandList::ValidateArguments() const
 {
