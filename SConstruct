@@ -12,7 +12,7 @@ import Util
 opts = Variables('.options.cache')
 opts.AddVariables(
     ('GAME',  'Game to build (Test)', 'Test'),
-    ('BUILD', 'Build type to perform (Debug, Release)', 'Release'),
+    ('BUILD', 'Build type to perform (Debug, Sanitize, Release)', 'Release'),
 )
 
 env = Environment(ENV = os.environ, variables = opts)
