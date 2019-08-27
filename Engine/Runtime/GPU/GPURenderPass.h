@@ -27,11 +27,9 @@
  * When using multiple attachments in a pass, the dimensions (width, height,
  * and layer count) must match between all of them.
  *
- * Note that setting a resource view on this structure does not cause the
- * reference count of the view to be incremented (a non-reference-counting
- * pointer is used), nor does creating a render pass with it. The user must
- * ensure that the resources are kept alive until the render pass has been
- * submitted.
+ * Note that starting a render pass with a resource view does not cause the
+ * view to be kept alive. The creator of the pass must ensure that resources
+ * are kept alive until the render pass has been submitted.
  */
 struct GPURenderPass
 {

@@ -87,9 +87,8 @@ public:
      * case where the layout only contains Constants entries, then it is valid
      * to pass null for the arguments array.
      *
-     * The created argument set does *NOT* hold a reference to any of its
-     * resource view arguments. The owner of the set must ensure that the
-     * arguments remain alive while the set is still being used.
+     * The owner of the set must ensure that the arguments (views etc.) remain
+     * alive while the set is still being used.
      */
     virtual GPUArgumentSet*         CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
                                                       const GPUArgument* const      inArguments) = 0;
