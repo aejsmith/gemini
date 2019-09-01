@@ -984,11 +984,19 @@ void ParsedEnum::HandleChild(CXCursor     inCursor,
 {
     if (inKind == CXCursor_EnumConstantDecl)
     {
-        long long value = clang_getEnumConstantDeclValue(cursor);
+        long long value = clang_getEnumConstantDeclValue(inCursor);
 
-        CXString str = clang_getCursorSpelling(cursor);
+        CXString str = clang_getCursorSpelling(inCursor);
         std::string name(clang_getCString(str));
         clang_disposeString(str);
+
+        /* Shorten names based on our naming convention,
+         * e.g. kEnumName_Foo -> Foo. */
+        std::string prefix("k" + this->name + "_");
+        if (name.rfind(prefix, 0) == 0)
+        {
+            name = name.substr(prefix.length());
+        }
 
         mConstants.push_back(std::make_pair(name, value));
     }
