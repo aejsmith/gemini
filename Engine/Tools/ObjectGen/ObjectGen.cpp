@@ -475,14 +475,10 @@ bool ParsedProperty::HandleAnnotation(const std::string&         inType,
         const ParsedTranslationUnit* translationUnit = GetTranslationUnit();
 
         auto it = translationUnit->enums.find(this->type);
-        if (it != translationUnit->enums.end())
-        {
-            it->second->shouldGenerate = true;
-        }
-        else
+        if (it == translationUnit->enums.end())
         {
             ParseError(this->cursor,
-                       "full declaration of enum '%s' must be available for property '%s'",
+                       "enum '%s' for property '%s' must be marked with ENUM()",
                        this->type.c_str(),
                        this->name.c_str());
 
@@ -964,7 +960,10 @@ void ParsedEnum::Create(CXCursor          inCursor,
 
     VisitChildren(inCursor, parsedEnum.get());
 
-    inParent->GetTranslationUnit()->enums.insert(std::make_pair(parsedEnum->name, std::move(parsedEnum)));
+    if (parsedEnum->shouldGenerate)
+    {
+        inParent->GetTranslationUnit()->enums.insert(std::make_pair(parsedEnum->name, std::move(parsedEnum)));
+    }
 }
 
 bool ParsedEnum::HandleAnnotation(const std::string&         inType,
@@ -1101,7 +1100,7 @@ mustache::data ParsedTranslationUnit::Generate() const
     {
         const std::unique_ptr<ParsedEnum>& parsedEnum = it.second;
 
-        if (parsedEnum->shouldGenerate)
+        if (parsedEnum->IsFromMainFile())
         {
             enums.push_back(parsedEnum->Generate());
         }
@@ -1131,7 +1130,7 @@ void ParsedTranslationUnit::Dump(const unsigned inDepth) const
     {
         const std::unique_ptr<ParsedEnum>& parsedEnum = it.second;
 
-        if (parsedEnum->shouldGenerate)
+        if (parsedEnum->IsFromMainFile())
         {
             parsedEnum->Dump(inDepth + 1);
         }
