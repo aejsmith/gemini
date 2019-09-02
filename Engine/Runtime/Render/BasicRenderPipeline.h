@@ -30,6 +30,10 @@ class BasicRenderPipeline final : public RenderPipeline
     CLASS();
 
 public:
+    static constexpr PixelFormat kColourFormat = kPixelFormat_R8G8B8A8;
+    static constexpr PixelFormat kDepthFormat  = kPixelFormat_Depth32;
+
+public:
                             BasicRenderPipeline();
 
     /** Colour to clear the background to. */

@@ -38,8 +38,8 @@ BasicRenderPipeline::BasicRenderPipeline() :
     clearColour (0.0f, 0.0f, 0.0f, 1.0f)
 {
     // Temporary.
-    mVertexShader = ShaderManager::Get().GetShader("Engine/BasicRenderPipeline.hlsl", "VSMain", kGPUShaderStage_Vertex);
-    mPixelShader  = ShaderManager::Get().GetShader("Engine/BasicRenderPipeline.hlsl", "PSMain", kGPUShaderStage_Pixel);
+    mVertexShader = ShaderManager::Get().GetShader("Engine/Basic.hlsl", "VSMain", kGPUShaderStage_Vertex);
+    mPixelShader  = ShaderManager::Get().GetShader("Engine/Basic.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
     argumentLayoutDesc.arguments[0] = kGPUArgumentType_Constants;
@@ -79,8 +79,8 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
         // target state/formats known somewhere - they will be defined for the
         // ShaderPassType that the PSO is for.
         GPURenderTargetStateDesc renderTargetDesc;
-        renderTargetDesc.colour[0]    = textureDesc.format;
-        renderTargetDesc.depthStencil = kPixelFormat_Depth32;
+        renderTargetDesc.colour[0]    = textureDesc.format; // FIXME
+        renderTargetDesc.depthStencil = kDepthFormat;
 
         GPUDepthStencilStateDesc depthDesc;
         depthDesc.depthTestEnable  = true;

@@ -1,0 +1,10 @@
+[
+    {
+        "objectClass": "Material",
+        "objectID": 0,
+        "objectProperties": {},
+        "shaderTechnique": {
+            "asset": "Engine/Techniques/Basic"
+        }
+    }
+]

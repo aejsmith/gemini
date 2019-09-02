@@ -1,0 +1,24 @@
+[
+    {
+        "objectClass": "ShaderTechnique",
+        "objectID": 0,
+        "objectProperties": {},
+        "passes": [
+            {
+                "type": "Basic",
+                "shaders": [
+                    {
+                        "stage": "Vertex",
+                        "source": "Engine/Basic.hlsl",
+                        "function": "VSMain"
+                    },
+                    {
+                        "stage": "Pixel",
+                        "source": "Engine/Basic.hlsl",
+                        "function": "PSMain"
+                    }
+                ]
+            }
+        ]
+    }
+]

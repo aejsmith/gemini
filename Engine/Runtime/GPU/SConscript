@@ -1,8 +1,10 @@
-import os
-
 Import('env')
 
-objects = map(env.Object, [
+objects = map(env.ObjectGenHeader, [
+    'GPUDefs.h',
+])
+
+objects += map(env.Object, [
     'GPUArgumentSet.cpp',
     'GPUBuffer.cpp',
     'GPUCommandList.cpp',

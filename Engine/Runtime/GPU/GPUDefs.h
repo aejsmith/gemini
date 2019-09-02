@@ -20,6 +20,8 @@
 #include "Core/PixelFormat.h"
 #include "Core/Utility.h"
 
+#include "Engine/Object.h"
+
 #include <bitset>
 #include <vector>
 
@@ -396,7 +398,7 @@ enum GPUStoreOp : uint8_t
     kGPUStoreOp_Discard,
 };
 
-enum GPUShaderStage : uint8_t
+enum ENUM() GPUShaderStage : uint8_t
 {
     kGPUShaderStage_Vertex,
     kGPUShaderStage_Pixel,

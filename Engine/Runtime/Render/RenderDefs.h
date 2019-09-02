@@ -16,26 +16,49 @@
 
 #pragma once
 
+#include "Engine/Object.h"
+
 #include "GPU/GPUDefs.h"
 
 /**
- * Type of a pass within a shader pipeline. A render pipeline will render
- * visible entities one or more times in render passes. Each of these passes
- * may need to render the entity in a different way and therefore need
- * different shaders, pipeline state, etc.
+ * A render pipeline will perform a number of render passes, each of which will
+ * need to render a subset of visible entities. The passes that an entity will
+ * be rendered in are defined by the shader technique that the entity is using.
+ * A technique defines a pass for each type of render pass that it can support
+ * being rendered in. For each render pass performed by a render pipeline, if
+ * a visible entity's technique has a pass of that type, it will be rendered in
+ * that pass.
  *
- * A shader pipeline contains multiple passes for each type of render pass that
- * it will be used with, the type is specified by this enum. The pass type
- * defines defaults for pipeline state (blend, depth/stencil, rasterizer,
- * render target) as well as shader variant flags. Some pipeline state can be
- * overridden by the shader pipeline.
+ * A pass type defines defaults for pipeline state (blend, depth/stencil,
+ * rasterizer, render target), and possibly defines some shader variant flags.
+ * Some pipeline state can be overridden by the technique.
  */
-enum ShaderPassType
+enum ENUM() ShaderPassType
 {
     /**
-     * Basic pass without any lighting etc.
+     * Basic pass without any lighting etc. (BasicRenderPipeline)
      */
     kShaderPassType_Basic,
 
+    /**
+     * Deferred G-Buffer opaque pass (DeferredRenderPipeline).
+     */
+    kShaderPassType_DeferredOpaque,
+
     kShaderPassTypeCount,
+};
+
+/**
+ * Argument set indices used by the main renderer.
+ */
+enum ArgumentSet
+{
+    /** View arguments. */
+    kArgumentSet_View,
+
+    /** Material arguments. */
+    kArgumentSet_Material,
+
+    /** Entity arguments. */
+    kArgumentSet_Entity,
 };

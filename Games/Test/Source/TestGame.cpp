@@ -25,6 +25,7 @@
 
 #include "Render/BasicRenderPipeline.h"
 #include "Render/Camera.h"
+#include "Render/Material.h"
 #include "Render/MeshRenderer.h"
 
 TestGame::TestGame()
@@ -52,15 +53,20 @@ void TestGame::Init()
 
     MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
 
-    Entity* cubeEntity = world->CreateEntity("Cube");
-    cubeEntity->Translate(glm::vec3(0.0f, -0.75f, -4.0f));
-    cubeEntity->SetScale(glm::vec3(0.2f, 0.2f, 0.2f));
-    cubeEntity->Rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-    cubeEntity->SetActive(true);
+    for (unsigned i = 0; i < 2; i++)
+    {
+        Entity* cubeEntity = world->CreateEntity("Cube");
+        cubeEntity->Translate(glm::vec3((i == 1) ? 2.0f : -2.0f, -0.75f, -4.0f));
+        cubeEntity->SetScale(glm::vec3(0.2f, 0.2f, 0.2f));
+        cubeEntity->Rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        cubeEntity->SetActive(true);
 
-    MeshRenderer* meshRenderer = cubeEntity->CreateComponent<MeshRenderer>();
-    meshRenderer->SetMesh(mesh);
-    meshRenderer->SetActive(true);
+        MeshRenderer* meshRenderer = cubeEntity->CreateComponent<MeshRenderer>();
+        meshRenderer->SetMesh(mesh);
+        meshRenderer->SetActive(true);
+    }
+
+    MaterialPtr material = AssetManager::Get().Load<Material>("Game/Materials/CompanionCube");
 
     //Entity* entity1 = world->CreateEntity("Test");
     //entity1->Translate(glm::vec3(0.0f, 1.5f, 0.0f));

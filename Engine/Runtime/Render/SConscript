@@ -3,15 +3,19 @@ Import('env')
 objects = map(env.ObjectGenHeader, [
     'BasicRenderPipeline.h',
     'Camera.h',
+    'Material.h',
     'MeshRenderer.h',
+    'RenderDefs.h',
     'Renderer.h',
     'RenderPipeline.h',
+    'ShaderTechnique.h',
 ])
 
 objects += map(env.Object, [
     'BasicRenderPipeline.cpp',
     'Camera.cpp',
     'EntityDrawList.cpp',
+    'Material.cpp',
     'MeshRenderer.cpp',
     'RenderEntity.cpp',
     'Renderer.cpp',
@@ -23,8 +27,9 @@ objects += map(env.Object, [
     'RenderPipeline.cpp',
     'RenderView.cpp',
     'RenderWorld.cpp',
-    'ShaderManager.cpp',
     'ShaderCompiler.cpp',
+    'ShaderManager.cpp',
+    'ShaderTechnique.cpp',
 ])
 
 Return('objects')
