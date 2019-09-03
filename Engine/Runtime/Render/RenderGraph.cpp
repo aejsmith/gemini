@@ -93,7 +93,7 @@ static GPUResourceUsage ResourceUsageFromState(const GPUResourceState inState)
         usage |= kGPUResourceUsage_DepthStencil;
     }
 
-    Assert(IsOnlyOneBitSet(usage));
+    Assert(usage == kGPUResourceUsage_Standard || IsOnlyOneBitSet(usage));
 
     return usage;
 }
@@ -789,6 +789,8 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
 
 void RenderGraph::Execute()
 {
+    mIsExecuting = true;
+
     DetermineRequiredPasses();
     AllocateResources();
 
