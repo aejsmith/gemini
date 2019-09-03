@@ -442,6 +442,51 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
                          (imageBarrierCount > 0) ? imageBarriers : nullptr);
 }
 
+void VulkanContext::BlitTexture(GPUTexture* const    inDestTexture,
+                                const GPUSubresource inDestSubresource,
+                                const glm::ivec3&    inDestOffset,
+                                const glm::ivec3&    inDestSize,
+                                GPUTexture* const    inSourceTexture,
+                                const GPUSubresource inSourceSubresource,
+                                const glm::ivec3&    inSourceOffset,
+                                const glm::ivec3&    inSourceSize)
+{
+    ValidateContext();
+
+    auto destTexture   = static_cast<VulkanTexture*>(inDestTexture);
+    auto sourceTexture = static_cast<VulkanTexture*>(inSourceTexture);
+
+    VkImageBlit imageBlit;
+    imageBlit.srcSubresource.aspectMask     = sourceTexture->GetAspectMask();
+    imageBlit.srcSubresource.baseArrayLayer = inSourceSubresource.layer;
+    imageBlit.srcSubresource.layerCount     = 1;
+    imageBlit.srcSubresource.mipLevel       = inSourceSubresource.mipLevel;
+    imageBlit.srcOffsets[0].x               = inSourceOffset.x;
+    imageBlit.srcOffsets[0].y               = inSourceOffset.y;
+    imageBlit.srcOffsets[0].z               = inSourceOffset.z;
+    imageBlit.srcOffsets[1].x               = inSourceOffset.x + inSourceSize.x;
+    imageBlit.srcOffsets[1].y               = inSourceOffset.y + inSourceSize.y;
+    imageBlit.srcOffsets[1].z               = inSourceOffset.z + inSourceSize.z;
+    imageBlit.dstSubresource.aspectMask     = destTexture->GetAspectMask();
+    imageBlit.dstSubresource.baseArrayLayer = inDestSubresource.layer;
+    imageBlit.dstSubresource.layerCount     = 1;
+    imageBlit.dstSubresource.mipLevel       = inDestSubresource.mipLevel;
+    imageBlit.dstOffsets[0].x               = inDestOffset.x;
+    imageBlit.dstOffsets[0].y               = inDestOffset.y;
+    imageBlit.dstOffsets[0].z               = inDestOffset.z;
+    imageBlit.dstOffsets[1].x               = inDestOffset.x + inDestSize.x;
+    imageBlit.dstOffsets[1].y               = inDestOffset.y + inDestSize.y;
+    imageBlit.dstOffsets[1].z               = inDestOffset.z + inDestSize.z;
+
+    vkCmdBlitImage(GetCommandBuffer(),
+                   sourceTexture->GetHandle(),
+                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                   destTexture->GetHandle(),
+                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                   1, &imageBlit,
+                   VK_FILTER_LINEAR);
+}
+
 void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
                                  const GPUTextureClearData& inData,
                                  const GPUSubresourceRange& inRange)
@@ -574,12 +619,12 @@ void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
 }
 
 void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
-                                  const GPUStagingTexture& inSourceTexture,
-                                  const glm::ivec3&        inSize,
                                   const GPUSubresource     inDestSubresource,
                                   const glm::ivec3&        inDestOffset,
+                                  const GPUStagingTexture& inSourceTexture,
                                   const GPUSubresource     inSourceSubresource,
-                                  const glm::ivec3&        inSourceOffset)
+                                  const glm::ivec3&        inSourceOffset,
+                                  const glm::ivec3&        inSize)
 {
     ValidateContext();
 

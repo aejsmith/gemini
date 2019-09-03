@@ -93,6 +93,27 @@ public:
                                                     const bool             inDiscard = false);
 
     /**
+     * Blit a texture subresource, with potential format conversion and scaling.
+     * If scaling, a linear filter will be applied. The first version blits the
+     * whole source subresource over the whole destination subresource, scaling
+     * if they are different dimensions. Source must be in the
+     * kGPUResourceState_TransferRead state, and destination must be in the
+     * kGPUResourceState_TransferWrite state.
+     */
+    void                            BlitTexture(GPUTexture* const    inDestTexture,
+                                                const GPUSubresource inDestSubresource,
+                                                GPUTexture* const    inSourceTexture,
+                                                const GPUSubresource inSourceSubresource);
+    virtual void                    BlitTexture(GPUTexture* const    inDestTexture,
+                                                const GPUSubresource inDestSubresource,
+                                                const glm::ivec3&    inDestOffset,
+                                                const glm::ivec3&    inDestSize,
+                                                GPUTexture* const    inSourceTexture,
+                                                const GPUSubresource inSourceSubresource,
+                                                const glm::ivec3&    inSourceOffset,
+                                                const glm::ivec3&    inSourceSize) = 0;
+
+    /**
      * Clear a texture. This is a standalone clear, which requires the cleared
      * range to be in the kGPUResourceState_TransferWrite state. It should be
      * preferred to clear render target and depth/stencil textures as part of a
@@ -134,12 +155,12 @@ public:
     virtual void                    UploadTexture(GPUTexture* const        inDestTexture,
                                                   const GPUStagingTexture& inSourceTexture) = 0;
     virtual void                    UploadTexture(GPUTexture* const        inDestTexture,
-                                                  const GPUStagingTexture& inSourceTexture,
-                                                  const glm::ivec3&        inSize,
                                                   const GPUSubresource     inDestSubresource,
                                                   const glm::ivec3&        inDestOffset,
+                                                  const GPUStagingTexture& inSourceTexture,
                                                   const GPUSubresource     inSourceSubresource,
-                                                  const glm::ivec3&        inSourceOffset) = 0;
+                                                  const glm::ivec3&        inSourceOffset,
+                                                  const glm::ivec3&        inSize) = 0;
 
 };
 

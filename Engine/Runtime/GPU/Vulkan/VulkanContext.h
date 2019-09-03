@@ -54,6 +54,15 @@ public:
     void                            ResourceBarrier(const GPUResourceBarrier* const inBarriers,
                                                     const size_t                    inCount) override;
 
+    void                            BlitTexture(GPUTexture* const    inDestTexture,
+                                                const GPUSubresource inDestSubresource,
+                                                const glm::ivec3&    inDestOffset,
+                                                const glm::ivec3&    inDestSize,
+                                                GPUTexture* const    inSourceTexture,
+                                                const GPUSubresource inSourceSubresource,
+                                                const glm::ivec3&    inSourceOffset,
+                                                const glm::ivec3&    inSourceSize) override;
+
     void                            ClearTexture(GPUTexture* const          inTexture,
                                                  const GPUTextureClearData& inData,
                                                  const GPUSubresourceRange& inRange) override;
@@ -67,12 +76,12 @@ public:
     void                            UploadTexture(GPUTexture* const        inDestTexture,
                                                   const GPUStagingTexture& inSourceTexture) override;
     void                            UploadTexture(GPUTexture* const        inDestTexture,
-                                                  const GPUStagingTexture& inSourceTexture,
-                                                  const glm::ivec3&        inSize,
                                                   const GPUSubresource     inDestSubresource,
                                                   const glm::ivec3&        inDestOffset,
+                                                  const GPUStagingTexture& inSourceTexture,
                                                   const GPUSubresource     inSourceSubresource,
-                                                  const glm::ivec3&        inSourceOffset) override;
+                                                  const glm::ivec3&        inSourceOffset,
+                                                  const glm::ivec3&        inSize) override;
 
     /**
      * GPUComputeContext methods.
