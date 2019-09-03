@@ -116,24 +116,10 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     });
 
     /* Blit to the final output. */
-    RenderGraphPass& blitPass = inGraph.AddPass("BasicBlit", kRenderGraphPassType_Transfer);
-
-    blitPass.UseResource(colourTexture,
-                         GPUSubresourceRange{0, 1, 0, 1},
-                         kGPUResourceState_TransferRead,
-                         nullptr);
-    blitPass.UseResource(inTexture,
-                         GPUSubresourceRange{0, 1, 0, 1},
-                         kGPUResourceState_TransferWrite,
-                         &outNewTexture);
-
-    blitPass.SetFunction([colourTexture, inTexture] (const RenderGraph&     inGraph,
-                                                     const RenderGraphPass& inPass,
-                                                     GPUTransferContext&    inContext)
-    {
-        inContext.BlitTexture(inGraph.GetTexture(inTexture),
-                              GPUSubresource{0, 0},
-                              inGraph.GetTexture(colourTexture),
-                              GPUSubresource{0, 0});
-    });
+    inGraph.AddBlitPass("BasicBlit",
+                        inTexture,
+                        GPUSubresource{0, 0},
+                        colourTexture,
+                        GPUSubresource{0, 0},
+                        &outNewTexture);
 }

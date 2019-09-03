@@ -390,6 +390,14 @@ public:
     RenderGraphPass&                AddPass(std::string               inName,
                                             const RenderGraphPassType inType);
 
+    /** Shortcut to add a pass to just blit one texture subresource to another. */
+    RenderGraphPass&                AddBlitPass(std::string                inName,
+                                                const RenderResourceHandle inDestHandle,
+                                                const GPUSubresource       inDestSubresource,
+                                                const RenderResourceHandle inSourceHandle,
+                                                const GPUSubresource       inSourceSubresource,
+                                                RenderResourceHandle*      outNewHandle);
+
     /**
      * Create a new buffer resource. The initial content will be undefined so
      * the first pass that uses it must write to it.

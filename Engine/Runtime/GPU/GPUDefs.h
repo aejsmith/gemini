@@ -148,9 +148,35 @@ struct GPUSubresourceRange
     uint32_t                    layerCount;
 
 public:
+                                GPUSubresourceRange(const uint32_t inMipOffset = 0,
+                                                    const uint32_t inMipCount = 1,
+                                                    const uint32_t inLayerOffset = 0,
+                                                    const uint32_t inLayerCount = 1);
+
+                                GPUSubresourceRange(const GPUSubresource inSubresource);
+
     bool                        Overlaps(const GPUSubresourceRange& inOther) const;
 
 };
+
+inline GPUSubresourceRange::GPUSubresourceRange(const uint32_t inMipOffset,
+                                                const uint32_t inMipCount,
+                                                const uint32_t inLayerOffset,
+                                                const uint32_t inLayerCount) :
+    mipOffset   (inMipOffset),
+    mipCount    (inMipCount),
+    layerOffset (inLayerOffset),
+    layerCount  (inLayerCount)
+{
+}
+
+inline GPUSubresourceRange::GPUSubresourceRange(const GPUSubresource inSubresource) :
+    mipOffset   (inSubresource.mipLevel),
+    mipCount    (1),
+    layerOffset (inSubresource.layer),
+    layerCount  (1)
+{
+}
 
 inline bool GPUSubresourceRange::Overlaps(const GPUSubresourceRange& inOther) const
 {

@@ -330,6 +330,42 @@ RenderGraphPass& RenderGraph::AddPass(std::string               inName,
     return *pass;
 }
 
+RenderGraphPass& RenderGraph::AddBlitPass(std::string                inName,
+                                          const RenderResourceHandle inDestHandle,
+                                          const GPUSubresource       inDestSubresource,
+                                          const RenderResourceHandle inSourceHandle,
+                                          const GPUSubresource       inSourceSubresource,
+                                          RenderResourceHandle*      outNewHandle)
+{
+    Assert(GetResourceType(inDestHandle) == kRenderResourceType_Texture);
+    Assert(GetResourceType(inSourceHandle) == kRenderResourceType_Texture);
+    Assert(outNewHandle);
+
+    RenderGraphPass& pass = AddPass(std::move(inName), kRenderGraphPassType_Transfer);
+
+    pass.UseResource(inSourceHandle,
+                     inSourceSubresource,
+                     kGPUResourceState_TransferRead,
+                     nullptr);
+
+    pass.UseResource(inDestHandle,
+                     inDestSubresource,
+                     kGPUResourceState_TransferWrite,
+                     outNewHandle);
+
+    pass.SetFunction([=] (const RenderGraph&     inGraph,
+                          const RenderGraphPass& inPass,
+                          GPUTransferContext&    inContext)
+    {
+        inContext.BlitTexture(inGraph.GetTexture(inDestHandle),
+                              inDestSubresource,
+                              inGraph.GetTexture(inSourceHandle),
+                              inSourceSubresource);
+    });
+
+    return pass;
+}
+
 RenderGraph::Resource::Resource() :
     texture         (),
     usage           (kGPUResourceUsage_Standard),
