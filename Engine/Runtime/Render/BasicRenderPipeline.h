@@ -49,10 +49,4 @@ public:
 protected:
                             ~BasicRenderPipeline();
 
-    // Temporary.
-    GPUShaderPtr            mVertexShader;
-    GPUShaderPtr            mPixelShader;
-    GPUArgumentSetLayoutRef mArgumentSetLayout;
-    GPUArgumentSet*         mArgumentSet;
-
 };

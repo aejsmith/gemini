@@ -21,6 +21,7 @@
 
 #include "Render/EntityDrawList.h"
 #include "Render/Material.h"
+#include "Render/RenderManager.h"
 
 RenderEntity::RenderEntity(const Renderer& inRenderer,
                            Material&       inMaterial) :
@@ -51,11 +52,8 @@ void RenderEntity::CreatePipelines()
                 pipelineDesc.shaders[stage] = pass->GetShader(static_cast<GPUShaderStage>(stage));
             }
 
-            // TODO
-            GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
-            argumentLayoutDesc.arguments[0] = kGPUArgumentType_Constants;
-
-            pipelineDesc.argumentSetLayouts[0] = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+            pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity] = RenderManager::Get().GetViewEntityArgumentSetLayout();
+            // TODO: Material.
 
             pipelineDesc.blendState        = pass->GetBlendState();
             pipelineDesc.depthStencilState = pass->GetDepthStencilState();

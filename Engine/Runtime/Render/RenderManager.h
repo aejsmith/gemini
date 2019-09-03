@@ -18,6 +18,7 @@
 
 #include "Core/Singleton.h"
 
+#include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUBuffer.h"
 #include "GPU/GPUTexture.h"
 
@@ -38,6 +39,10 @@ public:
 public:
     /** Render all outputs for the frame. */
     void                        Render(OnlyCalledBy<Engine>);
+
+    /** Get the set/layout for view/entity arguments. */
+    GPUArgumentSetLayoutRef     GetViewEntityArgumentSetLayout() const  { return mViewEntityArgumentSetLayout; }
+    GPUArgumentSet*             GetViewEntityArgumentSet() const        { return mViewEntityArgumentSet; }
 
     /**
      * Interface with RenderOutput.
@@ -91,6 +96,9 @@ private:
     };
 
 private:
+    GPUArgumentSetLayoutRef     mViewEntityArgumentSetLayout;
+    GPUArgumentSet*             mViewEntityArgumentSet;
+
     std::list<RenderOutput*>    mOutputs;
 
     std::list<TransientBuffer>  mTransientBuffers;

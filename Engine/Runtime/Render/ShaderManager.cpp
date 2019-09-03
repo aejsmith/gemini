@@ -81,6 +81,7 @@ GPUShaderPtr ShaderManager::GetShader(const Path&          inPath,
     if (!isCompiled)
     {
         LogError("Compilation of shader '%s' failed", inPath.GetCString());
+        DebugBreak();
         return nullptr;
     }
 

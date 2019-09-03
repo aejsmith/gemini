@@ -20,6 +20,8 @@
 
 #include "GPU/GPUDefs.h"
 
+#include "../../Shaders/ShaderDefs.h"
+
 /**
  * A render pipeline will perform a number of render passes, each of which will
  * need to render a subset of visible entities. The passes that an entity will
@@ -46,19 +48,4 @@ enum ENUM() ShaderPassType
     kShaderPassType_DeferredOpaque,
 
     kShaderPassTypeCount,
-};
-
-/**
- * Argument set indices used by the main renderer.
- */
-enum ArgumentSet
-{
-    /** View arguments. */
-    kArgumentSet_View,
-
-    /** Material arguments. */
-    kArgumentSet_Material,
-
-    /** Entity arguments. */
-    kArgumentSet_Entity,
 };

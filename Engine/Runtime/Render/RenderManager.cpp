@@ -33,6 +33,12 @@ SINGLETON_IMPL(RenderManager);
 
 RenderManager::RenderManager()
 {
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(2);
+    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Constants;
+    argumentLayoutDesc.arguments[1] = kGPUArgumentType_Constants;
+
+    mViewEntityArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+    mViewEntityArgumentSet       = GPUDevice::Get().CreateArgumentSet(mViewEntityArgumentSetLayout, nullptr);
 }
 
 RenderManager::~RenderManager()
@@ -50,6 +56,8 @@ RenderManager::~RenderManager()
 
     FreeTransientResources(mTransientBuffers);
     FreeTransientResources(mTransientTextures);
+
+    delete mViewEntityArgumentSet;
 }
 
 void RenderManager::Render(OnlyCalledBy<Engine>)

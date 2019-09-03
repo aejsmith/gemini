@@ -23,6 +23,7 @@
 
 #include "Render/EntityDrawList.h"
 #include "Render/RenderContext.h"
+#include "Render/RenderManager.h"
 #include "Render/RenderWorld.h"
 #include "Render/ShaderManager.h"
 
@@ -38,20 +39,10 @@ public:
 BasicRenderPipeline::BasicRenderPipeline() :
     clearColour (0.0f, 0.0f, 0.0f, 1.0f)
 {
-    // Temporary.
-    mVertexShader = ShaderManager::Get().GetShader("Engine/Basic.hlsl", "VSMain", kGPUShaderStage_Vertex);
-    mPixelShader  = ShaderManager::Get().GetShader("Engine/Basic.hlsl", "PSMain", kGPUShaderStage_Pixel);
-
-    GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
-    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Constants;
-
-    mArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
-    mArgumentSet       = GPUDevice::Get().CreateArgumentSet(mArgumentSetLayout, nullptr);
 }
 
 BasicRenderPipeline::~BasicRenderPipeline()
 {
-    delete mArgumentSet;
 }
 
 void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
@@ -79,12 +70,18 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
             entity->GetDrawCall(kShaderPassType_Basic, *context, drawCall);
 
             // TODO: Move argument sets to GetDrawCall(), deduplicate.
-            const glm::mat4 mvpMatrix    = inView.GetViewProjectionMatrix() * entity->GetTransform().GetMatrix();
-            const GPUConstants constants = GPUDevice::Get().GetConstantPool().Write(&mvpMatrix, sizeof(mvpMatrix));
+            EntityConstants constants;
+            constants.transformMatrix = entity->GetTransform().GetMatrix();
+            constants.position        = entity->GetTransform().GetPosition();
 
-            drawCall.arguments[0].argumentSet                = mArgumentSet;
-            drawCall.arguments[0].constants[0].argumentIndex = 0;
-            drawCall.arguments[0].constants[0].constants     = constants;
+            const GPUConstants constantHandle = GPUDevice::Get().GetConstantPool().Write(&constants, sizeof(constants));
+
+            auto& viewEntityArguments = drawCall.arguments[kArgumentSet_ViewEntity];
+            viewEntityArguments.argumentSet                = RenderManager::Get().GetViewEntityArgumentSet();
+            viewEntityArguments.constants[0].argumentIndex = kViewEntityArguments_ViewConstants;
+            viewEntityArguments.constants[0].constants     = inView.GetConstants();
+            viewEntityArguments.constants[1].argumentIndex = kViewEntityArguments_EntityConstants;
+            viewEntityArguments.constants[1].constants     = constantHandle;
         }
     }
 

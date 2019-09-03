@@ -44,8 +44,12 @@ public:
     const glm::mat4&        GetInverseViewProjectionMatrix() const  { return mInverseViewProjectionMatrix; }
     const Frustum&          GetFrustum() const                      { return mFrustum; }
 
+    GPUConstants            GetConstants() const                    { return mConstants; }
+
 private:
                             RenderView() {}
+
+    void                    CreateConstants();
 
     glm::vec3               mPosition;
     glm::quat               mOrientation;
@@ -55,4 +59,7 @@ private:
     glm::mat4               mViewProjectionMatrix;
     glm::mat4               mInverseViewProjectionMatrix;
     Frustum                 mFrustum;
+
+    GPUConstants            mConstants;
+
 };

@@ -189,6 +189,8 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
 
 bool ShaderCompiler::GenerateSource(std::string& outSource)
 {
+    outSource += "#define __HLSL__ 1\n";
+
     if (!mOptions.source.empty())
     {
         /* Source string was provided, use that directly. */

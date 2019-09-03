@@ -16,6 +16,9 @@
 
 #include "Render/RenderView.h"
 
+#include "GPU/GPUConstantPool.h"
+#include "GPU/GPUDevice.h"
+
 RenderView RenderView::CreatePerspective(const glm::vec3&  inPosition,
                                          const glm::quat&  inOrientation,
                                          const float       inVerticalFOV,
@@ -46,5 +49,19 @@ RenderView RenderView::CreatePerspective(const glm::vec3&  inPosition,
 
     view.mFrustum = Frustum(view.mViewProjectionMatrix, view.mInverseViewProjectionMatrix);
 
+    view.CreateConstants();
     return view;
+}
+
+void RenderView::CreateConstants()
+{
+    ViewConstants constants;
+    constants.viewMatrix                  = mViewMatrix;
+    constants.projectionMatrix            = mProjectionMatrix;
+    constants.viewProjectionMatrix        = mViewProjectionMatrix;
+    constants.inverseViewProjectionMatrix = mInverseViewProjectionMatrix;
+    constants.position                    = mPosition;
+    constants.targetSize                  = mTargetSize;
+
+    mConstants = GPUDevice::Get().GetConstantPool().Write(&constants, sizeof(constants));
 }
