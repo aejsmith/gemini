@@ -41,7 +41,9 @@ void Renderer::Activated()
     RenderWorld* const renderWorld = GetEntity()->GetWorld()->GetRenderWorld();
     for (RenderEntity* renderEntity : mRenderEntities)
     {
+        renderEntity->CreatePipelines();
         renderEntity->SetTransform(GetWorldTransform());
+
         renderWorld->AddEntity(renderEntity);
     }
 }

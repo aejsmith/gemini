@@ -52,6 +52,7 @@ void TestGame::Init()
     renderPipeline->clearColour = glm::vec4(0.0f, 0.0f, 0.2f, 1.0f);
 
     MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
+    MaterialPtr material = AssetManager::Get().Load<Material>("Game/Materials/CompanionCube");
 
     for (unsigned i = 0; i < 2; i++)
     {
@@ -63,10 +64,9 @@ void TestGame::Init()
 
         MeshRenderer* meshRenderer = cubeEntity->CreateComponent<MeshRenderer>();
         meshRenderer->SetMesh(mesh);
+        meshRenderer->SetMaterial(0, material);
         meshRenderer->SetActive(true);
     }
-
-    MaterialPtr material = AssetManager::Get().Load<Material>("Game/Materials/CompanionCube");
 
     //Entity* entity1 = world->CreateEntity("Test");
     //entity1->Translate(glm::vec3(0.0f, 1.5f, 0.0f));

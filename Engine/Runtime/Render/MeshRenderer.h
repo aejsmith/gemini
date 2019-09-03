@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "Render/Material.h"
 #include "Render/Renderer.h"
 
 #include "Engine/Mesh.h"
@@ -35,7 +36,13 @@ public:
     void                            SetMesh(Mesh* const inMesh);
     Mesh*                           GetMesh() const { return mMesh; }
 
-    // TODO: Materials
+    /** Materials for the mesh. */
+    Material*                       GetMaterial(const uint32_t inIndex) const;
+    Material*                       GetMaterial(const std::string& inName) const;
+    void                            SetMaterial(const uint32_t  inIndex,
+                                                Material* const inMaterial);
+    void                            SetMaterial(const std::string& inName,
+                                                Material* const    inMaterial);
 
 protected:
                                     ~MeshRenderer();
@@ -44,5 +51,12 @@ protected:
 
 private:
     MeshPtr                         mMesh;
+    std::vector<MaterialPtr>        mMaterials;
 
 };
+
+inline Material* MeshRenderer::GetMaterial(const uint32_t inIndex) const
+{
+    Assert(inIndex < mMaterials.size());
+    return mMaterials[inIndex];
+}

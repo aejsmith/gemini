@@ -30,6 +30,7 @@ class Mesh;
 class SubMesh
 {
 public:
+    uint32_t                    GetMaterial() const     { return mMaterial; }
     bool                        IsIndexed() const       { return mIndexed; }
     uint32_t                    GetCount() const        { return mCount; }
 
@@ -107,6 +108,8 @@ public:
     GPUBuffer*                  GetVertexBuffer(const size_t inIndex) const
                                     { Assert(mIsBuilt); return mVertexBuffers[inIndex]; }
 
+    size_t                      GetMaterialCount() const
+                                    { return mMaterials.size(); }
     bool                        GetMaterial(const std::string& inName,
                                             uint32_t&          outIndex);
 

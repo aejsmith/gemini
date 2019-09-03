@@ -112,3 +112,38 @@ inline bool Component::GetActiveInWorld() const
 {
     return mActive && mEntity->GetActiveInWorld();
 }
+
+/**
+ * RAII class to temporarily deactivate a component. May be useful for example
+ * around changing some properties on a component where the changes need to go
+ * through deactivation/reactivation to take effect properly.
+ */
+class ScopedComponentDeactivation
+{
+public:
+                            ScopedComponentDeactivation(Component* const inComponent);
+                            ~ScopedComponentDeactivation();
+
+private:
+    Component* const        mComponent;
+    const bool              mWasActive;
+
+};
+
+inline ScopedComponentDeactivation::ScopedComponentDeactivation(Component* const inComponent) :
+    mComponent  (inComponent),
+    mWasActive  (inComponent->GetActive())
+{
+    if (mWasActive)
+    {
+        mComponent->SetActive(false);
+    }
+}
+
+inline ScopedComponentDeactivation::~ScopedComponentDeactivation()
+{
+    if (mWasActive)
+    {
+        mComponent->SetActive(true);
+    }
+}

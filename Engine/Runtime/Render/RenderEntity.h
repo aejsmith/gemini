@@ -24,6 +24,9 @@
 
 #include "Render/RenderDefs.h"
 
+class GPUPipeline;
+class Material;
+class RenderContext;
 class Renderer;
 
 struct EntityDrawCall;
@@ -42,17 +45,32 @@ public:
 
     const Renderer&                 GetRenderer() const         { return mRenderer; }
 
+    void                            CreatePipelines();
+
     void                            SetTransform(const Transform& inTransform);
     const Transform&                GetTransform() const        { return mTransform; }
 
     const BoundingBox&              GetWorldBoundingBox() const { return mWorldBoundingBox; }
 
-    // Temporary.
-    virtual GPUVertexInputStateRef  GetVertexInputState() const = 0;
-    virtual void                    GetGeometry(EntityDrawCall& ioDrawCall) const = 0;
+    /** Return whether this entity supports the specified pass type. */
+    bool                            SupportsPassType(const ShaderPassType inPassType) const
+                                        { return mPipelines[inPassType] != nullptr; }
+
+    /** Get the pipeline for a pass type. */
+    GPUPipeline*                    GetPipeline(const ShaderPassType inPassType) const
+                                        { return mPipelines[inPassType]; }
+
+    /**
+     * Populate a draw call structure for the entity in the given pass type.
+     * Pass type must be supported (SupportsPassType()).
+     */
+    void                            GetDrawCall(const ShaderPassType inPassType,
+                                                const RenderContext& inContext,
+                                                EntityDrawCall&      outDrawCall) const;
 
 protected:
-                                    RenderEntity(const Renderer& inRenderer);
+                                    RenderEntity(const Renderer& inRenderer,
+                                                 Material&       inMaterial);
 
     /**
      * Get the entity-local bounding box, will be transformed by the entity
@@ -60,10 +78,30 @@ protected:
      */
     virtual BoundingBox             GetLocalBoundingBox() = 0;
 
+    /**
+     * Get vertex input details for the entity. Called from CreatePipelines()
+     * at entity activation time to pre-build the pipelines for the entity.
+     */
+    virtual GPUVertexInputStateRef  GetVertexInputState() const = 0;
+    virtual GPUPrimitiveTopology    GetPrimitiveTopology() const = 0;
+
+    /** Populate geometry details in a draw call. */
+    virtual void                    GetGeometry(EntityDrawCall& ioDrawCall) const = 0;
+
 private:
     const Renderer&                 mRenderer;
+
+    /** Material, not refcounting since owning Renderer holds a reference. */
+    Material&                       mMaterial;
+
     Transform                       mTransform;
     BoundingBox                     mWorldBoundingBox;
+
+    /**
+     * Pipelines for each pass type supported by the material's shader
+     * technique.
+     */
+    GPUPipeline*                    mPipelines[kShaderPassTypeCount];
 
 public:
     IntrusiveListNode               mWorldListNode;

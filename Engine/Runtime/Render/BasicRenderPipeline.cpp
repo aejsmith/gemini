@@ -17,6 +17,7 @@
 #include "Render/BasicRenderPipeline.h"
 
 #include "GPU/GPUConstantPool.h"
+#include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
 #include "GPU/GPUPipeline.h"
 
@@ -68,62 +69,43 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     context->drawList.Reserve(context->cullResults.entities.size());
     for (const RenderEntity* entity : context->cullResults.entities)
     {
-        // TODO: Materials, move all this to the entity (GetDrawCall()).
+        if (entity->SupportsPassType(kShaderPassType_Basic))
+        {
+            const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_Basic);
 
-        const glm::mat4 mvpMatrix    = inView.GetViewProjectionMatrix() * entity->GetTransform().GetMatrix();
-        const GPUConstants constants = GPUDevice::Get().GetConstantPool().Write(&mvpMatrix, sizeof(mvpMatrix));
+            const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
+            EntityDrawCall& drawCall = context->drawList.Add(sortKey);
 
-        const RenderTextureDesc& textureDesc = inGraph.GetTextureDesc(inTexture);
+            entity->GetDrawCall(kShaderPassType_Basic, *context, drawCall);
 
-        // To pre-create the PSO in the entity we will need to have the render
-        // target state/formats known somewhere - they will be defined for the
-        // ShaderPassType that the PSO is for.
-        GPURenderTargetStateDesc renderTargetDesc;
-        renderTargetDesc.colour[0]    = textureDesc.format; // FIXME
-        renderTargetDesc.depthStencil = kDepthFormat;
+            // TODO: Move argument sets to GetDrawCall(), deduplicate.
+            const glm::mat4 mvpMatrix    = inView.GetViewProjectionMatrix() * entity->GetTransform().GetMatrix();
+            const GPUConstants constants = GPUDevice::Get().GetConstantPool().Write(&mvpMatrix, sizeof(mvpMatrix));
 
-        GPUDepthStencilStateDesc depthDesc;
-        depthDesc.depthTestEnable  = true;
-        depthDesc.depthWriteEnable = true;
-        depthDesc.depthCompareOp   = kGPUCompareOp_LessOrEqual;
-
-        GPUPipelineDesc pipelineDesc;
-        pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
-        pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
-        pipelineDesc.argumentSetLayouts[0]           = mArgumentSetLayout;
-        pipelineDesc.blendState                      = GPUBlendState::Get(GPUBlendStateDesc());
-        pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(depthDesc);
-        pipelineDesc.rasterizerState                 = GPURasterizerState::Get(GPURasterizerStateDesc());
-        pipelineDesc.renderTargetState               = GPURenderTargetState::Get(renderTargetDesc);
-        pipelineDesc.vertexInputState                = entity->GetVertexInputState();
-        pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
-
-        GPUPipeline* const pipeline = GPUDevice::Get().GetPipeline(pipelineDesc);
-
-        const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
-        EntityDrawCall& drawCall = context->drawList.Add(sortKey);
-
-        drawCall.pipeline = pipeline;
-
-        drawCall.arguments[0].argumentSet                = mArgumentSet;
-        drawCall.arguments[0].constants[0].argumentIndex = 0;
-        drawCall.arguments[0].constants[0].constants     = constants;
-
-        entity->GetGeometry(drawCall);
+            drawCall.arguments[0].argumentSet                = mArgumentSet;
+            drawCall.arguments[0].constants[0].argumentIndex = 0;
+            drawCall.arguments[0].constants[0].constants     = constants;
+        }
     }
 
     /* Sort them. */
     context->drawList.Sort();
 
-    /* Add the main pass. */
-    RenderGraphPass& pass = inGraph.AddPass("Scene", kRenderGraphPassType_Render);
+    /* Add the main pass. Done to a temporary render target with a fixed format,
+     * since the output texture may not match the format that all PSOs have
+     * been created with. */
+    RenderGraphPass& pass = inGraph.AddPass("BasicScene", kRenderGraphPassType_Render);
+
+    RenderTextureDesc colourTextureDesc(inGraph.GetTextureDesc(inTexture));
+    colourTextureDesc.format = kColourFormat;
 
     RenderTextureDesc depthTextureDesc(inGraph.GetTextureDesc(inTexture));
-    depthTextureDesc.format = kPixelFormat_Depth32;
+    depthTextureDesc.format = kDepthFormat;
 
-    RenderResourceHandle depthTexture = inGraph.CreateTexture(depthTextureDesc);
+    RenderResourceHandle colourTexture = inGraph.CreateTexture(colourTextureDesc);
+    RenderResourceHandle depthTexture  = inGraph.CreateTexture(depthTextureDesc);
 
-    pass.SetColour(0, inTexture, &outNewTexture);
+    pass.SetColour(0, colourTexture, &colourTexture);
     pass.SetDepthStencil(depthTexture, kGPUResourceState_DepthStencilWrite);
 
     pass.ClearColour(0, this->clearColour);
@@ -134,7 +116,27 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
                                 GPUGraphicsCommandList& inCmdList)
     {
         context->drawList.Draw(inCmdList);
+    });
 
-        // debug renderer bounding boxes
+    /* Blit to the final output. */
+    RenderGraphPass& blitPass = inGraph.AddPass("BasicBlit", kRenderGraphPassType_Transfer);
+
+    blitPass.UseResource(colourTexture,
+                         GPUSubresourceRange{0, 1, 0, 1},
+                         kGPUResourceState_TransferRead,
+                         nullptr);
+    blitPass.UseResource(inTexture,
+                         GPUSubresourceRange{0, 1, 0, 1},
+                         kGPUResourceState_TransferWrite,
+                         &outNewTexture);
+
+    blitPass.SetFunction([colourTexture, inTexture] (const RenderGraph&     inGraph,
+                                                     const RenderGraphPass& inPass,
+                                                     GPUTransferContext&    inContext)
+    {
+        inContext.BlitTexture(inGraph.GetTexture(inTexture),
+                              GPUSubresource{0, 0},
+                              inGraph.GetTexture(colourTexture),
+                              GPUSubresource{0, 0});
     });
 }

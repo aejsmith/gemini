@@ -24,13 +24,16 @@ class SubMeshRenderEntity final : public RenderEntity
 public:
                                 SubMeshRenderEntity(const MeshRenderer& inRenderer,
                                                     const Mesh&         inMesh,
-                                                    const SubMesh&      inSubMesh);
-
-    GPUVertexInputStateRef      GetVertexInputState() const override;
-    void                        GetGeometry(EntityDrawCall& ioDrawCall) const override;
+                                                    const SubMesh&      inSubMesh,
+                                                    Material&           inMaterial);
 
 protected:
     BoundingBox                 GetLocalBoundingBox() override;
+
+    GPUVertexInputStateRef      GetVertexInputState() const override;
+    GPUPrimitiveTopology        GetPrimitiveTopology() const override;
+
+    void                        GetGeometry(EntityDrawCall& ioDrawCall) const override;
 
 private:
     const MeshRenderer&         GetMeshRenderer() const
@@ -44,8 +47,9 @@ private:
 
 SubMeshRenderEntity::SubMeshRenderEntity(const MeshRenderer& inRenderer,
                                          const Mesh&         inMesh,
-                                         const SubMesh&      inSubMesh) :
-    RenderEntity    (inRenderer),
+                                         const SubMesh&      inSubMesh,
+                                         Material&           inMaterial) :
+    RenderEntity    (inRenderer, inMaterial),
     mMesh           (inMesh),
     mSubMesh        (inSubMesh)
 {
@@ -59,6 +63,11 @@ BoundingBox SubMeshRenderEntity::GetLocalBoundingBox()
 GPUVertexInputStateRef SubMeshRenderEntity::GetVertexInputState() const
 {
     return mMesh.GetVertexInputState();
+}
+
+GPUPrimitiveTopology SubMeshRenderEntity::GetPrimitiveTopology() const
+{
+    return kGPUPrimitiveTopology_TriangleList;
 }
 
 void SubMeshRenderEntity::GetGeometry(EntityDrawCall& ioDrawCall) const
@@ -96,13 +105,14 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::SetMesh(Mesh* const inMesh)
 {
-    /* Deactivate and reactivate to re-create the RenderEntities. */
-    const bool wasActive = GetActive();
-    SetActive(false);
+    /* Need to recreate the RenderEntities to take effect. */
+    ScopedComponentDeactivation deactivate(this);
 
     mMesh = inMesh;
+    mMaterials.resize(inMesh->GetMaterialCount());
 
-    SetActive(wasActive);
+    /* TODO: Can't reactivate unless there is a material in all slots. Should
+     * perhaps populate new slots with a dummy material. */
 }
 
 Renderer::RenderEntityArray MeshRenderer::CreateRenderEntities()
@@ -115,10 +125,50 @@ Renderer::RenderEntityArray MeshRenderer::CreateRenderEntities()
 
     for (size_t i = 0; i < mMesh->GetSubMeshCount(); i++)
     {
+        const SubMesh& subMesh = mMesh->GetSubMesh(i);
+
+        AssertMsg(mMaterials[subMesh.GetMaterial()],
+                  "No material set at index %u for MeshRenderer on '%s'",
+                  subMesh.GetMaterial(),
+                  GetEntity()->GetName().c_str());
+
         renderEntities[i] = new SubMeshRenderEntity(*this,
                                                     *mMesh,
-                                                    mMesh->GetSubMesh(i));
+                                                    subMesh,
+                                                    *mMaterials[subMesh.GetMaterial()]);
     }
 
     return renderEntities;
+}
+
+Material* MeshRenderer::GetMaterial(const std::string& inName) const
+{
+    uint32_t index;
+    const bool found = mMesh->GetMaterial(inName, index);
+    Assert(found);
+
+    return (found) ? mMaterials[index] : nullptr;
+}
+
+void MeshRenderer::SetMaterial(const uint32_t  inIndex,
+                               Material* const inMaterial)
+{
+    Assert(inIndex < mMaterials.size());
+
+    /* Need to recreate the RenderEntities to take effect. */
+    ScopedComponentDeactivation deactivate(this);
+    mMaterials[inIndex] = inMaterial;
+}
+
+void MeshRenderer::SetMaterial(const std::string& inName,
+                               Material* const    inMaterial)
+{
+    uint32_t index;
+    const bool found = mMesh->GetMaterial(inName, index);
+    Assert(found);
+
+    if (found)
+    {
+        SetMaterial(index, inMaterial);
+    }
 }
