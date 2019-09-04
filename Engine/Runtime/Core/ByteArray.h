@@ -59,7 +59,7 @@ inline ByteArray::ByteArray() :
 
 inline ByteArray::ByteArray(const size_t inSize) :
     mSize   (inSize),
-    mData   (new uint8_t[inSize])
+    mData   ((inSize > 0) ? new uint8_t[inSize] : nullptr)
 {
 }
 
