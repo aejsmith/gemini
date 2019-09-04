@@ -16,11 +16,13 @@
 
 #include "Render/RenderEntity.h"
 
+#include "GPU/GPUConstantPool.h"
 #include "GPU/GPUDevice.h"
 #include "GPU/GPUPipeline.h"
 
 #include "Render/EntityDrawList.h"
 #include "Render/Material.h"
+#include "Render/RenderContext.h"
 #include "Render/RenderManager.h"
 
 RenderEntity::RenderEntity(const Renderer& inRenderer,
@@ -81,7 +83,19 @@ void RenderEntity::GetDrawCall(const ShaderPassType inPassType,
 
     outDrawCall.pipeline = mPipelines[inPassType];
 
-    // TODO: Argument sets, currently set by caller.
+    /* Set view/entity arguments. */
+    {
+        EntityConstants entityConstants;
+        entityConstants.transformMatrix = GetTransform().GetMatrix();
+        entityConstants.position        = GetTransform().GetPosition();
+
+        auto& arguments = outDrawCall.arguments[kArgumentSet_ViewEntity];
+        arguments.argumentSet                = RenderManager::Get().GetViewEntityArgumentSet();
+        arguments.constants[0].argumentIndex = kViewEntityArguments_ViewConstants;
+        arguments.constants[0].constants     = inContext.GetView().GetConstants();
+        arguments.constants[1].argumentIndex = kViewEntityArguments_EntityConstants;
+        arguments.constants[1].constants     = GPUDevice::Get().GetConstantPool().Write(&entityConstants, sizeof(entityConstants));
+    }
 
     GetGeometry(outDrawCall);
 }

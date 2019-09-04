@@ -16,14 +16,8 @@
 
 #include "Render/BasicRenderPipeline.h"
 
-#include "GPU/GPUConstantPool.h"
-#include "GPU/GPUContext.h"
-#include "GPU/GPUDevice.h"
-#include "GPU/GPUPipeline.h"
-
 #include "Render/EntityDrawList.h"
 #include "Render/RenderContext.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderWorld.h"
 #include "Render/ShaderManager.h"
 
@@ -68,20 +62,6 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
             EntityDrawCall& drawCall = context->drawList.Add(sortKey);
 
             entity->GetDrawCall(kShaderPassType_Basic, *context, drawCall);
-
-            // TODO: Move argument sets to GetDrawCall(), deduplicate.
-            EntityConstants constants;
-            constants.transformMatrix = entity->GetTransform().GetMatrix();
-            constants.position        = entity->GetTransform().GetPosition();
-
-            const GPUConstants constantHandle = GPUDevice::Get().GetConstantPool().Write(&constants, sizeof(constants));
-
-            auto& viewEntityArguments = drawCall.arguments[kArgumentSet_ViewEntity];
-            viewEntityArguments.argumentSet                = RenderManager::Get().GetViewEntityArgumentSet();
-            viewEntityArguments.constants[0].argumentIndex = kViewEntityArguments_ViewConstants;
-            viewEntityArguments.constants[0].constants     = inView.GetConstants();
-            viewEntityArguments.constants[1].argumentIndex = kViewEntityArguments_EntityConstants;
-            viewEntityArguments.constants[1].constants     = constantHandle;
         }
     }
 
