@@ -22,6 +22,7 @@ class GPUArgumentSet;
 class GPUBuffer;
 class GPUGraphicsCommandList;
 class GPUPipeline;
+class RenderGraphPass;
 
 struct CullResults;
 
@@ -143,6 +144,13 @@ public:
 
     /** Draw the entities to a given command list. */
     void                            Draw(GPUGraphicsCommandList& inCmdList) const;
+
+    /**
+     * Set the function for a render graph pass to draw the entities. Caller
+     * must ensure that the EntityDrawList instance still exists during graph
+     * execution.
+     */
+    void                            Draw(RenderGraphPass& inPass) const;
 
 private:
     /**

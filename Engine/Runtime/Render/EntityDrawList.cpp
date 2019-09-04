@@ -19,6 +19,8 @@
 #include "GPU/GPUCommandList.h"
 #include "GPU/GPUPipeline.h"
 
+#include "Render/RenderGraph.h"
+
 EntityDrawSortKey EntityDrawSortKey::GetOpaque(const GPUPipeline* const inPipeline)
 {
     /*
@@ -148,4 +150,14 @@ void EntityDrawList::Draw(GPUGraphicsCommandList& inCmdList) const
             inCmdList.Draw(drawCall.vertexCount, drawCall.vertexOffset);
         }
     }
+}
+
+void EntityDrawList::Draw(RenderGraphPass& inPass) const
+{
+    inPass.SetFunction([this] (const RenderGraph&      inGraph,
+                               const RenderGraphPass&  inPass,
+                               GPUGraphicsCommandList& inCmdList)
+    {
+        Draw(inCmdList);
+    });
 }

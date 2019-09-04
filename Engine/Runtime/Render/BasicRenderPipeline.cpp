@@ -71,7 +71,7 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     /* Add the main pass. Done to a temporary render target with a fixed format,
      * since the output texture may not match the format that all PSOs have
      * been created with. */
-    RenderGraphPass& pass = inGraph.AddPass("BasicScene", kRenderGraphPassType_Render);
+    RenderGraphPass& mainPass = inGraph.AddPass("BasicMain", kRenderGraphPassType_Render);
 
     RenderTextureDesc colourTextureDesc(inGraph.GetTextureDesc(inTexture));
     colourTextureDesc.format = kColourFormat;
@@ -82,18 +82,13 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     RenderResourceHandle colourTexture = inGraph.CreateTexture(colourTextureDesc);
     RenderResourceHandle depthTexture  = inGraph.CreateTexture(depthTextureDesc);
 
-    pass.SetColour(0, colourTexture, &colourTexture);
-    pass.SetDepthStencil(depthTexture, kGPUResourceState_DepthStencilWrite);
+    mainPass.SetColour(0, colourTexture, &colourTexture);
+    mainPass.SetDepthStencil(depthTexture, kGPUResourceState_DepthStencilWrite);
 
-    pass.ClearColour(0, this->clearColour);
-    pass.ClearDepth(1.0f);
+    mainPass.ClearColour(0, this->clearColour);
+    mainPass.ClearDepth(1.0f);
 
-    pass.SetFunction([context] (const RenderGraph&      inGraph,
-                                const RenderGraphPass&  inPass,
-                                GPUGraphicsCommandList& inCmdList)
-    {
-        context->drawList.Draw(inCmdList);
-    });
+    context->drawList.Draw(mainPass);
 
     /* Blit to the final output. */
     inGraph.AddBlitPass("BasicBlit",
