@@ -8,6 +8,7 @@ objects = map(env.ObjectGenHeader, [
     'RenderDefs.h',
     'Renderer.h',
     'RenderPipeline.h',
+    'ShaderParameter.h',
     'ShaderTechnique.h',
 ])
 
@@ -29,6 +30,7 @@ objects += map(env.Object, [
     'RenderWorld.cpp',
     'ShaderCompiler.cpp',
     'ShaderManager.cpp',
+    'ShaderParameter.cpp',
     'ShaderTechnique.cpp',
 ])
 

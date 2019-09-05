@@ -18,6 +18,9 @@
 
 #include "Engine/Serialiser.h"
 
+#include "GPU/GPUArgumentSet.h"
+#include "GPU/GPUDevice.h"
+
 #include "Render/BasicRenderPipeline.h"
 #include "Render/ShaderManager.h"
 
@@ -63,7 +66,10 @@ ShaderPass::~ShaderPass()
 }
 
 ShaderTechnique::ShaderTechnique() :
-    mPasses {}
+    mPasses             {},
+    mArgumentSetLayout  (nullptr),
+    mConstantsSize      (0),
+    mConstantsIndex     (std::numeric_limits<uint32_t>::max())
 {
 }
 
@@ -80,7 +86,67 @@ void ShaderTechnique::Serialise(Serialiser& inSerialiser) const
     LogError("TODO");
 }
 
-void ShaderTechnique::Deserialise(Serialiser& inSerialiser)
+void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
+{
+    bool found;
+
+    GPUArgumentSetLayoutDesc layoutDesc;
+
+    found = inSerialiser.BeginArray("parameters");
+    if (found)
+    {
+        while (inSerialiser.BeginGroup())
+        {
+            mParameters.emplace_back();
+            ShaderParameter& parameter = mParameters.back();
+
+            found = inSerialiser.Read("name", parameter.name);
+            Assert(found);
+
+            found = inSerialiser.Read("type", parameter.type);
+            Assert(found);
+            Assert(parameter.type < kShaderParameterTypeCount);
+
+            if (ShaderParameter::IsResource(parameter.type))
+            {
+                parameter.argumentIndex = layoutDesc.arguments.size();
+                layoutDesc.arguments.emplace_back(ShaderParameter::GetGPUArgumentType(parameter.type));
+            }
+            else
+            {
+                const uint32_t size = ShaderParameter::GetSize(parameter.type);
+
+                /* Respect HLSL packing rules. A constant buffer member will
+                 * not straddle a 16-byte boundary. */
+                if ((mConstantsSize / 16) != ((mConstantsSize + size - 1) / 16))
+                {
+                    mConstantsSize = RoundUpPow2(mConstantsSize, 16u);
+                }
+
+                parameter.constantOffset = mConstantsSize;
+
+                mConstantsSize += size;
+            }
+
+            inSerialiser.EndGroup();
+        }
+
+        inSerialiser.EndArray();
+    }
+
+    if (mConstantsSize)
+    {
+        mConstantsIndex = layoutDesc.arguments.size();
+        layoutDesc.arguments.emplace_back(kGPUArgumentType_Constants);
+    }
+
+    if (!layoutDesc.arguments.empty())
+    {
+        mArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(layoutDesc));
+    }
+}
+
+void ShaderTechnique::DeserialisePasses(Serialiser& inSerialiser)
 {
     bool found;
 
@@ -115,7 +181,7 @@ void ShaderTechnique::Deserialise(Serialiser& inSerialiser)
             found = inSerialiser.Read("function", function);
             Assert(found);
 
-            pass->mShaders[stage] = ShaderManager::Get().GetShader(source, function, stage);
+            pass->mShaders[stage] = ShaderManager::Get().GetShader(source, function, stage, this);
 
             inSerialiser.EndGroup();
         }
@@ -144,4 +210,26 @@ void ShaderTechnique::Deserialise(Serialiser& inSerialiser)
     }
 
     inSerialiser.EndArray();
+}
+
+void ShaderTechnique::Deserialise(Serialiser& inSerialiser)
+{
+    DeserialiseParameters(inSerialiser);
+    DeserialisePasses(inSerialiser);
+}
+
+const ShaderParameter* ShaderTechnique::FindParameter(const std::string& inName) const
+{
+    /* If this ever becomes a bottleneck try a map? The number of parameters
+     * for a technique will typically be small though so I don't think it's
+     * worth it for now. */
+    for (const ShaderParameter& parameter : mParameters)
+    {
+        if (parameter.name == inName)
+        {
+            return &parameter;
+        }
+    }
+
+    return nullptr;
 }

@@ -20,15 +20,14 @@
 #include "Core/String.h"
 
 #include "Render/ShaderManager.h"
+#include "Render/ShaderTechnique.h"
 
 #include "shaderc/shaderc.hpp"
 
 #include <memory>
 #include <sstream>
 
-static constexpr auto kBuiltInFileName  = "<built-in>";
-static constexpr auto kSourceStringName = "<string>";
-
+static constexpr char kBuiltInFileName[]     = "<built-in>";
 static constexpr size_t kMaximumIncludeDepth = 16;
 
 ShaderCompiler::ShaderCompiler(Options inOptions) :
@@ -120,14 +119,14 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
                                 const size_t inDepth)
 {
     /*
-     * We have our own limited preprocessor in front of glslang, which handles
-     * include directives. Although glslang's preprocessor does support
+     * We have our own limited preprocessor in front of shaderc, which handles
+     * include directives. Although shaderc's preprocessor does support
      * #include, we do not use this. The main reason is that the included source
      * is not substituted into the generated SPIR-V modules' OpSource when debug
      * info is enabled, meaning that it is not possible to directly edit shader
      * source in RenderDoc (we would need to set that up with the necessary
      * include paths on every use). Instead, we handle includes ourselves, and
-     * substitute their content into the source passed to glslang.
+     * substitute their content into the source passed to shaderc.
      */
 
     size_t position  = 0;
@@ -191,17 +190,47 @@ bool ShaderCompiler::GenerateSource(std::string& outSource)
 {
     outSource += "#define __HLSL__ 1\n";
 
-    if (!mOptions.source.empty())
+    if (mOptions.technique)
     {
-        /* Source string was provided, use that directly. */
-        outSource += StringUtils::Format("#line 1 \"%s\"\n", kSourceStringName);
-        outSource += mOptions.source;
+        /* Generate technique parameter definitions. */
+        const ShaderTechnique* const technique = mOptions.technique;
+
+        std::string constantBuffer;
+
+        for (const ShaderParameter& parameter : technique->GetParameters())
+        {
+            if (ShaderParameter::IsConstant(parameter.type))
+            {
+                if (constantBuffer.empty())
+                {
+                    constantBuffer += StringUtils::Format("cbuffer MaterialConstants : register(b%u, space%d)\n{\n",
+                                                          technique->GetConstantsIndex(),
+                                                          kArgumentSet_Material);
+                }
+
+                /* The parameter array includes constant parameters in order
+                 * of offset in the constant buffer. Offsets have taken care of
+                 * HLSL packing rules, so we can just declare in order of
+                 * appearence here. */
+                constantBuffer += StringUtils::Format("    %s %s;\n",
+                                                      ShaderParameter::GetHLSLType(parameter.type),
+                                                      parameter.name.c_str());
+            }
+            else
+            {
+                Fatal("TODO");
+            }
+        }
+
+        if (!constantBuffer.empty())
+        {
+            constantBuffer += "};\n";
+            outSource += constantBuffer;
+        }
     }
-    else
-    {
-        /* Include the real source file, reusing the include logic to do so. */
-        outSource += StringUtils::Format("#include \"%s\"\n", mOptions.path.GetCString());
-    }
+
+    /* Include the real source file, reusing the include logic to do so. */
+    outSource += StringUtils::Format("#include \"%s\"\n", mOptions.path.GetCString());
 
     return Preprocess(outSource, kBuiltInFileName, 0);
 }
@@ -258,52 +287,4 @@ void ShaderCompiler::Compile()
     }
 
     mCode = {module.cbegin(), module.cend()};
-}
-
-bool ShaderCompiler::CompileFile(Path                 inPath,
-                                 std::string          inFunction,
-                                 const GPUShaderStage inStage,
-                                 GPUShaderCode&       outCode)
-{
-    ShaderCompiler::Options options;
-    options.path     = std::move(inPath);
-    options.function = inFunction;
-    options.stage    = inStage;
-
-    ShaderCompiler compiler(options);
-    compiler.Compile();
-
-    if (compiler.IsCompiled())
-    {
-        outCode = compiler.MoveCode();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-bool ShaderCompiler::CompileString(std::string          inSource,
-                                   std::string          inFunction,
-                                   const GPUShaderStage inStage,
-                                   GPUShaderCode&       outCode)
-{
-    ShaderCompiler::Options options;
-    options.source   = std::move(inSource);
-    options.function = inFunction;
-    options.stage    = inStage;
-
-    ShaderCompiler compiler(options);
-    compiler.Compile();
-
-    if (compiler.IsCompiled())
-    {
-        outCode = compiler.MoveCode();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }

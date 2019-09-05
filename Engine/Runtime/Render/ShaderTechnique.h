@@ -18,10 +18,14 @@
 
 #include "Engine/Asset.h"
 
+#include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUShader.h"
 #include "GPU/GPUState.h"
 
-#include "Render/RenderDefs.h"
+#include "Render/ShaderParameter.h"
+
+#include <map>
+#include <vector>
 
 /**
  * Implementation of a shader technique for a specific pass type. Defines the
@@ -66,12 +70,30 @@ class ShaderTechnique : public Asset
     CLASS();
 
 public:
+    /** Array of parameter details. */
+    using ParameterArray      = std::vector<ShaderParameter>;
+
+public:
     /**
      * Get a pass of a given type. Returns null if the technique doesn't
      * support the pass type.
      */
     const ShaderPass*           GetPass(const ShaderPassType inType) const
                                     { return mPasses[inType]; }
+
+    /**
+     * Return an array of parameters for the technique. Constant parameters
+     * will be in this array in the order of declaration in the material
+     * constant buffer.
+     */
+    const ParameterArray&       GetParameters() const         { return mParameters; }
+
+    /** Get a named parameter. Returns null if doesn't exist. */
+    const ShaderParameter*      FindParameter(const std::string& inName) const;
+
+    GPUArgumentSetLayoutRef     GetArgumentSetLayout() const    { return mArgumentSetLayout; }
+    uint32_t                    GetConstantsSize() const        { return mConstantsSize; }
+    uint32_t                    GetConstantsIndex() const       { return mConstantsIndex; }
 
 private:
                                 ShaderTechnique();
@@ -80,8 +102,20 @@ private:
     void                        Serialise(Serialiser& inSerialiser) const override;
     void                        Deserialise(Serialiser& inSerialiser) override;
 
+    void                        DeserialiseParameters(Serialiser& inSerialiser);
+    void                        DeserialisePasses(Serialiser& inSerialiser);
+
 private:
     ShaderPass*                 mPasses[kShaderPassTypeCount];
+
+    // TODO: Boolean "feature" flags, which use shader variants. Parameters can
+    // be set to only be enabled when a feature is enabled.
+
+    ParameterArray              mParameters;
+
+    GPUArgumentSetLayoutRef     mArgumentSetLayout;
+    uint32_t                    mConstantsSize;
+    uint32_t                    mConstantsIndex;
 
 };
 

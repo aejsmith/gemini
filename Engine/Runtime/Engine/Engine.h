@@ -35,6 +35,9 @@ public:
 public:
     void                    Run();
 
+    /** Get the frame index (value incremented by 1 every frame). */
+    uint64_t                GetFrameIndex() const       { return mFrameIndex; }
+
     /** Get the frame start time, in nanoseconds. */
     uint64_t                GetFrameStartTime() const   { return mFrameStartTime; }
 
@@ -57,6 +60,7 @@ private:
     void                    InitSDL();
 
 private:
+    uint64_t                mFrameIndex;
     uint64_t                mFrameStartTime;
     uint64_t                mLastFrameTime;
     float                   mDeltaTime;

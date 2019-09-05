@@ -22,6 +22,8 @@
 
 #include <list>
 
+class ShaderTechnique;
+
 /**
  * Class for compiling HLSL shaders to SPIR-V. Note that while we are currently
  * doing compilation entirely at runtime, it is intended in future that "baked"
@@ -33,15 +35,16 @@ class ShaderCompiler
 public:
     struct Options
     {
-        /**
-         * Source for the shader. If the source string is not empty, it will
-         * used, otherwise the specified path will be used.
-         */
-        std::string             source;
         Path                    path;
-
         std::string             function;
         GPUShaderStage          stage;
+
+        /**
+         * Technique that the shader is for. If not null, a preamble will be
+         * inserted in the compiled containing definitions of the technique's
+         * parameters.
+         */
+        const ShaderTechnique*  technique;
     };
 
     using SourceList          = std::list<Path>;
@@ -67,11 +70,6 @@ public:
                                             std::string          inFunction,
                                             const GPUShaderStage inStage,
                                             GPUShaderCode&       outCode);
-
-    static bool                 CompileString(std::string          inSource,
-                                              std::string          inFunction,
-                                              const GPUShaderStage inStage,
-                                              GPUShaderCode&       outCode);
 
 private:
     bool                        LoadSource(const Path&  inPath,

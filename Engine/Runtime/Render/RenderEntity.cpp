@@ -55,7 +55,7 @@ void RenderEntity::CreatePipelines()
             }
 
             pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity] = RenderManager::Get().GetViewEntityArgumentSetLayout();
-            // TODO: Material.
+            pipelineDesc.argumentSetLayouts[kArgumentSet_Material]   = technique->GetArgumentSetLayout();
 
             pipelineDesc.blendState        = pass->GetBlendState();
             pipelineDesc.depthStencilState = pass->GetDepthStencilState();
@@ -95,6 +95,18 @@ void RenderEntity::GetDrawCall(const ShaderPassType inPassType,
         arguments.constants[0].constants     = inContext.GetView().GetConstants();
         arguments.constants[1].argumentIndex = kViewEntityArguments_EntityConstants;
         arguments.constants[1].constants     = GPUDevice::Get().GetConstantPool().Write(&entityConstants, sizeof(entityConstants));
+    }
+
+    /* Set material arguments. */
+    {
+        auto& arguments = outDrawCall.arguments[kArgumentSet_Material];
+        arguments.argumentSet = mMaterial.GetArgumentSet();
+
+        if (arguments.argumentSet && mMaterial.HasConstants())
+        {
+            arguments.constants[0].argumentIndex = mMaterial.GetShaderTechnique()->GetConstantsIndex();
+            arguments.constants[0].constants     = mMaterial.GetGPUConstants();
+        }
     }
 
     GetGeometry(outDrawCall);

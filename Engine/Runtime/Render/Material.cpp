@@ -16,20 +16,24 @@
 
 #include "Render/Material.h"
 
+#include "Core/Thread.h"
+
+#include "Engine/Engine.h"
 #include "Engine/Serialiser.h"
 
-Material::Material()
-{
-}
+#include "GPU/GPUConstantPool.h"
+#include "GPU/GPUDevice.h"
 
-Material::Material(ShaderTechnique* const inTechnique) :
-    mShaderTechnique    (inTechnique)
+Material::Material() :
+    mArgumentSet            (nullptr),
+    mGPUConstants           (kGPUConstants_Invalid),
+    mGPUConstantsFrameIndex (0)
 {
-    Assert(inTechnique);
 }
 
 Material::~Material()
 {
+    delete mArgumentSet;
 }
 
 void Material::Serialise(Serialiser& inSerialiser) const
@@ -43,4 +47,179 @@ void Material::Deserialise(Serialiser& inSerialiser)
 
     found = inSerialiser.Read("shaderTechnique", mShaderTechnique);
     Assert(found);
+
+    mConstantData = ByteArray(mShaderTechnique->GetConstantsSize());
+    memset(mConstantData.Get(), 0, mConstantData.GetSize());
+
+    if (inSerialiser.BeginGroup("arguments"))
+    {
+        for (const ShaderParameter& parameter : mShaderTechnique->GetParameters())
+        {
+            #define READ_TYPE(typeEnum, typeName) \
+                case typeEnum: \
+                { \
+                    typeName value; \
+                    if (inSerialiser.Read(parameter.name.c_str(), value)) \
+                    { \
+                        SetArgument(parameter, &value); \
+                    } \
+                    else \
+                    { \
+                        LogWarning("%s: Failed to read argument '%s'", GetPath().c_str(), parameter.name.c_str()); \
+                    } \
+                    break; \
+                }
+
+            switch (parameter.type)
+            {
+                READ_TYPE(kShaderParameterType_Int,    int32_t);
+                READ_TYPE(kShaderParameterType_Int2,   glm::ivec2);
+                READ_TYPE(kShaderParameterType_Int3,   glm::ivec3);
+                READ_TYPE(kShaderParameterType_Int4,   glm::ivec4);
+                READ_TYPE(kShaderParameterType_UInt,   uint32_t);
+                READ_TYPE(kShaderParameterType_UInt2,  glm::uvec2);
+                READ_TYPE(kShaderParameterType_UInt3,  glm::uvec3);
+                READ_TYPE(kShaderParameterType_UInt4,  glm::uvec4);
+                READ_TYPE(kShaderParameterType_Float,  float);
+                READ_TYPE(kShaderParameterType_Float2, glm::vec2);
+                READ_TYPE(kShaderParameterType_Float3, glm::vec3);
+                READ_TYPE(kShaderParameterType_Float4, glm::vec4);
+
+                default:
+                    UnreachableMsg("Unhandled parameter type %d", parameter.type);
+                    break;
+
+            }
+
+            #undef READ_TYPE
+        }
+
+        inSerialiser.EndGroup();
+    }
+
+    UpdateArgumentSet();
+}
+
+void Material::GetArgument(const ShaderParameter& inParameter,
+                           void* const            outData) const
+{
+    if (ShaderParameter::IsConstant(inParameter.type))
+    {
+        memcpy(outData,
+               mConstantData.Get() + inParameter.constantOffset,
+               ShaderParameter::GetSize(inParameter.type));
+    }
+    else
+    {
+        Fatal("TODO");
+    }
+}
+
+void Material::GetArgument(const std::string&        inName,
+                           const ShaderParameterType inType,
+                           void* const               outData) const
+{
+    const ShaderParameter* const parameter = mShaderTechnique->FindParameter(inName);
+
+    AssertMsg(parameter,
+              "Parameter '%s' not found in technique '%s'",
+              inName.c_str(),
+              mShaderTechnique->GetPath().c_str());
+
+    AssertMsg(parameter->type == inType,
+              "Type mismatch for parameter '%s' in technique '%s' (requested '%s', actual '%s')",
+              inName.c_str(),
+              mShaderTechnique->GetPath().c_str(),
+              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(inType),
+              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(parameter->type));
+
+    GetArgument(*parameter, outData);
+}
+
+void Material::SetArgument(const ShaderParameter& inParameter,
+                           const void* const      inData)
+{
+    if (ShaderParameter::IsConstant(inParameter.type))
+    {
+        memcpy(mConstantData.Get() + inParameter.constantOffset,
+               inData,
+               ShaderParameter::GetSize(inParameter.type));
+    }
+    else
+    {
+        Fatal("TODO");
+    }
+}
+
+void Material::SetArgument(const std::string&        inName,
+                           const ShaderParameterType inType,
+                           const void* const         inData)
+{
+    const ShaderParameter* const parameter = mShaderTechnique->FindParameter(inName);
+
+    AssertMsg(parameter,
+              "Parameter '%s' not found in technique '%s'",
+              inName.c_str(),
+              mShaderTechnique->GetPath().c_str());
+
+    AssertMsg(parameter->type == inType,
+              "Type mismatch for parameter '%s' in technique '%s' (requested '%s', actual '%s')",
+              inName.c_str(),
+              mShaderTechnique->GetPath().c_str(),
+              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(inType),
+              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(parameter->type));
+
+    SetArgument(*parameter, inData);
+}
+
+GPUConstants Material::GetGPUConstants()
+{
+    /*
+     * We'll write constants on first use in a frame, and then reuse the same
+     * handle for subsequent uses in the same frame. This means we don't
+     * repeatedly write constants for multiple entities using the same material.
+     *
+     * Any argument changes should take place before rendering (e.g. in entity
+     * update), so we don't need to worry about updating to reflect changes
+     * after we've created for the first time.
+     *
+     * TODO: Does this need to be made thread-safe? Potentially in future we
+     * might build up draw lists in parallel or something. Assert for now to
+     * catch this if we try to do it.
+     */
+    Assert(Thread::IsMain());
+
+    const uint64_t frameIndex = Engine::Get().GetFrameIndex();
+
+    if (mGPUConstantsFrameIndex != frameIndex)
+    {
+        mGPUConstantsFrameIndex = frameIndex;
+        mGPUConstants           = GPUDevice::Get().GetConstantPool().Write(mConstantData.Get(),
+                                                                           mConstantData.GetSize());
+    }
+    else
+    {
+        Assert(mGPUConstants != kGPUConstants_Invalid);
+    }
+
+    return mGPUConstants;
+}
+
+void Material::UpdateArgumentSet()
+{
+    const GPUArgumentSetLayoutRef setLayout = mShaderTechnique->GetArgumentSetLayout();
+
+    if (setLayout)
+    {
+        if (mArgumentSet)
+        {
+            delete mArgumentSet;
+        }
+
+        auto arguments = AllocateZeroedStackArray(GPUArgument, setLayout->GetArgumentCount());
+
+        // TODO: Resources, just got constants for now.
+
+        mArgumentSet = GPUDevice::Get().CreateArgumentSet(setLayout, arguments);
+    }
 }

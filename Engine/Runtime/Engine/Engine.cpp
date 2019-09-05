@@ -44,6 +44,7 @@ SINGLETON_IMPL(Engine);
 SINGLETON_IMPL(Game);
 
 Engine::Engine() :
+    mFrameIndex             (0),
     mFrameStartTime         (0),
     mLastFrameTime          (0),
     mDeltaTime              (0.0f),
@@ -159,6 +160,7 @@ void Engine::Run()
         }
 
         mFrameStartTime = newStartTime;
+        mFrameIndex++;
 
         SDL_Event event;
         while (SDL_PollEvent(&event))

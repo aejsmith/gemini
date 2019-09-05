@@ -16,20 +16,41 @@
 
 #pragma once
 
+#include "Core/ByteArray.h"
+
 #include "Render/ShaderTechnique.h"
 
 /**
- * A material is a combination of a shader technique and parameter values for
- * that technique.
+ * A material is a combination of a shader technique, and argument values for
+ * that technique's parameters.
  */
 class Material : public Asset
 {
     CLASS();
 
 public:
-                                Material(ShaderTechnique* const inTechnique);
-
     ShaderTechnique*            GetShaderTechnique() const  { return mShaderTechnique; }
+    GPUArgumentSet*             GetArgumentSet() const      { return mArgumentSet; }
+    bool                        HasConstants() const        { return mConstantData.GetSize() > 0; }
+
+    void                        GetArgument(const std::string&        inName,
+                                            const ShaderParameterType inType,
+                                            void* const               outData) const;
+
+    template <typename T>
+    void                        GetArgument(const std::string& inName,
+                                            T&                 outValue) const;
+
+    void                        SetArgument(const std::string&        inName,
+                                            const ShaderParameterType inType,
+                                            const void* const         inData);
+
+    template <typename T>
+    void                        SetArgument(const std::string& inName,
+                                            const T&           inValue);
+
+    /** Get GPU constants based on current argument values. */
+    GPUConstants                GetGPUConstants();
 
 private:
                                 Material();
@@ -38,9 +59,47 @@ private:
     void                        Serialise(Serialiser& inSerialiser) const override;
     void                        Deserialise(Serialiser& inSerialiser) override;
 
+    void                        GetArgument(const ShaderParameter& inParameter,
+                                            void* const            outData) const;
+
+    void                        SetArgument(const ShaderParameter& inParameter,
+                                            const void* const      inData);
+
+    void                        UpdateArgumentSet();
+
 private:
     ShaderTechniquePtr          mShaderTechnique;
+
+    GPUArgumentSet*             mArgumentSet;
+
+    /**
+     * Constant buffer data, laid out according to the technique's parameter
+     * specification.
+     */
+    ByteArray                   mConstantData;
+
+    /** Current GPU constant data. Copied on first use in a frame. */
+    GPUConstants                mGPUConstants;
+    uint64_t                    mGPUConstantsFrameIndex;
 
 };
 
 using MaterialPtr = ObjectPtr<Material>;
+
+template <typename T>
+inline void Material::GetArgument(const std::string& inName,
+                                  T&                 outValue) const
+{
+    GetArgument(inName,
+                ShaderParameterTypeTraits<T>::kType,
+                std::addressof(outValue));
+}
+
+template <typename T>
+inline void Material::SetArgument(const std::string& inName,
+                                  const T&           inValue)
+{
+    SetArgument(inName,
+                ShaderParameterTypeTraits<T>::kType,
+                std::addressof(inValue));
+}

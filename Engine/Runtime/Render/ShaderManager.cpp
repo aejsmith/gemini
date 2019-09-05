@@ -44,9 +44,10 @@ ShaderManager::~ShaderManager()
 {
 }
 
-GPUShaderPtr ShaderManager::GetShader(const Path&          inPath,
-                                      const std::string&   inFunction,
-                                      const GPUShaderStage inStage)
+GPUShaderPtr ShaderManager::GetShader(const Path&                  inPath,
+                                      const std::string&           inFunction,
+                                      const GPUShaderStage         inStage,
+                                      const ShaderTechnique* const inTechnique)
 {
     /*
      * TODO: Cache of GPUShaders. Would need a weak pointer stored in the cache
@@ -62,23 +63,26 @@ GPUShaderPtr ShaderManager::GetShader(const Path&          inPath,
         return nullptr;
     }
 
-    const Path fsPath = Path(searchPath->second) / inPath.Subset(1);
+    ShaderCompiler::Options options;
+    options.function  = inFunction;
+    options.stage     = inStage;
+    options.technique = inTechnique;
 
-    if (!Filesystem::Exists(fsPath))
+    options.path = Path(searchPath->second) / inPath.Subset(1);
+
+    if (!Filesystem::Exists(options.path))
     {
         LogError("Could not find shader '%s' ('%s' does not exist)",
                  inPath.GetCString(),
-                 fsPath.GetCString());
+                 options.path.GetCString());
 
         return nullptr;
     }
 
-    GPUShaderCode code;
-    const bool isCompiled = ShaderCompiler::CompileFile(fsPath,
-                                                        inFunction,
-                                                        inStage,
-                                                        code);
-    if (!isCompiled)
+    ShaderCompiler compiler(options);
+    compiler.Compile();
+
+    if (!compiler.IsCompiled())
     {
         LogError("Compilation of shader '%s' failed", inPath.GetCString());
         DebugBreak();
@@ -86,7 +90,7 @@ GPUShaderPtr ShaderManager::GetShader(const Path&          inPath,
     }
 
     GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage,
-                                                        std::move(code),
+                                                        compiler.MoveCode(),
                                                         inFunction);
 
     shader->SetName(inPath.GetString());

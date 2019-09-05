@@ -3,6 +3,12 @@
         "objectClass": "ShaderTechnique",
         "objectID": 0,
         "objectProperties": {},
+        "parameters": [
+            {
+                "name": "colour",
+                "type": "Float3"
+            }
+        ],
         "passes": [
             {
                 "type": "Basic",

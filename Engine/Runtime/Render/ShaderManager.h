@@ -24,6 +24,8 @@
 
 #include "Render/RenderDefs.h"
 
+class ShaderTechnique;
+
 /**
  * Class managing shaders. All shaders are loaded through this class.
  *
@@ -36,8 +38,10 @@
  * intended in future that final game builds would pre-compile all needed
  * shaders from source to SPIR-V. Only the compiled binaries would be included
  * in the game data, not the source, and the shader compiler wouldn't even need
- * to be included in the game binary. The same shader paths and lookup mechanism
- * would retrieve pre-compiled binaries as opposed to compiling from source.
+ * to be included in the game binary. The same shader paths and lookup
+ * mechanism would retrieve pre-compiled binaries as opposed to compiling from
+ * source. Shaders would be looked up based on an identifier derived from all
+ * of the arguments to GetShader().
  */
 class ShaderManager : public Singleton<ShaderManager>
 {
@@ -52,11 +56,14 @@ public:
 
     /**
      * Get the specified shader from its virtual path and a function name
-     * within that shader.
+     * within that shader. When a technique is specified, the shader will be
+     * compiled with parameter definitions derived from the technique's
+     * parameters.
      */
-    GPUShaderPtr            GetShader(const Path&          inPath,
-                                      const std::string&   inFunction,
-                                      const GPUShaderStage inStage);
+    GPUShaderPtr            GetShader(const Path&                  inPath,
+                                      const std::string&           inFunction,
+                                      const GPUShaderStage         inStage,
+                                      const ShaderTechnique* const inTechnique = nullptr);
 
 private:
     SearchPathMap           mSearchPaths;
