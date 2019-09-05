@@ -352,7 +352,7 @@ glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic inSemantic,
 
         default:
             UnreachableMsg("Unhandled GPUAttributeFormat");
-            break;
+
     }
 
     return result;

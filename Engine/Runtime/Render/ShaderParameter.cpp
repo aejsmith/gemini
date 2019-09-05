@@ -55,7 +55,6 @@ uint32_t ShaderParameter::GetSize(const ShaderParameterType inType)
 
         default:
             UnreachableMsg("Invalid ShaderParameterType");
-            return 0;
 
     }
 }
@@ -79,7 +78,6 @@ const char* ShaderParameter::GetHLSLType(const ShaderParameterType inType)
 
         default:
             UnreachableMsg("Invalid ShaderParameterType");
-            return "<<ERROR>>";
 
     }
 }
@@ -94,7 +92,6 @@ GPUArgumentType ShaderParameter::GetGPUArgumentType(const ShaderParameterType in
 
         default:
             UnreachableMsg("Invalid ShaderParameterType");
-            return kGPUArgumentType_Texture;
 
     }
 }
