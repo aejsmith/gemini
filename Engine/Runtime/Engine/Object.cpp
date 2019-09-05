@@ -79,6 +79,21 @@ const MetaType* MetaType::Allocate(const char* const inSignature,
                         inParent);
 }
 
+const char* MetaType::GetEnumConstantName(const int inValue) const
+{
+    Assert(IsEnum());
+
+    for (const EnumConstant& constant : *mEnumConstants)
+    {
+        if (inValue == constant.second)
+        {
+            return constant.first;
+        }
+    }
+
+    return nullptr;
+}
+
 /** Get the global map of all registered MetaClass instances. */
 static auto& GetMetaClassMap()
 {

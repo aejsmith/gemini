@@ -210,6 +210,9 @@ public:
     const EnumConstantArray&        GetEnumConstants() const
                                         { Assert(IsEnum()); Assert(mEnumConstants); return *mEnumConstants; }
 
+    /** Get the string name of an enum constant (null for unknown constants). */
+    const char*                     GetEnumConstantName(const int inValue) const;
+
     template <typename T>
     static const MetaType&          Lookup() { return LookupImpl<T>::Get(); }
 
