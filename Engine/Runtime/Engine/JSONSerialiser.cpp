@@ -483,6 +483,54 @@ void JSONSerialiser::Write(const char* const inName,
         jsonValue.PushBack(vec->z, allocator);
         jsonValue.PushBack(vec->w, allocator);
     }
+    else if (&inType == &MetaType::Lookup<glm::ivec2>())
+    {
+        auto vec = reinterpret_cast<const glm::ivec2*>(inValue);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+    }
+    else if (&inType == &MetaType::Lookup<glm::ivec3>())
+    {
+        auto vec = reinterpret_cast<const glm::ivec3*>(inValue);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+        jsonValue.PushBack(vec->z, allocator);
+    }
+    else if (&inType == &MetaType::Lookup<glm::ivec4>())
+    {
+        auto vec = reinterpret_cast<const glm::ivec4*>(inValue);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+        jsonValue.PushBack(vec->z, allocator);
+        jsonValue.PushBack(vec->w, allocator);
+    }
+    else if (&inType == &MetaType::Lookup<glm::uvec2>())
+    {
+        auto vec = reinterpret_cast<const glm::uvec2*>(inValue);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+    }
+    else if (&inType == &MetaType::Lookup<glm::uvec3>())
+    {
+        auto vec = reinterpret_cast<const glm::uvec3*>(inValue);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+        jsonValue.PushBack(vec->z, allocator);
+    }
+    else if (&inType == &MetaType::Lookup<glm::uvec4>())
+    {
+        auto vec = reinterpret_cast<const glm::uvec4*>(inValue);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+        jsonValue.PushBack(vec->z, allocator);
+        jsonValue.PushBack(vec->w, allocator);
+    }
     else if (&inType == &MetaType::Lookup<glm::quat>())
     {
         auto quat = reinterpret_cast<const glm::quat*>(inValue);

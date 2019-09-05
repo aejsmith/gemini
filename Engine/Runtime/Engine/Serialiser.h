@@ -235,6 +235,12 @@ public:
     void                            Write(const char* const inName, const glm::vec2& inValue);
     void                            Write(const char* const inName, const glm::vec3& inValue);
     void                            Write(const char* const inName, const glm::vec4& inValue);
+    void                            Write(const char* const inName, const glm::ivec2& inValue);
+    void                            Write(const char* const inName, const glm::ivec3& inValue);
+    void                            Write(const char* const inName, const glm::ivec4& inValue);
+    void                            Write(const char* const inName, const glm::uvec2& inValue);
+    void                            Write(const char* const inName, const glm::uvec3& inValue);
+    void                            Write(const char* const inName, const glm::uvec4& inValue);
     void                            Write(const char* const inName, const glm::quat& inValue);
 
     template <typename T, typename std::enable_if<std::is_enum<T>::value>::type* = nullptr>
@@ -294,6 +300,12 @@ public:
     bool                            Read(const char* const inName, glm::vec2& outValue);
     bool                            Read(const char* const inName, glm::vec3& outValue);
     bool                            Read(const char* const inName, glm::vec4& outValue);
+    bool                            Read(const char* const inName, glm::ivec2& outValue);
+    bool                            Read(const char* const inName, glm::ivec3& outValue);
+    bool                            Read(const char* const inName, glm::ivec4& outValue);
+    bool                            Read(const char* const inName, glm::uvec2& outValue);
+    bool                            Read(const char* const inName, glm::uvec3& outValue);
+    bool                            Read(const char* const inName, glm::uvec4& outValue);
     bool                            Read(const char* const inName, glm::quat& outValue);
 
     template <typename T, typename std::enable_if<std::is_enum<T>::value>::type* = nullptr>

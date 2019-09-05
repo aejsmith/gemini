@@ -146,6 +146,42 @@ void Serialiser::Write(const char* const inName,
 }
 
 void Serialiser::Write(const char* const inName,
+                       const glm::ivec2& inValue)
+{
+    Write(inName, MetaType::Lookup<glm::ivec2>(), &inValue);
+}
+
+void Serialiser::Write(const char* const inName,
+                       const glm::ivec3& inValue)
+{
+    Write(inName, MetaType::Lookup<glm::ivec3>(), &inValue);
+}
+
+void Serialiser::Write(const char* const inName,
+                       const glm::ivec4& inValue)
+{
+    Write(inName, MetaType::Lookup<glm::ivec4>(), &inValue);
+}
+
+void Serialiser::Write(const char* const inName,
+                       const glm::uvec2& inValue)
+{
+    Write(inName, MetaType::Lookup<glm::uvec2>(), &inValue);
+}
+
+void Serialiser::Write(const char* const inName,
+                       const glm::uvec3& inValue)
+{
+    Write(inName, MetaType::Lookup<glm::uvec3>(), &inValue);
+}
+
+void Serialiser::Write(const char* const inName,
+                       const glm::uvec4& inValue)
+{
+    Write(inName, MetaType::Lookup<glm::uvec4>(), &inValue);
+}
+
+void Serialiser::Write(const char* const inName,
                        const glm::quat&  inValue)
 {
     Write(inName, MetaType::Lookup<glm::quat>(), &inValue);
@@ -239,6 +275,42 @@ bool Serialiser::Read(const char* const inName,
                       glm::vec4&        outValue)
 {
     return Read(inName, MetaType::Lookup<glm::vec4>(), &outValue);
+}
+
+bool Serialiser::Read(const char* const inName,
+                      glm::ivec2&       outValue)
+{
+    return Read(inName, MetaType::Lookup<glm::ivec2>(), &outValue);
+}
+
+bool Serialiser::Read(const char* const inName,
+                      glm::ivec3&       outValue)
+{
+    return Read(inName, MetaType::Lookup<glm::ivec3>(), &outValue);
+}
+
+bool Serialiser::Read(const char* const inName,
+                      glm::ivec4&       outValue)
+{
+    return Read(inName, MetaType::Lookup<glm::ivec4>(), &outValue);
+}
+
+bool Serialiser::Read(const char* const inName,
+                      glm::uvec2&       outValue)
+{
+    return Read(inName, MetaType::Lookup<glm::uvec2>(), &outValue);
+}
+
+bool Serialiser::Read(const char* const inName,
+                      glm::uvec3&       outValue)
+{
+    return Read(inName, MetaType::Lookup<glm::uvec3>(), &outValue);
+}
+
+bool Serialiser::Read(const char* const inName,
+                      glm::uvec4&       outValue)
+{
+    return Read(inName, MetaType::Lookup<glm::uvec4>(), &outValue);
 }
 
 bool Serialiser::Read(const char* const inName,
