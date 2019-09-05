@@ -86,8 +86,8 @@ void RenderEntity::GetDrawCall(const ShaderPassType inPassType,
     /* Set view/entity arguments. */
     {
         EntityConstants entityConstants;
-        entityConstants.transformMatrix = GetTransform().GetMatrix();
-        entityConstants.position        = GetTransform().GetPosition();
+        entityConstants.transform = GetTransform().GetMatrix();
+        entityConstants.position  = GetTransform().GetPosition();
 
         auto& arguments = outDrawCall.arguments[kArgumentSet_ViewEntity];
         arguments.argumentSet                = RenderManager::Get().GetViewEntityArgumentSet();

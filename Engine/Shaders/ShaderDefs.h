@@ -95,10 +95,10 @@
 /** Standard view constants. */
 struct ViewConstants
 {
-    shader_float4x4     viewMatrix;
-    shader_float4x4     projectionMatrix;
-    shader_float4x4     viewProjectionMatrix;
-    shader_float4x4     inverseViewProjectionMatrix;
+    shader_float4x4     view;
+    shader_float4x4     projection;
+    shader_float4x4     viewProjection;
+    shader_float4x4     inverseViewProjection;
     shader_float3       position;
     shader_float        _pad0;
     shader_int2         targetSize;
@@ -109,7 +109,7 @@ CBUFFER(ViewConstants, view, kArgumentSet_ViewEntity, kViewEntityArguments_ViewC
 /** Standard entity constants. */
 struct EntityConstants
 {
-    shader_float4x4     transformMatrix;
+    shader_float4x4     transform;
     shader_float3       position;
 };
 

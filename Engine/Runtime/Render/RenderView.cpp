@@ -56,12 +56,12 @@ RenderView RenderView::CreatePerspective(const glm::vec3&  inPosition,
 void RenderView::CreateConstants()
 {
     ViewConstants constants;
-    constants.viewMatrix                  = mViewMatrix;
-    constants.projectionMatrix            = mProjectionMatrix;
-    constants.viewProjectionMatrix        = mViewProjectionMatrix;
-    constants.inverseViewProjectionMatrix = mInverseViewProjectionMatrix;
-    constants.position                    = mPosition;
-    constants.targetSize                  = mTargetSize;
+    constants.view                  = mViewMatrix;
+    constants.projection            = mProjectionMatrix;
+    constants.viewProjection        = mViewProjectionMatrix;
+    constants.inverseViewProjection = mInverseViewProjectionMatrix;
+    constants.position              = mPosition;
+    constants.targetSize            = mTargetSize;
 
     mConstants = GPUDevice::Get().GetConstantPool().Write(&constants, sizeof(constants));
 }
