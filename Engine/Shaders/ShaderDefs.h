@@ -78,7 +78,7 @@
  * will not straddle 16-byte boundaries, so it may be necessary to insert
  * explicit padding to ensure match between HLSL and C++.
  */
-#ifdef __HLSL__
+#if __HLSL__
     #define CBUFFER(structName, name, setIndex, argumentIndex) \
         ConstantBuffer<structName> name : register(b ## argumentIndex, space ## setIndex)
 #else
@@ -114,3 +114,21 @@ struct EntityConstants
 };
 
 CBUFFER(EntityConstants, entity, kArgumentSet_ViewEntity, kViewEntityArguments_EntityConstants);
+
+#if __HLSL__
+
+/**
+ * Material helper definitions.
+ */
+
+/**
+ * Sample from a material texture. This is a convenience wrapper to sample
+ * a material texture with its associated sampler. The texture object is named
+ * <ParameterName>_texture, and the sampler is named <ParameterName>_sampler.
+ * Parameters to this function are as for HLSL's Sample(), minus the first
+ * sampler argument.
+ */
+#define MaterialSample(parameterName, location) \
+    parameterName ## _texture.Sample(parameterName ## _sampler, location)
+
+#endif /* __HLSL__ */

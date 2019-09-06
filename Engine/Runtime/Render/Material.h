@@ -18,6 +18,8 @@
 
 #include "Core/ByteArray.h"
 
+#include "Engine/Texture.h"
+
 #include "Render/ShaderTechnique.h"
 
 /**
@@ -53,6 +55,16 @@ public:
     GPUConstants                GetGPUConstants();
 
 private:
+    struct Resource
+    {
+        /**
+         * Reference pointer to the texture - materials should keep resources
+         * they refer to alive.
+         */
+        TextureBasePtr          texture;
+    };
+
+private:
                                 Material();
                                 ~Material();
 
@@ -71,6 +83,14 @@ private:
     ShaderTechniquePtr          mShaderTechnique;
 
     GPUArgumentSet*             mArgumentSet;
+
+    /**
+     * Array of resources, indexed by the parameter's argument index. This may
+     * waste a bit of memory since we don't actually store anything in the
+     * array entries corresponding to sampler arguments (the sampler comes from
+     * the main TextureBase), but doing things this way is simpler.
+     */
+    std::vector<Resource>       mResources;
 
     /**
      * Constant buffer data, laid out according to the technique's parameter

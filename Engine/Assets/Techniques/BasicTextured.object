@@ -1,0 +1,30 @@
+[
+    {
+        "objectClass": "ShaderTechnique",
+        "objectID": 0,
+        "objectProperties": {},
+        "parameters": [
+            {
+                "name": "texture",
+                "type": "Texture2D"
+            }
+        ],
+        "passes": [
+            {
+                "type": "Basic",
+                "shaders": [
+                    {
+                        "stage": "Vertex",
+                        "source": "Engine/BasicTextured.hlsl",
+                        "function": "VSMain"
+                    },
+                    {
+                        "stage": "Pixel",
+                        "source": "Engine/BasicTextured.hlsl",
+                        "function": "PSMain"
+                    }
+                ]
+            }
+        ]
+    }
+]

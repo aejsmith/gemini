@@ -48,6 +48,8 @@ void Material::Deserialise(Serialiser& inSerialiser)
     found = inSerialiser.Read("shaderTechnique", mShaderTechnique);
     Assert(found);
 
+    mResources.resize(mShaderTechnique->GetArgumentSetLayout()->GetArgumentCount());
+
     mConstantData = ByteArray(mShaderTechnique->GetConstantsSize());
     memset(mConstantData.Get(), 0, mConstantData.GetSize());
 
@@ -72,18 +74,19 @@ void Material::Deserialise(Serialiser& inSerialiser)
 
             switch (parameter.type)
             {
-                READ_TYPE(kShaderParameterType_Int,    int32_t);
-                READ_TYPE(kShaderParameterType_Int2,   glm::ivec2);
-                READ_TYPE(kShaderParameterType_Int3,   glm::ivec3);
-                READ_TYPE(kShaderParameterType_Int4,   glm::ivec4);
-                READ_TYPE(kShaderParameterType_UInt,   uint32_t);
-                READ_TYPE(kShaderParameterType_UInt2,  glm::uvec2);
-                READ_TYPE(kShaderParameterType_UInt3,  glm::uvec3);
-                READ_TYPE(kShaderParameterType_UInt4,  glm::uvec4);
-                READ_TYPE(kShaderParameterType_Float,  float);
-                READ_TYPE(kShaderParameterType_Float2, glm::vec2);
-                READ_TYPE(kShaderParameterType_Float3, glm::vec3);
-                READ_TYPE(kShaderParameterType_Float4, glm::vec4);
+                READ_TYPE(kShaderParameterType_Int,       int32_t);
+                READ_TYPE(kShaderParameterType_Int2,      glm::ivec2);
+                READ_TYPE(kShaderParameterType_Int3,      glm::ivec3);
+                READ_TYPE(kShaderParameterType_Int4,      glm::ivec4);
+                READ_TYPE(kShaderParameterType_UInt,      uint32_t);
+                READ_TYPE(kShaderParameterType_UInt2,     glm::uvec2);
+                READ_TYPE(kShaderParameterType_UInt3,     glm::uvec3);
+                READ_TYPE(kShaderParameterType_UInt4,     glm::uvec4);
+                READ_TYPE(kShaderParameterType_Float,     float);
+                READ_TYPE(kShaderParameterType_Float2,    glm::vec2);
+                READ_TYPE(kShaderParameterType_Float3,    glm::vec3);
+                READ_TYPE(kShaderParameterType_Float4,    glm::vec4);
+                READ_TYPE(kShaderParameterType_Texture2D, Texture2DPtr);
 
                 default:
                     UnreachableMsg("Unhandled parameter type %d", parameter.type);
@@ -111,7 +114,21 @@ void Material::GetArgument(const ShaderParameter& inParameter,
     }
     else
     {
-        Fatal("TODO");
+        const Resource& resource = mResources[inParameter.argumentIndex];
+
+        switch (inParameter.type)
+        {
+            case kShaderParameterType_Texture2D:
+            {
+                auto texture = reinterpret_cast<Texture2DPtr*>(outData);
+                *texture = static_cast<Texture2D*>(resource.texture.Get());
+                break;
+            }
+
+            default:
+                UnreachableMsg("Unhandled ShaderParameterType");
+
+        }
     }
 }
 
@@ -147,7 +164,28 @@ void Material::SetArgument(const ShaderParameter& inParameter,
     }
     else
     {
-        Fatal("TODO");
+        Resource& resource = mResources[inParameter.argumentIndex];
+
+        switch (inParameter.type)
+        {
+            case kShaderParameterType_Texture2D:
+            {
+                auto texture = reinterpret_cast<const Texture2DPtr*>(inData);
+                resource.texture = texture->Get();
+                break;
+            }
+
+            default:
+                UnreachableMsg("Unhandled ShaderParameterType");
+
+        }
+
+        /* When resources change while we have an argument set, we need to
+         * recreate it. */
+        if (mArgumentSet)
+        {
+            UpdateArgumentSet();
+        }
     }
 }
 
@@ -218,7 +256,37 @@ void Material::UpdateArgumentSet()
 
         auto arguments = AllocateZeroedStackArray(GPUArgument, setLayout->GetArgumentCount());
 
-        // TODO: Resources, just got constants for now.
+        for (uint8_t i = 0; i < setLayout->GetArgumentCount(); i++)
+        {
+            switch (setLayout->GetArguments()[i])
+            {
+                case kGPUArgumentType_Texture:
+                    if (mResources[i].texture)
+                    {
+                        arguments[i].view = mResources[i].texture->GetResourceView();
+                    }
+
+                    break;
+
+                case kGPUArgumentType_Sampler:
+                    /* Samplers come from the texture in the preceding index. */
+                    Assert(i > 0);
+
+                    if (mResources[i - 1].texture)
+                    {
+                        arguments[i].sampler = mResources[i - 1].texture->GetSampler();
+                    }
+
+                    break;
+
+                case kGPUArgumentType_Constants:
+                    break;
+
+                default:
+                    UnreachableMsg("Unhandled GPUArgumentType");
+
+            }
+        }
 
         mArgumentSet = GPUDevice::Get().CreateArgumentSet(setLayout, arguments);
     }

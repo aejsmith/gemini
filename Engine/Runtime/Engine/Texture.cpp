@@ -20,18 +20,21 @@
 
 #include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
+#include "GPU/GPUResourceView.h"
 #include "GPU/GPUSampler.h"
 #include "GPU/GPUStagingResource.h"
 #include "GPU/GPUTexture.h"
 
 TextureBase::TextureBase() :
-    mTexture    (nullptr),
-    mSampler    (nullptr)
+    mTexture        (nullptr),
+    mResourceView   (nullptr),
+    mSampler        (nullptr)
 {
 }
 
-void TextureBase::CreateTexture(const GPUTextureDesc& inTextureDesc,
-                                const GPUSamplerDesc& inSamplerDesc)
+void TextureBase::CreateTexture(const GPUTextureDesc&     inTextureDesc,
+                                const GPUSamplerDesc&     inSamplerDesc,
+                                const GPUResourceViewType inViewType)
 {
     // TODO: Async texture creation/upload/mipgen.
     Assert(Thread::IsMain());
@@ -41,10 +44,22 @@ void TextureBase::CreateTexture(const GPUTextureDesc& inTextureDesc,
 
     mNumMipLevels = mTexture->GetNumMipLevels();
     mFormat       = mTexture->GetFormat();
+
+    GPUResourceViewDesc viewDesc;
+    viewDesc.type          = inViewType;
+    viewDesc.usage         = kGPUResourceUsage_ShaderRead;
+    viewDesc.format        = mFormat;
+    viewDesc.mipOffset     = 0;
+    viewDesc.mipCount      = mNumMipLevels;
+    viewDesc.elementOffset = 0;
+    viewDesc.elementCount  = mTexture->GetArraySize();
+
+    mResourceView = GPUDevice::Get().CreateResourceView(mTexture, viewDesc);
 }
 
 TextureBase::~TextureBase()
 {
+    delete mResourceView;
     delete mTexture;
 }
 
@@ -68,7 +83,7 @@ Texture2D::Texture2D(const uint32_t                inWidth,
     textureDesc.arraySize    = 1;
     textureDesc.numMipLevels = inNumMipLevels;
 
-    CreateTexture(textureDesc, inSamplerDesc);
+    CreateTexture(textureDesc, inSamplerDesc, kGPUResourceViewType_Texture2D);
 
     Assert(inData.size() >= 1);
     Assert(inData.size() < mNumMipLevels);

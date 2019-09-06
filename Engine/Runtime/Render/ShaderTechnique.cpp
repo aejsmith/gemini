@@ -111,6 +111,12 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
             {
                 parameter.argumentIndex = layoutDesc.arguments.size();
                 layoutDesc.arguments.emplace_back(ShaderParameter::GetGPUArgumentType(parameter.type));
+
+                if (ShaderParameter::HasSampler(parameter.type))
+                {
+                    /* Samplers go immediately after the main resource. */
+                    layoutDesc.arguments.emplace_back(kGPUArgumentType_Sampler);
+                }
             }
             else
             {

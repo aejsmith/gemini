@@ -34,6 +34,12 @@ bool ShaderParameter::IsResource(const ShaderParameterType inType)
     }
 }
 
+bool ShaderParameter::HasSampler(const ShaderParameterType inType)
+{
+    /* Currently all resource types have a sampler. */
+    return IsResource(inType);
+}
+
 uint32_t ShaderParameter::GetSize(const ShaderParameterType inType)
 {
     Assert(IsConstant(inType));

@@ -218,7 +218,32 @@ bool ShaderCompiler::GenerateSource(std::string& outSource)
             }
             else
             {
-                Fatal("TODO");
+                bool needsSampler = false;
+
+                switch (parameter.type)
+                {
+                    case kShaderParameterType_Texture2D:
+                        outSource += StringUtils::Format("Texture2D %s_texture : register(t%u, space%d);\n",
+                                                         parameter.name.c_str(),
+                                                         parameter.argumentIndex,
+                                                         kArgumentSet_Material);
+
+                        needsSampler = true;
+                        break;
+
+                    default:
+                        UnreachableMsg("Unhandled ShaderParameterType");
+
+                }
+
+                if (needsSampler)
+                {
+                    /* Samplers are at argumentIndex + 1. */
+                    outSource += StringUtils::Format("SamplerState %s_sampler : register(s%u, space%d);\n",
+                                                     parameter.name.c_str(),
+                                                     parameter.argumentIndex + 1,
+                                                     kArgumentSet_Material);
+                }
             }
         }
 

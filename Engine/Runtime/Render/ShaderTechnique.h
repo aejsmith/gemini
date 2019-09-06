@@ -86,7 +86,9 @@ public:
      * will be in this array in the order of declaration in the material
      * constant buffer.
      */
-    const ParameterArray&       GetParameters() const         { return mParameters; }
+    const ParameterArray&       GetParameters() const           { return mParameters; }
+
+    size_t                      GetParameterCount() const       { return mParameters.size(); }
 
     /** Get a named parameter. Returns null if doesn't exist. */
     const ShaderParameter*      FindParameter(const std::string& inName) const;

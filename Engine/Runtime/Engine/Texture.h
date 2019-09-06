@@ -23,6 +23,7 @@
 
 #include "GPU/GPUSampler.h"
 
+class GPUResourceView;
 class GPUTexture;
 
 struct GPUTextureDesc;
@@ -42,6 +43,7 @@ class TextureBase : public Asset
 
 public:
     GPUTexture*                 GetTexture() const      { return mTexture; }
+    GPUResourceView*            GetResourceView() const { return mResourceView; }
     GPUSamplerRef               GetSampler() const      { return mSampler; }
 
     uint8_t                     GetNumMipLevels() const { return mNumMipLevels; }
@@ -51,11 +53,13 @@ protected:
                                 TextureBase();
                                 ~TextureBase();
 
-    void                        CreateTexture(const GPUTextureDesc& inTextureDesc,
-                                              const GPUSamplerDesc& inSamplerDesc);
+    void                        CreateTexture(const GPUTextureDesc&     inTextureDesc,
+                                              const GPUSamplerDesc&     inSamplerDesc,
+                                              const GPUResourceViewType inViewType);
 
 protected:
     GPUTexture*                 mTexture;
+    GPUResourceView*            mResourceView;
     GPUSamplerRef               mSampler;
 
     uint8_t                     mNumMipLevels;
