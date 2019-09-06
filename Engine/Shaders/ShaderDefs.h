@@ -118,7 +118,21 @@ CBUFFER(EntityConstants, entity, kArgumentSet_ViewEntity, kViewEntityArguments_E
 #if __HLSL__
 
 /**
- * Material helper definitions.
+ * Entity helper functions/definitions.
+ */
+
+float4 EntityPositionToClip(float4 inPosition)
+{
+    return mul(view.viewProjection, mul(entity.transform, inPosition));
+}
+
+float4 EntityPositionToClip(float3 inPosition)
+{
+    return EntityPositionToClip(float4(inPosition, 1.0));
+}
+
+/**
+ * Material helper functions/definitions.
  */
 
 /**

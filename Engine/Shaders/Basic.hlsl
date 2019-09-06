@@ -29,7 +29,7 @@ struct PSInput
 PSInput VSMain(VSInput input)
 {
     PSInput output;
-    output.position = mul(view.viewProjection, mul(entity.transform, float4(input.position, 1.0)));
+    output.position = EntityPositionToClip(input.position);
     return output;
 }
 
