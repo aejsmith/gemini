@@ -20,9 +20,7 @@
 
 #include "Render/RenderDefs.h"
 
-/**
- * Types of parameters for a shader technique.
- */
+/** Types of parameters for a shader technique. */
 enum ENUM() ShaderParameterType
 {
     /**
@@ -49,9 +47,6 @@ enum ENUM() ShaderParameterType
     kShaderParameterTypeCount
 };
 
-/**
- * Structure containing details of a shader parameter.
- */
 struct ShaderParameter
 {
     std::string                     name;
@@ -75,9 +70,7 @@ public:
 
 };
 
-/**
- * Mapping from a C++ type to a ShaderParameterType enum.
- */
+/** Mapping from a C++ type to a ShaderParameterType enum. */
 template <typename T>
 struct ShaderParameterTypeTraits;
 

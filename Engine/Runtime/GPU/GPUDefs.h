@@ -636,7 +636,7 @@ enum GPUFilter : uint8_t
     kGPUFilter_Linear,
 };
 
-enum GPUAddressMode : uint8_t
+enum ENUM() GPUAddressMode : uint8_t
 {
     kGPUAddressMode_Repeat,
     kGPUAddressMode_MirroredRepeat,

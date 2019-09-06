@@ -10,6 +10,7 @@ objects = map(env.ObjectGenHeader, [
     'Game.h',
     'Mesh.h',
     'Object.h',
+    'Texture.h',
     'World.h',
 ])
 
@@ -28,6 +29,7 @@ objects += map(env.Object, [
     'Mesh.cpp',
     'Object.cpp',
     'Serialiser.cpp',
+    'Texture.cpp',
     'Version.cpp',
     'Window.cpp',
     'World.cpp',
