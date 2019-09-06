@@ -55,266 +55,38 @@ bool Serialiser::DeserialiseObject(const char* const  inClassName,
     return true;
 }
 
-void Serialiser::Write(const char* const inName,
-                       const bool&       inValue)
-{
-    Write(inName, MetaType::Lookup<bool>(), &inValue);
-}
+#define SERIALISER_READ_WRITE(Type) \
+    bool Serialiser::Read(const char* const inName, \
+                          Type&             outValue) \
+    { \
+        return Read(inName, MetaType::Lookup<Type>(), &outValue); \
+    } \
+    \
+    void Serialiser::Write(const char* const inName, \
+                           const Type&       inValue) \
+    { \
+        Write(inName, MetaType::Lookup<Type>(), &inValue); \
+    }
 
-void Serialiser::Write(const char* const inName,
-                       const int8_t&     inValue)
-{
-    Write(inName, MetaType::Lookup<int8_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const uint8_t&    inValue)
-{
-    Write(inName, MetaType::Lookup<uint8_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const int16_t&    inValue)
-{
-    Write(inName, MetaType::Lookup<int16_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const uint16_t&   inValue)
-{
-    Write(inName, MetaType::Lookup<uint16_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const int32_t&    inValue)
-{
-    Write(inName, MetaType::Lookup<int32_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const uint32_t&   inValue)
-{
-    Write(inName, MetaType::Lookup<uint32_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const int64_t&    inValue)
-{
-    Write(inName, MetaType::Lookup<int64_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const uint64_t&   inValue)
-{
-    Write(inName, MetaType::Lookup<uint64_t>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const float&      inValue)
-{
-    Write(inName, MetaType::Lookup<float>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const double&     inValue)
-{
-    Write(inName, MetaType::Lookup<double>(), &inValue);
-}
-
-void Serialiser::Write(const char* const  inName,
-                       const std::string& inValue)
-{
-    Write(inName, MetaType::Lookup<std::string>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::vec2&  inValue)
-{
-    Write(inName, MetaType::Lookup<glm::vec2>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::vec3&  inValue)
-{
-    Write(inName, MetaType::Lookup<glm::vec3>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::vec4&  inValue)
-{
-    Write(inName, MetaType::Lookup<glm::vec4>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::ivec2& inValue)
-{
-    Write(inName, MetaType::Lookup<glm::ivec2>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::ivec3& inValue)
-{
-    Write(inName, MetaType::Lookup<glm::ivec3>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::ivec4& inValue)
-{
-    Write(inName, MetaType::Lookup<glm::ivec4>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::uvec2& inValue)
-{
-    Write(inName, MetaType::Lookup<glm::uvec2>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::uvec3& inValue)
-{
-    Write(inName, MetaType::Lookup<glm::uvec3>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::uvec4& inValue)
-{
-    Write(inName, MetaType::Lookup<glm::uvec4>(), &inValue);
-}
-
-void Serialiser::Write(const char* const inName,
-                       const glm::quat&  inValue)
-{
-    Write(inName, MetaType::Lookup<glm::quat>(), &inValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      bool&             outValue)
-{
-    return Read(inName, MetaType::Lookup<bool>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      int8_t&           outValue)
-{
-    return Read(inName, MetaType::Lookup<int8_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      uint8_t&          outValue)
-{
-    return Read(inName, MetaType::Lookup<uint8_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      int16_t&          outValue)
-{
-    return Read(inName, MetaType::Lookup<int16_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      uint16_t&         outValue)
-{
-    return Read(inName, MetaType::Lookup<uint16_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      int32_t&          outValue)
-{
-    return Read(inName, MetaType::Lookup<int32_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      uint32_t&         outValue)
-{
-    return Read(inName, MetaType::Lookup<uint32_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      int64_t&          outValue)
-{
-    return Read(inName, MetaType::Lookup<int64_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      uint64_t&         outValue)
-{
-    return Read(inName, MetaType::Lookup<uint64_t>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      float&            outValue)
-{
-    return Read(inName, MetaType::Lookup<float>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      double&           outValue)
-{
-    return Read(inName, MetaType::Lookup<double>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      std::string&      outValue)
-{
-    return Read(inName, MetaType::Lookup<std::string>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::vec2&        outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::vec2>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::vec3&        outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::vec3>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::vec4&        outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::vec4>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::ivec2&       outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::ivec2>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::ivec3&       outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::ivec3>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::ivec4&       outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::ivec4>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::uvec2&       outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::uvec2>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::uvec3&       outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::uvec3>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::uvec4&       outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::uvec4>(), &outValue);
-}
-
-bool Serialiser::Read(const char* const inName,
-                      glm::quat&        outValue)
-{
-    return Read(inName, MetaType::Lookup<glm::quat>(), &outValue);
-}
+SERIALISER_READ_WRITE(bool);
+SERIALISER_READ_WRITE(int8_t);
+SERIALISER_READ_WRITE(uint8_t);
+SERIALISER_READ_WRITE(int16_t);
+SERIALISER_READ_WRITE(uint16_t);
+SERIALISER_READ_WRITE(int32_t);
+SERIALISER_READ_WRITE(uint32_t);
+SERIALISER_READ_WRITE(int64_t);
+SERIALISER_READ_WRITE(uint64_t);
+SERIALISER_READ_WRITE(float);
+SERIALISER_READ_WRITE(double);
+SERIALISER_READ_WRITE(std::string);
+SERIALISER_READ_WRITE(glm::vec2);
+SERIALISER_READ_WRITE(glm::vec3);
+SERIALISER_READ_WRITE(glm::vec4);
+SERIALISER_READ_WRITE(glm::ivec2);
+SERIALISER_READ_WRITE(glm::ivec3);
+SERIALISER_READ_WRITE(glm::ivec4);
+SERIALISER_READ_WRITE(glm::uvec2);
+SERIALISER_READ_WRITE(glm::uvec3);
+SERIALISER_READ_WRITE(glm::uvec4);
+SERIALISER_READ_WRITE(glm::quat);
