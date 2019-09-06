@@ -146,6 +146,10 @@ public:
     uint16_t                GetArraySize() const    { return mDesc.arraySize; }
     uint8_t                 GetNumMipLevels() const { return mDesc.numMipLevels; }
 
+    uint32_t                GetMipWidth(const uint8_t inMip) const;
+    uint32_t                GetMipHeight(const uint8_t inMip) const;
+    uint32_t                GetMipDepth(const uint8_t inMip) const;
+
     /**
      * Allocate a new staging texture. Any previous texture is discarded (once
      * any previously submitted GPU transfers have completed), and the texture
@@ -271,6 +275,21 @@ inline GPUStagingTexture::GPUStagingTexture(const GPUStagingAccess inAccess,
     GPUStagingTexture   ()
 {
     Initialise(inAccess, inDesc);
+}
+
+inline uint32_t GPUStagingTexture::GetMipWidth(const uint8_t inMip) const
+{
+    return std::max(mDesc.width >> inMip, 1u);
+}
+
+inline uint32_t GPUStagingTexture::GetMipHeight(const uint8_t inMip) const
+{
+    return std::max(mDesc.height >> inMip, 1u);
+}
+
+inline uint32_t GPUStagingTexture::GetMipDepth(const uint8_t inMip) const
+{
+    return std::max(mDesc.depth >> inMip, 1u);
 }
 
 inline uint32_t GPUStagingTexture::GetSubresourceOffset(const GPUSubresource inSubresource) const

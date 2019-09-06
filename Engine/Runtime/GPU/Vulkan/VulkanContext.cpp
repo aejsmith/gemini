@@ -631,8 +631,54 @@ void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
     Assert(inSourceTexture.IsFinalised());
     Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
     Assert(inDestTexture->GetFormat() == inSourceTexture.GetFormat());
+    Assert(PixelFormatInfo::IsColour(inDestTexture->GetFormat()));
 
-    Fatal("TODO");
+    auto destTexture      = static_cast<VulkanTexture*>(inDestTexture);
+    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(inSourceTexture.GetHandle());
+
+    const uint32_t destWidth  = destTexture->GetMipWidth(inDestSubresource.mipLevel);  Unused(destWidth);
+    const uint32_t destHeight = destTexture->GetMipHeight(inDestSubresource.mipLevel); Unused(destHeight);
+    const uint32_t destDepth  = destTexture->GetMipDepth(inDestSubresource.mipLevel);  Unused(destDepth);
+
+    Assert(static_cast<uint32_t>(inDestOffset.x + inSize.x) <= destWidth);
+    Assert(static_cast<uint32_t>(inDestOffset.y + inSize.y) <= destHeight);
+    Assert(static_cast<uint32_t>(inDestOffset.z + inSize.z) <= destDepth);
+
+    const uint32_t sourceWidth  = inSourceTexture.GetMipWidth(inSourceSubresource.mipLevel);  Unused(sourceWidth);
+    const uint32_t sourceHeight = inSourceTexture.GetMipHeight(inSourceSubresource.mipLevel); Unused(sourceHeight);
+    const uint32_t sourceDepth  = inSourceTexture.GetMipDepth(inSourceSubresource.mipLevel);  Unused(sourceDepth);
+
+    Assert(static_cast<uint32_t>(inSourceOffset.x + inSize.x) <= sourceWidth);
+    Assert(static_cast<uint32_t>(inSourceOffset.y + inSize.y) <= sourceHeight);
+    Assert(static_cast<uint32_t>(inSourceOffset.z + inSize.z) <= sourceDepth);
+
+    const size_t bytesPerPixel = PixelFormatInfo::BytesPerPixel(inSourceTexture.GetFormat());
+    const size_t bytesPerRow   = bytesPerPixel * sourceWidth;
+    const size_t bytesPerSlice = bytesPerRow * sourceHeight;
+
+    VkBufferImageCopy region;
+    region.bufferOffset                    = inSourceTexture.GetSubresourceOffset(inSourceSubresource) +
+                                             (inSourceOffset.z * bytesPerSlice) +
+                                             (inSourceOffset.y * bytesPerRow) +
+                                             (inSourceOffset.x * bytesPerPixel);
+    region.bufferRowLength                 = sourceWidth;
+    region.bufferImageHeight               = sourceHeight;
+    region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.baseArrayLayer = inDestSubresource.layer;
+    region.imageSubresource.layerCount     = 1;
+    region.imageSubresource.mipLevel       = inDestSubresource.mipLevel;
+    region.imageOffset.x                   = inDestOffset.x;
+    region.imageOffset.y                   = inDestOffset.y;
+    region.imageOffset.z                   = inDestOffset.z;
+    region.imageExtent.width               = inSize.x;
+    region.imageExtent.height              = inSize.y;
+    region.imageExtent.depth               = inSize.z;
+
+    vkCmdCopyBufferToImage(GetCommandBuffer(),
+                           sourceAllocation->handle,
+                           destTexture->GetHandle(),
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           1, &region);
 }
 
 GPUComputeCommandList* VulkanContext::CreateComputePassImpl()
