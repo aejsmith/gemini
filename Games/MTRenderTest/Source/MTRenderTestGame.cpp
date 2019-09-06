@@ -136,7 +136,7 @@ void MTRenderTestLayer::Initialise()
 
     mVertexInputState = GPUVertexInputState::Get(vertexInputDesc);
 
-    GPUStagingBuffer stagingBuffer(GPUDevice::Get(), kGPUStagingAccess_Write, sizeof(kVertices));
+    GPUStagingBuffer stagingBuffer(kGPUStagingAccess_Write, sizeof(kVertices));
     stagingBuffer.Write(kVertices, sizeof(kVertices));
     stagingBuffer.Finalise();
 

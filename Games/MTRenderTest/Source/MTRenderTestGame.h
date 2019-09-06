@@ -26,12 +26,13 @@ class MTRenderTestGame final : public Game
 
 public:
                                 MTRenderTestGame();
-                                ~MTRenderTestGame();
 
-public:
     void                        Init() override;
 
     const char*                 GetName() const override;
+
+private:
+                                ~MTRenderTestGame();
 
 private:
     MTRenderTestLayer*          mRenderLayer;
