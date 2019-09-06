@@ -140,6 +140,11 @@ struct GPUSubresource
     uint32_t                    layer;
 };
 
+/**
+ * Structure describing a range of subresources in a texture resource. When
+ * both count values are 0 (as per the default constructor arguments), the
+ * range refers to the whole texture.
+ */
 struct GPUSubresourceRange
 {
     uint32_t                    mipOffset;
@@ -149,9 +154,9 @@ struct GPUSubresourceRange
 
 public:
                                 GPUSubresourceRange(const uint32_t inMipOffset = 0,
-                                                    const uint32_t inMipCount = 1,
+                                                    const uint32_t inMipCount = 0,
                                                     const uint32_t inLayerOffset = 0,
-                                                    const uint32_t inLayerCount = 1);
+                                                    const uint32_t inLayerCount = 0);
 
                                 GPUSubresourceRange(const GPUSubresource inSubresource);
 
