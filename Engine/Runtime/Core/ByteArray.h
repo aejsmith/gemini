@@ -39,6 +39,11 @@ public:
                             operator bool() const
                                 { return mSize != 0; }
 
+    uint8_t&                operator[](const size_t inIndex)
+                                { return mData[inIndex]; }
+    const uint8_t&          operator[](const size_t inIndex) const
+                                { return mData[inIndex]; }
+
     size_t                  GetSize() const { return mSize; }
 
     uint8_t*                Get()           { return mData; }
