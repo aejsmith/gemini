@@ -282,6 +282,13 @@ public:
     template <typename T, typename std::enable_if<Detail::HasSerialise<T>::value>::type* = nullptr>
     void                            Write(const char* const inName, const T& inValue);
 
+    /** Write a chunk of binary data. */
+    virtual void                    WriteBinary(const char* const inName,
+                                                const void* const inData,
+                                                const size_t      inLength) = 0;
+    void                            WriteBinary(const char* const inName,
+                                                const ByteArray&  inData);
+
     template <typename T>
     void                            Push(T&& inValue)
                                         { Write(nullptr, std::forward<T>(inValue)); }
@@ -337,6 +344,10 @@ public:
     bool                            Read(const char* const inName, T*& outObject)
                                         { return Read(inName, MetaType::Lookup<T*>(), &outObject); }
 
+    /** Read a chunk of binary data. */
+    virtual bool                    ReadBinary(const char* const inName,
+                                               ByteArray&        outData) = 0;
+
     /**
      * This method can be used to read any type which provides a deserialise
      * method of the form:
@@ -389,6 +400,12 @@ inline void Serialiser::Write(const char* const inName,
     BeginGroup(inName);
     inValue.Serialise(*this);
     EndGroup();
+}
+
+inline void Serialiser::WriteBinary(const char* const inName,
+                                    const ByteArray&  inData)
+{
+    WriteBinary(inName, inData.Get(), inData.GetSize());
 }
 
 template <typename T, typename std::enable_if<Detail::HasDeserialise<T>::value>::type*>

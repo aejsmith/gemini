@@ -39,6 +39,13 @@ public:
     bool                        BeginArray(const char* const inName) override;
     void                        EndArray() override;
 
+    void                        WriteBinary(const char* const inName,
+                                            const void* const inData,
+                                            const size_t      inLength) override;
+
+    bool                        ReadBinary(const char* const inName,
+                                           ByteArray&        outData) override;
+
 protected:
     void                        Write(const char* const inName,
                                       const MetaType&   inType,

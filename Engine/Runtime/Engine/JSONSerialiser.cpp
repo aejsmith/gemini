@@ -16,6 +16,8 @@
 
 #include "Engine/JSONSerialiser.h"
 
+#include "Core/Base64.h"
+
 #include "Engine/AssetManager.h"
 
 #include <rapidjson/document.h>
@@ -851,4 +853,39 @@ bool JSONSerialiser::Read(const char* const inName,
     }
 
     return true;
+}
+
+
+void JSONSerialiser::WriteBinary(const char* const inName,
+                                 const void* const inData,
+                                 const size_t      inLength)
+{
+    /* Binary data is encoded as base64. We store it in an object containing a
+     * "base64" string member, rather than just a plain string, to get better
+     * differentiation of type between this and regular strings, as well as to
+     * allow the possibility of supporting different encoding schemes later. */
+    std::string base64 = Base64::Encode(inData, inLength);
+
+    BeginGroup(inName);
+    Serialiser::Write("base64", base64);
+    EndGroup();
+}
+
+bool JSONSerialiser::ReadBinary(const char* const inName,
+                                ByteArray&        outData)
+{
+    bool result = false;
+
+    if (BeginGroup(inName))
+    {
+        std::string base64;
+        if (Serialiser::Read("base64", base64))
+        {
+            result = Base64::Decode(base64, outData);
+        }
+
+        EndGroup();
+    }
+
+    return result;
 }
