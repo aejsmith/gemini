@@ -49,6 +49,17 @@ public:
     uint8_t*                Get()           { return mData; }
     const uint8_t*          Get() const     { return mData; }
 
+    /**
+     * Shrinks the array. If inReallocate is true, then a new array will be
+     * allocated of the new size and the relevant content will be copied.
+     * Otherwise, just the size field will be changed, and the remainder of the
+     * allocation will be wasted. This may be useful if only shrinking by a
+     * small amount or when the array is only temporary anyway so wastage
+     * doesn't matter.
+     */
+    void                    Shrink(const size_t inSize,
+                                   const bool   inReallocate);
+
     void                    Clear();
 
 private:
@@ -119,6 +130,25 @@ inline ByteArray& ByteArray::operator=(ByteArray&& inOther)
     }
 
     return *this;
+}
+
+inline void ByteArray::Shrink(const size_t inSize,
+                              const bool   inReallocate)
+{
+    Assert(inSize <= mSize);
+
+    if (inSize < mSize)
+    {
+        if (inReallocate)
+        {
+            uint8_t* newData = new uint8_t[inSize];
+            memcpy(newData, mData, inSize);
+            delete[] mData;
+            mData = newData;
+        }
+
+        mSize = inSize;
+    }
 }
 
 inline void ByteArray::Clear()

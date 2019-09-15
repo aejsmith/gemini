@@ -16,6 +16,7 @@ objects = map(env.Object, [
     'Math/Frustum.cpp',
     'Math/Intersect.cpp',
 
+    'Base64.cpp',
     'DataStream.cpp',
     'LinearAllocator.cpp',
     'Log.cpp',
