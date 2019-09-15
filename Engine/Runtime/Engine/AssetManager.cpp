@@ -155,8 +155,8 @@ AssetPtr AssetManager::Load(const Path& inPath)
 
         Assert(data);
 
-        std::vector<uint8_t> serialisedData(data->GetSize());
-        if (!data->Read(&serialisedData[0], data->GetSize()))
+        ByteArray serialisedData(data->GetSize());
+        if (!data->Read(serialisedData.Get(), data->GetSize()))
         {
             LogError("%s: Failed to read asset data", inPath.GetCString());
             return nullptr;
@@ -186,8 +186,8 @@ AssetPtr AssetManager::Load(const Path& inPath)
         ObjectPtr<AssetLoader> loader;
         if (loaderData)
         {
-            std::vector<uint8_t> serialisedData(loaderData->GetSize());
-            if (!loaderData->Read(&serialisedData[0], loaderData->GetSize()))
+            ByteArray serialisedData(loaderData->GetSize());
+            if (!loaderData->Read(serialisedData.Get(), loaderData->GetSize()))
             {
                 LogError("%s: Failed to read loader data", inPath.GetCString());
                 return nullptr;

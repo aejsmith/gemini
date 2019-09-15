@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "Core/ByteArray.h"
 #include "Core/Math.h"
 
 #include "Engine/Object.h"
@@ -87,7 +88,7 @@ namespace Detail
  * The basic usage for serialisation is as follows:
  *
  *     JSONSerialiser serialiser;
- *     std::vector<uint8_t> data = serialiser.Serialise(object);
+ *     ByteArray data = serialiser.Serialise(object);
  *
  * For deserialisation:
  *
@@ -135,21 +136,21 @@ public:
      * Deserialise() to reconstruct the object, written to a file to deserialise
      * later, etc.
      */
-    virtual std::vector<uint8_t>    Serialise(const Object* const inObject) = 0;
+    virtual ByteArray               Serialise(const Object* const inObject) = 0;
 
     /**
      * Deserialises an object previously serialised in the format implemented
      * by this serialiser instance. Returns null on failure.
      */
-    virtual ObjectPtr<>             Deserialise(const std::vector<uint8_t>& inData,
-                                                const MetaClass&            inExpectedClass) = 0;
+    virtual ObjectPtr<>             Deserialise(const ByteArray& inData,
+                                                const MetaClass& inExpectedClass) = 0;
 
     /**
      * Deserialises an object previously serialised in the format implemented
      * by this serialiser instance. Returns null on failure.
      */
     template <typename T>
-    ObjectPtr<T>                    Deserialise(const std::vector<uint8_t>& inData);
+    ObjectPtr<T>                    Deserialise(const ByteArray& inData);
 
     /**
      * A function that will be called after construction of the object being
@@ -375,7 +376,7 @@ protected:
 };
 
 template <typename T>
-inline ObjectPtr<T> Serialiser::Deserialise(const std::vector<uint8_t>& inData)
+inline ObjectPtr<T> Serialiser::Deserialise(const ByteArray& inData)
 {
     ObjectPtr<> object = Deserialise(inData, T::staticMetaClass);
     return object.StaticCast<T>();

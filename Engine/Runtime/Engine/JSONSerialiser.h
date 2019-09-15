@@ -26,10 +26,10 @@ public:
                                 JSONSerialiser();
 
 public:
-    std::vector<uint8_t>        Serialise(const Object* const inObject) override;
+    ByteArray                   Serialise(const Object* const inObject) override;
 
-    ObjectPtr<>                 Deserialise(const std::vector<uint8_t>& inData,
-                                            const MetaClass&            inExpectedClass) override;
+    ObjectPtr<>                 Deserialise(const ByteArray& inData,
+                                            const MetaClass& inExpectedClass) override;
 
     using Serialiser::Deserialise;
 

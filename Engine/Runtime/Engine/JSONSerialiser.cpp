@@ -187,7 +187,7 @@ JSONSerialiser::JSONSerialiser() :
 {
 }
 
-std::vector<uint8_t> JSONSerialiser::Serialise(const Object* const inObject)
+ByteArray JSONSerialiser::Serialise(const Object* const inObject)
 {
     JSONState state;
 
@@ -203,8 +203,8 @@ std::vector<uint8_t> JSONSerialiser::Serialise(const Object* const inObject)
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
     mState->document.Accept(writer);
 
-    std::vector<uint8_t> data(buffer.GetSize());
-    memcpy(&data[0], buffer.GetString(), buffer.GetSize());
+    ByteArray data(buffer.GetSize());
+    memcpy(data.Get(), buffer.GetString(), buffer.GetSize());
 
     mState = nullptr;
     return data;
@@ -241,8 +241,8 @@ uint32_t JSONSerialiser::AddObject(const Object* const inObject)
     return id;
 }
 
-ObjectPtr<> JSONSerialiser::Deserialise(const std::vector<uint8_t>& inData,
-                                        const MetaClass&            inExpectedClass)
+ObjectPtr<> JSONSerialiser::Deserialise(const ByteArray& inData,
+                                        const MetaClass& inExpectedClass)
 {
     JSONState state;
 
@@ -250,7 +250,7 @@ ObjectPtr<> JSONSerialiser::Deserialise(const std::vector<uint8_t>& inData,
     mState->writing = false;
 
     /* Parse the JSON stream. */
-    mState->document.Parse(reinterpret_cast<const char*>(inData.data()), inData.size());
+    mState->document.Parse(reinterpret_cast<const char*>(inData.Get()), inData.GetSize());
 
     if (mState->document.HasParseError())
     {
