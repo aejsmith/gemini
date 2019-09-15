@@ -123,7 +123,7 @@ bool POSIXFile::Seek(const SeekMode inMode, const int64_t inOffset)
 
 uint64_t POSIXFile::GetOffset() const
 {
-    return lseek(mFD, SEEK_CUR, 0);
+    return lseek(mFD, 0, SEEK_CUR);
 }
 
 bool POSIXFile::Read(void* const    outBuffer,
