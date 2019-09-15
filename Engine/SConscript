@@ -45,6 +45,7 @@ depends = [
     '3rdParty/imgui',
     '3rdParty/RapidJSON',
     '3rdParty/SPIRV-Reflect',
+    '3rdParty/stb',
     '3rdParty/VulkanMemoryAllocator',
     'External/shaderc',
 ]

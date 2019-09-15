@@ -19,3 +19,6 @@
 [submodule "Engine/3rdParty/SPIRV-Reflect/Repo"]
 	path = Engine/3rdParty/SPIRV-Reflect/Repo
 	url = https://github.com/chaoticbob/SPIRV-Reflect.git
+[submodule "Engine/3rdParty/stb/Repo"]
+	path = Engine/3rdParty/stb/Repo
+	url = https://github.com/nothings/stb.git

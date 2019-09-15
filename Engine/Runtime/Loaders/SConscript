@@ -2,14 +2,14 @@ Import('env')
 
 objects = map(env.ObjectGenHeader, [
     'OBJLoader.h',
+    'STBLoader.h',
     'TextureLoader.h',
-    'TGALoader.h',
 ])
 
 objects += map(env.Object, [
     'OBJLoader.cpp',
+    'STBLoader.cpp',
     'TextureLoader.cpp',
-    'TGALoader.cpp',
 ])
 
 Return('objects')

@@ -4,6 +4,7 @@ SConscript(dirs = [
     'Mustache',
     'RapidJSON',
     'SPIRV-Reflect',
+    'stb',
     'VulkanMemoryAllocator',
     'xxHash',
 ])

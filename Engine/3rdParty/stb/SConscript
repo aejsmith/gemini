@@ -1,0 +1,5 @@
+Import('manager')
+
+manager.AddComponent(
+    name = '3rdParty/stb',
+    includePath = 'Repo')

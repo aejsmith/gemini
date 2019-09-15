@@ -31,6 +31,9 @@ public:
     AssetPtr                        Load(DataStream* const inData,
                                          const char* const inPath);
 
+    DataStream*                     GetData()       { return mData; }
+    const DataStream*               GetData() const { return mData; }
+
     static ObjectPtr<AssetLoader>   Create(const std::string& inExtension);
 
 protected:

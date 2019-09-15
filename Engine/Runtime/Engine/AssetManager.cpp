@@ -113,7 +113,8 @@ AssetPtr AssetManager::Load(const Path& inPath)
                 }
 
                 data.reset(Filesystem::OpenFile(filePath));
-                if (!data) {
+                if (!data)
+                {
                     LogError("Failed to open '%s'", filePath.GetCString());
                     return nullptr;
                 }
