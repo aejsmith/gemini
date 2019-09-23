@@ -51,22 +51,19 @@ AssetManager::~AssetManager()
 
 AssetPtr AssetManager::Load(const Path& inPath)
 {
-    /* Look up the path in the cache of known assets. */
     Asset* const exist = LookupAsset(inPath);
     if (exist)
     {
         return exist;
     }
 
-    /* Turn the asset path into a filesystem path. */
-    auto searchPath = mSearchPaths.find(inPath.Subset(0, 1).GetString());
-    if (searchPath == mSearchPaths.end())
+    Path fsPath;
+    if (!GetFilesystemPath(inPath, fsPath))
     {
         LogError("Could not find asset '%s' (unknown search path)", inPath.GetCString());
         return nullptr;
     }
 
-    const Path fsPath           = Path(searchPath->second) / inPath.Subset(1);
     const Path directoryPath    = fsPath.GetDirectoryName();
     const std::string assetName = fsPath.GetBaseFileName();
 
@@ -135,13 +132,12 @@ AssetPtr AssetManager::Load(const Path& inPath)
 
     /* Helper function used on both paths below to mark the asset as managed
      * and cache it. */
-    auto AddAsset =
-        [&] (Object* const inObject)
-        {
-            auto asset = static_cast<Asset*>(inObject);
-            asset->SetPath(inPath.GetString(), {});
-            mAssets.insert(std::make_pair(inPath.GetString(), asset));
-        };
+    auto AddAsset = [&] (Object* const inObject)
+    {
+        auto asset = static_cast<Asset*>(inObject);
+        asset->SetPath(inPath.GetString(), {});
+        mAssets.insert(std::make_pair(inPath.GetString(), asset));
+    };
 
     if (type == kObjectFileExtension)
     {
@@ -249,6 +245,58 @@ void AssetManager::UnregisterAsset(Asset* const inAsset,
     Unused(ret);
 
     LogDebug("Unregistered asset '%s'", inAsset->GetPath().c_str());
+}
+
+bool AssetManager::GetFilesystemPath(const Path& inPath,
+                                     Path&       outFSPath)
+{
+    auto searchPath = mSearchPaths.find(inPath.Subset(0, 1).GetString());
+    if (searchPath == mSearchPaths.end())
+    {
+        return false;
+    }
+
+    outFSPath = Path(searchPath->second) / inPath.Subset(1);
+    return true;
+}
+
+bool AssetManager::SaveAsset(Asset* const inAsset,
+                             const Path&  inPath)
+{
+    Path fsPath;
+    if (!GetFilesystemPath(inPath, fsPath))
+    {
+        LogError("Could not save asset '%s': unknown search path", inPath.GetCString());
+        return false;
+    }
+
+    fsPath += ".";
+    fsPath += kObjectFileExtension;
+
+    JSONSerialiser serialiser;
+    ByteArray serialisedData = serialiser.Serialise(inAsset);
+
+    std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+    if (!file)
+    {
+        LogError("Could not save asset '%s': failed to open '%s'", inPath.GetCString(), fsPath.GetCString());
+        return false;
+    }
+
+    file->Write(serialisedData.Get(), serialisedData.GetSize());
+
+    LogDebug("Saved asset '%s' ('%s')", inPath.GetCString(), fsPath.GetCString());
+
+    if (inAsset->IsManaged())
+    {
+        /* Re-insert under new path. */
+        mAssets.erase(inAsset->GetPath());
+    }
+
+    inAsset->SetPath(inPath.GetString(), {});
+    mAssets.insert(std::make_pair(inPath.GetString(), inAsset));
+
+    return true;
 }
 
 Asset* AssetManager::LookupAsset(const Path& inPath) const

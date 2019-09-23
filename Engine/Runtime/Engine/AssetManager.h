@@ -59,6 +59,23 @@ public:
     void                    UnregisterAsset(Asset* const inAsset,
                                             OnlyCalledBy<Asset>);
 
+    /**
+     * Get a filesystem path (without extension) corresponding to an asset
+     * path. Returns false if the search path (first component) is unknown.
+     */
+    bool                    GetFilesystemPath(const Path& inPath,
+                                              Path&       outFSPath);
+
+    /**
+     * Save an asset to a new asset path, i.e. serialise its current state to
+     * be reloaded later. If the asset is currently unmanaged, it will be
+     * managed after this call completes. If it is already managed, its path
+     * will be updated to the new path after the call. Returns whether saving
+     * was successful.
+     */
+    bool                    SaveAsset(Asset* const inAsset,
+                                      const Path&  inPath);
+
 private:
     using AssetMap        = std::map<std::string, Asset*>;
     using SearchPathMap   = HashMap<std::string, std::string>;
