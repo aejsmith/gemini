@@ -17,7 +17,7 @@
 #include "Loaders/TextureLoader.h"
 
 TextureLoader::TextureLoader() :
-    addressMode (kGPUAddressMode_Clamp),
+    addressMode (kGPUAddressMode_Repeat),
     sRGB        (true),
     mFormat     (kPixelFormat_Unknown)
 {

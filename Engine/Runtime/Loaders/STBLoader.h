@@ -33,7 +33,7 @@ protected:
 
 /* This doesn't do the whole class definition since libclang has an apparent
  * bug where if the class definition is from a macro, it won't count as being
- * in declared in the main file. */
+ * in declared in the main file (meaning ObjectGen won't pick it up). */
 #define STB_LOADER_CLASS_BODY(ClassName, Extension) \
     CLASS(); \
     public:    const char* GetExtension() const override { return Extension; } \

@@ -7,6 +7,7 @@ objects = map(env.ObjectGenHeader, [
 ])
 
 objects += map(env.Object, [
+    'GLTFImporter.cpp',
     'OBJLoader.cpp',
     'STBLoader.cpp',
     'TextureLoader.cpp',

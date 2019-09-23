@@ -618,6 +618,21 @@ enum GPUAttributeFormat : uint8_t
     kGPUAttributeFormat_R8G8B8_UNorm,
     kGPUAttributeFormat_R8G8B8A8_UNorm,
 
+    kGPUAttributeFormat_R8_UInt,
+    kGPUAttributeFormat_R8G8_UInt,
+    kGPUAttributeFormat_R8G8B8_UInt,
+    kGPUAttributeFormat_R8G8B8A8_UInt,
+
+    kGPUAttributeFormat_R16_UNorm,
+    kGPUAttributeFormat_R16G16_UNorm,
+    kGPUAttributeFormat_R16G16B16_UNorm,
+    kGPUAttributeFormat_R16G16B16A16_UNorm,
+
+    kGPUAttributeFormat_R16_UInt,
+    kGPUAttributeFormat_R16G16_UInt,
+    kGPUAttributeFormat_R16G16B16_UInt,
+    kGPUAttributeFormat_R16G16B16A16_UInt,
+
     kGPUAttributeFormat_R32_Float,
     kGPUAttributeFormat_R32G32_Float,
     kGPUAttributeFormat_R32G32B32_Float,

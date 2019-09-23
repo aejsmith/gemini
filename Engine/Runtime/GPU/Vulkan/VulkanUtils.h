@@ -207,6 +207,22 @@ namespace VulkanUtils
             case kGPUAttributeFormat_R8G8_UNorm:            return VK_FORMAT_R8G8_UNORM;
             case kGPUAttributeFormat_R8G8B8_UNorm:          return VK_FORMAT_R8G8B8_UNORM;
             case kGPUAttributeFormat_R8G8B8A8_UNorm:        return VK_FORMAT_R8G8B8A8_UNORM;
+
+            case kGPUAttributeFormat_R8_UInt:               return VK_FORMAT_R8_UINT;
+            case kGPUAttributeFormat_R8G8_UInt:             return VK_FORMAT_R8G8_UINT;
+            case kGPUAttributeFormat_R8G8B8_UInt:           return VK_FORMAT_R8G8B8_UINT;
+            case kGPUAttributeFormat_R8G8B8A8_UInt:         return VK_FORMAT_R8G8B8A8_UINT;
+
+            case kGPUAttributeFormat_R16_UNorm:             return VK_FORMAT_R16_UNORM;
+            case kGPUAttributeFormat_R16G16_UNorm:          return VK_FORMAT_R16G16_UNORM;
+            case kGPUAttributeFormat_R16G16B16_UNorm:       return VK_FORMAT_R16G16B16_UNORM;
+            case kGPUAttributeFormat_R16G16B16A16_UNorm:    return VK_FORMAT_R16G16B16A16_UNORM;
+
+            case kGPUAttributeFormat_R16_UInt:              return VK_FORMAT_R16_UINT;
+            case kGPUAttributeFormat_R16G16_UInt:           return VK_FORMAT_R16G16_UINT;
+            case kGPUAttributeFormat_R16G16B16_UInt:        return VK_FORMAT_R16G16B16_UINT;
+            case kGPUAttributeFormat_R16G16B16A16_UInt:     return VK_FORMAT_R16G16B16A16_UINT;
+
             case kGPUAttributeFormat_R32_Float:             return VK_FORMAT_R32_SFLOAT;
             case kGPUAttributeFormat_R32G32_Float:          return VK_FORMAT_R32G32_SFLOAT;
             case kGPUAttributeFormat_R32G32B32_Float:       return VK_FORMAT_R32G32B32_SFLOAT;
