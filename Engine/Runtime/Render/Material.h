@@ -31,6 +31,8 @@ class Material : public Asset
     CLASS();
 
 public:
+                                Material(ShaderTechnique* const inShaderTechnique);
+
     ShaderTechnique*            GetShaderTechnique() const  { return mShaderTechnique; }
     GPUArgumentSet*             GetArgumentSet() const      { return mArgumentSet; }
     bool                        HasConstants() const        { return mConstantData.GetSize() > 0; }
@@ -70,6 +72,8 @@ private:
 
     void                        Serialise(Serialiser& inSerialiser) const override;
     void                        Deserialise(Serialiser& inSerialiser) override;
+
+    void                        SetShaderTechnique(ShaderTechnique* const inShaderTechnique);
 
     void                        GetArgument(const ShaderParameter& inParameter,
                                             void* const            outData) const;

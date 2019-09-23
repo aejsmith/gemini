@@ -31,6 +31,12 @@ Material::Material() :
 {
 }
 
+Material::Material(ShaderTechnique* const inShaderTechnique) :
+    Material ()
+{
+    SetShaderTechnique(inShaderTechnique);
+}
+
 Material::~Material()
 {
     delete mArgumentSet;
@@ -45,13 +51,11 @@ void Material::Deserialise(Serialiser& inSerialiser)
 {
     bool found;
 
-    found = inSerialiser.Read("shaderTechnique", mShaderTechnique);
+    ShaderTechnique* shaderTechnique;
+    found = inSerialiser.Read("shaderTechnique", shaderTechnique);
     Assert(found);
 
-    mResources.resize(mShaderTechnique->GetArgumentSetLayout()->GetArgumentCount());
-
-    mConstantData = ByteArray(mShaderTechnique->GetConstantsSize());
-    memset(mConstantData.Get(), 0, mConstantData.GetSize());
+    SetShaderTechnique(shaderTechnique);
 
     if (inSerialiser.BeginGroup("arguments"))
     {
@@ -101,6 +105,16 @@ void Material::Deserialise(Serialiser& inSerialiser)
     }
 
     UpdateArgumentSet();
+}
+
+void Material::SetShaderTechnique(ShaderTechnique* const inShaderTechnique)
+{
+    mShaderTechnique = inShaderTechnique;
+
+    mResources.resize(mShaderTechnique->GetArgumentSetLayout()->GetArgumentCount());
+
+    mConstantData = ByteArray(mShaderTechnique->GetConstantsSize());
+    memset(mConstantData.Get(), 0, mConstantData.GetSize());
 }
 
 void Material::GetArgument(const ShaderParameter& inParameter,
