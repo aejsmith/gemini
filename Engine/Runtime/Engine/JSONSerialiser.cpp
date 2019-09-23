@@ -545,11 +545,23 @@ void JSONSerialiser::Write(const char* const inName,
     else if (inType.IsEnum())
     {
         // FIXME: Potentially handle cases where we don't have enum metadata?
-        // FIXME: Incorrect where enum size is not an int.
         const MetaType::EnumConstantArray& constants = inType.GetEnumConstants();
         for (const MetaType::EnumConstant& constant : constants)
         {
-            if (*reinterpret_cast<const int*>(inValue) == constant.second)
+            uint64_t value;
+
+            switch (inType.GetSize())
+            {
+                case 1: value = static_cast<int64_t>(*reinterpret_cast<const int8_t* >(inValue)); break;
+                case 2: value = static_cast<int64_t>(*reinterpret_cast<const int16_t*>(inValue)); break;
+                case 4: value = static_cast<int64_t>(*reinterpret_cast<const int32_t*>(inValue)); break;
+                case 8: value = static_cast<int64_t>(*reinterpret_cast<const int64_t*>(inValue)); break;
+
+                default:
+                    Unreachable();
+            }
+
+            if (value == constant.second)
             {
                 jsonValue.SetString(rapidjson::StringRef(constant.first));
                 break;
@@ -834,8 +846,17 @@ bool JSONSerialiser::Read(const char* const inName,
         {
             if (std::strcmp(jsonValue.GetString(), constant->first) == 0)
             {
-                // FIXME: enum size
-                *reinterpret_cast<int*>(outValue) = constant->second;
+                switch (inType.GetSize())
+                {
+                    case 1: *reinterpret_cast<int8_t* >(outValue) = static_cast<int8_t >(constant->second); break;
+                    case 2: *reinterpret_cast<int16_t*>(outValue) = static_cast<int16_t>(constant->second); break;
+                    case 4: *reinterpret_cast<int32_t*>(outValue) = static_cast<int32_t>(constant->second); break;
+                    case 8: *reinterpret_cast<int64_t*>(outValue) = static_cast<int64_t>(constant->second); break;
+
+                    default:
+                        Unreachable();
+                }
+
                 break;
             }
 
