@@ -16,6 +16,41 @@
 
 #include "GPU/GPUUtils.h"
 
+size_t GPUUtils::GetAttributeSize(const GPUAttributeFormat inFormat)
+{
+    switch (inFormat)
+    {
+        case kGPUAttributeFormat_R8_UNorm:              return 1;
+        case kGPUAttributeFormat_R8G8_UNorm:            return 2;
+        case kGPUAttributeFormat_R8G8B8_UNorm:          return 3;
+        case kGPUAttributeFormat_R8G8B8A8_UNorm:        return 4;
+
+        case kGPUAttributeFormat_R8_UInt:               return 1;
+        case kGPUAttributeFormat_R8G8_UInt:             return 2;
+        case kGPUAttributeFormat_R8G8B8_UInt:           return 3;
+        case kGPUAttributeFormat_R8G8B8A8_UInt:         return 4;
+
+        case kGPUAttributeFormat_R16_UNorm:             return 2;
+        case kGPUAttributeFormat_R16G16_UNorm:          return 4;
+        case kGPUAttributeFormat_R16G16B16_UNorm:       return 6;
+        case kGPUAttributeFormat_R16G16B16A16_UNorm:    return 8;
+
+        case kGPUAttributeFormat_R16_UInt:              return 2;
+        case kGPUAttributeFormat_R16G16_UInt:           return 4;
+        case kGPUAttributeFormat_R16G16B16_UInt:        return 6;
+        case kGPUAttributeFormat_R16G16B16A16_UInt:     return 8;
+
+        case kGPUAttributeFormat_R32_Float:             return 4;
+        case kGPUAttributeFormat_R32G32_Float:          return 8;
+        case kGPUAttributeFormat_R32G32B32_Float:       return 12;
+        case kGPUAttributeFormat_R32G32B32A32_Float:    return 16;
+
+        default:
+            UnreachableMsg("Unknown attribute format");
+
+    }
+}
+
 #if GEMINI_BUILD_DEBUG
 
 void GPUUtils::ValidateResourceState(const GPUResourceState inState,

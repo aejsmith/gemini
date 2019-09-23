@@ -20,6 +20,7 @@
 
 namespace GPUUtils
 {
+    size_t              GetAttributeSize(const GPUAttributeFormat inFormat);
     size_t              GetIndexSize(const GPUIndexType inType);
 
     /**
