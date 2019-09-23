@@ -283,7 +283,11 @@ bool AssetManager::SaveAsset(Asset* const inAsset,
         return false;
     }
 
-    file->Write(serialisedData.Get(), serialisedData.GetSize());
+    if (!file->Write(serialisedData.Get(), serialisedData.GetSize()))
+    {
+        LogError("Could not save asset '%s': failed to write", inPath.GetCString());
+        return false;
+    }
 
     LogDebug("Saved asset '%s' ('%s')", inPath.GetCString(), fsPath.GetCString());
 
