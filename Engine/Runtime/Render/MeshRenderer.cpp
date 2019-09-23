@@ -16,6 +16,8 @@
 
 #include "Render/MeshRenderer.h"
 
+#include "Engine/Serialiser.h"
+
 #include "Render/EntityDrawList.h"
 #include "Render/RenderEntity.h"
 
@@ -103,6 +105,42 @@ MeshRenderer::~MeshRenderer()
 {
 }
 
+void MeshRenderer::Serialise(Serialiser& inSerialiser) const
+{
+    Renderer::Serialise(inSerialiser);
+
+    inSerialiser.BeginGroup("materials");
+
+    for (size_t i = 0; i < mMesh->GetMaterialCount(); i++)
+    {
+        if (mMaterials[i])
+        {
+            inSerialiser.Write(mMesh->GetMaterialName(i).c_str(), mMaterials[i]);
+        }
+    }
+
+    inSerialiser.EndGroup();
+}
+
+void MeshRenderer::Deserialise(Serialiser& inSerialiser)
+{
+    Renderer::Deserialise(inSerialiser);
+
+    bool success = true;
+    Unused(success);
+
+    success &= inSerialiser.BeginGroup("materials");
+    Assert(success);
+
+    for (size_t i = 0; i < mMesh->GetMaterialCount(); i++)
+    {
+        success &= inSerialiser.Read(mMesh->GetMaterialName(i).c_str(), mMaterials[i]);
+        Assert(success);
+    }
+
+    inSerialiser.EndGroup();
+}
+
 void MeshRenderer::SetMesh(Mesh* const inMesh)
 {
     /* Need to recreate the RenderEntities to take effect. */
@@ -143,7 +181,7 @@ Renderer::RenderEntityArray MeshRenderer::CreateRenderEntities()
 
 Material* MeshRenderer::GetMaterial(const std::string& inName) const
 {
-    uint32_t index;
+    size_t index;
     const bool found = mMesh->GetMaterial(inName, index);
     Assert(found);
 
@@ -163,7 +201,7 @@ void MeshRenderer::SetMaterial(const uint32_t  inIndex,
 void MeshRenderer::SetMaterial(const std::string& inName,
                                Material* const    inMaterial)
 {
-    uint32_t index;
+    size_t index;
     const bool found = mMesh->GetMaterial(inName, index);
     Assert(found);
 

@@ -112,7 +112,8 @@ public:
     size_t                      GetMaterialCount() const
                                     { return mMaterials.size(); }
     bool                        GetMaterial(const std::string& inName,
-                                            uint32_t&          outIndex);
+                                            size_t&            outIndex) const;
+    const std::string&          GetMaterialName(const size_t inIndex) const;
 
     /**
      * Mesh build methods.
@@ -207,3 +208,9 @@ private:
 };
 
 using MeshPtr = ObjectPtr<Mesh>;
+
+inline const std::string& Mesh::GetMaterialName(const size_t inIndex) const
+{
+    Assert(inIndex < mMaterials.size());
+    return mMaterials[inIndex];
+}

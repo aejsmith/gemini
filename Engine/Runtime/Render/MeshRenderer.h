@@ -47,6 +47,9 @@ public:
 protected:
                                     ~MeshRenderer();
 
+    void                            Serialise(Serialiser& inSerialiser) const override;
+    void                            Deserialise(Serialiser& inSerialiser) override;
+
     RenderEntityArray               CreateRenderEntities() override;
 
 private:

@@ -47,6 +47,8 @@ Mesh::~Mesh()
 
 void Mesh::Serialise(Serialiser& inSerialiser) const
 {
+    Asset::Serialise(inSerialiser);
+
     /* Currently we have a limitation that meshes can only be serialised before
      * building them, because we discard the CPU-side copy of the vertex/index
      * data after building. In future if we need this to work, we could do a
@@ -162,6 +164,8 @@ void Mesh::Serialise(Serialiser& inSerialiser) const
 
 void Mesh::Deserialise(Serialiser& inSerialiser)
 {
+    Asset::Deserialise(inSerialiser);
+
     bool success = true;
     Unused(success);
 
@@ -282,9 +286,9 @@ void Mesh::Deserialise(Serialiser& inSerialiser)
 }
 
 bool Mesh::GetMaterial(const std::string& inName,
-                       uint32_t&          outIndex)
+                       size_t&            outIndex) const
 {
-    for (uint32_t i = 0; i < mMaterials.size(); i++)
+    for (size_t i = 0; i < mMaterials.size(); i++)
     {
         if (mMaterials[i] == inName)
         {
@@ -356,7 +360,7 @@ uint32_t Mesh::AddMaterial(std::string inName)
 {
     Assert(!mIsBuilt);
 
-    uint32_t index;
+    size_t index;
     Assert(!GetMaterial(inName, index));
 
     index = mMaterials.size();
