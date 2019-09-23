@@ -516,7 +516,7 @@ enum GPUFrontFace : uint8_t
     kGPUFrontFace_Clockwise,
 };
 
-enum GPUPrimitiveTopology : uint8_t
+enum ENUM() GPUPrimitiveTopology : uint8_t
 {
     kGPUPrimitiveTopology_PointList,
     kGPUPrimitiveTopology_LineList,
@@ -597,7 +597,7 @@ enum GPUStagingAccess : uint8_t
     kGPUStagingAccess_Write,
 };
 
-enum GPUAttributeSemantic : uint8_t
+enum ENUM() GPUAttributeSemantic : uint8_t
 {
     kGPUAttributeSemantic_Unknown,
 
@@ -611,7 +611,7 @@ enum GPUAttributeSemantic : uint8_t
     kGPUAttributeSemantic_TexCoord,
 };
 
-enum GPUAttributeFormat : uint8_t
+enum ENUM() GPUAttributeFormat : uint8_t
 {
     kGPUAttributeFormat_R8_UNorm,
     kGPUAttributeFormat_R8G8_UNorm,
@@ -639,7 +639,7 @@ enum GPUAttributeFormat : uint8_t
     kGPUAttributeFormat_R32G32B32A32_Float,
 };
 
-enum GPUIndexType : uint8_t
+enum ENUM() GPUIndexType : uint8_t
 {
     kGPUIndexType_16,
     kGPUIndexType_32,
