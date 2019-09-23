@@ -305,6 +305,7 @@ AssetPtr OBJLoader::BuildMesh()
         const uint32_t materialIndex = mesh->AddMaterial(subMesh.first);
 
         mesh->AddIndexedSubMesh(materialIndex,
+                                kGPUPrimitiveTopology_TriangleList,
                                 subMesh.second.indices.size(),
                                 kGPUIndexType_16,
                                 subMesh.second.indices.data());

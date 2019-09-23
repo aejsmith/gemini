@@ -67,7 +67,7 @@ GPUVertexInputStateRef SubMeshRenderEntity::GetVertexInputState() const
 
 GPUPrimitiveTopology SubMeshRenderEntity::GetPrimitiveTopology() const
 {
-    return kGPUPrimitiveTopology_TriangleList;
+    return mSubMesh.GetTopology();
 }
 
 void SubMeshRenderEntity::GetGeometry(EntityDrawCall& ioDrawCall) const

@@ -30,9 +30,10 @@ class Mesh;
 class SubMesh
 {
 public:
-    uint32_t                    GetMaterial() const     { return mMaterial; }
-    bool                        IsIndexed() const       { return mIndexed; }
-    uint32_t                    GetCount() const        { return mCount; }
+    uint32_t                    GetMaterial() const { return mMaterial; }
+    GPUPrimitiveTopology        GetTopology() const { return mTopology; }
+    bool                        IsIndexed() const   { return mIndexed; }
+    uint32_t                    GetCount() const    { return mCount; }
 
     uint32_t                    GetVertexOffset() const
                                     { Assert(!mIndexed); return mVertexOffset; }
@@ -52,7 +53,7 @@ private:
 private:
     Mesh&                       mParent;
     uint32_t                    mMaterial;
-
+    GPUPrimitiveTopology        mTopology;
     bool                        mIndexed;
 
     /** Vertex or index count, depending on if indexed. */
@@ -141,22 +142,25 @@ public:
      * Add a non-indexed submesh which just uses a contiguous range of the
      * mesh's vertex data.
      */
-    void                        AddSubMesh(const uint32_t inMaterialIndex,
-                                           const uint32_t inVertexOffset,
-                                           const uint32_t inVertexCount);
+    void                        AddSubMesh(const uint32_t             inMaterialIndex,
+                                           const GPUPrimitiveTopology inTopology,
+                                           const uint32_t             inVertexOffset,
+                                           const uint32_t             inVertexCount);
 
     /**
      * Add a submesh which is rendered using indices into the mesh's vertex
      * data. The void* version copies the given data.
      */
-    void                        AddIndexedSubMesh(const uint32_t     inMaterialIndex,
-                                                  const uint32_t     inIndexCount,
-                                                  const GPUIndexType inIndexType,
-                                                  ByteArray          inIndexData);
-    void                        AddIndexedSubMesh(const uint32_t     inMaterialIndex,
-                                                  const uint32_t     inIndexCount,
-                                                  const GPUIndexType inIndexType,
-                                                  const void* const  inIndexData);
+    void                        AddIndexedSubMesh(const uint32_t             inMaterialIndex,
+                                                  const GPUPrimitiveTopology inTopology,
+                                                  const uint32_t             inIndexCount,
+                                                  const GPUIndexType         inIndexType,
+                                                  ByteArray                  inIndexData);
+    void                        AddIndexedSubMesh(const uint32_t             inMaterialIndex,
+                                                  const GPUPrimitiveTopology inTopology,
+                                                  const uint32_t             inIndexCount,
+                                                  const GPUIndexType         inIndexType,
+                                                  const void* const          inIndexData);
 
     /**
      * Build the mesh. After this is called, the mesh cannot be changed.

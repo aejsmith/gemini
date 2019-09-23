@@ -127,9 +127,10 @@ uint32_t Mesh::AddMaterial(std::string inName)
     return index;
 }
 
-void Mesh::AddSubMesh(const uint32_t inMaterialIndex,
-                      const uint32_t inVertexOffset,
-                      const uint32_t inVertexCount)
+void Mesh::AddSubMesh(const uint32_t             inMaterialIndex,
+                      const GPUPrimitiveTopology inTopology,
+                      const uint32_t             inVertexOffset,
+                      const uint32_t             inVertexCount)
 {
     Assert(!mIsBuilt);
     Assert(inMaterialIndex < mMaterials.size());
@@ -139,6 +140,7 @@ void Mesh::AddSubMesh(const uint32_t inMaterialIndex,
     auto subMesh = new SubMesh(*this);
 
     subMesh->mMaterial     = inMaterialIndex;
+    subMesh->mTopology     = inTopology;
     subMesh->mIndexed      = false;
     subMesh->mCount        = inVertexCount;
     subMesh->mVertexOffset = inVertexOffset;
@@ -147,10 +149,11 @@ void Mesh::AddSubMesh(const uint32_t inMaterialIndex,
     mSubMeshes.emplace_back(subMesh);
 }
 
-void Mesh::AddIndexedSubMesh(const uint32_t     inMaterialIndex,
-                             const uint32_t     inIndexCount,
-                             const GPUIndexType inIndexType,
-                             ByteArray          inIndexData)
+void Mesh::AddIndexedSubMesh(const uint32_t             inMaterialIndex,
+                             const GPUPrimitiveTopology inTopology,
+                             const uint32_t             inIndexCount,
+                             const GPUIndexType         inIndexType,
+                             ByteArray                  inIndexData)
 {
     Assert(!mIsBuilt);
     Assert(inMaterialIndex < mMaterials.size());
@@ -159,6 +162,7 @@ void Mesh::AddIndexedSubMesh(const uint32_t     inMaterialIndex,
     auto subMesh = new SubMesh(*this);
 
     subMesh->mMaterial    = inMaterialIndex;
+    subMesh->mTopology    = inTopology;
     subMesh->mIndexed     = true;
     subMesh->mCount       = inIndexCount;
     subMesh->mIndexType   = inIndexType;
@@ -168,10 +172,11 @@ void Mesh::AddIndexedSubMesh(const uint32_t     inMaterialIndex,
     mSubMeshes.emplace_back(subMesh);
 }
 
-void Mesh::AddIndexedSubMesh(const uint32_t     inMaterialIndex,
-                             const uint32_t     inIndexCount,
-                             const GPUIndexType inIndexType,
-                             const void* const  inIndexData)
+void Mesh::AddIndexedSubMesh(const uint32_t             inMaterialIndex,
+                             const GPUPrimitiveTopology inTopology,
+                             const uint32_t             inIndexCount,
+                             const GPUIndexType         inIndexType,
+                             const void* const          inIndexData)
 {
     const size_t size = GPUUtils::GetIndexSize(inIndexType) * inIndexCount;
 
@@ -179,6 +184,7 @@ void Mesh::AddIndexedSubMesh(const uint32_t     inMaterialIndex,
     memcpy(data.Get(), inIndexData, size);
 
     AddIndexedSubMesh(inMaterialIndex,
+                      inTopology,
                       inIndexCount,
                       inIndexType,
                       std::move(data));
