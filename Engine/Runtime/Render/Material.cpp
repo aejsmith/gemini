@@ -44,6 +44,8 @@ Material::~Material()
 
 void Material::Serialise(Serialiser& inSerialiser) const
 {
+    Asset::Serialise(inSerialiser);
+
     inSerialiser.Write("shaderTechnique", mShaderTechnique);
 
     inSerialiser.BeginGroup("arguments");
@@ -89,9 +91,11 @@ void Material::Serialise(Serialiser& inSerialiser) const
 
 void Material::Deserialise(Serialiser& inSerialiser)
 {
+    Asset::Deserialise(inSerialiser);
+
     bool found;
 
-    ShaderTechnique* shaderTechnique;
+    ShaderTechniquePtr shaderTechnique;
     found = inSerialiser.Read("shaderTechnique", shaderTechnique);
     Assert(found);
 

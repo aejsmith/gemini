@@ -16,6 +16,8 @@
 
 #include "TestGame.h"
 
+#include "Core/Filesystem.h"
+
 #include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
 #include "Engine/Entity.h"
@@ -23,10 +25,14 @@
 #include "Engine/Mesh.h"
 #include "Engine/World.h"
 
+#include "Loaders/GLTFImporter.h"
+
 #include "Render/BasicRenderPipeline.h"
 #include "Render/Camera.h"
 #include "Render/Material.h"
 #include "Render/MeshRenderer.h"
+
+#include <memory>
 
 TestGame::TestGame()
 {
@@ -36,9 +42,48 @@ TestGame::~TestGame()
 {
 }
 
+#if 0
+static void ImportGLTFWorld(const Path& inPath,
+                            const Path& inAssetDir,
+                            const Path& inWorldPath)
+{
+    Engine::Get().CreateWorld();
+    World* const world = Engine::Get().GetWorld();
+
+    /* Create a camera, offset along Z behind the model since the model origin
+     * will be at (0, 0). TODO: glTF has optional cameras. */
+    Entity* playerEntity = world->CreateEntity("Player");
+    playerEntity->Translate(glm::vec3(0.0f, 0.0f, 3.0f));
+    playerEntity->SetActive(true);
+
+    Camera* camera = playerEntity->CreateComponent<Camera>();
+    camera->SetActive(true);
+
+    GLTFImporter importer;
+    if (!importer.Import(inPath, inAssetDir, world))
+    {
+        Fatal("Failed to load '%s'", inPath.GetCString());
+    }
+
+    if (!AssetManager::Get().SaveAsset(world, inWorldPath))
+    {
+        Fatal("Failed to save world");
+    }
+}
+#endif
+
 void TestGame::Init()
 {
-    Engine::Get().LoadWorld("Game/Worlds/Test");
+#if 0
+    ImportGLTFWorld("Games/Test/AssetSource/glTF/DamagedHelmet/DamagedHelmet.gltf",
+                    "Game/glTF/DamagedHelmet",
+                    "Game/glTF/DamagedHelmet/World");
+#endif
+
+    Engine::Get().LoadWorld("Game/glTF/DamagedHelmet/World");
+
+#if 0
+    Engine::Get().CreateWorld();
 
     World* world = Engine::Get().GetWorld();
 
@@ -47,9 +92,6 @@ void TestGame::Init()
 
     Camera* camera = playerEntity->CreateComponent<Camera>();
     camera->SetActive(true);
-
-    auto renderPipeline = static_cast<BasicRenderPipeline*>(camera->renderPipeline.Get());
-    renderPipeline->clearColour = glm::vec4(0.0f, 0.0f, 0.2f, 1.0f);
 
     MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
     MaterialPtr material = AssetManager::Get().Load<Material>("Game/Materials/CompanionCube");
@@ -67,15 +109,7 @@ void TestGame::Init()
         meshRenderer->SetMaterial(0, material);
         meshRenderer->SetActive(true);
     }
-
-    //Entity* entity1 = world->CreateEntity("Test");
-    //entity1->Translate(glm::vec3(0.0f, 1.5f, 0.0f));
-    //entity1->SetActive(true);
-
-    //JSONSerialiser serialiser;
-    //std::vector<uint8_t> data = serialiser.Serialise(world);
-    //std::unique_ptr<File> file(Filesystem::OpenFile("derp.object", kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
-    //file->Write(&data[0], data.size());
+#endif
 }
 
 const char* TestGame::GetName() const

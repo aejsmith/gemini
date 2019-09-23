@@ -19,9 +19,13 @@
 #include "Core/ByteArray.h"
 #include "Core/Path.h"
 
+#include "Engine/Mesh.h"
+#include "Engine/Texture.h"
 #include "Engine/World.h"
 
 #include "GPU/GPUDefs.h"
+
+#include "Render/Material.h"
 
 #include <rapidjson/document.h>
 
@@ -91,6 +95,8 @@ private:
     {
         // TODO
         uint32_t                    baseColourTexture;
+
+        MaterialPtr                 asset;
     };
 
     struct Attribute
@@ -106,6 +112,8 @@ private:
         uint32_t                    indices;
         uint32_t                    material;
         GPUPrimitiveTopology        topology;
+
+        MeshPtr                     asset;
     };
 
     struct MeshDef
@@ -121,9 +129,11 @@ private:
         glm::quat                   rotation;
     };
 
-    struct Texture
+    struct TextureDef
     {
         uint32_t                    image;
+
+        Texture2DPtr                asset;
     };
 
 private:
@@ -134,9 +144,14 @@ private:
     bool                            LoadMaterials();
     bool                            LoadMeshes();
     bool                            LoadNodes();
-    bool                            LoadTextures();
     bool                            LoadSamplers();
     bool                            LoadScene();
+    bool                            LoadTextures();
+
+    bool                            GenerateMaterial(const uint32_t inMaterialIndex);
+    bool                            GenerateMesh(const uint32_t inMeshIndex);
+    bool                            GenerateScene();
+    bool                            GenerateTexture(const uint32_t inTextureIndex);
 
     bool                            LoadURI(const rapidjson::Value& inURI,
                                             ByteArray&              outData,
@@ -156,7 +171,7 @@ private:
     std::vector<MaterialDef>        mMaterials;
     std::vector<MeshDef>            mMeshes;
     std::vector<Node>               mNodes;
-    std::vector<Texture>            mTextures;
+    std::vector<TextureDef>         mTextures;
 
     std::vector<uint32_t>           mScene;
 

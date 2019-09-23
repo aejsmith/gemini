@@ -1,0 +1,145 @@
+[
+    {
+        "objectClass": "World",
+        "objectID": 0,
+        "objectProperties": {},
+        "root": {
+            "objectID": 1
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 1,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {},
+        "components": [],
+        "children": [
+            {
+                "objectID": 2
+            },
+            {
+                "objectID": 5
+            }
+        ]
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 2,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Player",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                3.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 3
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "Camera",
+        "objectID": 3,
+        "entity": {
+            "objectID": 2
+        },
+        "objectProperties": {
+            "active": true,
+            "renderPipeline": {
+                "objectID": 4
+            },
+            "verticalFOV": 60.0,
+            "zNear": 0.10000000149011612,
+            "zFar": 500.0
+        }
+    },
+    {
+        "objectClass": "BasicRenderPipeline",
+        "objectID": 4,
+        "objectProperties": {
+            "clearColour": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 5,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "DamagedHelmet_0",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                0.7071068286895752,
+                0.7071068286895752,
+                0.0,
+                -0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 6
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 6,
+        "entity": {
+            "objectID": 5
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/DamagedHelmet/Mesh_0_Primitive_0"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/DamagedHelmet/Material_0"
+            }
+        }
+    }
+]

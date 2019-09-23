@@ -20,13 +20,20 @@
 #include "Core/ByteArray.h"
 #include "Core/Filesystem.h"
 
+#include "Engine/AssetManager.h"
+#include "Engine/Entity.h"
+
+#include "GPU/GPUUtils.h"
+
+#include "Render/MeshRenderer.h"
+
 #include <rapidjson/error/en.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
 
 #include <memory>
 
-static constexpr char kRequiredVersion[] = "2.0";
+static constexpr char kRequiredVersion[]    = "2.0";
 
 static constexpr uint32_t GL_POINTS         = 0;
 static constexpr uint32_t GL_LINES          = 1;
@@ -116,6 +123,7 @@ bool GLTFImporter::Import(const Path&  inPath,
         return false;
     }
 
+    /* Load and validate everything from the file bottom-up. */
     if (!LoadBuffers())     return false;
     if (!LoadBufferViews()) return false;
     if (!LoadAccessors())   return false;
@@ -126,6 +134,10 @@ bool GLTFImporter::Import(const Path&  inPath,
     if (!LoadMeshes())      return false;
     if (!LoadNodes())       return false;
     if (!LoadScene())       return false;
+
+    /* Generate the world top-down from what's actually required for the
+     * specified scene. */
+    if (!GenerateScene())   return false;
 
     return true;
 }
@@ -170,6 +182,11 @@ bool GLTFImporter::LoadAccessors()
         if (accessor.bufferView >= mBufferViews.size())
         {
             LogError("%s: Buffer view %u does not exist", mPath.GetCString(), accessor.bufferView);
+            return false;
+        }
+        else if (accessor.count == 0)
+        {
+            LogError("%s: Accessor count must be non-zero", mPath.GetCString());
             return false;
         }
 
@@ -736,44 +753,6 @@ bool GLTFImporter::LoadNodes()
     return true;
 }
 
-bool GLTFImporter::LoadTextures()
-{
-    if (!mDocument.HasMember("textures"))
-    {
-        return true;
-    }
-
-    const rapidjson::Value& textures = mDocument["textures"];
-
-    if (!textures.IsArray())
-    {
-        LogError("%s: 'textures' property is invalid", mPath.GetCString());
-        return false;
-    }
-
-    for (const rapidjson::Value& entry : textures.GetArray())
-    {
-        if (!entry.IsObject() ||
-            !entry.HasMember("source") || !entry["source"].IsUint())
-        {
-            LogError("%s: Texture has missing/invalid properties", mPath.GetCString());
-            return false;
-        }
-
-        Texture& texture = mTextures.emplace_back();
-
-        texture.image = entry["source"].GetUint();
-
-        if (texture.image >= mImages.size())
-        {
-            LogError("%s: Image %u does not exist", mPath.GetCString(), texture.image);
-            return false;
-        }
-    }
-
-    return true;
-}
-
 bool GLTFImporter::LoadSamplers()
 {
     if (!mDocument.HasMember("samplers"))
@@ -870,6 +849,44 @@ bool GLTFImporter::LoadScene()
     return true;
 }
 
+bool GLTFImporter::LoadTextures()
+{
+    if (!mDocument.HasMember("textures"))
+    {
+        return true;
+    }
+
+    const rapidjson::Value& textures = mDocument["textures"];
+
+    if (!textures.IsArray())
+    {
+        LogError("%s: 'textures' property is invalid", mPath.GetCString());
+        return false;
+    }
+
+    for (const rapidjson::Value& entry : textures.GetArray())
+    {
+        if (!entry.IsObject() ||
+            !entry.HasMember("source") || !entry["source"].IsUint())
+        {
+            LogError("%s: Texture has missing/invalid properties", mPath.GetCString());
+            return false;
+        }
+
+        TextureDef& texture = mTextures.emplace_back();
+
+        texture.image = entry["source"].GetUint();
+
+        if (texture.image >= mImages.size())
+        {
+            LogError("%s: Image %u does not exist", mPath.GetCString(), texture.image);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool GLTFImporter::LoadURI(const rapidjson::Value& inURI,
                            ByteArray&              outData,
                            std::string&            outMediaType)
@@ -951,4 +968,316 @@ bool GLTFImporter::LoadURI(const rapidjson::Value& inURI,
     }
 
     return true;
+}
+
+bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
+{
+    // TODO: PBR implementation, just map to the basic shader for now.
+
+    MaterialDef& material = mMaterials[inMaterialIndex];
+
+    if (material.asset)
+    {
+        return true;
+    }
+
+    ShaderTechniquePtr shaderTechnique = AssetManager::Get().Load<ShaderTechnique>("Engine/Techniques/BasicTextured");
+    if (!shaderTechnique)
+    {
+        return false;
+    }
+
+    MaterialPtr asset(new Material(shaderTechnique));
+    material.asset = asset;
+
+    if (!GenerateTexture(material.baseColourTexture))
+    {
+        return false;
+    }
+
+    asset->SetArgument("texture", mTextures[material.baseColourTexture].asset);
+
+    // TODO: Set other PBR texture types as non-sRGB.
+
+    asset->UpdateArgumentSet();
+
+    const Path assetPath = mAssetDir / StringUtils::Format("Material_%u", inMaterialIndex);
+    if (!AssetManager::Get().SaveAsset(asset, assetPath))
+    {
+        LogError("%s: Failed to save Material asset", mPath.GetCString());
+        return false;
+    }
+
+    return true;
+}
+
+bool GLTFImporter::GenerateMesh(const uint32_t inMeshIndex)
+{
+    MeshDef& mesh = mMeshes[inMeshIndex];
+
+    /* We create each primitive as a separate mesh asset. This is because each
+     * primitive has a separate set of vertex data in glTF, whereas the Mesh
+     * asset uses shared vertex data with just separate indices/material for
+     * each submesh. */
+    for (size_t primitiveIndex = 0; primitiveIndex < mesh.primitives.size(); primitiveIndex++)
+    {
+        Primitive& primitive = mesh.primitives[primitiveIndex];
+
+        if (primitive.asset)
+        {
+            continue;
+        }
+
+        MeshPtr asset(new Mesh());
+        primitive.asset = asset;
+
+        uint32_t vertexCount = 0;
+        GPUVertexInputStateDesc inputDesc;
+
+        /* We map attributes sharing the same buffer view onto a single
+         * buffer in the mesh. This stores the mapping of buffer view index
+         * to mesh buffer slot (+ 1, 0 == not seen yet). */
+        uint8_t* bufferViewMapping = AllocateZeroedStackArray(uint8_t, mBufferViews.size());
+        uint8_t bufferCount = 0;
+
+        /* Build vertex input state. */
+        for (size_t attributeIndex = 0; attributeIndex < primitive.attributes.size(); attributeIndex++)
+        {
+            const Attribute& attribute = primitive.attributes[attributeIndex];
+            const Accessor& accessor   = mAccessors[attribute.accessor];
+
+            if (vertexCount == 0)
+            {
+                vertexCount = accessor.count;
+            }
+            else
+            {
+                /* Expect all accessors to have the same count. */
+                if (accessor.count != vertexCount)
+                {
+                    LogError("%s: Mesh attribute accessors have mismatching counts (%u / %u)",
+                             mPath.GetCString(),
+                             vertexCount,
+                             accessor.count);
+                    return false;
+                }
+            }
+
+            if (bufferViewMapping[accessor.bufferView] == 0)
+            {
+                uint8_t bufferIndex = bufferCount++;
+                bufferViewMapping[accessor.bufferView] = bufferIndex + 1;
+
+                const BufferView& bufferView = mBufferViews[accessor.bufferView];
+
+                if (bufferView.stride != 0)
+                {
+                    inputDesc.buffers[bufferIndex].stride = bufferView.stride;
+                }
+                else
+                {
+                    /* Stride is defined by the width of the accessor type. */
+                    inputDesc.buffers[bufferIndex].stride = GPUUtils::GetAttributeSize(accessor.format);
+                }
+            }
+
+            inputDesc.attributes[attributeIndex].semantic = attribute.semantic;
+            inputDesc.attributes[attributeIndex].index    = attribute.semanticIndex;
+            inputDesc.attributes[attributeIndex].format   = accessor.format;
+            inputDesc.attributes[attributeIndex].buffer   = bufferViewMapping[accessor.bufferView] - 1;
+
+            /* Vertex buffer content will just get everything from the start of
+             * the view. */
+            inputDesc.attributes[attributeIndex].offset = accessor.offset;
+        }
+
+        asset->SetVertexLayout(inputDesc, vertexCount);
+
+        /* Set vertex data. */
+        for (size_t bufferViewIndex = 0; bufferViewIndex < mBufferViews.size(); bufferViewIndex++)
+        {
+            if (bufferViewMapping[bufferViewIndex] != 0)
+            {
+                const uint8_t bufferIndex    = bufferViewMapping[bufferViewIndex] - 1;
+                const BufferView& bufferView = mBufferViews[bufferViewIndex];
+                const size_t requiredSize    = inputDesc.buffers[bufferIndex].stride * vertexCount;
+
+                if (requiredSize > bufferView.length)
+                {
+                    LogError("%s: Buffer view %u does not have enough data (expect at least %zu)",
+                             mPath.GetCString(),
+                             bufferViewIndex,
+                             requiredSize);
+                    return false;
+                }
+
+                asset->SetVertexData(bufferIndex,
+                                     mBuffers[bufferView.buffer].Get() + bufferView.offset);
+            }
+        }
+
+        const uint32_t materialIndex = asset->AddMaterial("Material");
+
+        if (primitive.indices != kInvalidIndex)
+        {
+            const Accessor& accessor     = mAccessors[primitive.indices];
+            const BufferView& bufferView = mBufferViews[accessor.bufferView];
+
+            GPUIndexType indexType;
+            switch (accessor.format)
+            {
+                case kGPUAttributeFormat_R16_UInt:
+                    indexType = kGPUIndexType_16;
+                    break;
+
+                default:
+                    LogError("%s: Accessor %u has unhandled index format", mPath.GetCString(), primitive.indices);
+                    return false;
+
+            }
+
+            const size_t requiredSize = accessor.offset + (accessor.count * GPUUtils::GetIndexSize(indexType));
+
+            if (requiredSize > bufferView.length)
+            {
+                LogError("%s: Buffer view %u does not have enough data (expect at least %zu)",
+                         mPath.GetCString(),
+                         accessor.bufferView,
+                         requiredSize);
+                return false;
+            }
+
+            asset->AddIndexedSubMesh(materialIndex,
+                                     primitive.topology,
+                                     accessor.count,
+                                     indexType,
+                                     mBuffers[bufferView.buffer].Get() + bufferView.offset + accessor.offset);
+        }
+        else
+        {
+            asset->AddSubMesh(materialIndex,
+                              primitive.topology,
+                              0,
+                              vertexCount);
+        }
+
+        /* Save the mesh asset. */
+        const Path assetPath = mAssetDir / StringUtils::Format("Mesh_%u_Primitive_%u", inMeshIndex, primitiveIndex);
+        if (!AssetManager::Get().SaveAsset(asset, assetPath))
+        {
+            LogError("%s: Failed to save Mesh asset", mPath.GetCString());
+            return false;
+        }
+
+        /* Build it. Currently, we must serialise before this. */
+        asset->Build();
+    }
+
+    return true;
+}
+
+bool GLTFImporter::GenerateScene()
+{
+    for (const uint32_t nodeIndex : mScene)
+    {
+        const Node& node = mNodes[nodeIndex];
+
+        /* Generates the meshes if they haven't already been. */
+        if (!GenerateMesh(node.mesh))
+        {
+            return false;
+        }
+
+        const MeshDef& mesh = mMeshes[node.mesh];
+
+        // TODO: Use names from the glTF if they're there?
+        std::string entityName = StringUtils::Format("%s_%u", mPath.GetBaseFileName().c_str(), nodeIndex);
+
+        /* If we have just one primitive, we'll create it under the root, else
+         * we'll create a parent entity to maintain the transform, and then put
+         * each primitive as a child of that. */
+        Entity* const entity = mWorld->CreateEntity(std::move(entityName));
+        entity->SetTransform(Transform(node.translation, node.rotation, node.scale));
+
+        for (uint32_t primitiveIndex = 0; primitiveIndex < mesh.primitives.size(); primitiveIndex++)
+        {
+            Entity* primEntity;
+            if (mesh.primitives.size() > 1)
+            {
+                const std::string primName = StringUtils::Format("Primitive_%u", primitiveIndex);
+                primEntity = entity->CreateChild(std::move(primName));
+                primEntity->SetActive(true);
+            }
+            else
+            {
+                primEntity = entity;
+            }
+
+            const Primitive& primitive = mesh.primitives[primitiveIndex];
+
+            /* Generates the material if not already done. */
+            if (!GenerateMaterial(primitive.material))
+            {
+                return false;
+            }
+
+            const MaterialDef& material = mMaterials[primitive.material];
+
+            MeshRenderer* const meshRenderer = primEntity->CreateComponent<MeshRenderer>();
+            meshRenderer->SetMesh(primitive.asset);
+            meshRenderer->SetMaterial(0, material.asset);
+            meshRenderer->SetActive(true);
+        }
+
+        entity->SetActive(true);
+    }
+
+    return true;
+}
+
+bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex)
+{
+    TextureDef& texture = mTextures[inTextureIndex];
+
+    if (texture.asset)
+    {
+        return true;
+    }
+
+    const Image& image = mImages[texture.image];
+
+    /* We'll just save out the image data into the asset filesystem, since it's
+     * either JPEG or PNG and we can load those directly. */
+    const Path assetPath = mAssetDir / StringUtils::Format("Texture_%u", inTextureIndex);
+
+    Path fsPath;
+    if (!AssetManager::Get().GetFilesystemPath(assetPath, fsPath))
+    {
+        LogError("%s: Failed to map asset path '%s'", mPath.GetCString(), assetPath.GetCString());
+        return false;
+    }
+
+    switch (image.type)
+    {
+        case kImageType_JPG: fsPath += ".jpg"; break;
+        case kImageType_PNG: fsPath += ".png"; break;
+    }
+
+    std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+    if (!file)
+    {
+        LogError("%s: Failed to open '%s'", mPath.GetCString(), fsPath.GetCString());
+        return false;
+    }
+
+    if (!file->Write(image.data.Get(), image.data.GetSize()))
+    {
+        LogError("%s: Failed to write '%s'", mPath.GetCString(), fsPath.GetCString());
+        return false;
+    }
+
+    /* Now load it back in as a proper texture asset. */
+    texture.asset = AssetManager::Get().Load<Texture2D>(assetPath);
+
+    return texture.asset != nullptr;
 }
