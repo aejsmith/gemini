@@ -44,7 +44,47 @@ Material::~Material()
 
 void Material::Serialise(Serialiser& inSerialiser) const
 {
-    LogError("TODO");
+    inSerialiser.Write("shaderTechnique", mShaderTechnique);
+
+    inSerialiser.BeginGroup("arguments");
+
+    for (const ShaderParameter& parameter : mShaderTechnique->GetParameters())
+    {
+        #define WRITE_TYPE(typeEnum, typeName) \
+            case typeEnum: \
+            { \
+                typeName value; \
+                GetArgument(parameter, &value); \
+                inSerialiser.Write(parameter.name.c_str(), value); \
+                break; \
+            }
+
+        switch (parameter.type)
+        {
+            WRITE_TYPE(kShaderParameterType_Int,       int32_t);
+            WRITE_TYPE(kShaderParameterType_Int2,      glm::ivec2);
+            WRITE_TYPE(kShaderParameterType_Int3,      glm::ivec3);
+            WRITE_TYPE(kShaderParameterType_Int4,      glm::ivec4);
+            WRITE_TYPE(kShaderParameterType_UInt,      uint32_t);
+            WRITE_TYPE(kShaderParameterType_UInt2,     glm::uvec2);
+            WRITE_TYPE(kShaderParameterType_UInt3,     glm::uvec3);
+            WRITE_TYPE(kShaderParameterType_UInt4,     glm::uvec4);
+            WRITE_TYPE(kShaderParameterType_Float,     float);
+            WRITE_TYPE(kShaderParameterType_Float2,    glm::vec2);
+            WRITE_TYPE(kShaderParameterType_Float3,    glm::vec3);
+            WRITE_TYPE(kShaderParameterType_Float4,    glm::vec4);
+            WRITE_TYPE(kShaderParameterType_Texture2D, Texture2DPtr);
+
+            default:
+                UnreachableMsg("Unhandled parameter type %d", parameter.type);
+                break;
+
+        }
+
+        #undef WRITE_TYPE
+    }
+
+    inSerialiser.EndGroup();
 }
 
 void Material::Deserialise(Serialiser& inSerialiser)
