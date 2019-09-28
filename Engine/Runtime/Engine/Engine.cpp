@@ -184,6 +184,8 @@ void Engine::Run()
         debugManager.AddText(StringUtils::Format("FPS: %.2f", mFPS));
         debugManager.AddText(StringUtils::Format("Frame time: %.2f ms", static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerMillisecond)));
 
+        mWorld->Tick(mDeltaTime);
+
         RenderManager::Get().Render({});
 
         GPUDevice::Get().EndFrame();

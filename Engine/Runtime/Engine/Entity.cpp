@@ -62,15 +62,8 @@ void Entity::Destroy()
         /* Parent holds a reference to us as well. This will cause us to be
          * destroyed if this was the last reference. There could still be
          * remaining references to the entity if there are any external
-         * references to it or its children (or any components). Warn if this
-         * happens since it could indicate behaviour that will cause a memory
-         * leak. */
-        const int32_t count = Release();
-        if (count != 0)
-        {
-            LogDebug("Entity '%s' still has remaining references after destruction request. Check if this is expected",
-                     mName.c_str());
-        }
+         * references to it or its children (or any components). */
+        Release();
     }
 }
 
@@ -418,4 +411,29 @@ void Entity::Rotate(const float      inAngle,
                     const glm::vec3& inAxis)
 {
     Rotate(glm::angleAxis(glm::radians(inAngle), glm::normalize(inAxis)));
+}
+
+void Entity::Tick(const float inDelta)
+{
+    // FIXME: This does not handle activation/deactivation quite well. When
+    // an entity becomes active in a frame, it should *not* have it's tick
+    // function called in the rest of the frame, otherwise it will get a
+    // meaningless dt value. It shouldn't be called until next frame, where
+    // dt would be time since activation.
+
+    for (Component* component : mComponents)
+    {
+        if (component->GetActive())
+        {
+            component->Tick(inDelta);
+        }
+    }
+
+    for (Entity* entity : mChildren)
+    {
+        if (entity->GetActive())
+        {
+            entity->Tick(inDelta);
+        }
+    }
 }

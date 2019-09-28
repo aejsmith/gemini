@@ -156,6 +156,8 @@ private:
 
     void                    UpdateTransform();
 
+    void                    Tick(const float inDelta);
+
 private:
     World*                  mWorld;
 

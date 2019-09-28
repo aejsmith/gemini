@@ -5,6 +5,7 @@ Import('env')
 objects = map(env.ObjectGenHeader, [
     'Asset.h',
     'AssetLoader.h',
+    'Behaviour.h',
     'Component.h',
     'Entity.h',
     'Game.h',
@@ -18,6 +19,7 @@ objects += map(env.Object, [
     'Asset.cpp',
     'AssetLoader.cpp',
     'AssetManager.cpp',
+    'Behaviour.cpp',
     'Component.cpp',
     'DebugManager.cpp',
     'Engine.cpp',

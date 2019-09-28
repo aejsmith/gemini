@@ -99,6 +99,9 @@ protected:
     /** Called when the transformation changes. */
     virtual void            Transformed() {}
 
+    /** Called every frame to update the component. */
+    virtual void            Tick(const float inDelta) {}
+
 private:
     EntityPtr               mEntity;
     bool                    mActive;

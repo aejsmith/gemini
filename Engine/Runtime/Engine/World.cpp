@@ -73,3 +73,8 @@ Entity* World::CreateEntity(std::string inName)
 {
     return mRoot->CreateChild(std::move(inName));
 }
+
+void World::Tick(const float inDelta)
+{
+    mRoot->Tick(inDelta);
+}

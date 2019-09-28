@@ -41,6 +41,8 @@ public:
 
     RenderWorld*            GetRenderWorld()    { return mRenderWorld; }
 
+    void                    Tick(const float inDelta);
+
 protected:
                             World();
                             ~World();
