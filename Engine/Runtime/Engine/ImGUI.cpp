@@ -156,8 +156,7 @@ InputHandler::EventResult ImGUIInputHandler::HandleButton(const ButtonEvent& inE
         }
     }
 
-    // FIXME
-    return kEventResult_Stop;
+    return kEventResult_Continue;
 }
 
 InputHandler::EventResult ImGUIInputHandler::HandleAxis(const AxisEvent& inEvent)
@@ -175,8 +174,7 @@ InputHandler::EventResult ImGUIInputHandler::HandleAxis(const AxisEvent& inEvent
 
     }
 
-    // FIXME
-    return kEventResult_Stop;
+    return kEventResult_Continue;
 }
 
 void ImGUIInputHandler::HandleTextInput(const TextInputEvent& inEvent)
