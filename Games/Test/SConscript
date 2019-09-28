@@ -3,10 +3,12 @@ Import('manager')
 env = manager.CreateEnvironment(depends = ['Engine'])
 
 objects = map(env.ObjectGenHeader, [
+    'Source/PlayerController.h',
     'Source/TestGame.h',
 ])
 
 objects += map(env.Object, [
+    'Source/PlayerController.cpp',
     'Source/TestGame.cpp',
 ])
 

@@ -20,7 +20,7 @@
                 "objectID": 2
             },
             {
-                "objectID": 5
+                "objectID": 7
             }
         ]
     },
@@ -58,18 +58,35 @@
                 "objectID": 3
             }
         ],
-        "children": []
+        "children": [
+            {
+                "objectID": 5
+            }
+        ]
     },
     {
-        "objectClass": "Camera",
+        "objectClass": "PlayerController",
         "objectID": 3,
         "entity": {
             "objectID": 2
         },
         "objectProperties": {
             "active": true,
-            "renderPipeline": {
+            "camera": {
                 "objectID": 4
+            }
+        }
+    },
+    {
+        "objectClass": "Camera",
+        "objectID": 4,
+        "entity": {
+            "objectID": 5
+        },
+        "objectProperties": {
+            "active": true,
+            "renderPipeline": {
+                "objectID": 6
             },
             "verticalFOV": 60.0,
             "zNear": 0.10000000149011612,
@@ -77,8 +94,44 @@
         }
     },
     {
+        "objectClass": "Entity",
+        "objectID": 5,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 2
+        },
+        "objectProperties": {
+            "name": "Camera",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 4
+            }
+        ],
+        "children": []
+    },
+    {
         "objectClass": "BasicRenderPipeline",
-        "objectID": 4,
+        "objectID": 6,
         "objectProperties": {
             "clearColour": [
                 0.0,
@@ -90,7 +143,7 @@
     },
     {
         "objectClass": "Entity",
-        "objectID": 5,
+        "objectID": 7,
         "world": {
             "objectID": 0
         },
@@ -119,16 +172,16 @@
         },
         "components": [
             {
-                "objectID": 6
+                "objectID": 8
             }
         ],
         "children": []
     },
     {
         "objectClass": "MeshRenderer",
-        "objectID": 6,
+        "objectID": 8,
         "entity": {
-            "objectID": 5
+            "objectID": 7
         },
         "objectProperties": {
             "active": true,

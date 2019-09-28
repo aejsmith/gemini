@@ -16,6 +16,8 @@
 
 #include "TestGame.h"
 
+#include "PlayerController.h"
+
 #include "Core/Filesystem.h"
 
 #include "Engine/AssetManager.h"
@@ -42,7 +44,6 @@ TestGame::~TestGame()
 {
 }
 
-#if 0
 static void ImportGLTFWorld(const Path& inPath,
                             const Path& inAssetDir,
                             const Path& inWorldPath)
@@ -56,8 +57,15 @@ static void ImportGLTFWorld(const Path& inPath,
     playerEntity->Translate(glm::vec3(0.0f, 0.0f, 3.0f));
     playerEntity->SetActive(true);
 
-    Camera* camera = playerEntity->CreateComponent<Camera>();
+    Entity* cameraEntity = playerEntity->CreateChild("Camera");
+    cameraEntity->SetActive(true);
+
+    Camera* camera = cameraEntity->CreateComponent<Camera>();
     camera->SetActive(true);
+
+    PlayerController* controller = playerEntity->CreateComponent<PlayerController>();
+    controller->camera = camera;
+    controller->SetActive(true);
 
     GLTFImporter importer;
     if (!importer.Import(inPath, inAssetDir, world))
@@ -70,7 +78,6 @@ static void ImportGLTFWorld(const Path& inPath,
         Fatal("Failed to save world");
     }
 }
-#endif
 
 void TestGame::Init()
 {
