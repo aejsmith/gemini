@@ -102,7 +102,7 @@ bool Base64::Decode(const char* const inString,
         remaining--;
     }
 
-    result.Shrink(actualLength, false);
+    result.Resize(actualLength, false);
 
     outData = result;
     return true;

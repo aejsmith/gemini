@@ -331,7 +331,7 @@ bool GLTFImporter::LoadBuffers()
         }
         else if (byteLength < buffer.GetSize())
         {
-            buffer.Shrink(byteLength, false);
+            buffer.Resize(byteLength, false);
         }
     }
 

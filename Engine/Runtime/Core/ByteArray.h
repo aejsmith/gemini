@@ -50,15 +50,15 @@ public:
     const uint8_t*          Get() const     { return mData; }
 
     /**
-     * Shrinks the array. If inReallocate is true, then a new array will be
-     * allocated of the new size and the relevant content will be copied.
-     * Otherwise, just the size field will be changed, and the remainder of the
-     * allocation will be wasted. This may be useful if only shrinking by a
-     * small amount or when the array is only temporary anyway so wastage
-     * doesn't matter.
+     * Resizes the array, optionally reallocating it (and copying content). If
+     * the size is being increased, then inReallocate must be true. Otherwise,
+     * if shrinking and inReallocate is false, just the size field will be
+     * changed, and the remainder of the allocation will be wasted. This may be
+     * useful if only shrinking by a small amount or when the array is only
+     * temporary anyway so wastage doesn't matter.
      */
-    void                    Shrink(const size_t inSize,
-                                   const bool   inReallocate);
+    void                    Resize(const size_t inSize,
+                                   const bool   inReallocate = true);
 
     void                    Clear();
 
@@ -132,17 +132,17 @@ inline ByteArray& ByteArray::operator=(ByteArray&& inOther)
     return *this;
 }
 
-inline void ByteArray::Shrink(const size_t inSize,
+inline void ByteArray::Resize(const size_t inSize,
                               const bool   inReallocate)
 {
-    Assert(inSize <= mSize);
-
-    if (inSize < mSize)
+    if (inSize != mSize)
     {
+        Assert(inReallocate || inSize < mSize);
+
         if (inReallocate)
         {
-            uint8_t* newData = new uint8_t[inSize];
-            memcpy(newData, mData, inSize);
+            uint8_t* newData = (inSize != 0) ? new uint8_t[inSize] : 0;
+            memcpy(newData, mData, std::min(inSize, mSize));
             delete[] mData;
             mData = newData;
         }
