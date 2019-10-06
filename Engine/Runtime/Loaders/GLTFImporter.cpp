@@ -48,6 +48,76 @@ static constexpr uint32_t GL_FLOAT          = 5126;
 
 static constexpr uint32_t kInvalidIndex     = std::numeric_limits<uint32_t>::max();
 
+static float GetFloat(const rapidjson::Value& inEntry,
+                      const char* const       inName,
+                      const float             inDefault)
+{
+    float result = inDefault;
+
+    if (inEntry.HasMember(inName))
+    {
+        result = inEntry[inName].GetFloat();
+    }
+
+    return result;
+}
+
+static glm::vec3 GetVec3(const rapidjson::Value& inEntry,
+                         const char* const       inName,
+                         const glm::vec3&        inDefault)
+{
+    glm::vec3 result = inDefault;
+
+    if (inEntry.HasMember(inName))
+    {
+        const rapidjson::Value& value = inEntry[inName];
+
+        result.x = value[0u].GetFloat();
+        result.y = value[1u].GetFloat();
+        result.z = value[2u].GetFloat();
+    }
+
+    return result;
+}
+
+static glm::vec4 GetVec4(const rapidjson::Value& inEntry,
+                         const char* const       inName,
+                         const glm::vec4&        inDefault)
+{
+    glm::vec4 result = inDefault;
+
+    if (inEntry.HasMember(inName))
+    {
+        const rapidjson::Value& value = inEntry[inName];
+
+        result.x = value[0u].GetFloat();
+        result.y = value[1u].GetFloat();
+        result.z = value[2u].GetFloat();
+        result.w = value[3u].GetFloat();
+    }
+
+    return result;
+}
+
+static glm::quat GetQuat(const rapidjson::Value& inEntry,
+                         const char* const       inName,
+                         const glm::quat&        inDefault)
+{
+    glm::quat result = inDefault;
+
+    if (inEntry.HasMember(inName))
+    {
+        const rapidjson::Value& value = inEntry[inName];
+
+        result.x = value[0u].GetFloat();
+        result.y = value[1u].GetFloat();
+        result.z = value[2u].GetFloat();
+        result.w = value[3u].GetFloat();
+    }
+
+    return result;
+}
+
 GLTFImporter::GLTFImporter()
 {
 }
@@ -472,21 +542,12 @@ bool GLTFImporter::LoadMaterials()
 
         auto GetTexture = [&] (const rapidjson::Value& inParentValue,
                                const char* const       inName,
-                               const bool              inRequired,
                                uint32_t&               outIndex) -> bool
         {
             if (!inParentValue.HasMember(inName))
             {
-                if (inRequired)
-                {
-                    LogError("%s: Required material texture '%s' is missing", mPath.GetCString(), inName);
-                    return false;
-                }
-                else
-                {
-                    outIndex = kInvalidIndex;
-                    return true;
-                }
+                outIndex = kInvalidIndex;
+                return true;
             }
 
             const rapidjson::Value& texture = inParentValue[inName];
@@ -515,11 +576,16 @@ bool GLTFImporter::LoadMaterials()
             return true;
         };
 
-        // TODO. Just take base colour for now.
-        if (!GetTexture(pbr, "baseColorTexture", true, material.baseColourTexture))
-        {
-            return false;
-        }
+        if (!GetTexture(pbr,   "baseColorTexture",         material.baseColourTexture))        return false;
+        if (!GetTexture(entry, "emissiveTexture",          material.emissiveTexture))          return false;
+        if (!GetTexture(pbr,   "metallicRoughnessTexture", material.metallicRoughnessTexture)) return false;
+        if (!GetTexture(entry, "normalTexture",            material.normalTexture))            return false;
+        if (!GetTexture(entry, "occlusionTexture",         material.occlusionTexture))         return false;
+
+        material.baseColourFactor = GetVec4 (pbr,   "baseColorFactor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        material.emissiveFactor   = GetVec3 (entry, "emissiveFactor",  glm::vec3(0.0f, 0.0f, 0.0f));
+        material.metallicFactor   = GetFloat(pbr,   "metallicFactor",  1.0f);
+        material.roughnessFactor  = GetFloat(pbr,   "roughnessFactor", 1.0f);
     }
 
     return true;
@@ -710,44 +776,9 @@ bool GLTFImporter::LoadNodes()
             return false;
         }
 
-        auto GetVec3 = [&] (const char* const inName,
-                            const glm::vec3&  inDefault) -> glm::vec3
-        {
-            glm::vec3 result = inDefault;
-
-            if (entry.HasMember(inName))
-            {
-                const rapidjson::Value& value = entry[inName];
-
-                result.x = value[0u].GetFloat();
-                result.y = value[1u].GetFloat();
-                result.z = value[2u].GetFloat();
-            }
-
-            return result;
-        };
-
-        auto GetQuat = [&] (const char* const inName,
-                            const glm::quat&  inDefault) -> glm::quat
-        {
-            glm::quat result = inDefault;
-
-            if (entry.HasMember(inName))
-            {
-                const rapidjson::Value& value = entry[inName];
-
-                result.x = value[0u].GetFloat();
-                result.y = value[1u].GetFloat();
-                result.z = value[2u].GetFloat();
-                result.w = value[3u].GetFloat();
-            }
-
-            return result;
-        };
-
-        node.translation = GetVec3("translation", glm::vec3(0.0f, 0.0f, 0.0f));
-        node.scale       = GetVec3("scale",       glm::vec3(1.0f, 1.0f, 1.0f));
-        node.rotation    = GetQuat("rotation",    glm::quat(0.0f, 0.0f, 0.0f, 1.0f));
+        node.translation = GetVec3(entry, "translation", glm::vec3(0.0f, 0.0f, 0.0f));
+        node.scale       = GetVec3(entry, "scale",       glm::vec3(1.0f, 1.0f, 1.0f));
+        node.rotation    = GetQuat(entry, "rotation",    glm::quat(0.0f, 0.0f, 0.0f, 1.0f));
     }
 
     return true;
@@ -981,7 +1012,7 @@ bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
         return true;
     }
 
-    ShaderTechniquePtr shaderTechnique = AssetManager::Get().Load<ShaderTechnique>("Engine/Techniques/BasicTextured");
+    ShaderTechniquePtr shaderTechnique = AssetManager::Get().Load<ShaderTechnique>("Engine/Techniques/PBRMetallicRoughness");
     if (!shaderTechnique)
     {
         return false;
@@ -990,14 +1021,36 @@ bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
     MaterialPtr asset(new Material(shaderTechnique));
     material.asset = asset;
 
-    if (!GenerateTexture(material.baseColourTexture))
+    auto SetTexture = [&] (const char* const inName,
+                           const uint32_t    inIndex,
+                           const bool        inSRGB)
     {
-        return false;
-    }
+        if (inIndex == kInvalidIndex)
+        {
+            /* Leave as the material default. */
+            return true;
+        }
 
-    asset->SetArgument("texture", mTextures[material.baseColourTexture].asset);
+        if (!GenerateTexture(inIndex, inSRGB))
+        {
+            return false;
+        }
 
-    // TODO: Set other PBR texture types as non-sRGB.
+        asset->SetArgument(inName, mTextures[inIndex].asset);
+        return true;
+    };
+
+    /* Base colour and emissive are in sRGB space. */
+    if (!SetTexture("baseColourTexture",        material.baseColourTexture,        true))  return false;
+    if (!SetTexture("emissiveTexture",          material.emissiveTexture,          true))  return false;
+    if (!SetTexture("metallicRoughnessTexture", material.metallicRoughnessTexture, false)) return false;
+    if (!SetTexture("normalTexture",            material.normalTexture,            false)) return false;
+    if (!SetTexture("occlusionTexture",         material.occlusionTexture,         false)) return false;
+
+    asset->SetArgument("baseColourFactor", material.baseColourFactor);
+    asset->SetArgument("emissiveFactor",   material.emissiveFactor);
+    asset->SetArgument("metallicFactor",   material.metallicFactor);
+    asset->SetArgument("roughnessFactor",  material.roughnessFactor);
 
     asset->UpdateArgumentSet();
 
@@ -1235,12 +1288,14 @@ bool GLTFImporter::GenerateScene()
     return true;
 }
 
-bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex)
+bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex,
+                                   const bool     inSRGB)
 {
     TextureDef& texture = mTextures[inTextureIndex];
 
     if (texture.asset)
     {
+        Assert(inSRGB == texture.sRGB);
         return true;
     }
 
@@ -1250,34 +1305,79 @@ bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex)
      * either JPEG or PNG and we can load those directly. */
     const Path assetPath = mAssetDir / StringUtils::Format("Texture_%u", inTextureIndex);
 
-    Path fsPath;
-    if (!AssetManager::Get().GetFilesystemPath(assetPath, fsPath))
+    Path baseFSPath;
+    if (!AssetManager::Get().GetFilesystemPath(assetPath, baseFSPath))
     {
         LogError("%s: Failed to map asset path '%s'", mPath.GetCString(), assetPath.GetCString());
         return false;
     }
 
-    switch (image.type)
+    /* Write the main texture data. */
+    const char* loaderClass = nullptr;
     {
-        case kImageType_JPG: fsPath += ".jpg"; break;
-        case kImageType_PNG: fsPath += ".png"; break;
+        Path fsPath = baseFSPath;
+        switch (image.type)
+        {
+            case kImageType_JPG:
+                fsPath += ".jpg";
+                loaderClass = "JPGLoader";
+                break;
+
+            case kImageType_PNG:
+                fsPath += ".png";
+                loaderClass = "PNGLoader";
+                break;
+        }
+
+        std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+        if (!file)
+        {
+            LogError("%s: Failed to open '%s'", mPath.GetCString(), fsPath.GetCString());
+            return false;
+        }
+
+        if (!file->Write(image.data.Get(), image.data.GetSize()))
+        {
+            LogError("%s: Failed to write '%s'", mPath.GetCString(), fsPath.GetCString());
+            return false;
+        }
     }
 
-    std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
-    if (!file)
+    /* Write loader metadata specifying properties. TODO: Better interface for
+     * doing this with proper serialisation. */
     {
-        LogError("%s: Failed to open '%s'", mPath.GetCString(), fsPath.GetCString());
-        return false;
-    }
+        const std::string loaderString = StringUtils::Format(
+            "[\n"
+            "   {\n"
+            "       \"objectClass\": \"%s\",\n"
+            "       \"objectID\": 0,\n"
+            "       \"objectProperties\": {\n"
+            "           \"sRGB\": %s\n"
+            "       }\n"
+            "   }\n"
+            "]\n",
+            loaderClass,
+            (inSRGB) ? "true" : "false");
 
-    if (!file->Write(image.data.Get(), image.data.GetSize()))
-    {
-        LogError("%s: Failed to write '%s'", mPath.GetCString(), fsPath.GetCString());
-        return false;
+        Path fsPath = baseFSPath + ".loader";
+
+        std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+        if (!file)
+        {
+            LogError("%s: Failed to open '%s'", mPath.GetCString(), fsPath.GetCString());
+            return false;
+        }
+
+        if (!file->Write(loaderString.c_str(), loaderString.length()))
+        {
+            LogError("%s: Failed to write '%s'", mPath.GetCString(), fsPath.GetCString());
+            return false;
+        }
     }
 
     /* Now load it back in as a proper texture asset. */
     texture.asset = AssetManager::Get().Load<Texture2D>(assetPath);
+    texture.sRGB  = inSRGB;
 
     return texture.asset != nullptr;
 }

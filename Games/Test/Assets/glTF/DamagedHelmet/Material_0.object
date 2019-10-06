@@ -4,12 +4,37 @@
         "objectID": 0,
         "objectProperties": {},
         "shaderTechnique": {
-            "asset": "Engine/Techniques/BasicTextured"
+            "asset": "Engine/Techniques/PBRMetallicRoughness"
         },
         "arguments": {
-            "texture": {
+            "baseColourTexture": {
                 "asset": "Game/glTF/DamagedHelmet/Texture_0"
-            }
+            },
+            "baseColourFactor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "emissiveTexture": {
+                "asset": "Game/glTF/DamagedHelmet/Texture_2"
+            },
+            "emissiveFactor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "metallicRoughnessTexture": {
+                "asset": "Game/glTF/DamagedHelmet/Texture_1"
+            },
+            "metallicFactor": 1.0,
+            "normalTexture": {
+                "asset": "Game/glTF/DamagedHelmet/Texture_4"
+            },
+            "occlusionTexture": {
+                "asset": "Game/glTF/DamagedHelmet/Texture_3"
+            },
+            "roughnessFactor": 1.0
         }
     }
 ]

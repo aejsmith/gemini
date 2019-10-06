@@ -1,0 +1,71 @@
+[
+    {
+        "objectClass": "ShaderTechnique",
+        "objectID": 0,
+        "objectProperties": {},
+        "parameters": [
+            {
+                "name": "baseColourTexture",
+                "type": "Texture2D",
+                "default": {"asset": "Engine/Textures/DummyBlack2D"}
+            },
+            {
+                "name": "baseColourFactor",
+                "type": "Float4",
+                "default": [1.0, 1.0, 1.0, 1.0]
+            },
+            {
+                "name": "emissiveTexture",
+                "type": "Texture2D",
+                "default": {"asset": "Engine/Textures/DummyBlack2D"}
+            },
+            {
+                "name": "emissiveFactor",
+                "type": "Float3",
+                "default": [0.0, 0.0, 0.0]
+            },
+            {
+                "name": "metallicRoughnessTexture",
+                "type": "Texture2D",
+                "default": {"asset": "Engine/Textures/DummyWhite2D"}
+            },
+            {
+                "name": "metallicFactor",
+                "type": "Float",
+                "default": 1.0
+            },
+            {
+                "name": "normalTexture",
+                "type": "Texture2D",
+                "default": {"asset": "Engine/Textures/DefaultNormal"}
+            },
+            {
+                "name": "occlusionTexture",
+                "type": "Texture2D",
+                "default": {"asset": "Engine/Textures/DummyWhite2D"}
+            },
+            {
+                "name": "roughnessFactor",
+                "type": "Float",
+                "default": 1.0
+            }
+        ],
+        "passes": [
+            {
+                "type": "Basic",
+                "shaders": [
+                    {
+                        "stage": "Vertex",
+                        "source": "Engine/PBR.hlsl",
+                        "function": "VSMain"
+                    },
+                    {
+                        "stage": "Pixel",
+                        "source": "Engine/PBR.hlsl",
+                        "function": "PSMain"
+                    }
+                ]
+            }
+        ]
+    }
+]

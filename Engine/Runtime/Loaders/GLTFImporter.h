@@ -93,8 +93,16 @@ private:
 
     struct MaterialDef
     {
-        // TODO
         uint32_t                    baseColourTexture;
+        uint32_t                    emissiveTexture;
+        uint32_t                    metallicRoughnessTexture;
+        uint32_t                    normalTexture;
+        uint32_t                    occlusionTexture;
+
+        glm::vec4                   baseColourFactor;
+        glm::vec3                   emissiveFactor;
+        float                       metallicFactor;
+        float                       roughnessFactor;
 
         MaterialPtr                 asset;
     };
@@ -134,6 +142,7 @@ private:
         uint32_t                    image;
 
         Texture2DPtr                asset;
+        bool                        sRGB;
     };
 
 private:
@@ -151,7 +160,8 @@ private:
     bool                            GenerateMaterial(const uint32_t inMaterialIndex);
     bool                            GenerateMesh(const uint32_t inMeshIndex);
     bool                            GenerateScene();
-    bool                            GenerateTexture(const uint32_t inTextureIndex);
+    bool                            GenerateTexture(const uint32_t inTextureIndex,
+                                                    const bool     inSRGB);
 
     bool                            LoadURI(const rapidjson::Value& inURI,
                                             ByteArray&              outData,
