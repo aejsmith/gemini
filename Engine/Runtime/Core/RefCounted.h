@@ -112,6 +112,9 @@ public:
                                     template <typename U, typename = EnableIfConvertible<U>>
                                     ReferencePtr(const ReferencePtr<U>& inOther);
 
+                                    template <typename U, typename = EnableIfConvertible<U>>
+                                    ReferencePtr(ReferencePtr<U>&& inOther);
+
                                     ~ReferencePtr();
 
 public:
@@ -121,6 +124,9 @@ public:
 
     template <typename U>
     EnableIfConvertible<U>          operator =(const ReferencePtr<U>& inOther);
+
+    template <typename U>
+    EnableIfConvertible<U>          operator =(ReferencePtr<U>&& inOther);
 
     explicit                        operator bool() const               { return mObject != nullptr; }
 
@@ -139,6 +145,14 @@ public:
      */
     void                            Reset(ReferencedType* const inObject = nullptr,
                                           const bool            inRetain = true);
+
+    /**
+     * Detach the referenced object, if any. A raw pointer to it will be
+     * returned, without releasing the reference, and the ReferencePtr will be
+     * set to null. It is the caller's responsibility to ensure that the
+     * reference is released later.
+     */
+    ReferencedType*                 Detach();
 
     void                            Swap(ReferencePtr& inOther);
 
@@ -192,11 +206,16 @@ inline ReferencePtr<T>::ReferencePtr(const ReferencePtr<U>& inOther) :
     }
 }
 
+template <typename T> template <typename U, typename>
+inline ReferencePtr<T>::ReferencePtr(ReferencePtr<U>&& inOther) :
+    mObject (inOther.Detach())
+{
+}
+
 template <typename T>
 inline ReferencePtr<T>::ReferencePtr(ReferencePtr&& inOther) :
-    mObject (inOther.mObject)
+    mObject (inOther.Detach())
 {
-    inOther.mObject = nullptr;
 }
 
 template <typename T>
@@ -227,6 +246,20 @@ ReferencePtr<T>::operator =(const ReferencePtr<U>& inOther)
     return *this;
 }
 
+template <typename T> template <typename U>
+inline typename ReferencePtr<T>::template EnableIfConvertible<U>
+ReferencePtr<T>::operator =(ReferencePtr<U>&& inOther)
+{
+    if (mObject)
+    {
+        mObject->Release();
+    }
+
+    mObject = inOther.Detach();
+
+    return *this;
+}
+
 template <typename T>
 ReferencePtr<T>& ReferencePtr<T>::operator =(ReferencePtr&& inOther)
 {
@@ -235,8 +268,7 @@ ReferencePtr<T>& ReferencePtr<T>::operator =(ReferencePtr&& inOther)
         mObject->Release();
     }
 
-    mObject         = inOther.mObject;
-    inOther.mObject = nullptr;
+    mObject = inOther.Detach();
 
     return *this;
 }
@@ -256,6 +288,14 @@ void ReferencePtr<T>::Reset(ReferencedType* const inObject,
     }
 
     mObject = inObject;
+}
+
+template <typename T>
+T* ReferencePtr<T>::Detach()
+{
+    T* const result = mObject;
+    mObject = nullptr;
+    return result;
 }
 
 template <typename T>
