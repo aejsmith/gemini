@@ -155,10 +155,12 @@ void Material::SetShaderTechnique(ShaderTechnique* const inShaderTechnique)
 {
     mShaderTechnique = inShaderTechnique;
 
-    mResources.resize(mShaderTechnique->GetArgumentSetLayout()->GetArgumentCount());
+    mResources = mShaderTechnique->GetDefaultResources();
 
     mConstantData = ByteArray(mShaderTechnique->GetConstantsSize());
-    memset(mConstantData.Get(), 0, mConstantData.GetSize());
+    memcpy(mConstantData.Get(),
+           mShaderTechnique->GetDefaultConstantData().Get(),
+           mConstantData.GetSize());
 }
 
 void Material::GetArgument(const ShaderParameter& inParameter,
@@ -172,14 +174,14 @@ void Material::GetArgument(const ShaderParameter& inParameter,
     }
     else
     {
-        const Resource& resource = mResources[inParameter.argumentIndex];
+        const ObjectPtr<>& resource = mResources[inParameter.argumentIndex];
 
         switch (inParameter.type)
         {
             case kShaderParameterType_Texture2D:
             {
                 auto texture = reinterpret_cast<Texture2DPtr*>(outData);
-                *texture = static_cast<Texture2D*>(resource.texture.Get());
+                *texture = static_cast<Texture2D*>(resource.Get());
                 break;
             }
 
@@ -222,14 +224,14 @@ void Material::SetArgument(const ShaderParameter& inParameter,
     }
     else
     {
-        Resource& resource = mResources[inParameter.argumentIndex];
+        ObjectPtr<>& resource = mResources[inParameter.argumentIndex];
 
         switch (inParameter.type)
         {
             case kShaderParameterType_Texture2D:
             {
                 auto texture = reinterpret_cast<const Texture2DPtr*>(inData);
-                resource.texture = texture->Get();
+                resource = texture->Get();
                 break;
             }
 
@@ -319,9 +321,10 @@ void Material::UpdateArgumentSet()
             switch (setLayout->GetArguments()[i])
             {
                 case kGPUArgumentType_Texture:
-                    if (mResources[i].texture)
+                    if (mResources[i])
                     {
-                        arguments[i].view = mResources[i].texture->GetResourceView();
+                        auto texture = static_cast<TextureBase*>(mResources[i].Get());
+                        arguments[i].view = texture->GetResourceView();
                     }
 
                     break;
@@ -330,9 +333,10 @@ void Material::UpdateArgumentSet()
                     /* Samplers come from the texture in the preceding index. */
                     Assert(i > 0);
 
-                    if (mResources[i - 1].texture)
+                    if (mResources[i - 1])
                     {
-                        arguments[i].sampler = mResources[i - 1].texture->GetSampler();
+                        auto texture = static_cast<TextureBase*>(mResources[i - 1].Get());
+                        arguments[i].sampler = texture->GetSampler();
                     }
 
                     break;

@@ -72,16 +72,6 @@ public:
     void                        UpdateArgumentSet();
 
 private:
-    struct Resource
-    {
-        /**
-         * Reference pointer to the texture - materials should keep resources
-         * they refer to alive.
-         */
-        TextureBasePtr          texture;
-    };
-
-private:
                                 Material();
                                 ~Material();
 
@@ -107,7 +97,7 @@ private:
      * array entries corresponding to sampler arguments (the sampler comes from
      * the main TextureBase), but doing things this way is simpler.
      */
-    std::vector<Resource>       mResources;
+    std::vector<ObjectPtr<>>    mResources;
 
     /**
      * Constant buffer data, laid out according to the technique's parameter

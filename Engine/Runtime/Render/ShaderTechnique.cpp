@@ -16,7 +16,9 @@
 
 #include "Render/ShaderTechnique.h"
 
+#include "Engine/AssetManager.h"
 #include "Engine/Serialiser.h"
+#include "Engine/Texture.h"
 
 #include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUDevice.h"
@@ -117,6 +119,33 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
                     /* Samplers go immediately after the main resource. */
                     layoutDesc.arguments.emplace_back(kGPUArgumentType_Sampler);
                 }
+
+                ObjectPtr<> resource;
+                switch (parameter.type)
+                {
+                    case kShaderParameterType_Texture2D:
+                    {
+                        Texture2DPtr texture;
+                        if (!inSerialiser.Read("default", texture))
+                        {
+                            texture = AssetManager::Get().Load<Texture2D>("Engine/Textures/DummyBlack2D");
+                        }
+
+                        resource = std::move(texture);
+                        break;
+                    }
+
+                    default:
+                    {
+                        UnreachableMsg("Unhandled parameter type %d", parameter.type);
+                        break;
+                    }
+                }
+
+                Assert(resource);
+
+                mDefaultResources.resize(parameter.argumentIndex + 1);
+                mDefaultResources[parameter.argumentIndex] = std::move(resource);
             }
             else
             {
@@ -132,6 +161,42 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
                 parameter.constantOffset = mConstantsSize;
 
                 mConstantsSize += size;
+
+                /* Read default values. Zero-initialise if we don't have a
+                 * default specified. */
+                mDefaultConstantData.Resize(mConstantsSize);
+
+                #define READ_TYPE(typeEnum, typeName) \
+                    case typeEnum: \
+                    { \
+                        typeName value{}; \
+                        inSerialiser.Read("default", value); \
+                        memcpy(mDefaultConstantData.Get() + parameter.constantOffset, &value, size); \
+                        break; \
+                    }
+
+                switch (parameter.type)
+                {
+                    READ_TYPE(kShaderParameterType_Int,    int32_t);
+                    READ_TYPE(kShaderParameterType_Int2,   glm::ivec2);
+                    READ_TYPE(kShaderParameterType_Int3,   glm::ivec3);
+                    READ_TYPE(kShaderParameterType_Int4,   glm::ivec4);
+                    READ_TYPE(kShaderParameterType_UInt,   uint32_t);
+                    READ_TYPE(kShaderParameterType_UInt2,  glm::uvec2);
+                    READ_TYPE(kShaderParameterType_UInt3,  glm::uvec3);
+                    READ_TYPE(kShaderParameterType_UInt4,  glm::uvec4);
+                    READ_TYPE(kShaderParameterType_Float,  float);
+                    READ_TYPE(kShaderParameterType_Float2, glm::vec2);
+                    READ_TYPE(kShaderParameterType_Float3, glm::vec3);
+                    READ_TYPE(kShaderParameterType_Float4, glm::vec4);
+
+                    default:
+                        UnreachableMsg("Unhandled parameter type %d", parameter.type);
+                        break;
+
+                }
+
+                #undef READ_TYPE
             }
 
             inSerialiser.EndGroup();

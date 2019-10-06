@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "Core/ByteArray.h"
+
 #include "Engine/Asset.h"
 
 #include "GPU/GPUArgumentSet.h"
@@ -37,24 +39,24 @@
 class ShaderPass
 {
 public:
-    GPUShader*                  GetShader(const GPUShaderStage inStage) const
-                                    { return mShaders[inStage]; }
+    GPUShader*                      GetShader(const GPUShaderStage inStage) const
+                                        { return mShaders[inStage]; }
 
-    GPUBlendStateRef            GetBlendState() const           { return mBlendState; }
-    GPUDepthStencilStateRef     GetDepthStencilState() const    { return mDepthStencilState; }
-    GPURasterizerStateRef       GetRasterizerState() const      { return mRasterizerState; }
-    GPURenderTargetStateRef     GetRenderTargetState() const    { return mRenderTargetState; }
+    GPUBlendStateRef                GetBlendState() const           { return mBlendState; }
+    GPUDepthStencilStateRef         GetDepthStencilState() const    { return mDepthStencilState; }
+    GPURasterizerStateRef           GetRasterizerState() const      { return mRasterizerState; }
+    GPURenderTargetStateRef         GetRenderTargetState() const    { return mRenderTargetState; }
 
 private:
-                                ShaderPass();
-                                ~ShaderPass();
+                                    ShaderPass();
+                                    ~ShaderPass();
 
-    GPUShaderPtr                mShaders[kGPUShaderStage_NumGraphics];
+    GPUShaderPtr                    mShaders[kGPUShaderStage_NumGraphics];
 
-    GPUBlendStateRef            mBlendState;
-    GPUDepthStencilStateRef     mDepthStencilState;
-    GPURasterizerStateRef       mRasterizerState;
-    GPURenderTargetStateRef     mRenderTargetState;
+    GPUBlendStateRef                mBlendState;
+    GPUDepthStencilStateRef         mDepthStencilState;
+    GPURasterizerStateRef           mRasterizerState;
+    GPURenderTargetStateRef         mRenderTargetState;
 
     friend class ShaderTechnique;
 };
@@ -71,53 +73,60 @@ class ShaderTechnique : public Asset
 
 public:
     /** Array of parameter details. */
-    using ParameterArray      = std::vector<ShaderParameter>;
+    using ParameterArray          = std::vector<ShaderParameter>;
 
 public:
     /**
      * Get a pass of a given type. Returns null if the technique doesn't
      * support the pass type.
      */
-    const ShaderPass*           GetPass(const ShaderPassType inType) const
-                                    { return mPasses[inType]; }
+    const ShaderPass*               GetPass(const ShaderPassType inType) const
+                                        { return mPasses[inType]; }
 
     /**
      * Return an array of parameters for the technique. Constant parameters
      * will be in this array in the order of declaration in the material
      * constant buffer.
      */
-    const ParameterArray&       GetParameters() const           { return mParameters; }
+    const ParameterArray&           GetParameters() const           { return mParameters; }
 
-    size_t                      GetParameterCount() const       { return mParameters.size(); }
+    size_t                          GetParameterCount() const       { return mParameters.size(); }
 
     /** Get a named parameter. Returns null if doesn't exist. */
-    const ShaderParameter*      FindParameter(const std::string& inName) const;
+    const ShaderParameter*          FindParameter(const std::string& inName) const;
 
-    GPUArgumentSetLayoutRef     GetArgumentSetLayout() const    { return mArgumentSetLayout; }
-    uint32_t                    GetConstantsSize() const        { return mConstantsSize; }
-    uint32_t                    GetConstantsIndex() const       { return mConstantsIndex; }
+    GPUArgumentSetLayoutRef         GetArgumentSetLayout() const    { return mArgumentSetLayout; }
+    uint32_t                        GetConstantsSize() const        { return mConstantsSize; }
+    uint32_t                        GetConstantsIndex() const       { return mConstantsIndex; }
 
-private:
-                                ShaderTechnique();
-                                ~ShaderTechnique();
-
-    void                        Serialise(Serialiser& inSerialiser) const override;
-    void                        Deserialise(Serialiser& inSerialiser) override;
-
-    void                        DeserialiseParameters(Serialiser& inSerialiser);
-    void                        DeserialisePasses(Serialiser& inSerialiser);
+    const std::vector<ObjectPtr<>>& GetDefaultResources() const     { return mDefaultResources; }
+    const ByteArray&                GetDefaultConstantData() const  { return mDefaultConstantData; }
 
 private:
-    ShaderPass*                 mPasses[kShaderPassTypeCount];
+                                    ShaderTechnique();
+                                    ~ShaderTechnique();
+
+    void                            Serialise(Serialiser& inSerialiser) const override;
+    void                            Deserialise(Serialiser& inSerialiser) override;
+
+    void                            DeserialiseParameters(Serialiser& inSerialiser);
+    void                            DeserialisePasses(Serialiser& inSerialiser);
+
+private:
+    ShaderPass*                     mPasses[kShaderPassTypeCount];
 
     // TODO: Boolean "feature" flags, which use shader variants. Parameters can
     // be set to only be enabled when a feature is enabled.
 
-    ParameterArray              mParameters;
+    ParameterArray                  mParameters;
 
-    GPUArgumentSetLayoutRef     mArgumentSetLayout;
-    uint32_t                    mConstantsSize;
-    uint32_t                    mConstantsIndex;
+    GPUArgumentSetLayoutRef         mArgumentSetLayout;
+    uint32_t                        mConstantsSize;
+    uint32_t                        mConstantsIndex;
+
+    /** Default material resources/constants (see equivalents in Material). */
+    std::vector<ObjectPtr<>>        mDefaultResources;
+    ByteArray                       mDefaultConstantData;
 
 };
 
