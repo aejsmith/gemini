@@ -86,7 +86,7 @@ Texture2D::Texture2D(const uint32_t                inWidth,
     CreateTexture(textureDesc, inSamplerDesc, kGPUResourceViewType_Texture2D);
 
     Assert(inData.size() >= 1);
-    Assert(inData.size() < mNumMipLevels);
+    Assert(inData.size() <= mNumMipLevels);
 
     /* Upload what we have data for. */
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
