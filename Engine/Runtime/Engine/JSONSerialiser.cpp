@@ -548,7 +548,7 @@ void JSONSerialiser::Write(const char* const inName,
         const MetaType::EnumConstantArray& constants = inType.GetEnumConstants();
         for (const MetaType::EnumConstant& constant : constants)
         {
-            uint64_t value;
+            int64_t value;
 
             switch (inType.GetSize())
             {
