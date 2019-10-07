@@ -16,15 +16,15 @@
 
 #pragma once
 
+#include "Render/EntityRenderer.h"
 #include "Render/Material.h"
-#include "Render/Renderer.h"
 
 #include "Engine/Mesh.h"
 
 /**
  * Renderer component that renders a Mesh.
  */
-class MeshRenderer final : public Renderer
+class MeshRenderer final : public EntityRenderer
 {
     CLASS();
 

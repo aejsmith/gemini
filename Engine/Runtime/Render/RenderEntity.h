@@ -24,15 +24,15 @@
 
 #include "Render/RenderDefs.h"
 
+class EntityRenderer;
 class GPUPipeline;
 class Material;
 class RenderContext;
-class Renderer;
 
 struct EntityDrawCall;
 
 /**
- * This class is the base for a renderable entity in the world. Renderer
+ * This class is the base for a renderable entity in the world. EntityRenderer
  * components attached to world entities (Entity) add one or more renderable
  * entities (RenderEntity) to the RenderWorld.  There is not necessarily a 1:1
  * mapping between world entities and renderable entities, for example a
@@ -43,7 +43,7 @@ class RenderEntity
 public:
     virtual                         ~RenderEntity();
 
-    const Renderer&                 GetRenderer() const         { return mRenderer; }
+    const EntityRenderer&           GetRenderer() const         { return mRenderer; }
 
     void                            CreatePipelines();
 
@@ -69,8 +69,8 @@ public:
                                                 EntityDrawCall&      outDrawCall) const;
 
 protected:
-                                    RenderEntity(const Renderer& inRenderer,
-                                                 Material&       inMaterial);
+                                    RenderEntity(const EntityRenderer& inRenderer,
+                                                 Material&             inMaterial);
 
     /**
      * Get the entity-local bounding box, will be transformed by the entity
@@ -89,9 +89,12 @@ protected:
     virtual void                    GetGeometry(EntityDrawCall& ioDrawCall) const = 0;
 
 private:
-    const Renderer&                 mRenderer;
+    const EntityRenderer&           mRenderer;
 
-    /** Material, not refcounting since owning Renderer holds a reference. */
+    /**
+     * Material, not refcounting since owning EntityRenderer is expected to
+     * hold a reference.
+     */
     Material&                       mMaterial;
 
     Transform                       mTransform;

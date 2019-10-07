@@ -107,7 +107,7 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::Serialise(Serialiser& inSerialiser) const
 {
-    Renderer::Serialise(inSerialiser);
+    EntityRenderer::Serialise(inSerialiser);
 
     inSerialiser.BeginGroup("materials");
 
@@ -124,7 +124,7 @@ void MeshRenderer::Serialise(Serialiser& inSerialiser) const
 
 void MeshRenderer::Deserialise(Serialiser& inSerialiser)
 {
-    Renderer::Deserialise(inSerialiser);
+    EntityRenderer::Deserialise(inSerialiser);
 
     bool success = true;
     Unused(success);
@@ -153,7 +153,7 @@ void MeshRenderer::SetMesh(Mesh* const inMesh)
      * perhaps populate new slots with a dummy material. */
 }
 
-Renderer::RenderEntityArray MeshRenderer::CreateRenderEntities()
+EntityRenderer::RenderEntityArray MeshRenderer::CreateRenderEntities()
 {
     AssertMsg(mMesh,
               "No mesh set for MeshRenderer on '%s'",

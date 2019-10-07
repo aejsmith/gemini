@@ -33,8 +33,8 @@
  * Implementation of a shader technique for a specific pass type. Defines the
  * shaders to use and some pipeline state. Note that we cannot create a final
  * PSO here: that is dependent on vertex input state, which is dependent on the
- * specific entity. Therefore PSO creation is managed by each entity's Renderer
- * component.
+ * specific entity. Therefore PSO creation is managed by each entity's
+ * EntityRenderer component.
  */
 class ShaderPass
 {

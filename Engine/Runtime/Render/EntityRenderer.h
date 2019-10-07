@@ -29,18 +29,18 @@ class RenderEntity;
  * For the world entity that it is attached to, a Renderer adds one or more
  * renderable entities to the render world.
  */
-class Renderer : public Component
+class EntityRenderer : public Component
 {
     CLASS();
 
 public:
-                                Renderer();
+                                EntityRenderer();
 
 protected:
     using RenderEntityArray   = std::vector<RenderEntity*>;
 
 protected:
-                                ~Renderer();
+                                ~EntityRenderer();
 
     void                        Activated() override;
     void                        Deactivated() override;

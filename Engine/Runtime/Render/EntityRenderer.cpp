@@ -14,23 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Render/Renderer.h"
+#include "Render/EntityRenderer.h"
 
 #include "Engine/World.h"
 
 #include "Render/RenderEntity.h"
 #include "Render/RenderWorld.h"
 
-Renderer::Renderer()
+EntityRenderer::EntityRenderer()
 {
 }
 
-Renderer::~Renderer()
+EntityRenderer::~EntityRenderer()
 {
     Assert(mRenderEntities.empty());
 }
 
-void Renderer::Activated()
+void EntityRenderer::Activated()
 {
     Assert(mRenderEntities.empty());
 
@@ -48,7 +48,7 @@ void Renderer::Activated()
     }
 }
 
-void Renderer::Deactivated()
+void EntityRenderer::Deactivated()
 {
     Assert(!mRenderEntities.empty());
 
@@ -63,7 +63,7 @@ void Renderer::Deactivated()
     mRenderEntities.clear();
 }
 
-void Renderer::Transformed()
+void EntityRenderer::Transformed()
 {
     for (RenderEntity* renderEntity : mRenderEntities)
     {

@@ -25,8 +25,8 @@
 #include "Render/RenderContext.h"
 #include "Render/RenderManager.h"
 
-RenderEntity::RenderEntity(const Renderer& inRenderer,
-                           Material&       inMaterial) :
+RenderEntity::RenderEntity(const EntityRenderer& inRenderer,
+                           Material&             inMaterial) :
     mRenderer   (inRenderer),
     mMaterial   (inMaterial),
     mPipelines  {}
