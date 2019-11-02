@@ -564,6 +564,11 @@ bool GLTFImporter::LoadMaterials()
                 LogError("%s: Multiple texture coordinates are unsupported", mPath.GetCString());
                 return false;
             }
+            else if (texture.HasMember("strength"))
+            {
+                LogError("%s: Occlusion texture strength is unsupported", mPath.GetCString());
+                return false;
+            }
 
             outIndex = texture["index"].GetUint();
 
@@ -1003,8 +1008,6 @@ bool GLTFImporter::LoadURI(const rapidjson::Value& inURI,
 
 bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
 {
-    // TODO: PBR implementation, just map to the basic shader for now.
-
     MaterialDef& material = mMaterials[inMaterialIndex];
 
     if (material.asset)

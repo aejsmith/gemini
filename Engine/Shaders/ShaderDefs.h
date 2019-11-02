@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef SHADERS_SHADERDEFS_H
+#define SHADERS_SHADERDEFS_H
+
 /**
  * Compatibility types for code that needs to be shared between C++ and HLSL.
  * Unshared code should prefer the native types of the language.
@@ -68,6 +71,8 @@
     typedef glm::mat4   shader_float4x4;
 #endif
 
+#define SHADER_PI 3.14159265f
+
 /** Standard argument set indices. */
 #define kArgumentSet_ViewEntity     0   /**< View/entity arguments. */
 #define kArgumentSet_Material       1   /**< Material arguments. */
@@ -121,14 +126,25 @@ CBUFFER(EntityConstants, entity, kArgumentSet_ViewEntity, kViewEntityArguments_E
  * Entity helper functions/definitions.
  */
 
-float4 EntityPositionToClip(float4 inPosition)
+float4 EntityPositionToClip(float4 position)
 {
-    return mul(view.viewProjection, mul(entity.transform, inPosition));
+    return mul(view.viewProjection, mul(entity.transform, position));
 }
 
-float4 EntityPositionToClip(float3 inPosition)
+float4 EntityPositionToClip(float3 position)
 {
-    return EntityPositionToClip(float4(inPosition, 1.0));
+    return EntityPositionToClip(float4(position, 1.0));
+}
+
+float3 EntityPositionToWorld(float3 position)
+{
+    return mul(entity.transform, float4(position, 1.0)).xyz;
+}
+
+float3 EntityNormalToWorld(float3 normal)
+{
+    /* Set W component to 0 to remove translation. */
+    return mul(entity.transform, float4(normal, 0.0)).xyz;
 }
 
 /**
@@ -146,3 +162,5 @@ float4 EntityPositionToClip(float3 inPosition)
     parameterName ## _texture.Sample(parameterName ## _sampler, location)
 
 #endif /* __HLSL__ */
+
+#endif /* SHADERS_SHADERDEFS_H */
