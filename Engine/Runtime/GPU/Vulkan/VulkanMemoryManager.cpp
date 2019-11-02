@@ -31,7 +31,7 @@
 VulkanMemoryManager::VulkanMemoryManager(VulkanDevice& inDevice) :
     GPUDeviceChild (inDevice)
 {
-    VmaVulkanFunctions functions;
+    VmaVulkanFunctions functions = {};
     functions.vkGetPhysicalDeviceProperties       = vkGetPhysicalDeviceProperties;
     functions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
     functions.vkAllocateMemory                    = vkAllocateMemory;
@@ -48,6 +48,7 @@ VulkanMemoryManager::VulkanMemoryManager(VulkanDevice& inDevice) :
     functions.vkDestroyBuffer                     = vkDestroyBuffer;
     functions.vkCreateImage                       = vkCreateImage;
     functions.vkDestroyImage                      = vkDestroyImage;
+    functions.vkCmdCopyBuffer                     = vkCmdCopyBuffer;
     functions.vkGetBufferMemoryRequirements2KHR   = vkGetBufferMemoryRequirements2;
     functions.vkGetImageMemoryRequirements2KHR    = vkGetImageMemoryRequirements2;
 
