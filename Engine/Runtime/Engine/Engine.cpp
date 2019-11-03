@@ -188,6 +188,13 @@ void Engine::Run()
 
         RenderManager::Get().Render({});
 
+        /* Render ImGUI as late as possible in the frame. What we render will
+         * reflect everything submitted to ImGUI up until this point. */
+        ImGUIManager::Get().Render({});
+
+        /* Present the main window. This is done outside the render graph. */
+        MainWindow::Get().Present({});
+
         GPUDevice::Get().EndFrame();
 
         /* This must be the very last call. */

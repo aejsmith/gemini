@@ -104,3 +104,15 @@ MainWindow::MainWindow(const glm::ivec2& inSize,
             inFlags)
 {
 }
+
+void MainWindow::EndRender()
+{
+    /* We'll defer this to the very end of the frame rather than doing it as
+     * soon as the render graph is done with us, so that Engine can draw debug
+     * UI as late as possible in the frame. */
+}
+
+void MainWindow::Present(OnlyCalledBy<Engine>)
+{
+    Window::EndRender();
+}

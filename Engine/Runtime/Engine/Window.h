@@ -26,6 +26,7 @@
 
 struct SDL_Window;
 
+class Engine;
 class GPUSwapchain;
 
 class Window : public RenderOutput
@@ -54,10 +55,11 @@ public:
     void                    SetSwapchain(GPUSwapchain* const inSwapchain,
                                          OnlyCalledBy<GPUSwapchain>);
 
+    GPUTexture*             GetTexture() const final override;
+
 protected:
-    GPUTexture*             GetTexture() const override;
-    GPUResourceState        GetFinalState() const override;
-    void                    BeginRender() override;
+    GPUResourceState        GetFinalState() const final override;
+    void                    BeginRender() final override;
     void                    EndRender() override;
 
 private:
@@ -75,4 +77,10 @@ class MainWindow : public Window,
 public:
                             MainWindow(const glm::ivec2& inSize,
                                        const uint32_t    inFlags);
+
+    void                    Present(OnlyCalledBy<Engine>);
+
+protected:
+    void                    EndRender() override;
+
 };

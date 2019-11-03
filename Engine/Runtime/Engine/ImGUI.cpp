@@ -48,16 +48,13 @@ protected:
     friend class ImGUIManager;
 };
 
-class ImGUIRenderLayer final : public RenderLayer
+class ImGUIRenderer
 {
 public:
-                            ImGUIRenderLayer();
-                            ~ImGUIRenderLayer();
+                            ImGUIRenderer();
+                            ~ImGUIRenderer();
 
-protected:
-    void                    AddPasses(RenderGraph&               inGraph,
-                                      const RenderResourceHandle inTexture,
-                                      RenderResourceHandle&      outNewTexture) override;
+    void                    Render() const;
 
 private:
     GPUShaderPtr            mVertexShader;
@@ -78,13 +75,13 @@ ImGUIManager::ImGUIManager() :
     io.IniFilename = nullptr;
 
     mInputHandler = new ImGUIInputHandler;
-    mRenderLayer  = new ImGUIRenderLayer;
+    mRenderer     = new ImGUIRenderer;
 }
 
 ImGUIManager::~ImGUIManager()
 {
     delete mInputHandler;
-    delete mRenderLayer;
+    delete mRenderer;
 }
 
 void ImGUIManager::BeginFrame(OnlyCalledBy<Engine>)
@@ -118,6 +115,11 @@ void ImGUIManager::BeginFrame(OnlyCalledBy<Engine>)
 
         mInputtingText = io.WantTextInput;
     }
+}
+
+void ImGUIManager::Render(OnlyCalledBy<Engine>)
+{
+    mRenderer->Render();
 }
 
 ImGUIInputHandler::ImGUIInputHandler() :
@@ -183,12 +185,8 @@ void ImGUIInputHandler::HandleTextInput(const TextInputEvent& inEvent)
     io.AddInputCharactersUTF8(inEvent.text.c_str());
 }
 
-ImGUIRenderLayer::ImGUIRenderLayer() :
-    RenderLayer (RenderLayer::kOrder_ImGUI)
+ImGUIRenderer::ImGUIRenderer()
 {
-    SetLayerOutput(&MainWindow::Get());
-    ActivateLayer();
-
     ImGuiIO& io = ImGui::GetIO();
 
     mVertexShader = ShaderManager::Get().GetShader("Engine/ImGui.hlsl", "VSMain", kGPUShaderStage_Vertex);
@@ -284,83 +282,91 @@ ImGUIRenderLayer::ImGUIRenderLayer() :
     mSampler = GPUDevice::Get().GetSampler(samplerDesc);
 }
 
-ImGUIRenderLayer::~ImGUIRenderLayer()
+ImGUIRenderer::~ImGUIRenderer()
 {
     delete mFontView;
     delete mFontTexture;
 }
 
-void ImGUIRenderLayer::AddPasses(RenderGraph&               inGraph,
-                                 const RenderResourceHandle inTexture,
-                                 RenderResourceHandle&      outNewTexture)
+void ImGUIRenderer::Render() const
 {
-    /*
-     * TODO: I don't think it's really a good idea to have ImGUI drawn through
-     * the render graph. We want it done as late in the frame as possible,
-     * probably in Window::EndRender() instead. I'll move it later, but for now
-     * I'm using it as a test case for the graph.
-     */
+    ImGui::Render();
 
-    RenderGraphPass& pass = inGraph.AddPass("ImGUI", kRenderGraphPassType_Render);
-
-    pass.SetColour(0, inTexture, &outNewTexture);
-
-    pass.SetFunction([this] (const RenderGraph&      inGraph,
-                             const RenderGraphPass&  inPass,
-                             GPUGraphicsCommandList& inCmdList)
+    const ImDrawData* const drawData = ImGui::GetDrawData();
+    if (!drawData || drawData->CmdListsCount == 0)
     {
-        ImGui::Render();
+        return;
+    }
 
-        const ImDrawData* const drawData = ImGui::GetDrawData();
-        if (!drawData)
+    GPUTexture* const texture = MainWindow::Get().GetTexture();
+
+    GPUResourceViewDesc viewDesc;
+    viewDesc.type     = kGPUResourceViewType_Texture2D;
+    viewDesc.usage    = kGPUResourceUsage_RenderTarget;
+    viewDesc.format   = texture->GetFormat();
+
+    std::unique_ptr<GPUResourceView> view(GPUDevice::Get().CreateResourceView(texture, viewDesc));
+
+    GPURenderPass renderPass;
+    renderPass.SetColour(0, view.get());
+
+    GPUGraphicsContext& context = GPUGraphicsContext::Get();
+
+    context.ResourceBarrier(view.get(), kGPUResourceState_Present, kGPUResourceState_RenderTarget);
+
+    GPUGraphicsCommandList* const cmdList = context.CreateRenderPass(renderPass);
+    cmdList->Begin();
+
+    cmdList->SetPipeline(mPipeline);
+
+    GPUArgument arguments[3] = {};
+    arguments[0].view    = mFontView;
+    arguments[1].sampler = mSampler;
+
+    cmdList->SetArguments(0, arguments);
+
+    const int32_t width  = texture->GetWidth();
+    const int32_t height = texture->GetHeight();
+
+    const glm::mat4 projectionMatrix(
+        2.0f / width, 0.0f,            0.0f, 0.0f,
+        0.0f,         2.0f / -height,  0.0f, 0.0f,
+        0.0f,         0.0f,           -1.0f, 0.0f,
+        -1.0f,        1.0f,            0.0f, 1.0f);
+
+    cmdList->WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
+
+    for (int i = 0; i < drawData->CmdListsCount; i++)
+    {
+        const ImDrawList* const imDrawList = drawData->CmdLists[i];
+
+        cmdList->WriteVertexBuffer(0,
+                                   &imDrawList->VtxBuffer.front(),
+                                   imDrawList->VtxBuffer.size() * sizeof(ImDrawVert));
+
+        cmdList->WriteIndexBuffer(kGPUIndexType_16,
+                                  &imDrawList->IdxBuffer.front(),
+                                  imDrawList->IdxBuffer.size() * sizeof(ImDrawIdx));
+
+        size_t indexOffset = 0;
+
+        for (const ImDrawCmd* cmd = imDrawList->CmdBuffer.begin(); cmd != imDrawList->CmdBuffer.end(); cmd++)
         {
-            return;
+            const IntRect scissor(cmd->ClipRect.x,
+                                  cmd->ClipRect.y,
+                                  cmd->ClipRect.z - cmd->ClipRect.x,
+                                  cmd->ClipRect.w - cmd->ClipRect.y);
+
+            cmdList->SetScissor(scissor);
+            cmdList->DrawIndexed(cmd->ElemCount, indexOffset);
+
+            indexOffset += cmd->ElemCount;
         }
+    }
 
-        inCmdList.SetPipeline(mPipeline);
+    cmdList->End();
 
-        GPUArgument arguments[3] = {};
-        arguments[0].view    = mFontView;
-        arguments[1].sampler = mSampler;
+    context.SubmitRenderPass(cmdList);
 
-        inCmdList.SetArguments(0, arguments);
-
-        const glm::ivec2 winSize = MainWindow::Get().GetSize();
-
-        const glm::mat4 projectionMatrix(
-            2.0f / winSize.x, 0.0f,               0.0f, 0.0f,
-            0.0f,             2.0f / -winSize.y,  0.0f, 0.0f,
-            0.0f,             0.0f,              -1.0f, 0.0f,
-           -1.0f,             1.0f,               0.0f, 1.0f);
-
-        inCmdList.WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
-
-        for (int i = 0; i < drawData->CmdListsCount; i++)
-        {
-            const ImDrawList* const imCmdList = drawData->CmdLists[i];
-
-            inCmdList.WriteVertexBuffer(0,
-                                        &imCmdList->VtxBuffer.front(),
-                                        imCmdList->VtxBuffer.size() * sizeof(ImDrawVert));
-
-            inCmdList.WriteIndexBuffer(kGPUIndexType_16,
-                                       &imCmdList->IdxBuffer.front(),
-                                       imCmdList->IdxBuffer.size() * sizeof(ImDrawIdx));
-
-            size_t indexOffset = 0;
-
-            for (const ImDrawCmd* cmd = imCmdList->CmdBuffer.begin(); cmd != imCmdList->CmdBuffer.end(); cmd++)
-            {
-                const IntRect scissor(cmd->ClipRect.x,
-                                      cmd->ClipRect.y,
-                                      cmd->ClipRect.z - cmd->ClipRect.x,
-                                      cmd->ClipRect.w - cmd->ClipRect.y);
-
-                inCmdList.SetScissor(scissor);
-                inCmdList.DrawIndexed(cmd->ElemCount, indexOffset);
-
-                indexOffset += cmd->ElemCount;
-            }
-        }
-    });
+    context.ResourceBarrier(view.get(), kGPUResourceState_RenderTarget, kGPUResourceState_Present);
 }

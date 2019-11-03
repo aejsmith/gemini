@@ -22,8 +22,10 @@
 #include <imgui.h>
 
 class Engine;
+class GPUTexture;
 class ImGUIInputHandler;
-class ImGUIRenderLayer;
+class ImGUIRenderer;
+class MainWindow;
 
 class ImGUIManager : public Singleton<ImGUIManager>
 {
@@ -33,10 +35,11 @@ public:
 
 public:
     void                    BeginFrame(OnlyCalledBy<Engine>);
+    void                    Render(OnlyCalledBy<Engine>);
 
 private:
     ImGUIInputHandler*      mInputHandler;
-    ImGUIRenderLayer*       mRenderLayer;
+    ImGUIRenderer*          mRenderer;
     bool                    mInputtingText;
 
 };

@@ -36,9 +36,6 @@ public:
 
         /** Game UI. */
         kOrder_UI       = 20,
-
-        /** ImGUI overlay. */
-        kOrder_ImGUI    = 30,
     };
 
 protected:
