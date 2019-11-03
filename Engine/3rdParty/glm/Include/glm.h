@@ -19,8 +19,8 @@
 #define GLM_FORCE_CXX11
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_SIZE_T_LENGTH
-
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_CTOR_INIT
 
 /* MSVC chokes on this (check if it's fixed if we update GLM). */
 #include <glm/detail/setup.hpp>
