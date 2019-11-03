@@ -33,14 +33,17 @@ public:
      */
     enum Priority
     {
-        /** ImGUI overlay. */
-        kPriority_ImGUI = 0,
+        /** ImGUI. */
+        kPriority_ImGUI         = 0,
+
+        /** Debug overlay. */
+        kPriority_DebugOverlay  = 1,
 
         /** Game UI. */
-        kPriority_UI    = 10,
+        kPriority_UI            = 10,
 
         /** Game world. */
-        kPriority_World = 20,
+        kPriority_World         = 20,
     };
 
     /**

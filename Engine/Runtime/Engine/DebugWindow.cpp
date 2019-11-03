@@ -14,34 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "Engine/DebugWindow.h"
 
-#include "Core/Singleton.h"
-#include "Core/Utility.h"
+#include "Engine/DebugManager.h"
 
-#include <imgui.h>
-
-class Engine;
-class GPUTexture;
-class ImGUIInputHandler;
-class ImGUIRenderer;
-class MainWindow;
-
-class ImGUIManager : public Singleton<ImGUIManager>
+DebugWindow::DebugWindow() :
+    mOpen   (false)
 {
-public:
-                            ImGUIManager();
-                            ~ImGUIManager();
+    DebugManager::Get().RegisterWindow(this, {});
+}
 
-public:
-    void                    BeginFrame(OnlyCalledBy<Engine>);
-    void                    Render(OnlyCalledBy<Engine>);
+DebugWindow::~DebugWindow()
+{
+    DebugManager::Get().UnregisterWindow(this, {});
+}
 
-    void                    SetInputEnabled(const bool inEnable);
-
-private:
-    ImGUIInputHandler*      mInputHandler;
-    ImGUIRenderer*          mRenderer;
-    bool                    mInputtingText;
-
-};
+bool DebugWindow::IsAvailable() const
+{
+    return true;
+}

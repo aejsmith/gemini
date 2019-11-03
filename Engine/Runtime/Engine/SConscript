@@ -22,6 +22,7 @@ objects += map(env.Object, [
     'Behaviour.cpp',
     'Component.cpp',
     'DebugManager.cpp',
+    'DebugWindow.cpp',
     'Engine.cpp',
     'Entity.cpp',
     'FrameAllocator.cpp',

@@ -21,11 +21,13 @@
 #include "Core/String.h"
 #include "Core/Utility.h"
 
+#include <list>
+
+class DebugInputHandler;
+class DebugWindow;
 class Engine;
 
-/**
- * Debug drawing/HUD API.
- */
+/** Debug drawing/HUD API. */
 class DebugManager : public Singleton<DebugManager>
 {
 public:
@@ -33,6 +35,7 @@ public:
 
 public:
     void                    BeginFrame(OnlyCalledBy<Engine>);
+    void                    RenderOverlay(OnlyCalledBy<Engine>);
 
     /** Display a line of debug text in the overlay. */
     void                    AddText(const char* const inText,
@@ -40,5 +43,28 @@ public:
     void                    AddText(const std::string& inText,
                                     const glm::vec4&   inColour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
                                 { AddText(inText.c_str(), inColour); }
+
+    void                    RegisterWindow(DebugWindow* const inWindow,
+                                           OnlyCalledBy<DebugWindow>);
+    void                    UnregisterWindow(DebugWindow* const inWindow,
+                                             OnlyCalledBy<DebugWindow>);
+
+private:
+    enum OverlayState
+    {
+        kOverlayState_Inactive,
+        kOverlayState_Visible,
+        kOverlayState_Active,
+    };
+
+private:
+                            ~DebugManager();
+
+private:
+    std::list<DebugWindow*> mWindows;
+    DebugInputHandler*      mInputHandler;
+    OverlayState            mOverlayState;
+
+    friend class DebugInputHandler;
 
 };

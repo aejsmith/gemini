@@ -190,6 +190,7 @@ void Engine::Run()
 
         /* Render ImGUI as late as possible in the frame. What we render will
          * reflect everything submitted to ImGUI up until this point. */
+        DebugManager::Get().RenderOverlay({});
         ImGUIManager::Get().Render({});
 
         /* Present the main window. This is done outside the render graph. */

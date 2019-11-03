@@ -28,9 +28,6 @@
 #include "Input/InputHandler.h"
 #include "Input/InputManager.h"
 
-#include "Render/RenderGraph.h"
-#include "Render/RenderLayer.h"
-#include "Render/RenderOutput.h"
 #include "Render/ShaderManager.h"
 
 SINGLETON_IMPL(ImGUIManager);
@@ -44,6 +41,9 @@ protected:
     EventResult             HandleButton(const ButtonEvent& inEvent) override;
     EventResult             HandleAxis(const AxisEvent& inEvent) override;
     void                    HandleTextInput(const TextInputEvent& inEvent) override;
+
+protected:
+    bool                    mEnabled;
 
     friend class ImGUIManager;
 };
@@ -74,6 +74,9 @@ ImGUIManager::ImGUIManager() :
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
 
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowBorderSize = 0.0f;
+
     mInputHandler = new ImGUIInputHandler;
     mRenderer     = new ImGUIRenderer;
 }
@@ -95,7 +98,7 @@ void ImGUIManager::BeginFrame(OnlyCalledBy<Engine>)
     /* Pass input state. */
     const InputModifier modifiers = InputManager::Get().GetModifiers();
 
-    io.MousePos = InputManager::Get().GetCursorPosition();
+    io.MousePos = (mInputHandler->mEnabled) ? InputManager::Get().GetCursorPosition() : ImVec2(0, 0);
     io.KeyShift = (modifiers & kInputModifier_Shift) != 0;
     io.KeyCtrl  = (modifiers & kInputModifier_Ctrl) != 0;
     io.KeyAlt   = (modifiers & kInputModifier_Alt) != 0;
@@ -123,13 +126,19 @@ void ImGUIManager::Render(OnlyCalledBy<Engine>)
 }
 
 ImGUIInputHandler::ImGUIInputHandler() :
-    InputHandler    (kPriority_ImGUI)
+    InputHandler    (kPriority_ImGUI),
+    mEnabled        (false)
 {
     RegisterInputHandler();
 }
 
 InputHandler::EventResult ImGUIInputHandler::HandleButton(const ButtonEvent& inEvent)
 {
+    if (!mEnabled)
+    {
+        return kEventResult_Continue;
+    }
+
     ImGuiIO& io = ImGui::GetIO();
 
     if (inEvent.code >= kInputCodeKeyboardFirst && inEvent.code <= kInputCodeKeyboardLast)
@@ -163,6 +172,11 @@ InputHandler::EventResult ImGUIInputHandler::HandleButton(const ButtonEvent& inE
 
 InputHandler::EventResult ImGUIInputHandler::HandleAxis(const AxisEvent& inEvent)
 {
+    if (!mEnabled)
+    {
+        return kEventResult_Continue;
+    }
+
     ImGuiIO& io = ImGui::GetIO();
 
     switch (inEvent.code)
@@ -369,4 +383,9 @@ void ImGUIRenderer::Render() const
     context.SubmitRenderPass(cmdList);
 
     context.ResourceBarrier(view.get(), kGPUResourceState_RenderTarget, kGPUResourceState_Present);
+}
+
+void ImGUIManager::SetInputEnabled(const bool inEnable)
+{
+    mInputHandler->mEnabled = inEnable;
 }
