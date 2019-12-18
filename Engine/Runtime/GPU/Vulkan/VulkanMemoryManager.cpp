@@ -71,6 +71,7 @@ void VulkanMemoryManager::AllocateImage(const VkImageCreateInfo&       inCreateI
                                         VkImage&                       outImage,
                                         VmaAllocation&                 outAllocation)
 {
+    /* VMA is synchronized internally where needed so this is thread-safe. */
     VulkanCheck(vmaCreateImage(mAllocator,
                                &inCreateInfo,
                                &inAllocationInfo,
@@ -84,6 +85,7 @@ void VulkanMemoryManager::AllocateBuffer(const VkBufferCreateInfo&      inCreate
                                          VkBuffer&                      outBuffer,
                                          VmaAllocation&                 outAllocation)
 {
+    /* VMA is synchronized internally where needed so this is thread-safe. */
     VulkanCheck(vmaCreateBuffer(mAllocator,
                                 &inCreateInfo,
                                 &inAllocationInfo,
@@ -94,6 +96,7 @@ void VulkanMemoryManager::AllocateBuffer(const VkBufferCreateInfo&      inCreate
 
 void VulkanMemoryManager::Free(const VmaAllocation inAllocation)
 {
+    /* VMA is synchronized internally where needed so this is thread-safe. */
     vmaFreeMemory(mAllocator, inAllocation);
 }
 

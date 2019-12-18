@@ -76,6 +76,8 @@ public:
 
     /**
      * Resource creation methods.
+     *
+     * All resource creation methods are thread-safe.
      */
 
     /**
