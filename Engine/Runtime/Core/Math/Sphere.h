@@ -18,6 +18,8 @@
 
 #include "Core/Math.h"
 
+#include <vector>
+
 class Sphere
 {
 public:
@@ -27,6 +29,17 @@ public:
 
     const glm::vec3&            GetCentre() const   { return mCentre; }
     float                       GetRadius() const   { return mRadius; }
+
+    /**
+     * Generate geometry (triangle list) representing the sphere. inRings
+     * specifies the number of rings along the Y axis (like lines of latitude),
+     * inSectors specifies the number of rings around the Y axis (like lines of
+     * longitude).
+     */
+    void                        CreateGeometry(const uint32_t          inRings,
+                                               const uint32_t          inSectors,
+                                               std::vector<glm::vec3>& outVertices,
+                                               std::vector<uint16_t>&  outIndices) const;
 
 private:
     glm::vec3                   mCentre;

@@ -16,16 +16,28 @@
 
 #pragma once
 
-#include "Core/Math.h"
+#include "Core/Math/BoundingBox.h"
+#include "Core/Math/Line.h"
+#include "Core/Math/Sphere.h"
 #include "Core/Singleton.h"
 #include "Core/String.h"
 #include "Core/Utility.h"
 
+#include "GPU/GPUArgumentSet.h"
+#include "GPU/GPUShader.h"
+#include "GPU/GPUState.h"
+
 #include <list>
+#include <mutex>
+#include <vector>
 
 class DebugInputHandler;
 class DebugWindow;
 class Engine;
+class RenderGraph;
+class RenderView;
+
+struct RenderResourceHandle;
 
 /** Debug drawing/HUD API. */
 class DebugManager : public Singleton<DebugManager>
@@ -34,6 +46,10 @@ public:
                             DebugManager();
 
 public:
+    /**
+     * Debug UI overlay.
+     */
+
     void                    BeginFrame(OnlyCalledBy<Engine>);
     void                    RenderOverlay(OnlyCalledBy<Engine>);
 
@@ -49,12 +65,53 @@ public:
     void                    UnregisterWindow(DebugWindow* const inWindow,
                                              OnlyCalledBy<DebugWindow>);
 
+    /**
+     * World-space debug drawing API.
+     */
+
+    void                    RenderPrimitives(const RenderView&          inView,
+                                             RenderGraph&               inGraph,
+                                             const RenderResourceHandle inTexture,
+                                             RenderResourceHandle&      outNewTexture);
+
+    void                    DrawPrimitive(const BoundingBox& inBox,
+                                          const glm::vec3&   inColour);
+    void                    DrawPrimitive(const Line&        inLine,
+                                          const glm::vec3&   inColour);
+    void                    DrawPrimitive(const Sphere&      inSphere,
+                                          const glm::vec3&   inColour);
+
 private:
     enum OverlayState
     {
         kOverlayState_Inactive,
         kOverlayState_Visible,
         kOverlayState_Active,
+    };
+
+    enum PrimitiveType
+    {
+        kPrimitiveType_BoundingBox,
+        kPrimitiveType_Line,
+        kPrimitiveType_Sphere,
+    };
+
+    struct Primitive
+    {
+        union
+        {
+            BoundingBox     boundingBox;
+            Line            line;
+            Sphere          sphere;
+        };
+
+        PrimitiveType       type;
+        glm::vec3           colour;
+
+    public:
+                            Primitive()  {}
+                            ~Primitive() {}
+
     };
 
 private:
@@ -65,6 +122,16 @@ private:
     DebugInputHandler*      mInputHandler;
     OverlayState            mOverlayState;
 
-    friend class DebugInputHandler;
+    GPUShaderPtr            mVertexShader;
+    GPUShaderPtr            mPixelShader;
+    GPUArgumentSetLayoutRef mArgumentSetLayout;
+    GPUBlendStateRef        mBlendState;
+    GPUDepthStencilStateRef mDepthStencilState;
+    GPURasterizerStateRef   mRasterizerState;
+    GPUVertexInputStateRef  mVertexInputState;
 
+    std::mutex              mPrimitivesLock;
+    std::vector<Primitive>  mPrimitives;
+
+    friend class DebugInputHandler;
 };

@@ -144,6 +144,7 @@ static void ConvertRasterizerState(const GPUPipelineDesc&                  inDes
     outRasterizationInfo.cullMode                = VulkanUtils::ConvertCullMode(stateDesc.cullMode);
     outRasterizationInfo.frontFace               = VulkanUtils::ConvertFrontFace(stateDesc.frontFace);
     outRasterizationInfo.depthBiasEnable         = stateDesc.depthBiasEnable;
+    outRasterizationInfo.lineWidth               = 1.0f;
 
     outMultisampleInfo.sType                     = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     outMultisampleInfo.rasterizationSamples      = VK_SAMPLE_COUNT_1_BIT;

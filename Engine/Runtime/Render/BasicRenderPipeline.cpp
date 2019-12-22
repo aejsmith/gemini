@@ -16,6 +16,8 @@
 
 #include "Render/BasicRenderPipeline.h"
 
+#include "Engine/DebugManager.h"
+
 #include "Render/EntityDrawList.h"
 #include "Render/RenderContext.h"
 #include "Render/RenderWorld.h"
@@ -97,4 +99,10 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
                         colourTexture,
                         GPUSubresource{0, 0},
                         &outNewTexture);
+
+    /* Render debug primitives for the view. */
+    DebugManager::Get().RenderPrimitives(inView,
+                                         inGraph,
+                                         outNewTexture,
+                                         outNewTexture);
 }
