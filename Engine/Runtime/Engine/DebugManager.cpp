@@ -333,7 +333,7 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
                 {
                     pipelineDesc.topology = kGPUPrimitiveTopology_TriangleList;
 
-                    primitive.sphere.CreateGeometry(24, 24, vertices, indices);
+                    primitive.sphere.CreateGeometry(16, 16, vertices, indices);
 
                     break;
                 }
@@ -374,6 +374,14 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
             }
         }
     });
+}
+
+DebugManager::Primitive::Primitive(const Primitive& inOther)
+{
+    /* All members have non-trivial constructors hence we need to define this
+     * due to the union (copy constructor is otherwise implicitly deleted),
+     * however it is safe to just memcpy(). */
+    memcpy(this, &inOther, sizeof(*this));
 }
 
 void DebugManager::DrawPrimitive(const BoundingBox& inBox,

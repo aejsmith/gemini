@@ -110,6 +110,7 @@ private:
 
     public:
                             Primitive()  {}
+                            Primitive(const Primitive& inOther);
                             ~Primitive() {}
 
     };
