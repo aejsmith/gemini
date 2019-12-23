@@ -65,3 +65,23 @@ void Cone::CreateGeometry(const uint32_t          inBaseVertices,
         outIndices.emplace_back(((i + 1) % inBaseVertices) + 2);
     }
 }
+
+Sphere Cone::CalculateBoundingSphere() const
+{
+    float radius;
+    glm::vec3 origin;
+
+    if (mHalfAngle >= glm::pi<float>() / 4.0f)
+    {
+        radius = std::tan(mHalfAngle) * mHeight;
+        origin = mOrigin + (std::sin(2 * mHalfAngle) * mHeight * mDirection);
+    }
+    else
+    {
+        const float cosHalfAngle = std::cos(mHalfAngle);
+        radius = mHeight / (2.0f * cosHalfAngle * cosHalfAngle);
+        origin = mOrigin + (mDirection * radius);
+    }
+
+    return Sphere(origin, radius);
+}

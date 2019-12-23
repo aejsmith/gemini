@@ -16,9 +16,7 @@
 
 #pragma once
 
-#include "Core/Math.h"
-
-#include <vector>
+#include "Core/Math/Sphere.h"
 
 class Cone
 {
@@ -41,6 +39,13 @@ public:
     void                        CreateGeometry(const uint32_t          inBaseVertices,
                                                std::vector<glm::vec3>& outVertices,
                                                std::vector<uint16_t>&  outIndices) const;
+
+    /**
+     * Calculate a bounding sphere that fits the cone as tightly as possible.
+     * This will start to become very inaccurate for half angles greater than
+     * 45 degrees.
+     */
+    Sphere                      CalculateBoundingSphere() const;
 
 private:
     glm::vec3                   mOrigin;
