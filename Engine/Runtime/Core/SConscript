@@ -13,6 +13,7 @@ Export('env')
 
 objects = map(env.Object, [
     'Math/BoundingBox.cpp',
+    'Math/Cone.cpp',
     'Math/Frustum.cpp',
     'Math/Intersect.cpp',
     'Math/Sphere.cpp',

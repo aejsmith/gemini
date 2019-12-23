@@ -319,6 +319,15 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
                     break;
                 }
 
+                case kPrimitiveType_Cone:
+                {
+                    pipelineDesc.topology = kGPUPrimitiveTopology_TriangleList;
+
+                    primitive.cone.CreateGeometry(16, vertices, indices);
+
+                    break;
+                }
+
                 case kPrimitiveType_Line:
                 {
                     pipelineDesc.topology = kGPUPrimitiveTopology_LineList;
@@ -393,6 +402,17 @@ void DebugManager::DrawPrimitive(const BoundingBox& inBox,
     primitive.type        = kPrimitiveType_BoundingBox;
     primitive.boundingBox = inBox;
     primitive.colour      = inColour;
+}
+
+void DebugManager::DrawPrimitive(const Cone&        inCone,
+                                 const glm::vec3&   inColour)
+{
+    std::unique_lock lock(mPrimitivesLock);
+
+    Primitive& primitive = mPrimitives.emplace_back();
+    primitive.type   = kPrimitiveType_Cone;
+    primitive.cone   = inCone;
+    primitive.colour = inColour;
 }
 
 void DebugManager::DrawPrimitive(const Line&        inLine,

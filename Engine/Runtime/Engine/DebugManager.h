@@ -17,6 +17,7 @@
 #pragma once
 
 #include "Core/Math/BoundingBox.h"
+#include "Core/Math/Cone.h"
 #include "Core/Math/Line.h"
 #include "Core/Math/Sphere.h"
 #include "Core/Singleton.h"
@@ -76,6 +77,8 @@ public:
 
     void                    DrawPrimitive(const BoundingBox& inBox,
                                           const glm::vec3&   inColour);
+    void                    DrawPrimitive(const Cone&        inCone,
+                                          const glm::vec3&   inColour);
     void                    DrawPrimitive(const Line&        inLine,
                                           const glm::vec3&   inColour);
     void                    DrawPrimitive(const Sphere&      inSphere,
@@ -92,6 +95,7 @@ private:
     enum PrimitiveType
     {
         kPrimitiveType_BoundingBox,
+        kPrimitiveType_Cone,
         kPrimitiveType_Line,
         kPrimitiveType_Sphere,
     };
@@ -101,6 +105,7 @@ private:
         union
         {
             BoundingBox     boundingBox;
+            Cone            cone;
             Line            line;
             Sphere          sphere;
         };
