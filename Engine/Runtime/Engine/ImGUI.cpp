@@ -74,6 +74,30 @@ ImGUIManager::ImGUIManager() :
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
 
+    /* Set up key mapping. */
+    io.KeyMap[ImGuiKey_Tab]         = kInputCode_Tab;
+    io.KeyMap[ImGuiKey_LeftArrow]   = kInputCode_Left;
+    io.KeyMap[ImGuiKey_RightArrow]  = kInputCode_Right;
+    io.KeyMap[ImGuiKey_UpArrow]     = kInputCode_Up;
+    io.KeyMap[ImGuiKey_DownArrow]   = kInputCode_Down;
+    io.KeyMap[ImGuiKey_PageUp]      = kInputCode_PageUp;
+    io.KeyMap[ImGuiKey_PageDown]    = kInputCode_PageDown;
+    io.KeyMap[ImGuiKey_Home]        = kInputCode_Home;
+    io.KeyMap[ImGuiKey_End]         = kInputCode_End;
+    io.KeyMap[ImGuiKey_Insert]      = kInputCode_Insert;
+    io.KeyMap[ImGuiKey_Delete]      = kInputCode_Delete;
+    io.KeyMap[ImGuiKey_Backspace]   = kInputCode_Backspace;
+    io.KeyMap[ImGuiKey_Space]       = kInputCode_Space;
+    io.KeyMap[ImGuiKey_Enter]       = kInputCode_Return;
+    io.KeyMap[ImGuiKey_Escape]      = kInputCode_Escape;
+    io.KeyMap[ImGuiKey_KeyPadEnter] = kInputCode_KPEnter;
+    io.KeyMap[ImGuiKey_A]           = kInputCode_A;
+    io.KeyMap[ImGuiKey_C]           = kInputCode_C;
+    io.KeyMap[ImGuiKey_V]           = kInputCode_V;
+    io.KeyMap[ImGuiKey_X]           = kInputCode_X;
+    io.KeyMap[ImGuiKey_Y]           = kInputCode_Y;
+    io.KeyMap[ImGuiKey_Z]           = kInputCode_Z;
+
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowBorderSize = 0.0f;
 
