@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "Core/HashTable.h"
 #include "Core/Math/BoundingBox.h"
 #include "Core/Math/Cone.h"
 #include "Core/Math/Line.h"
@@ -44,47 +45,47 @@ struct RenderResourceHandle;
 class DebugManager : public Singleton<DebugManager>
 {
 public:
-                            DebugManager();
+                                DebugManager();
 
 public:
     /**
      * Debug UI overlay.
      */
 
-    void                    BeginFrame(OnlyCalledBy<Engine>);
-    void                    RenderOverlay(OnlyCalledBy<Engine>);
+    void                        BeginFrame(OnlyCalledBy<Engine>);
+    void                        RenderOverlay(OnlyCalledBy<Engine>);
 
     /** Display a line of debug text in the overlay. */
-    void                    AddText(const char* const inText,
-                                    const glm::vec4&  inColour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    void                    AddText(const std::string& inText,
-                                    const glm::vec4&   inColour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
-                                { AddText(inText.c_str(), inColour); }
+    void                        AddText(const char* const inText,
+                                        const glm::vec4&  inColour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    void                        AddText(const std::string& inText,
+                                        const glm::vec4&   inColour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
+                                    { AddText(inText.c_str(), inColour); }
 
-    void                    RegisterWindow(DebugWindow* const inWindow,
-                                           OnlyCalledBy<DebugWindow>);
-    void                    UnregisterWindow(DebugWindow* const inWindow,
-                                             OnlyCalledBy<DebugWindow>);
+    void                        RegisterWindow(DebugWindow* const inWindow,
+                                               OnlyCalledBy<DebugWindow>);
+    void                        UnregisterWindow(DebugWindow* const inWindow,
+                                                 OnlyCalledBy<DebugWindow>);
 
     /**
      * World-space debug drawing API.
      */
 
-    void                    RenderPrimitives(const RenderView&          inView,
-                                             RenderGraph&               inGraph,
-                                             const RenderResourceHandle inTexture,
-                                             RenderResourceHandle&      outNewTexture);
+    void                        RenderPrimitives(const RenderView&          inView,
+                                                 RenderGraph&               inGraph,
+                                                 const RenderResourceHandle inTexture,
+                                                 RenderResourceHandle&      outNewTexture);
 
-    void                    DrawPrimitive(const BoundingBox& inBox,
-                                          const glm::vec3&   inColour);
-    void                    DrawPrimitive(const Cone&        inCone,
-                                          const glm::vec3&   inColour,
-                                          const bool         inFill = false);
-    void                    DrawPrimitive(const Line&        inLine,
-                                          const glm::vec3&   inColour);
-    void                    DrawPrimitive(const Sphere&      inSphere,
-                                          const glm::vec3&   inColour,
-                                          const bool         inFill = false);
+    void                        DrawPrimitive(const BoundingBox& inBox,
+                                              const glm::vec3&   inColour);
+    void                        DrawPrimitive(const Cone&        inCone,
+                                              const glm::vec3&   inColour,
+                                              const bool         inFill = false);
+    void                        DrawPrimitive(const Line&        inLine,
+                                              const glm::vec3&   inColour);
+    void                        DrawPrimitive(const Sphere&      inSphere,
+                                              const glm::vec3&   inColour,
+                                              const bool         inFill = false);
 
 private:
     enum OverlayState
@@ -106,42 +107,45 @@ private:
     {
         union
         {
-            BoundingBox     boundingBox;
-            Cone            cone;
-            Line            line;
-            Sphere          sphere;
+            BoundingBox         boundingBox;
+            Cone                cone;
+            Line                line;
+            Sphere              sphere;
         };
 
-        PrimitiveType       type;
-        glm::vec3           colour;
-        bool                fill;
+        PrimitiveType           type;
+        glm::vec3               colour;
+        bool                    fill;
 
     public:
-                            Primitive()  {}
-                            Primitive(const Primitive& inOther);
-                            ~Primitive() {}
+                                Primitive()  {}
+                                Primitive(const Primitive& inOther);
+                                ~Primitive() {}
 
     };
 
-private:
-                            ~DebugManager();
+    using WindowList          = std::list<DebugWindow*>;
+    using WindowCategoryMap   = HashMap<std::string, WindowList>;
 
 private:
-    std::list<DebugWindow*> mWindows;
-    DebugInputHandler*      mInputHandler;
-    OverlayState            mOverlayState;
+                                ~DebugManager();
 
-    GPUShaderPtr            mVertexShader;
-    GPUShaderPtr            mPixelShader;
-    GPUArgumentSetLayoutRef mArgumentSetLayout;
-    GPUBlendStateRef        mBlendState;
-    GPUDepthStencilStateRef mDepthStencilState;
-    GPURasterizerStateRef   mRasterizerState;
-    GPURasterizerStateRef   mFillRasterizerState;
-    GPUVertexInputStateRef  mVertexInputState;
+private:
+    WindowCategoryMap           mWindows;
+    DebugInputHandler*          mInputHandler;
+    OverlayState                mOverlayState;
 
-    std::mutex              mPrimitivesLock;
-    std::vector<Primitive>  mPrimitives;
+    GPUShaderPtr                mVertexShader;
+    GPUShaderPtr                mPixelShader;
+    GPUArgumentSetLayoutRef     mArgumentSetLayout;
+    GPUBlendStateRef            mBlendState;
+    GPUDepthStencilStateRef     mDepthStencilState;
+    GPURasterizerStateRef       mRasterizerState;
+    GPURasterizerStateRef       mFillRasterizerState;
+    GPUVertexInputStateRef      mVertexInputState;
+
+    std::mutex                  mPrimitivesLock;
+    std::vector<Primitive>      mPrimitives;
 
     friend class DebugInputHandler;
 };

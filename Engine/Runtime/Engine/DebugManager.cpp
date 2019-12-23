@@ -188,28 +188,31 @@ void DebugManager::RenderOverlay(OnlyCalledBy<Engine>)
             /* Draw the main menu. */
             if (ImGui::BeginMainMenuBar())
             {
-                if (ImGui::BeginMenu("Windows"))
+                for (const auto& it : mWindows)
                 {
-                    for (DebugWindow* const window : mWindows)
+                    if (!it.second.empty() && ImGui::BeginMenu(it.first.c_str()))
                     {
-                        if (window->IsAvailable())
+                        for (DebugWindow* const window : it.second)
                         {
-                            ImGui::MenuItem(window->GetTitle(), nullptr, &window->mOpen);
+                            ImGui::MenuItem(window->GetTitle().c_str(), nullptr, &window->mOpen);
                         }
-                    }
 
-                    ImGui::EndMenu();
+                        ImGui::EndMenu();
+                    }
                 }
 
                 ImGui::EndMainMenuBar();
             }
         }
 
-        for (DebugWindow* const window : mWindows)
+        for (const auto& it : mWindows)
         {
-            if (window->IsAvailable() && window->mOpen)
+            for (DebugWindow* const window : it.second)
             {
-                window->Render();
+                if (window->mOpen)
+                {
+                    window->Render();
+                }
             }
         }
     }
@@ -229,13 +232,15 @@ void DebugManager::AddText(const char* const inText,
 void DebugManager::RegisterWindow(DebugWindow* const inWindow,
                                   OnlyCalledBy<DebugWindow>)
 {
-    mWindows.emplace_back(inWindow);
+    WindowList& windowList = mWindows[inWindow->GetCategory()];
+    windowList.emplace_back(inWindow);
 }
 
 void DebugManager::UnregisterWindow(DebugWindow* const inWindow,
                                     OnlyCalledBy<DebugWindow>)
 {
-    mWindows.remove(inWindow);
+    WindowList& windowList = mWindows[inWindow->GetCategory()];
+    windowList.remove(inWindow);
 }
 
 void DebugManager::RenderPrimitives(const RenderView&          inView,

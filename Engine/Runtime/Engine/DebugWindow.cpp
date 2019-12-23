@@ -18,18 +18,19 @@
 
 #include "Engine/DebugManager.h"
 
-DebugWindow::DebugWindow() :
-    mOpen   (false)
+DebugWindow::DebugWindow(std::string inCategory,
+                         std::string inTitle) :
+    mCategory   (std::move(inCategory)),
+    mTitle      (std::move(inTitle)),
+    mOpen       (false)
 {
+    Assert(!mCategory.empty());
+    Assert(!mTitle.empty());
+
     DebugManager::Get().RegisterWindow(this, {});
 }
 
 DebugWindow::~DebugWindow()
 {
     DebugManager::Get().UnregisterWindow(this, {});
-}
-
-bool DebugWindow::IsAvailable() const
-{
-    return true;
 }

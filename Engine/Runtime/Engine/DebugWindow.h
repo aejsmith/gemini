@@ -16,22 +16,26 @@
 
 #pragma once
 
-#include "Core/CoreDefs.h"
+#include "Core/String.h"
 
 #include "Engine/ImGUI.h"
 
 /** Base class for a window in the ImGUI debug overlay. */
 class DebugWindow
 {
+public:
+    /** Get the category of the window. */
+    const std::string&          GetCategory() const { return mCategory; }
+
+    /** Get/set the title of the window. */
+    const std::string&          GetTitle() const    { return mTitle; }
+    void                        SetTitle(std::string inTitle)
+                                    { mTitle = std::move(inTitle); }
+
 protected:
-                                DebugWindow();
+                                DebugWindow(std::string inCategory,
+                                            std::string inTitle);
     virtual                     ~DebugWindow();
-
-    /** Return whether the window is available to display. Defaults to true. */
-    virtual bool                IsAvailable() const;
-
-    /** Get the title of the window. */
-    virtual const char*         GetTitle() const = 0;
 
     /** Render the contents of the window. */
     virtual void                Render() = 0;
@@ -39,6 +43,9 @@ protected:
     bool                        Begin(const ImGuiWindowFlags inFlags = 0);
 
 protected:
+    const std::string           mCategory;
+    std::string                 mTitle;
+
     bool                        mOpen;
 
     friend class DebugManager;
@@ -46,7 +53,7 @@ protected:
 
 inline bool DebugWindow::Begin(const ImGuiWindowFlags inFlags)
 {
-    if (!ImGui::Begin(GetTitle(), &mOpen, inFlags))
+    if (!ImGui::Begin(GetTitle().c_str(), &mOpen, inFlags))
     {
         ImGui::End();
         return false;
