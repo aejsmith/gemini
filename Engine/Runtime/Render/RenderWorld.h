@@ -17,11 +17,13 @@
 #pragma once
 
 #include "Render/RenderEntity.h"
+#include "Render/RenderLight.h"
 #include "Render/RenderView.h"
 
 struct CullResults
 {
     std::vector<const RenderEntity*>    entities;
+    std::vector<const RenderLight*>     lights;
 };
 
 /**
@@ -45,13 +47,18 @@ public:
     void                                AddEntity(RenderEntity* const inEntity);
     void                                RemoveEntity(RenderEntity* const inEntity);
 
+    void                                AddLight(RenderLight* const inLight);
+    void                                RemoveLight(RenderLight* const inLight);
+
     void                                Cull(const RenderView& inView,
                                              CullResults&      outResults) const;
 
 private:
     using RenderEntityList            = IntrusiveList<RenderEntity, &RenderEntity::mWorldListNode>;
+    using RenderLightList             = IntrusiveList<RenderLight, &RenderLight::mWorldListNode>;
 
 private:
     RenderEntityList                    mEntities;
+    RenderLightList                     mLights;
 
 };

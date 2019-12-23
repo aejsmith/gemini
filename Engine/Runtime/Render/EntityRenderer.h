@@ -27,7 +27,7 @@ class RenderEntity;
  * entity.
  *
  * For the world entity that it is attached to, a Renderer adds one or more
- * renderable entities to the render world.
+ * RenderEntities to the RenderWorld.
  */
 class EntityRenderer : public Component
 {

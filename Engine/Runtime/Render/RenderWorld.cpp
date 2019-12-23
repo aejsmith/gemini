@@ -37,6 +37,16 @@ void RenderWorld::RemoveEntity(RenderEntity* const inEntity)
     mEntities.Remove(inEntity);
 }
 
+void RenderWorld::AddLight(RenderLight* const inLight)
+{
+    mLights.Append(inLight);
+}
+
+void RenderWorld::RemoveLight(RenderLight* const inLight)
+{
+    mLights.Remove(inLight);
+}
+
 void RenderWorld::Cull(const RenderView& inView,
                        CullResults&      outResults) const
 {
@@ -48,6 +58,15 @@ void RenderWorld::Cull(const RenderView& inView,
         {
             // TODO: Allocation overhead, this reallocates every insertion.
             outResults.entities.emplace_back(entity);
+        }
+    }
+
+    for (const RenderLight* light : mLights)
+    {
+        if (light->Cull(frustum))
+        {
+            // TODO: Allocation overhead, this reallocates every insertion.
+            outResults.lights.emplace_back(light);
         }
     }
 }

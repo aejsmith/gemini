@@ -49,3 +49,25 @@ enum ENUM() ShaderPassType
 
     kShaderPassTypeCount,
 };
+
+/** Types of light. */
+enum ENUM() LightType
+{
+    /**
+     * Light source that is infinitely far away and emits light in a uniform
+     * direction, along the parent entity's local negative Z axis.
+     */
+    kLightType_Directional,
+
+    /**
+     * Light source that emits light in all directions from their position in
+     * space.
+     */
+    kLightType_Point,
+
+    /**
+     * Light source that emits light in a cone centered around the parent
+     * entity's local negative Z axis.
+     */
+    kLightType_Spot,
+};
