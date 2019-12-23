@@ -141,6 +141,10 @@ DebugManager::DebugManager() :
 
     mRasterizerState = GPURasterizerState::Get(rasterizerDesc);
 
+    rasterizerDesc.polygonMode = kGPUPolygonMode_Fill;
+
+    mFillRasterizerState = GPURasterizerState::Get(rasterizerDesc);
+
     GPUVertexInputStateDesc vertexInputDesc;
     vertexInputDesc.buffers[0].stride = sizeof(glm::vec3);
     vertexInputDesc.attributes[0].semantic = kGPUAttributeSemantic_Position;
@@ -353,6 +357,10 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
                 }
             }
 
+            pipelineDesc.rasterizerState = (primitive.fill)
+                                               ? mFillRasterizerState
+                                               : mRasterizerState;
+
             inCmdList.SetPipeline(pipelineDesc);
 
             inCmdList.SetConstants(kArgumentSet_ViewEntity,
@@ -402,10 +410,12 @@ void DebugManager::DrawPrimitive(const BoundingBox& inBox,
     primitive.type        = kPrimitiveType_BoundingBox;
     primitive.boundingBox = inBox;
     primitive.colour      = inColour;
+    primitive.fill        = false;
 }
 
-void DebugManager::DrawPrimitive(const Cone&        inCone,
-                                 const glm::vec3&   inColour)
+void DebugManager::DrawPrimitive(const Cone&      inCone,
+                                 const glm::vec3& inColour,
+                                 const bool       inFill)
 {
     std::unique_lock lock(mPrimitivesLock);
 
@@ -413,10 +423,11 @@ void DebugManager::DrawPrimitive(const Cone&        inCone,
     primitive.type   = kPrimitiveType_Cone;
     primitive.cone   = inCone;
     primitive.colour = inColour;
+    primitive.fill   = inFill;
 }
 
-void DebugManager::DrawPrimitive(const Line&        inLine,
-                                 const glm::vec3&   inColour)
+void DebugManager::DrawPrimitive(const Line&      inLine,
+                                 const glm::vec3& inColour)
 {
     std::unique_lock lock(mPrimitivesLock);
 
@@ -424,10 +435,12 @@ void DebugManager::DrawPrimitive(const Line&        inLine,
     primitive.type   = kPrimitiveType_Line;
     primitive.line   = inLine;
     primitive.colour = inColour;
+    primitive.fill   = false;
 }
 
-void DebugManager::DrawPrimitive(const Sphere&      inSphere,
-                                 const glm::vec3&   inColour)
+void DebugManager::DrawPrimitive(const Sphere&    inSphere,
+                                 const glm::vec3& inColour,
+                                 const bool       inFill)
 {
     std::unique_lock lock(mPrimitivesLock);
 
@@ -435,4 +448,5 @@ void DebugManager::DrawPrimitive(const Sphere&      inSphere,
     primitive.type   = kPrimitiveType_Sphere;
     primitive.sphere = inSphere;
     primitive.colour = inColour;
+    primitive.fill   = inFill;
 }

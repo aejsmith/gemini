@@ -78,11 +78,13 @@ public:
     void                    DrawPrimitive(const BoundingBox& inBox,
                                           const glm::vec3&   inColour);
     void                    DrawPrimitive(const Cone&        inCone,
-                                          const glm::vec3&   inColour);
+                                          const glm::vec3&   inColour,
+                                          const bool         inFill = false);
     void                    DrawPrimitive(const Line&        inLine,
                                           const glm::vec3&   inColour);
     void                    DrawPrimitive(const Sphere&      inSphere,
-                                          const glm::vec3&   inColour);
+                                          const glm::vec3&   inColour,
+                                          const bool         inFill = false);
 
 private:
     enum OverlayState
@@ -112,6 +114,7 @@ private:
 
         PrimitiveType       type;
         glm::vec3           colour;
+        bool                fill;
 
     public:
                             Primitive()  {}
@@ -134,6 +137,7 @@ private:
     GPUBlendStateRef        mBlendState;
     GPUDepthStencilStateRef mDepthStencilState;
     GPURasterizerStateRef   mRasterizerState;
+    GPURasterizerStateRef   mFillRasterizerState;
     GPUVertexInputStateRef  mVertexInputState;
 
     std::mutex              mPrimitivesLock;
