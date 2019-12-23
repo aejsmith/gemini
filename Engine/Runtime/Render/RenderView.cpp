@@ -21,7 +21,7 @@
 
 RenderView RenderView::CreatePerspective(const glm::vec3&  inPosition,
                                          const glm::quat&  inOrientation,
-                                         const float       inVerticalFOV,
+                                         const Radians     inVerticalFOV,
                                          const float       inZNear,
                                          const float       inZFar,
                                          const glm::ivec2& inTargetSize)
@@ -39,7 +39,7 @@ RenderView RenderView::CreatePerspective(const glm::vec3&  inPosition,
     view.mViewMatrix                  = orientationMatrix * positionMatrix;
 
     const float aspect = static_cast<float>(inTargetSize.x) / static_cast<float>(inTargetSize.y);
-    view.mProjectionMatrix = glm::perspective(glm::radians(inVerticalFOV),
+    view.mProjectionMatrix = glm::perspective(inVerticalFOV,
                                               aspect,
                                               inZNear,
                                               inZFar);

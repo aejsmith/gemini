@@ -121,7 +121,7 @@ public:
 
     void                    Translate(const glm::vec3& inVector);
     void                    Rotate(const glm::quat& inRotation);
-    void                    Rotate(const float      inAngle,
+    void                    Rotate(const Degrees    inAngle,
                                    const glm::vec3& inAxis);
 
     /**

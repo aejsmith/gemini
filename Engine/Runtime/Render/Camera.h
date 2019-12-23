@@ -45,7 +45,7 @@ public:
      */
 
     /** Vertical field of view, in degrees. */
-    PROPERTY() float            verticalFOV;
+    PROPERTY() Degrees          verticalFOV;
 
     /** Near/far plane distance. */
     PROPERTY() float            zNear;

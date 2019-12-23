@@ -407,7 +407,7 @@ void Entity::Rotate(const glm::quat& inRotation)
     UpdateTransform();
 }
 
-void Entity::Rotate(const float      inAngle,
+void Entity::Rotate(const Degrees    inAngle,
                     const glm::vec3& inAxis)
 {
     Rotate(glm::angleAxis(glm::radians(inAngle), glm::normalize(inAxis)));

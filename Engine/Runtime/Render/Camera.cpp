@@ -54,7 +54,7 @@ void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,
     const RenderView view =
         RenderView::CreatePerspective(mCamera.GetWorldPosition(),
                                       mCamera.GetWorldOrientation(),
-                                      mCamera.verticalFOV,
+                                      glm::radians(mCamera.verticalFOV),
                                       mCamera.zNear,
                                       mCamera.zFar,
                                       GetLayerOutput()->GetSize());

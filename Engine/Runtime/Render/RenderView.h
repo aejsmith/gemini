@@ -30,7 +30,7 @@ public:
     /** Create a view with a perspective projection. */
     static RenderView       CreatePerspective(const glm::vec3&  inPosition,
                                               const glm::quat&  inOrientation,
-                                              const float       inVerticalFOV,
+                                              const Radians     inVerticalFOV,
                                               const float       inZNear,
                                               const float       inZFar,
                                               const glm::ivec2& inTargetSize);

@@ -19,3 +19,15 @@
 #include "Core/CoreDefs.h"
 
 #include <glm.h>
+
+/**
+ * Type aliases for angles to make clear which unit is expected. Both are
+ * currently just aliases for float, this is mainly for documentation purposes.
+ *
+ * In general, degrees should be used for user-facing properties (e.g. exposed
+ * through UI for editing), as degrees are more familiar. Radians are used for
+ * everything else internally, as most math functions work with radians rather
+ * than degrees.
+ */
+using Degrees = float;
+using Radians = float;
