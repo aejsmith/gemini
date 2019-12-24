@@ -19,7 +19,6 @@
 #include "Core/Filesystem.h"
 
 #include "Engine/Engine.h"
-#include "Engine/Entity.h"
 #include "Engine/JSONSerialiser.h"
 #include "Engine/Window.h"
 

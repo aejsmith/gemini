@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Engine/Entity.h"
+#include "Entity/Entity.h"
 
 /**
  * Components implement the behaviour of an entity in the game world. The Entity

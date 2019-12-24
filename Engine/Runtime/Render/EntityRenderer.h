@@ -18,7 +18,7 @@
 
 #include "Render/RenderDefs.h"
 
-#include "Engine/Component.h"
+#include "Entity/Component.h"
 
 class RenderEntity;
 

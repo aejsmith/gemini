@@ -27,7 +27,8 @@
 #include "Engine/Game.h"
 #include "Engine/ImGUI.h"
 #include "Engine/Window.h"
-#include "Engine/World.h"
+
+#include "Entity/World.h"
 
 #include "GPU/GPUDevice.h"
 

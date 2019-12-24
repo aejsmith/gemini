@@ -16,7 +16,7 @@
 
 #include "Render/EntityRenderer.h"
 
-#include "Engine/World.h"
+#include "Entity/World.h"
 
 #include "Render/RenderEntity.h"
 #include "Render/RenderWorld.h"

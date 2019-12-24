@@ -5,26 +5,19 @@ Import('env')
 objects = map(env.ObjectGenHeader, [
     'Asset.h',
     'AssetLoader.h',
-    'Behaviour.h',
-    'Component.h',
-    'Entity.h',
     'Game.h',
     'Mesh.h',
     'Object.h',
     'Texture.h',
-    'World.h',
 ])
 
 objects += map(env.Object, [
     'Asset.cpp',
     'AssetLoader.cpp',
     'AssetManager.cpp',
-    'Behaviour.cpp',
-    'Component.cpp',
     'DebugManager.cpp',
     'DebugWindow.cpp',
     'Engine.cpp',
-    'Entity.cpp',
     'FrameAllocator.cpp',
     'ImGUI.cpp',
     'JSONSerialiser.cpp',
@@ -35,7 +28,6 @@ objects += map(env.Object, [
     'Texture.cpp',
     'Version.cpp',
     'Window.cpp',
-    'World.cpp',
 ])
 
 # Generate the version information file.

@@ -14,10 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine/World.h"
+#include "Entity/World.h"
 
-#include "Engine/Entity.h"
 #include "Engine/Serialiser.h"
+
+#include "Entity/Entity.h"
 
 #include "Render/RenderWorld.h"
 

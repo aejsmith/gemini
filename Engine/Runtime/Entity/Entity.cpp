@@ -14,11 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine/Entity.h"
+#include "Entity/Entity.h"
 
-#include "Engine/Component.h"
 #include "Engine/Serialiser.h"
-#include "Engine/World.h"
+
+#include "Entity/Component.h"
+#include "Entity/World.h"
 
 Entity::Entity() :
     mWorld          (nullptr),

@@ -21,7 +21,8 @@
 #include "Core/Filesystem.h"
 
 #include "Engine/AssetManager.h"
-#include "Engine/Entity.h"
+
+#include "Entity/Entity.h"
 
 #include "GPU/GPUUtils.h"
 

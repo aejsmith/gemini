@@ -16,7 +16,7 @@
 
 #include "Render/Light.h"
 
-#include "Engine/World.h"
+#include "Entity/World.h"
 
 #include "Render/RenderWorld.h"
 

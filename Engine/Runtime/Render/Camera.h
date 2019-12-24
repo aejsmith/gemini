@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Engine/Component.h"
+#include "Entity/Component.h"
 
 #include "Render/RenderPipeline.h"
 

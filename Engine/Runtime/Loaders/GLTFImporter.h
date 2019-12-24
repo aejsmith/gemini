@@ -21,7 +21,8 @@
 
 #include "Engine/Mesh.h"
 #include "Engine/Texture.h"
-#include "Engine/World.h"
+
+#include "Entity/World.h"
 
 #include "GPU/GPUDefs.h"
 

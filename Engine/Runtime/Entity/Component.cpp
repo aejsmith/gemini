@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine/Component.h"
+#include "Entity/Component.h"
 
 #include "Engine/Serialiser.h"
 

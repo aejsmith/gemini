@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Engine/Behaviour.h"
+#include "Entity/Behaviour.h"
 
 #include "Input/InputHandler.h"
 

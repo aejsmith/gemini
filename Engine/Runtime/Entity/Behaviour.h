@@ -14,12 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Engine/Behaviour.h"
+#pragma once
 
-Behaviour::Behaviour()
-{
-}
+#include "Entity/Component.h"
 
-Behaviour::~Behaviour()
+/**
+ * This class is the base class for adding any custom behaviour to an entity.
+ * It doesn't provide any functionality on top of Component, it exists just to
+ * give a common base for all behaviour types, e.g. to allow them to be looked
+ * up with Entity::FindComponent().
+ */
+class Behaviour : public Component
 {
-}
+    CLASS();
+
+protected:
+                                Behaviour();
+                                ~Behaviour();
+
+};

@@ -17,7 +17,8 @@
 #include "Render/Camera.h"
 
 #include "Engine/Window.h"
-#include "Engine/World.h"
+
+#include "Entity/World.h"
 
 #include "Render/DeferredRenderPipeline.h"
 #include "Render/RenderGraph.h"

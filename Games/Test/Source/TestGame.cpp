@@ -22,10 +22,11 @@
 
 #include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
-#include "Engine/Entity.h"
 #include "Engine/JSONSerialiser.h"
 #include "Engine/Mesh.h"
-#include "Engine/World.h"
+
+#include "Entity/Entity.h"
+#include "Entity/World.h"
 
 #include "Loaders/GLTFImporter.h"
 
