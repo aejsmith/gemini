@@ -67,7 +67,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
     const Path directoryPath    = fsPath.GetDirectoryName();
     const std::string assetName = fsPath.GetBaseFileName();
 
-    std::unique_ptr<Directory> directory(Filesystem::OpenDirectory(directoryPath));
+    UPtr<Directory> directory(Filesystem::OpenDirectory(directoryPath));
     if (!directory)
     {
         LogError("Could not find asset '%s'", inPath.GetCString());
@@ -76,8 +76,8 @@ AssetPtr AssetManager::Load(const Path& inPath)
 
     /* Iterate over directory entries to try to find the asset data and a
      * corresponding loader. */
-    std::unique_ptr<DataStream> data;
-    std::unique_ptr<DataStream> loaderData;
+    UPtr<DataStream> data;
+    UPtr<DataStream> loaderData;
     std::string type;
     Directory::Entry entry;
     while (directory->Next(entry))
@@ -276,7 +276,7 @@ bool AssetManager::SaveAsset(Asset* const inAsset,
     JSONSerialiser serialiser;
     ByteArray serialisedData = serialiser.Serialise(inAsset);
 
-    std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+    UPtr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
     if (!file)
     {
         LogError("Could not save asset '%s': failed to open '%s'", inPath.GetCString(), fsPath.GetCString());

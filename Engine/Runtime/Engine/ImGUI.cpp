@@ -343,7 +343,7 @@ void ImGUIRenderer::Render() const
     viewDesc.usage    = kGPUResourceUsage_RenderTarget;
     viewDesc.format   = texture->GetFormat();
 
-    std::unique_ptr<GPUResourceView> view(GPUDevice::Get().CreateResourceView(texture, viewDesc));
+    UPtr<GPUResourceView> view(GPUDevice::Get().CreateResourceView(texture, viewDesc));
 
     GPURenderPass renderPass;
     renderPass.SetColour(0, view.get());

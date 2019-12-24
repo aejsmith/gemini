@@ -137,7 +137,7 @@ bool GLTFImporter::Import(const Path&  inPath,
 
     /* Parse the file content. */
     {
-        std::unique_ptr<DataStream> file(Filesystem::OpenFile(mPath));
+        UPtr<DataStream> file(Filesystem::OpenFile(mPath));
         if (!file)
         {
             LogError("%s: Failed to open file", mPath.GetCString());
@@ -978,7 +978,7 @@ bool GLTFImporter::LoadURI(const rapidjson::Value& inURI,
     {
         const Path path = mPath.GetDirectoryName() / uri;
 
-        std::unique_ptr<DataStream> file(Filesystem::OpenFile(path));
+        UPtr<DataStream> file(Filesystem::OpenFile(path));
         if (!file)
         {
             LogError("%s: Failed to open URI '%s' ('%s')", mPath.GetCString(), uri, path.GetCString());
@@ -1333,7 +1333,7 @@ bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex,
                 break;
         }
 
-        std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+        UPtr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
         if (!file)
         {
             LogError("%s: Failed to open '%s'", mPath.GetCString(), fsPath.GetCString());
@@ -1365,7 +1365,7 @@ bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex,
 
         Path fsPath = baseFSPath + ".loader";
 
-        std::unique_ptr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
+        UPtr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
         if (!file)
         {
             LogError("%s: Failed to open '%s'", mPath.GetCString(), fsPath.GetCString());

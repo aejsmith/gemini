@@ -21,6 +21,7 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <utility>
 
 /**
@@ -40,6 +41,14 @@
 #if INTPTR_MAX != INT64_MAX
     #error "Non-64-bit platforms are not supported"
 #endif
+
+/**
+ * Helper types.
+ */
+
+/** Shorter alias for std::unique_ptr. */
+template <typename T>
+using UPtr = std::unique_ptr<T>;
 
 /**
  * Helper macros.

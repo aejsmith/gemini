@@ -61,7 +61,7 @@ private:
     bool                    mDrawEntityBoundingBoxes;
     bool                    mDrawLightVolumes;
 
-    std::unique_ptr<DeferredRenderPipelineWindow>
+    UPtr<DeferredRenderPipelineWindow>
                             mDebugWindow;
 
     friend class DeferredRenderPipelineWindow;

@@ -80,7 +80,7 @@ bool ShaderCompiler::LoadSource(const Path&  inPath,
         return false;
     }
 
-    std::unique_ptr<File> file(Filesystem::OpenFile(filePath));
+    UPtr<File> file(Filesystem::OpenFile(filePath));
     if (!file)
     {
         LogError("%s:%zu: Failed to open source file '%s'",
