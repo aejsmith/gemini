@@ -29,7 +29,6 @@
 
 #include "Loaders/GLTFImporter.h"
 
-#include "Render/BasicRenderPipeline.h"
 #include "Render/Camera.h"
 #include "Render/Material.h"
 #include "Render/MeshRenderer.h"

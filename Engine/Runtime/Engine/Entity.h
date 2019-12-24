@@ -59,6 +59,13 @@ public:
     void                    SetName(std::string inName);
 
     /**
+     * Get the entity's path in the entity hierarchy. This is formed from the
+     * concatenation of names for all entities in the tree leading to this one,
+     * separated by a '/'. The root entity is '/'.
+     */
+    std::string             GetPath();
+
+    /**
      * Whether the entity is active. Even if an entity is marked active, it is
      * only really active in the world if all parents in the hierarchy are also
      * active. Use GetActiveInWorld() to check this.

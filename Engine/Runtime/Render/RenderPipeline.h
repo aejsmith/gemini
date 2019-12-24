@@ -53,8 +53,16 @@ public:
                                    const RenderResourceHandle inTexture,
                                    RenderResourceHandle&      outNewTexture) = 0;
 
+    /** Get/set the name of the pipeline (used for debug purposes). */
+    const std::string&      GetName() const { return mName; }
+    virtual void            SetName(std::string inName)
+                                { mName = std::move(inName); }
+
 protected:
                             RenderPipeline();
                             ~RenderPipeline();
+
+private:
+    std::string             mName;
 
 };

@@ -130,7 +130,7 @@
         "children": []
     },
     {
-        "objectClass": "BasicRenderPipeline",
+        "objectClass": "DeferredRenderPipeline",
         "objectID": 6,
         "objectProperties": {
             "clearColour": [

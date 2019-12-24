@@ -19,7 +19,7 @@
 #include "Engine/Window.h"
 #include "Engine/World.h"
 
-#include "Render/BasicRenderPipeline.h"
+#include "Render/DeferredRenderPipeline.h"
 #include "Render/RenderGraph.h"
 #include "Render/RenderLayer.h"
 #include "Render/RenderView.h"
@@ -67,7 +67,7 @@ void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,
 }
 
 Camera::Camera() :
-    renderPipeline  (new BasicRenderPipeline()),
+    renderPipeline  (new DeferredRenderPipeline()),
     verticalFOV     (60.0f),
     zNear           (0.1f),
     zFar            (500.0f),
@@ -83,6 +83,8 @@ Camera::~Camera()
 
 void Camera::Activated()
 {
+    this->renderPipeline->SetName(GetEntity()->GetPath());
+
     mRenderLayer->ActivateLayer();
 }
 

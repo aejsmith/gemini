@@ -150,8 +150,31 @@ void Entity::Deserialise(Serialiser& inSerialiser)
 
 void Entity::SetName(std::string inName)
 {
+    Assert(!inName.empty());
     Assert(inName.find('/') == std::string::npos);
+
     mName = std::move(inName);
+}
+
+std::string Entity::GetPath()
+{
+    if (mParent)
+    {
+        std::string path = mParent->GetPath();
+
+        if (path[path.length() - 1] != '/')
+        {
+            path += '/';
+        }
+
+        path += mName;
+
+        return path;
+    }
+    else
+    {
+        return "/";
+    }
 }
 
 void Entity::SetActive(const bool inActive)

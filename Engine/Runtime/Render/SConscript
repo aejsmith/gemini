@@ -3,6 +3,7 @@ Import('env')
 objects = map(env.ObjectGenHeader, [
     'BasicRenderPipeline.h',
     'Camera.h',
+    'DeferredRenderPipeline.h',
     'EntityRenderer.h',
     'Light.h',
     'Material.h',
@@ -16,6 +17,7 @@ objects = map(env.ObjectGenHeader, [
 objects += map(env.Object, [
     'BasicRenderPipeline.cpp',
     'Camera.cpp',
+    'DeferredRenderPipeline.cpp',
     'EntityDrawList.cpp',
     'EntityRenderer.cpp',
     'Light.cpp',
