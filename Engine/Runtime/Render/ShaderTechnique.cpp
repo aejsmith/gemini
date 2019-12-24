@@ -120,7 +120,7 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
                     layoutDesc.arguments.emplace_back(kGPUArgumentType_Sampler);
                 }
 
-                ObjectPtr<> resource;
+                ObjPtr<> resource;
                 switch (parameter.type)
                 {
                     case kShaderParameterType_Texture2D:

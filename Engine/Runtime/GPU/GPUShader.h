@@ -59,4 +59,4 @@ private:
 
 };
 
-using GPUShaderPtr = ReferencePtr<GPUShader>;
+using GPUShaderPtr = RefPtr<GPUShader>;

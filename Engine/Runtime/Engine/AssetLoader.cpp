@@ -37,7 +37,7 @@ AssetPtr AssetLoader::Load(DataStream* const inData,
     return Load();
 }
 
-ObjectPtr<AssetLoader> AssetLoader::Create(const std::string& inExtension)
+ObjPtr<AssetLoader> AssetLoader::Create(const std::string& inExtension)
 {
     /* Map of file types to loader class. */
     static auto sTypeMap =
@@ -50,8 +50,8 @@ ObjectPtr<AssetLoader> AssetLoader::Create(const std::string& inExtension)
                 {
                     if (AssetLoader::staticMetaClass.IsBaseOf(inMetaClass) && inMetaClass.IsConstructable())
                     {
-                        ObjectPtr<Object> object      = inMetaClass.Construct();
-                        ObjectPtr<AssetLoader> loader = object.StaticCast<AssetLoader>();
+                        ObjPtr<Object> object      = inMetaClass.Construct();
+                        ObjPtr<AssetLoader> loader = object.StaticCast<AssetLoader>();
 
                         const char* const extension = loader->GetExtension();
                         
@@ -62,12 +62,12 @@ ObjectPtr<AssetLoader> AssetLoader::Create(const std::string& inExtension)
             return map;
         }();
 
-    ObjectPtr<AssetLoader> loader;
+    ObjPtr<AssetLoader> loader;
 
     auto ret = sTypeMap.find(inExtension);
     if (ret != sTypeMap.end())
     {
-        ObjectPtr<Object> object = ret->second->Construct();
+        ObjPtr<Object> object = ret->second->Construct();
         loader = object.StaticCast<AssetLoader>();
     }
 

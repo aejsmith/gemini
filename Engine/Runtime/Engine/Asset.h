@@ -49,4 +49,4 @@ private:
 
 };
 
-using AssetPtr = ObjectPtr<Asset>;
+using AssetPtr = ObjPtr<Asset>;

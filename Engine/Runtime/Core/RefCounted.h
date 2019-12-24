@@ -89,44 +89,44 @@ inline int32_t RefCounted::Release() const
  * Similarly, it should be safe to return raw pointers to objects as long as
  * you know a reference should be held to it somewhere. If the caller intends
  * to store the returned pointer for long term usage, it should assign it to a
- * ReferencePtr.
+ * RefPtr.
  */
 template <typename T>
-class ReferencePtr
+class RefPtr
 {
 public:
     using ReferencedType          = T;
 
     template <typename U>
-    using EnableIfConvertible     = typename std::enable_if<std::is_convertible<U*, ReferencedType*>::value, ReferencePtr&>::type;
+    using EnableIfConvertible     = typename std::enable_if<std::is_convertible<U*, ReferencedType*>::value, RefPtr&>::type;
 
 public:
-                                    ReferencePtr();
-                                    ReferencePtr(std::nullptr_t);
-                                    ReferencePtr(ReferencePtr&& inOther);
-                                    ReferencePtr(const ReferencePtr& inOther);
+                                    RefPtr();
+                                    RefPtr(std::nullptr_t);
+                                    RefPtr(RefPtr&& inOther);
+                                    RefPtr(const RefPtr& inOther);
 
                                     template <typename U, typename = EnableIfConvertible<U>>
-                                    ReferencePtr(U* const inObject);
+                                    RefPtr(U* const inObject);
 
                                     template <typename U, typename = EnableIfConvertible<U>>
-                                    ReferencePtr(const ReferencePtr<U>& inOther);
+                                    RefPtr(const RefPtr<U>& inOther);
 
                                     template <typename U, typename = EnableIfConvertible<U>>
-                                    ReferencePtr(ReferencePtr<U>&& inOther);
+                                    RefPtr(RefPtr<U>&& inOther);
 
-                                    ~ReferencePtr();
+                                    ~RefPtr();
 
 public:
-    ReferencePtr&                   operator =(ReferencePtr&& inOther);
-    ReferencePtr&                   operator =(const ReferencePtr& inOther);
-    ReferencePtr&                   operator =(ReferencedType* const inObject);
+    RefPtr&                         operator =(RefPtr&& inOther);
+    RefPtr&                         operator =(const RefPtr& inOther);
+    RefPtr&                         operator =(ReferencedType* const inObject);
 
     template <typename U>
-    EnableIfConvertible<U>          operator =(const ReferencePtr<U>& inOther);
+    EnableIfConvertible<U>          operator =(const RefPtr<U>& inOther);
 
     template <typename U>
-    EnableIfConvertible<U>          operator =(ReferencePtr<U>&& inOther);
+    EnableIfConvertible<U>          operator =(RefPtr<U>&& inOther);
 
     explicit                        operator bool() const               { return mObject != nullptr; }
 
@@ -141,23 +141,23 @@ public:
      * Change the object that the pointer refers to. inRetain indicates whether
      * to retain the object, defaults to true. If false, the caller should have
      * already added a reference to the object, which will be taken over by
-     * this ReferencePtr.
+     * this RefPtr.
      */
     void                            Reset(ReferencedType* const inObject = nullptr,
                                           const bool            inRetain = true);
 
     /**
      * Detach the referenced object, if any. A raw pointer to it will be
-     * returned, without releasing the reference, and the ReferencePtr will be
+     * returned, without releasing the reference, and the RefPtr will be
      * set to null. It is the caller's responsibility to ensure that the
      * reference is released later.
      */
     ReferencedType*                 Detach();
 
-    void                            Swap(ReferencePtr& inOther);
+    void                            Swap(RefPtr& inOther);
 
     template <typename U>
-    ReferencePtr<U>                 StaticCast() const;
+    RefPtr<U>                       StaticCast() const;
 
 private:
     ReferencedType*                 mObject;
@@ -165,19 +165,19 @@ private:
 };
 
 template <typename T>
-inline ReferencePtr<T>::ReferencePtr() :
+inline RefPtr<T>::RefPtr() :
     mObject (nullptr)
 {
 }
 
 template <typename T>
-inline ReferencePtr<T>::ReferencePtr(std::nullptr_t) :
+inline RefPtr<T>::RefPtr(std::nullptr_t) :
     mObject (nullptr)
 {
 }
 
 template <typename T> template <typename U, typename>
-inline ReferencePtr<T>::ReferencePtr(U* const inObject) :
+inline RefPtr<T>::RefPtr(U* const inObject) :
     mObject (inObject)
 {
     if (mObject)
@@ -187,7 +187,7 @@ inline ReferencePtr<T>::ReferencePtr(U* const inObject) :
 }
 
 template <typename T>
-inline ReferencePtr<T>::ReferencePtr(const ReferencePtr& inOther) :
+inline RefPtr<T>::RefPtr(const RefPtr& inOther) :
     mObject (inOther.mObject)
 {
     if (mObject)
@@ -197,7 +197,7 @@ inline ReferencePtr<T>::ReferencePtr(const ReferencePtr& inOther) :
 }
 
 template <typename T> template <typename U, typename>
-inline ReferencePtr<T>::ReferencePtr(const ReferencePtr<U>& inOther) :
+inline RefPtr<T>::RefPtr(const RefPtr<U>& inOther) :
     mObject (inOther.Get())
 {
     if (mObject)
@@ -207,48 +207,48 @@ inline ReferencePtr<T>::ReferencePtr(const ReferencePtr<U>& inOther) :
 }
 
 template <typename T> template <typename U, typename>
-inline ReferencePtr<T>::ReferencePtr(ReferencePtr<U>&& inOther) :
+inline RefPtr<T>::RefPtr(RefPtr<U>&& inOther) :
     mObject (inOther.Detach())
 {
 }
 
 template <typename T>
-inline ReferencePtr<T>::ReferencePtr(ReferencePtr&& inOther) :
+inline RefPtr<T>::RefPtr(RefPtr&& inOther) :
     mObject (inOther.Detach())
 {
 }
 
 template <typename T>
-inline ReferencePtr<T>::~ReferencePtr()
+inline RefPtr<T>::~RefPtr()
 {
     Reset();
 }
 
 template <typename T>
-inline ReferencePtr<T>& ReferencePtr<T>::operator =(ReferencedType* const inObject)
+inline RefPtr<T>& RefPtr<T>::operator =(ReferencedType* const inObject)
 {
     Reset(inObject);
     return *this;
 }
 
 template <typename T>
-inline ReferencePtr<T>& ReferencePtr<T>::operator =(const ReferencePtr& inOther)
+inline RefPtr<T>& RefPtr<T>::operator =(const RefPtr& inOther)
 {
     Reset(inOther.mObject);
     return *this;
 }
 
 template <typename T> template <typename U>
-inline typename ReferencePtr<T>::template EnableIfConvertible<U>
-ReferencePtr<T>::operator =(const ReferencePtr<U>& inOther)
+inline typename RefPtr<T>::template EnableIfConvertible<U>
+RefPtr<T>::operator =(const RefPtr<U>& inOther)
 {
     Reset(inOther.Get());
     return *this;
 }
 
 template <typename T> template <typename U>
-inline typename ReferencePtr<T>::template EnableIfConvertible<U>
-ReferencePtr<T>::operator =(ReferencePtr<U>&& inOther)
+inline typename RefPtr<T>::template EnableIfConvertible<U>
+RefPtr<T>::operator =(RefPtr<U>&& inOther)
 {
     if (mObject)
     {
@@ -261,7 +261,7 @@ ReferencePtr<T>::operator =(ReferencePtr<U>&& inOther)
 }
 
 template <typename T>
-ReferencePtr<T>& ReferencePtr<T>::operator =(ReferencePtr&& inOther)
+RefPtr<T>& RefPtr<T>::operator =(RefPtr&& inOther)
 {
     if (mObject)
     {
@@ -274,7 +274,7 @@ ReferencePtr<T>& ReferencePtr<T>::operator =(ReferencePtr&& inOther)
 }
 
 template <typename T>
-void ReferencePtr<T>::Reset(ReferencedType* const inObject,
+void RefPtr<T>::Reset(ReferencedType* const inObject,
                             const bool            inRetain)
 {
     if (inObject && inRetain)
@@ -291,7 +291,7 @@ void ReferencePtr<T>::Reset(ReferencedType* const inObject,
 }
 
 template <typename T>
-T* ReferencePtr<T>::Detach()
+T* RefPtr<T>::Detach()
 {
     T* const result = mObject;
     mObject = nullptr;
@@ -299,31 +299,31 @@ T* ReferencePtr<T>::Detach()
 }
 
 template <typename T>
-void ReferencePtr<T>::Swap(ReferencePtr& inOther)
+void RefPtr<T>::Swap(RefPtr& inOther)
 {
     std::swap(mObject, inOther.mObject);
 }
 
 template <typename T> template <typename U>
-ReferencePtr<U> ReferencePtr<T>::StaticCast() const
+RefPtr<U> RefPtr<T>::StaticCast() const
 {
-    return ReferencePtr<U>(static_cast<U*>(mObject));
+    return RefPtr<U>(static_cast<U*>(mObject));
 }
 
 template <typename T, typename U>
-inline bool operator ==(const ReferencePtr<T>& a, const ReferencePtr<U>& b)
+inline bool operator ==(const RefPtr<T>& a, const RefPtr<U>& b)
 {
     return a.Get() == b.Get();
 }
 
 template <typename T, typename U>
-inline bool operator !=(const ReferencePtr<T>& a, const ReferencePtr<U>& b)
+inline bool operator !=(const RefPtr<T>& a, const RefPtr<U>& b)
 {
     return !(a == b);
 }
 
 template <typename T, typename U>
-inline bool operator <(const ReferencePtr<T>& a, const ReferencePtr<U>& b)
+inline bool operator <(const RefPtr<T>& a, const RefPtr<U>& b)
 {
     return a.Get() < b.Get();
 }

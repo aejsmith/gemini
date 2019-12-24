@@ -93,7 +93,7 @@ namespace Detail
  * For deserialisation:
  *
  *     JSONSerialiser serialiser;
- *     ObjectPtr<MyClass> object = serialiser.Deserialise<MyClass>(data);
+ *     ObjPtr<MyClass> object = serialiser.Deserialise<MyClass>(data);
  *
  * Internally, this uses Object::Serialise() and Object::Deserialise() to
  * (de)serialise the data. The base Object implementations of these methods
@@ -142,7 +142,7 @@ public:
      * Deserialises an object previously serialised in the format implemented
      * by this serialiser instance. Returns null on failure.
      */
-    virtual ObjectPtr<>             Deserialise(const ByteArray& inData,
+    virtual ObjPtr<>                Deserialise(const ByteArray& inData,
                                                 const MetaClass& inExpectedClass) = 0;
 
     /**
@@ -150,7 +150,7 @@ public:
      * by this serialiser instance. Returns null on failure.
      */
     template <typename T>
-    ObjectPtr<T>                    Deserialise(const ByteArray& inData);
+    ObjPtr<T>                       Deserialise(const ByteArray& inData);
 
     /**
      * A function that will be called after construction of the object being
@@ -256,8 +256,8 @@ public:
      * including a serialised copy of the asset.
      */
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type* = nullptr>
-    void                            Write(const char* const inName, const ObjectPtr<T>& inObject)
-                                        { Write(inName, MetaType::Lookup<const ObjectPtr<T>>(), &inObject); }
+    void                            Write(const char* const inName, const ObjPtr<T>& inObject)
+                                        { Write(inName, MetaType::Lookup<const ObjPtr<T>>(), &inObject); }
 
     /**
      * Serialises the object referred to by the given pointer if it has not
@@ -323,11 +323,11 @@ public:
     /**
      * Deserialises the specified object if it has not already been deserialised
      * from this file, and returns a reference to the object. If the object
-     * could not be found, the supplied ObjectPtr is not changed.
+     * could not be found, the supplied ObjPtr is not changed.
      */
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type* = nullptr>
-    bool                            Read(const char* const inName, ObjectPtr<T>& outObject)
-                                        { return Read(inName, MetaType::Lookup<ObjectPtr<T>>(), &outObject); }
+    bool                            Read(const char* const inName, ObjPtr<T>& outObject)
+                                        { return Read(inName, MetaType::Lookup<ObjPtr<T>>(), &outObject); }
 
     /**
      * Deserialises the specified object if it has not already been deserialised
@@ -381,15 +381,15 @@ protected:
     bool                            DeserialiseObject(const char* const inClassName,
                                                       const MetaClass&  inMetaClass,
                                                       const bool        inIsPrimary,
-                                                      ObjectPtr<>&      outObject);
+                                                      ObjPtr<>&         outObject);
 
     friend class Object;
 };
 
 template <typename T>
-inline ObjectPtr<T> Serialiser::Deserialise(const ByteArray& inData)
+inline ObjPtr<T> Serialiser::Deserialise(const ByteArray& inData)
 {
-    ObjectPtr<> object = Deserialise(inData, T::staticMetaClass);
+    ObjPtr<> object = Deserialise(inData, T::staticMetaClass);
     return object.StaticCast<T>();
 }
 

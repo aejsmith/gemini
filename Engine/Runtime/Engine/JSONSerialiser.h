@@ -28,7 +28,7 @@ public:
 public:
     ByteArray                   Serialise(const Object* const inObject) override;
 
-    ObjectPtr<>                 Deserialise(const ByteArray& inData,
+    ObjPtr<>                    Deserialise(const ByteArray& inData,
                                             const MetaClass& inExpectedClass) override;
 
     using Serialiser::Deserialise;
@@ -58,7 +58,7 @@ protected:
 private:
     uint32_t                    AddObject(const Object* const inObject);
 
-    ObjectPtr<>                 FindObject(const uint32_t   inID,
+    ObjPtr<>                    FindObject(const uint32_t   inID,
                                            const MetaClass& inMetaClass);
 
 private:

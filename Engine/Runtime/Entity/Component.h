@@ -109,7 +109,7 @@ private:
     friend class Entity;
 };
 
-using ComponentPtr = ObjectPtr<Component>;
+using ComponentPtr = ObjPtr<Component>;
 
 inline bool Component::GetActiveInWorld() const
 {

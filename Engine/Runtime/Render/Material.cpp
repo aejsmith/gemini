@@ -174,7 +174,7 @@ void Material::GetArgument(const ShaderParameter& inParameter,
     }
     else
     {
-        const ObjectPtr<>& resource = mResources[inParameter.argumentIndex];
+        const ObjPtr<>& resource = mResources[inParameter.argumentIndex];
 
         switch (inParameter.type)
         {
@@ -224,7 +224,7 @@ void Material::SetArgument(const ShaderParameter& inParameter,
     }
     else
     {
-        ObjectPtr<>& resource = mResources[inParameter.argumentIndex];
+        ObjPtr<>& resource = mResources[inParameter.argumentIndex];
 
         switch (inParameter.type)
         {

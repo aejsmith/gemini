@@ -51,11 +51,11 @@ protected:
     void                    Deserialise(Serialiser& inSerialiser) override;
 
 private:
-    ObjectPtr<Entity>       mRoot;
+    ObjPtr<Entity>          mRoot;
 
     RenderWorld* const      mRenderWorld;
 
     friend class Engine;
 };
 
-using WorldPtr = ObjectPtr<World>;
+using WorldPtr = ObjPtr<World>;

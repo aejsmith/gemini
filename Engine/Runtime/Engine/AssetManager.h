@@ -54,7 +54,7 @@ public:
      * type. Raises a fatal error if the asset could not be loaded.
      */
     template <typename T>
-    ObjectPtr<T>            Load(const Path& inPath);
+    ObjPtr<T>               Load(const Path& inPath);
 
     void                    UnregisterAsset(Asset* const inAsset,
                                             OnlyCalledBy<Asset>);
@@ -98,7 +98,7 @@ private:
 };
 
 template <typename T>
-inline ObjectPtr<T> AssetManager::Load(const Path& inPath)
+inline ObjPtr<T> AssetManager::Load(const Path& inPath)
 {
     static_assert(std::is_base_of<Asset, T>::value,
                   "AssetType is not derived from Asset");
@@ -109,7 +109,7 @@ inline ObjectPtr<T> AssetManager::Load(const Path& inPath)
         Fatal("Unable to load asset '%s'", inPath.GetCString());
     }
 
-    ObjectPtr<T> ret = object_cast<ObjectPtr<T>>(asset);
+    ObjPtr<T> ret = object_cast<ObjPtr<T>>(asset);
     if (!ret)
     {
         Fatal("Asset '%s' is not of expected type", inPath.GetCString());

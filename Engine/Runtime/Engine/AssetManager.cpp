@@ -179,7 +179,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
     {
         /* Get a loader for the asset. Use a serialised one if it exists, else
          * get a default one based on the file type. */
-        ObjectPtr<AssetLoader> loader;
+        ObjPtr<AssetLoader> loader;
         if (loaderData)
         {
             ByteArray serialisedData(loaderData->GetSize());

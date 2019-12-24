@@ -32,7 +32,7 @@ public:
 
     /** Camera that the component is controlling. */
     PROPERTY()
-    ObjectPtr<Camera>           camera;
+    ObjPtr<Camera>              camera;
 
 protected:
                                 ~PlayerController();

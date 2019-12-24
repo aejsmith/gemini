@@ -145,7 +145,7 @@ private:
     IntrusiveListNode       mNode;
     using EntityList      = IntrusiveList<Entity, &Entity::mNode>;
 
-    using ComponentArray  = std::vector<ObjectPtr<Component>>;
+    using ComponentArray  = std::vector<ObjPtr<Component>>;
 
 private:
                             Entity();
@@ -159,7 +159,7 @@ private:
 
     void                    AddChild(Entity* const inEntity);
 
-    void                    AddComponent(ObjectPtr<Component> inComponent);
+    void                    AddComponent(ObjPtr<Component> inComponent);
 
     void                    UpdateTransform();
 
@@ -177,7 +177,7 @@ private:
      * an entity still has external references to it - we need to keep the
      * whole branch in the tree alive in this case.
      */
-    ObjectPtr<Entity>       mParent;
+    ObjPtr<Entity>          mParent;
     EntityList              mChildren;
 
     std::string             mName;
@@ -198,7 +198,7 @@ private:
     friend class World;
 };
 
-using EntityPtr = ObjectPtr<Entity>;
+using EntityPtr = ObjPtr<Entity>;
 
 template <typename T, typename... Args>
 inline T* Entity::CreateComponent(Args&&... args)

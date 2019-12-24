@@ -78,7 +78,7 @@ Engine::Engine() :
 
     /* Objects are reference counted, but Singleton will not create a reference.
      * Manually add one here so that the instance stays alive. */
-    ObjectPtr<Game> game = gameClass->Construct<Game>();
+    ObjPtr<Game> game = gameClass->Construct<Game>();
     game->Retain();
 
     InitSDL();

@@ -38,7 +38,7 @@ public:
 
     /** Render pipeline to use for the camera. */
     PROPERTY()
-    ObjectPtr<RenderPipeline>   renderPipeline;
+    ObjPtr<RenderPipeline>      renderPipeline;
 
     /**
      * Projection configuration. TODO: Orthographic support.

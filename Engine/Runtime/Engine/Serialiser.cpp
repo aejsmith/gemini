@@ -22,10 +22,10 @@ void Serialiser::SerialiseObject(const Object* const inObject)
     inObject->Serialise(*this);
 }
 
-bool Serialiser::DeserialiseObject(const char* const  inClassName,
-                                   const MetaClass&   inMetaClass,
-                                   const bool         inIsPrimary,
-                                   ObjectPtr<>&       outObject)
+bool Serialiser::DeserialiseObject(const char* const inClassName,
+                                   const MetaClass&  inMetaClass,
+                                   const bool        inIsPrimary,
+                                   ObjPtr<>&         outObject)
 {
     const MetaClass* const givenMetaClass = MetaClass::Lookup(inClassName);
     if (!givenMetaClass)

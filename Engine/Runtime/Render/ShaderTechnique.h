@@ -99,7 +99,7 @@ public:
     uint32_t                        GetConstantsSize() const        { return mConstantsSize; }
     uint32_t                        GetConstantsIndex() const       { return mConstantsIndex; }
 
-    const std::vector<ObjectPtr<>>& GetDefaultResources() const     { return mDefaultResources; }
+    const std::vector<ObjPtr<>>&    GetDefaultResources() const     { return mDefaultResources; }
     const ByteArray&                GetDefaultConstantData() const  { return mDefaultConstantData; }
 
 private:
@@ -125,9 +125,9 @@ private:
     uint32_t                        mConstantsIndex;
 
     /** Default material resources/constants (see equivalents in Material). */
-    std::vector<ObjectPtr<>>        mDefaultResources;
+    std::vector<ObjPtr<>>           mDefaultResources;
     ByteArray                       mDefaultConstantData;
 
 };
 
-using ShaderTechniquePtr = ObjectPtr<ShaderTechnique>;
+using ShaderTechniquePtr = ObjPtr<ShaderTechnique>;

@@ -207,7 +207,7 @@ private:
     ByteArray                   mVertexData[kMaxVertexAttributes];
 };
 
-using MeshPtr = ObjectPtr<Mesh>;
+using MeshPtr = ObjPtr<Mesh>;
 
 inline const std::string& Mesh::GetMaterialName(const size_t inIndex) const
 {

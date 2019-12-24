@@ -71,7 +71,7 @@ public:
     HashMap<const Object*, uint32_t>    objectToIDMap;
 
     /** Map of IDs to pre-existing objects (deserialising). */
-    HashMap<uint32_t, ObjectPtr<>>      idToObjectMap;
+    HashMap<uint32_t, ObjPtr<>>         idToObjectMap;
 
     /**
      * This is used to keep track of which value we are currently reading from
@@ -243,8 +243,8 @@ uint32_t JSONSerialiser::AddObject(const Object* const inObject)
     return id;
 }
 
-ObjectPtr<> JSONSerialiser::Deserialise(const ByteArray& inData,
-                                        const MetaClass& inExpectedClass)
+ObjPtr<> JSONSerialiser::Deserialise(const ByteArray& inData,
+                                     const MetaClass& inExpectedClass)
 {
     JSONState state;
 
@@ -264,14 +264,14 @@ ObjectPtr<> JSONSerialiser::Deserialise(const ByteArray& inData,
     }
 
     /* The object to return is the first object in the file. */
-    ObjectPtr<> object = FindObject(0, inExpectedClass);
+    ObjPtr<> object = FindObject(0, inExpectedClass);
 
     mState = nullptr;
     return object;
 }
 
-ObjectPtr<> JSONSerialiser::FindObject(const uint32_t   inID,
-                                       const MetaClass& inMetaClass)
+ObjPtr<> JSONSerialiser::FindObject(const uint32_t   inID,
+                                    const MetaClass& inMetaClass)
 {
     /* Check if it is already deserialised. */
     auto existing = mState->idToObjectMap.find(inID);
@@ -603,7 +603,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         auto& metaClass = static_cast<const MetaClass&>(inType.GetPointeeType());
 
-        ObjectPtr<> ret;
+        ObjPtr<> ret;
 
         /* Check if we have an asset path. */
         std::string path;
@@ -635,7 +635,7 @@ bool JSONSerialiser::Read(const char* const inName,
         {
             if (inType.IsRefcounted())
             {
-                *reinterpret_cast<ObjectPtr<>*>(outValue) = std::move(ret);
+                *reinterpret_cast<ObjPtr<>*>(outValue) = std::move(ret);
             }
             else
             {

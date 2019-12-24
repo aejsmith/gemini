@@ -67,7 +67,7 @@ protected:
 
 };
 
-using TextureBasePtr = ObjectPtr<TextureBase>;
+using TextureBasePtr = ObjPtr<TextureBase>;
 
 /** 2D texture asset class. */
 class Texture2D final : public TextureBase
@@ -101,4 +101,4 @@ private:
 
 };
 
-using Texture2DPtr = ObjectPtr<Texture2D>;
+using Texture2DPtr = ObjPtr<Texture2D>;

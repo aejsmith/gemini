@@ -34,7 +34,7 @@ public:
     DataStream*                     GetData()       { return mData; }
     const DataStream*               GetData() const { return mData; }
 
-    static ObjectPtr<AssetLoader>   Create(const std::string& inExtension);
+    static ObjPtr<AssetLoader>      Create(const std::string& inExtension);
 
 protected:
                                     AssetLoader();

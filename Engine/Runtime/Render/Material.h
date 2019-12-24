@@ -97,7 +97,7 @@ private:
      * array entries corresponding to sampler arguments (the sampler comes from
      * the main TextureBase), but doing things this way is simpler.
      */
-    std::vector<ObjectPtr<>>    mResources;
+    std::vector<ObjPtr<>>       mResources;
 
     /**
      * Constant buffer data, laid out according to the technique's parameter
@@ -111,7 +111,7 @@ private:
 
 };
 
-using MaterialPtr = ObjectPtr<Material>;
+using MaterialPtr = ObjPtr<Material>;
 
 template <typename T>
 inline void Material::GetArgument(const std::string& inName,

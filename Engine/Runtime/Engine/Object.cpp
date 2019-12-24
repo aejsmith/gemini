@@ -157,7 +157,7 @@ bool MetaClass::IsBaseOf(const MetaClass& inOther) const
     return false;
 }
 
-ObjectPtr<> MetaClass::Construct() const
+ObjPtr<> MetaClass::Construct() const
 {
     AssertMsg(mTraits & kIsPublicConstructable,
               "Attempt to construct object of class '%s' which is not publically constructable",
@@ -166,7 +166,7 @@ ObjectPtr<> MetaClass::Construct() const
     return mConstructor();
 }
 
-ObjectPtr<> MetaClass::ConstructPrivate() const
+ObjPtr<> MetaClass::ConstructPrivate() const
 {
     AssertMsg(mTraits & kIsConstructable,
               "Attempt to construct object of class '%s' which is not constructable",
@@ -306,7 +306,7 @@ struct SerialisationBuffer
         }
         else if (this->type->IsPointer() && this->type->IsRefcounted())
         {
-            new (this->data) ReferencePtr<RefCounted>();
+            new (this->data) RefPtr<RefCounted>();
         }
     }
 
@@ -322,7 +322,7 @@ struct SerialisationBuffer
         }
         else if (this->type->IsPointer() && this->type->IsRefcounted())
         {
-            reinterpret_cast<ReferencePtr<RefCounted>*>(this->data)->~ReferencePtr();
+            reinterpret_cast<RefPtr<RefCounted>*>(this->data)->~RefPtr();
         }
 
         delete[] this->data;

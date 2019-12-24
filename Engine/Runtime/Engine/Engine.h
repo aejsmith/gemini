@@ -68,6 +68,6 @@ private:
     uint32_t                mFramesSinceFPSUpdate;
     float                   mFPS;
 
-    ObjectPtr<World>        mWorld;
+    ObjPtr<World>           mWorld;
 
 };
