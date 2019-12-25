@@ -166,8 +166,7 @@ void Engine::Run()
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            // FIXME: Need an Engine::Quit() method.
-            if ((event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE) || event.type == SDL_QUIT)
+            if (event.type == SDL_QUIT)
             {
                 return;
             }
@@ -184,6 +183,7 @@ void Engine::Run()
         debugManager.BeginFrame({});
         debugManager.AddText(StringUtils::Format("FPS: %.2f", mFPS));
         debugManager.AddText(StringUtils::Format("Frame time: %.2f ms", static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerMillisecond)));
+        debugManager.AddText("F1 = Overlay  F2 = Focus");
 
         mWorld->Tick(mDeltaTime);
 
