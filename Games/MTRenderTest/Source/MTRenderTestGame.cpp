@@ -175,9 +175,9 @@ void MTRenderTestLayer::WorkerThread(const uint32_t inIndex)
         pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
         pipelineDesc.argumentSetLayouts[0]           = mArgumentLayout;
-        pipelineDesc.blendState                      = GPUBlendState::Get(GPUBlendStateDesc());
+        pipelineDesc.blendState                      = GPUBlendState::GetDefault();
         pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(depthDesc);
-        pipelineDesc.rasterizerState                 = GPURasterizerState::Get(GPURasterizerStateDesc());
+        pipelineDesc.rasterizerState                 = GPURasterizerState::GetDefault();
         pipelineDesc.renderTargetState               = cmdList->GetRenderTargetState();
         pipelineDesc.vertexInputState                = mVertexInputState;
         pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;

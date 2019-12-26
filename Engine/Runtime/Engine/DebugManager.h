@@ -138,8 +138,6 @@ private:
     GPUShaderPtr                mVertexShader;
     GPUShaderPtr                mPixelShader;
     GPUArgumentSetLayoutRef     mArgumentSetLayout;
-    GPUBlendStateRef            mBlendState;
-    GPUDepthStencilStateRef     mDepthStencilState;
     GPURasterizerStateRef       mRasterizerState;
     GPURasterizerStateRef       mFillRasterizerState;
     GPUVertexInputStateRef      mVertexInputState;

@@ -89,6 +89,13 @@ const GPUState<D>* GPUState<D>::Get(const Desc& inDesc)
     return state;
 }
 
+template <typename D>
+const GPUState<D>* GPUState<D>::GetDefault()
+{
+    static const GPUState* const sState = Get(Desc());
+    return sState;
+}
+
 /* Explicit instantiations. */
 template<> GPUState<GPUBlendStateDesc>::Cache GPUState<GPUBlendStateDesc>::mCache{};
 template<> GPUState<GPUDepthStencilStateDesc>::Cache GPUState<GPUDepthStencilStateDesc>::mCache{};

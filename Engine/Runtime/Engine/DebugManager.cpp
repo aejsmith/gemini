@@ -132,9 +132,6 @@ DebugManager::DebugManager() :
 
     mArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
-    mBlendState        = GPUBlendState::Get(GPUBlendStateDesc());
-    mDepthStencilState = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
-
     GPURasterizerStateDesc rasterizerDesc;
     rasterizerDesc.polygonMode = kGPUPolygonMode_Line;
     rasterizerDesc.cullMode    = kGPUCullMode_None;
@@ -275,8 +272,8 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
         pipelineDesc.shaders[kGPUShaderStage_Vertex]             = mVertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Pixel]              = mPixelShader;
         pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity] = mArgumentSetLayout;
-        pipelineDesc.blendState                                  = mBlendState;
-        pipelineDesc.depthStencilState                           = mDepthStencilState;
+        pipelineDesc.blendState                                  = GPUBlendState::GetDefault();;
+        pipelineDesc.depthStencilState                           = GPUDepthStencilState::GetDefault();
         pipelineDesc.rasterizerState                             = mRasterizerState;
         pipelineDesc.renderTargetState                           = inCmdList.GetRenderTargetState();
         pipelineDesc.vertexInputState                            = mVertexInputState;

@@ -43,8 +43,16 @@ public:
 public:
     const Desc&                 GetDesc() const     { return mDesc; }
 
-    /** Get a state ID representing the given descriptor. */
+    /** Get a state object representing the given descriptor. */
     static const GPUState*      Get(const Desc& inDesc);
+
+    /**
+     * Get the default state object (i.e. using the default-initialised values
+     * in the Desc class). After first use, this will return that object without
+     * doing a hash lookup (stored in a static local), therefore is faster than
+     * doing Get(Desc()).
+     */
+    static const GPUState*      GetDefault();
 
 private:
                                 GPUState(const Desc& inDesc) :

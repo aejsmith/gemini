@@ -273,7 +273,7 @@ ImGUIRenderer::ImGUIRenderer()
     pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
     pipelineDesc.argumentSetLayouts[0]           = argumentLayout;
     pipelineDesc.blendState                      = GPUBlendState::Get(blendDesc);
-    pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(GPUDepthStencilStateDesc());
+    pipelineDesc.depthStencilState               = GPUDepthStencilState::GetDefault();
     pipelineDesc.rasterizerState                 = GPURasterizerState::Get(rasterizerDesc);
     pipelineDesc.renderTargetState               = GPURenderTargetState::Get(renderTargetDesc);
     pipelineDesc.vertexInputState                = GPUVertexInputState::Get(vertexInputDesc);
