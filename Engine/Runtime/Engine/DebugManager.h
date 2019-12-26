@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "Core/HashTable.h"
 #include "Core/Math/BoundingBox.h"
 #include "Core/Math/Cone.h"
 #include "Core/Math/Line.h"
@@ -30,6 +29,7 @@
 #include "GPU/GPUState.h"
 
 #include <list>
+#include <map>
 #include <mutex>
 #include <vector>
 
@@ -125,7 +125,7 @@ private:
     };
 
     using WindowList          = std::list<DebugWindow*>;
-    using WindowCategoryMap   = HashMap<std::string, WindowList>;
+    using WindowCategoryMap   = std::map<std::string, WindowList>;
 
 private:
                                 ~DebugManager();

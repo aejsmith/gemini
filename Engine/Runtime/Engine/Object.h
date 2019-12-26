@@ -443,9 +443,22 @@ public:
     ObjPtr<>                        Construct() const;
 
     template <typename T>
-    ObjPtr<T   >                    Construct() const;
+    ObjPtr<T>                       Construct() const;
 
     const MetaProperty*             LookupProperty(const char* const inName) const;
+
+    /**
+     * Get a list of constructable classes derived from this one (including
+     * this class itself).
+     */
+    std::vector<const MetaClass*>   GetConstructableClasses(const bool inSorted = false) const;
+
+    /**
+     * To be used within a DebugWindow, implements a class selector UI for
+     * constructable classes derived from this one (including the class itself).
+     * Returns a class if one has been selected, otherwise returns null.
+     */
+    const MetaClass*                DebugUIClassSelector() const;
 
     static const MetaClass*         Lookup(const std::string &name);
 
@@ -520,6 +533,24 @@ class Object : public RefCounted, Uncopyable
     DECLARE_STATIC_METACLASS("constructable": false);
 
 public:
+    /** Behaviour flags for DebugUIEditor(). */
+    enum DebugUIEditorFlags : uint32_t
+    {
+        /**
+         * Include editors for any child objects. Child objects are any
+         * (non-Asset) Object-derived classes referred to by object properties,
+         * plus any additional children returned by the custom editor callback.
+         */
+        kDebugUIEditor_IncludeChildren = (1 << 0),
+
+        /**
+         * Include a button to destroy the object. Whether destruction is
+         * requested is indicated via the outDestroyObject return value.
+         */
+        kDebugUIEditor_AllowDestruction = (1 << 1),
+    };
+
+public:
     virtual const MetaClass&        GetMetaClass() const;
 
     template <typename T>
@@ -537,6 +568,13 @@ public:
     bool                            SetProperty(const char* const inName,
                                                 const MetaType&   inType,
                                                 const void* const inValue);
+
+    /**
+     * To be used within a DebugWindow's Render() function, draws a UI to edit
+     * the object. inFlags is a combination of DebugUIEditorFlags.
+     */
+    void                            DebugUIEditor(const uint32_t inFlags,
+                                                  bool*          outDestroyObject = nullptr);
 
 protected:
                                     Object() {}
@@ -569,6 +607,17 @@ protected:
      * implementations *must* call their parent class' implementation.
      */
     virtual void                    Deserialise(Serialiser& inSerialiser);
+
+    /**
+     * Function to implement additional editor UI for DebugUIEditor() on top of
+     * the basic class properties.
+     *
+     * If kDebugUIEditor_IncludeChildren is in inFlags and there are any extra
+     * child objects that should have editors, then they can be added to the
+     * ioChildren array.
+     */
+    virtual void                    CustomDebugUIEditor(const uint32_t        inFlags,
+                                                        std::vector<Object*>& ioChildren);
 
     friend class Serialiser;
 };

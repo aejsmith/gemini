@@ -76,6 +76,18 @@ public:
     bool                    SaveAsset(Asset* const inAsset,
                                       const Path&  inPath);
 
+    /**
+     * To be used within a DebugWindow, implements an asset selection dialog
+     * which can change the asset referred to by a given asset pointer. This
+     * should be called unconditionally, with the inActivate parameter used as
+     * a trigger to activate the dialog (e.g. pass the return value from a
+     * button press). Should be called within a unique scope in the ImGUI ID
+     * stack. Returns true when a new asset has been successfully selected.
+     */
+    bool                    DebugUIAssetSelector(AssetPtr&        ioAsset,
+                                                 const MetaClass& inPointeeClass,
+                                                 const bool       inActivate);
+
 private:
     using AssetMap        = std::map<std::string, Asset*>;
     using SearchPathMap   = HashMap<std::string, std::string>;

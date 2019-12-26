@@ -19,13 +19,15 @@
 #include "Engine/Serialiser.h"
 
 #include "Entity/Entity.h"
+#include "Entity/WorldEditorWindow.h"
 
 #include "Render/RenderWorld.h"
 
 static constexpr char kRootEntityName[] = "Root";
 
 World::World() :
-    mRenderWorld    (new RenderWorld)
+    mRenderWorld    (new RenderWorld),
+    mEditorWindow   (new WorldEditorWindow(this))
 {
     mRoot         = new Entity();
     mRoot->mName  = kRootEntityName;

@@ -32,7 +32,12 @@
 
 #include "Engine/Object.h"
 
+#include "Engine/AssetManager.h"
+#include "Engine/DebugWindow.h"
 #include "Engine/Serialiser.h"
+
+#include "Entity/Entity.h"
+#include "Entity/Component.h"
 
 #include <map>
 #include <new>
@@ -191,6 +196,33 @@ const MetaProperty* MetaClass::LookupProperty(const char* const inName) const
     }
 
     return nullptr;
+}
+
+std::vector<const MetaClass*> MetaClass::GetConstructableClasses(const bool inSorted) const
+{
+    std::vector<const MetaClass*> classList;
+
+    MetaClass::Visit(
+        [&] (const MetaClass& inOtherClass)
+        {
+            if (IsBaseOf(inOtherClass) && inOtherClass.IsConstructable())
+            {
+                classList.emplace_back(&inOtherClass);
+            }
+        });
+
+    if (inSorted)
+    {
+        std::sort(
+            classList.begin(),
+            classList.end(),
+            [] (const MetaClass* a, const MetaClass* b)
+            {
+                return strcmp(a->GetName(), b->GetName()) < 0;
+            });
+    }
+
+    return classList;
 }
 
 const MetaClass* MetaClass::Lookup(const std::string& inName)
@@ -401,4 +433,504 @@ void Object::Deserialise(Serialiser &inSerialiser)
 
         inSerialiser.EndGroup();
     }
+}
+
+/**
+ * Debug UI functions.
+ */
+
+const MetaClass* MetaClass::DebugUIClassSelector() const
+{
+    static ImGuiTextFilter filter;
+    ImGui::PushItemWidth(-1);
+    filter.Draw("");
+    ImGui::PopItemWidth();
+
+    ImGui::BeginChild("ClassSelector", ImVec2(250, 150), false);
+
+    const auto classes      = GetConstructableClasses(true);
+    const MetaClass* result = nullptr;
+
+    for (const MetaClass* metaClass : classes)
+    {
+        if (filter.PassFilter(metaClass->GetName()))
+        {
+            if (ImGui::MenuItem(metaClass->GetName()))
+            {
+                result = metaClass;
+                break;
+            }
+        }
+    }
+
+    ImGui::EndChild();
+    return result;
+}
+
+void Object::CustomDebugUIEditor(const uint32_t        inFlags,
+                                 std::vector<Object*>& ioChildren)
+{
+}
+
+template <typename T, typename Func>
+static void DebugUIPropertyEditor(Object* const       inObject,
+                                  const MetaProperty& inProperty,
+                                  Func                inFunction)
+{
+    if (&inProperty.GetType() != &MetaType::Lookup<T>())
+    {
+        return;
+    }
+
+    ImGui::PushID(&inProperty);
+
+    ImGui::Text(inProperty.GetName());
+
+    ImGui::NextColumn();
+    ImGui::PushItemWidth(-1);
+
+    T value;
+    inObject->GetProperty<T>(inProperty.GetName(), value);
+
+    if (inFunction(&value))
+    {
+        inObject->SetProperty<T>(inProperty.GetName(), value);
+    }
+
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
+
+    ImGui::PopID();
+}
+
+static bool EnumItemGetter(void* const  inData,
+                           const int    inIndex,
+                           const char** outText)
+{
+    const auto& constants = *reinterpret_cast<const MetaType::EnumConstantArray*>(inData);
+
+    if (outText)
+    {
+        *outText = constants[inIndex].first;
+    }
+
+    return true;
+}
+
+static void DebugUIEnumPropertyEditor(Object* const       inObject,
+                                      const MetaProperty& inProperty)
+{
+    if (!inProperty.GetType().IsEnum())
+    {
+        return;
+    }
+
+    ImGui::PushID(&inProperty);
+
+    ImGui::Text(inProperty.GetName());
+    ImGui::NextColumn();
+    ImGui::PushItemWidth(-1);
+
+    const MetaType& type                         = inProperty.GetType();
+    const MetaType::EnumConstantArray& constants = type.GetEnumConstants();
+
+    /* Get current value. */
+    int64_t value;
+    switch (type.GetSize())
+    {
+        case 1:
+        {
+            int8_t tmp;
+            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+            value = static_cast<int64_t>(tmp);
+            break;
+        }
+
+        case 2:
+        {
+            int16_t tmp;
+            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+            value = static_cast<int64_t>(tmp);
+            break;
+        }
+
+        case 4:
+        {
+            int32_t tmp;
+            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+            value = static_cast<int64_t>(tmp);
+            break;
+        }
+
+        case 8:
+        {
+            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &value);
+            break;
+        }
+
+        default:
+        {
+            Unreachable();
+        }
+    }
+
+    /* Match it against a constant. */
+    int index;
+    for (index = 0; static_cast<size_t>(index) < constants.size(); index++)
+    {
+        if (value == constants[index].second)
+        {
+            break;
+        }
+    }
+
+    if (ImGui::Combo("",
+                     &index,
+                     EnumItemGetter,
+                     const_cast<MetaType::EnumConstantArray*>(&constants),
+                     constants.size()))
+    {
+        value = constants[index].second;
+
+        switch (type.GetSize())
+        {
+            case 1:
+            {
+                const int8_t tmp = static_cast<int8_t>(value);
+                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+                break;
+            }
+
+            case 2:
+            {
+                const int16_t tmp = static_cast<int16_t>(value);
+                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+                break;
+            }
+
+            case 4:
+            {
+                const int32_t tmp = static_cast<int32_t>(value);
+                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+                break;
+            }
+
+            case 8:
+            {
+                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &value);
+                break;
+            }
+        }
+    }
+
+    ImGui::PushItemWidth(-1);
+    ImGui::NextColumn();
+    ImGui::PopID();
+}
+
+static void DebugUIAssetPropertyEditor(Object* const       inObject,
+                                       const MetaProperty& inProperty)
+{
+    if (!inProperty.GetType().IsPointer() || !inProperty.GetType().GetPointeeType().IsObject())
+    {
+        return;
+    }
+
+    const MetaClass& pointeeClass = static_cast<const MetaClass&>(inProperty.GetType().GetPointeeType());
+
+    if (!Asset::staticMetaClass.IsBaseOf(pointeeClass))
+    {
+        return;
+    }
+
+    ImGui::PushID(&inProperty);
+
+    ImGui::Text(inProperty.GetName());
+    ImGui::NextColumn();
+
+    AssetPtr asset;
+    inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &asset);
+
+    const bool activate = ImGui::Button("Select");
+
+    ImGui::SameLine();
+    ImGui::Text("%s", asset->GetPath().c_str());
+
+    if (AssetManager::Get().DebugUIAssetSelector(asset, pointeeClass, activate))
+    {
+        inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &asset);
+    }
+
+    ImGui::NextColumn();
+
+    ImGui::PopID();
+}
+
+static void DebugUIObjectPropertyEditor(Object* const         inObject,
+                                        const MetaProperty&   inProperty,
+                                        const uint32_t        inFlags,
+                                        std::vector<Object*>& ioChildren)
+{
+    if (!inProperty.GetType().IsPointer() || !inProperty.GetType().GetPointeeType().IsObject())
+    {
+        return;
+    }
+
+    const MetaClass& pointeeClass = static_cast<const MetaClass&>(inProperty.GetType().GetPointeeType());
+
+    /* TODO: Need an editor for Entity/Component references. */
+    if (Asset::staticMetaClass.IsBaseOf(pointeeClass) ||
+        Entity::staticMetaClass.IsBaseOf(pointeeClass) ||
+        Component::staticMetaClass.IsBaseOf(pointeeClass))
+    {
+        return;
+    }
+
+    ImGui::PushID(&inProperty);
+
+    ImGui::Text(inProperty.GetName());
+    ImGui::NextColumn();
+
+    ObjPtr<> child;
+    inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &child);
+
+    const bool newSelected   = ImGui::Button("New");
+    ImGui::SameLine();
+    const bool clearSelected = ImGui::Button("Clear");
+    ImGui::SameLine();
+    ImGui::Text("%s", (child) ? child->GetMetaClass().GetName() : "null");
+
+    bool set = false;
+
+    if (clearSelected)
+    {
+        child.Reset();
+        set = true;
+    }
+    else if (newSelected)
+    {
+        ImGui::OpenPopup("New Object");
+    }
+    if (ImGui::BeginPopupModal("New Object", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        const MetaClass* const objectClass = pointeeClass.DebugUIClassSelector();
+        if (objectClass)
+        {
+            ImGui::CloseCurrentPopup();
+
+            child = objectClass->Construct();
+            set   = true;
+        }
+
+        if (ImGui::Button("Cancel", ImVec2(-1, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (set)
+    {
+        inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &child);
+    }
+
+    if (inFlags & Object::kDebugUIEditor_IncludeChildren && child)
+    {
+        ioChildren.emplace_back(child);
+    }
+
+    ImGui::NextColumn();
+
+    ImGui::PopID();
+}
+
+static void DebugUIPropertyEditors(Object* const         inObject,
+                                   const MetaClass&      inMetaClass,
+                                   const uint32_t        inFlags,
+                                   std::vector<Object*>& ioChildren)
+{
+    /* Display base class properties first. */
+    if (inMetaClass.GetParent())
+    {
+        DebugUIPropertyEditors(inObject, *inMetaClass.GetParent(), inFlags, ioChildren);
+    }
+
+    for (const MetaProperty& property : inMetaClass.GetProperties())
+    {
+        /* These all do nothing if the type does not match. */
+
+        ImGui::AlignTextToFramePadding();
+
+        DebugUIPropertyEditor<bool>(
+            inObject,
+            property,
+            [&] (bool* ioValue)
+            {
+                return ImGui::Checkbox("", ioValue);
+            });
+
+        #define INT_EDITOR(type, imType) \
+            DebugUIPropertyEditor<type>( \
+                inObject, \
+                property, \
+                [&] (type* ioValue) \
+                { \
+                    return ImGui::InputScalar("", imType, ioValue, nullptr, nullptr, nullptr, ImGuiInputTextFlags_EnterReturnsTrue); \
+                });
+
+        INT_EDITOR(int8_t,   ImGuiDataType_S8);
+        INT_EDITOR(uint8_t,  ImGuiDataType_U8);
+        INT_EDITOR(int16_t,  ImGuiDataType_S16);
+        INT_EDITOR(uint16_t, ImGuiDataType_U16);
+        INT_EDITOR(int32_t,  ImGuiDataType_S32);
+        INT_EDITOR(uint32_t, ImGuiDataType_U32);
+        INT_EDITOR(int64_t,  ImGuiDataType_S64);
+        INT_EDITOR(uint64_t, ImGuiDataType_U64);
+
+        #undef INT_EDITOR
+
+        DebugUIPropertyEditor<float>(
+            inObject,
+            property,
+            [&] (float* ioValue)
+            {
+                return ImGui::InputFloat("", ioValue, 0.0f, 0.0f, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+            });
+
+        DebugUIPropertyEditor<glm::vec2>(
+            inObject,
+            property,
+            [&] (glm::vec2* ioValue)
+            {
+                return ImGui::InputFloat2("", &ioValue->x, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+            });
+
+        DebugUIPropertyEditor<glm::vec3>(
+            inObject,
+            property,
+            [&] (glm::vec3* ioValue)
+            {
+                return ImGui::InputFloat3("", &ioValue->x, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+            });
+
+        DebugUIPropertyEditor<glm::vec4>(
+            inObject,
+            property,
+            [&] (glm::vec4* ioValue)
+            {
+                return ImGui::InputFloat4("", &ioValue->x, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+            });
+
+        DebugUIPropertyEditor<glm::quat>(
+            inObject,
+            property,
+            [&] (glm::quat* ioValue)
+            {
+                glm::vec3 eulerAngles = glm::eulerAngles(*ioValue);
+
+                eulerAngles = glm::vec3(glm::degrees(eulerAngles.x),
+                                        glm::degrees(eulerAngles.y),
+                                        glm::degrees(eulerAngles.z));
+
+                if (ImGui::SliderFloat3("", &eulerAngles.x, -180.0f, 180.0f))
+                {
+                    eulerAngles = glm::vec3(glm::radians(eulerAngles.x),
+                                            glm::radians(eulerAngles.y),
+                                            glm::radians(eulerAngles.z));
+
+                    *ioValue = glm::quat(eulerAngles);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            });
+
+        DebugUIPropertyEditor<std::string>(
+            inObject,
+            property,
+            [&] (std::string* ioValue)
+            {
+                char str[256];
+                strncpy(str, ioValue->c_str(), ArraySize(str) - 1);
+                str[ArraySize(str) - 1] = 0;
+
+                if (ImGui::InputText("", str, ArraySize(str), ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    *ioValue = str;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            });
+
+        DebugUIEnumPropertyEditor(inObject, property);
+        DebugUIAssetPropertyEditor(inObject, property);
+        DebugUIObjectPropertyEditor(inObject, property, inFlags, ioChildren);
+    }
+}
+
+void Object::DebugUIEditor(const uint32_t inFlags,
+                           bool*          outDestroyObject)
+{
+    bool open = true;
+
+    if (outDestroyObject)
+    {
+        Assert(inFlags & kDebugUIEditor_AllowDestruction);
+        *outDestroyObject = false;
+    }
+    else
+    {
+        Assert(!(inFlags & kDebugUIEditor_AllowDestruction));
+    }
+
+    if (!ImGui::CollapsingHeader(GetMetaClass().GetName(),
+                                 (inFlags & kDebugUIEditor_AllowDestruction) ? &open : nullptr,
+                                 ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        return;
+    }
+    else if (!open)
+    {
+        *outDestroyObject = true;
+        return;
+    }
+
+    ImGui::PushID(this);
+
+    ImGui::Columns(2, nullptr, false);
+    ImGui::SetColumnOffset(1, ImGui::GetWindowContentRegionWidth() * 0.3f);
+
+    std::vector<Object*> children;
+
+    /* Generic editors based on class properties. */
+    DebugUIPropertyEditors(this, GetMetaClass(), inFlags, children);
+
+    /* Custom editors for things that cannot be handled by the property system. */
+    CustomDebugUIEditor(inFlags, children);
+
+    ImGui::Columns(1);
+
+    if (!children.empty() && inFlags & kDebugUIEditor_IncludeChildren)
+    {
+        for (Object* child : children)
+        {
+            ImGui::Indent();
+            ImGui::BeginChild(child->GetMetaClass().GetName());
+            child->DebugUIEditor(inFlags & ~kDebugUIEditor_AllowDestruction);
+            ImGui::EndChild();
+        }
+    }
+
+    ImGui::PopID();
 }

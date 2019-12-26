@@ -20,6 +20,7 @@
 
 class Entity;
 class RenderWorld;
+class WorldEditorWindow;
 
 /**
  * This class holds the entire game world. It holds a hierarchical view of all
@@ -33,27 +34,29 @@ class World final : public Asset
     CLASS();
 
 public:
-    Entity*                 GetRoot()           { return mRoot; }
-    const Entity*           GetRoot() const     { return mRoot; }
+    Entity*                     GetRoot()           { return mRoot; }
+    const Entity*               GetRoot() const     { return mRoot; }
 
     /** Create a new entity at the root of the hierarchy. */
-    Entity*                 CreateEntity(std::string inName);
+    Entity*                     CreateEntity(std::string inName);
 
-    RenderWorld*            GetRenderWorld()    { return mRenderWorld; }
+    RenderWorld*                GetRenderWorld()    { return mRenderWorld; }
 
-    void                    Tick(const float inDelta);
+    void                        Tick(const float inDelta);
 
 protected:
-                            World();
-                            ~World();
+                                World();
+                                ~World();
 
-    void                    Serialise(Serialiser& inSerialiser) const override;
-    void                    Deserialise(Serialiser& inSerialiser) override;
+    void                        Serialise(Serialiser& inSerialiser) const override;
+    void                        Deserialise(Serialiser& inSerialiser) override;
 
 private:
-    ObjPtr<Entity>          mRoot;
+    ObjPtr<Entity>              mRoot;
 
-    RenderWorld* const      mRenderWorld;
+    RenderWorld* const          mRenderWorld;
+
+    UPtr<WorldEditorWindow>     mEditorWindow;
 
     friend class Engine;
 };

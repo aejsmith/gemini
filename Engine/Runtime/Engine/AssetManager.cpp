@@ -20,6 +20,7 @@
 #include "Core/Platform.h"
 
 #include "Engine/AssetLoader.h"
+#include "Engine/DebugWindow.h"
 #include "Engine/JSONSerialiser.h"
 
 #include <memory>
@@ -307,4 +308,111 @@ Asset* AssetManager::LookupAsset(const Path& inPath) const
 {
     auto it = mAssets.find(inPath.GetString());
     return (it != mAssets.end()) ? it->second : nullptr;
+}
+
+bool AssetManager::DebugUIAssetSelector(AssetPtr&        ioAsset,
+                                        const MetaClass& inPointeeClass,
+                                        const bool       inActivate)
+{
+    /* Because this is a modal dialog, we should only have one active at a time
+     * and so using a single static buffer is fine. */
+    static char pathBuf[128] = {};
+
+    if (inActivate)
+    {
+        ImGui::OpenPopup("Select Asset");
+
+        if (ioAsset)
+        {
+            strncpy(pathBuf, ioAsset->GetPath().c_str(), ArraySize(pathBuf) - 1);
+            pathBuf[ArraySize(pathBuf) - 1] = 0;
+        }
+        else
+        {
+            pathBuf[0] = 0;
+        }
+    }
+
+    bool result = false;
+
+    if (ImGui::BeginPopupModal("Select Asset", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Asset path:");
+
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        ImGui::PushItemWidth(-1);
+        const bool ok = ImGui::InputText("", &pathBuf[0], ArraySize(pathBuf), ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::PopItemWidth();
+
+        ImGui::Spacing();
+
+        if (ok || ImGui::Button("OK", ImVec2(120, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+
+            result = true;
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    static const char* incorrectType = nullptr;
+
+    if (result)
+    {
+        AssetPtr newAsset = Load(pathBuf);
+        if (!newAsset)
+        {
+            result        = false;
+            incorrectType = nullptr;
+
+            ImGui::OpenPopup("Invalid Asset");
+        }
+        else if (!inPointeeClass.IsBaseOf(newAsset->GetMetaClass()))
+        {
+            result        = false;
+            incorrectType = newAsset->GetMetaClass().GetName();
+            strncpy(pathBuf, ioAsset->GetPath().c_str(), ArraySize(pathBuf) - 1);
+
+            ImGui::OpenPopup("Invalid Asset");
+        }
+        else
+        {
+            ioAsset = std::move(newAsset);
+        }
+    }
+
+    if (ImGui::BeginPopupModal("Invalid Asset", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        if (incorrectType)
+        {
+            ImGui::Text("Asset '%s' is incorrect type '%s'", pathBuf, incorrectType);
+        }
+        else
+        {
+            ImGui::Text("Asset '%s' could not be found", pathBuf);
+        }
+
+        ImGui::Spacing();
+
+        if (ImGui::Button("OK", ImVec2(-1, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    return result;
 }

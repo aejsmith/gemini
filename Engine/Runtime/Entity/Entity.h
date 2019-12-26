@@ -38,6 +38,13 @@ class Entity final : public Object
 {
     CLASS();
 
+    /** Link to parent's child entity list. */
+    IntrusiveListNode       mNode;
+
+public:
+    using EntityList      = IntrusiveList<Entity, &Entity::mNode>;
+    using ComponentArray  = std::vector<ObjPtr<Component>>;
+
 public:
     /**
      * Destroys the entity. This first deactivates the entity if it is active.
@@ -49,6 +56,7 @@ public:
 
     World*                  GetWorld() const    { return mWorld; }
     Entity*                 GetParent() const   { return mParent; }
+    const EntityList&       GetChildren() const { return mChildren; }
 
     /**
      * Name of the entity. Cannot contain a '/': entities can be referred to
@@ -85,6 +93,8 @@ public:
     /**
      * Components.
      */
+
+    const ComponentArray&   GetComponents() const { return mComponents; }
 
     template <typename T, typename ...Args>
     T*                      CreateComponent(Args&&... args);
@@ -139,13 +149,6 @@ public:
     const glm::vec3&        GetWorldPosition() const    { return mWorldTransform.GetPosition(); }
     const glm::quat&        GetWorldOrientation() const { return mWorldTransform.GetOrientation(); }
     const glm::vec3&        GetWorldScale() const       { return mWorldTransform.GetScale(); }
-
-private:
-    /** Link to parent's child entity list. */
-    IntrusiveListNode       mNode;
-    using EntityList      = IntrusiveList<Entity, &Entity::mNode>;
-
-    using ComponentArray  = std::vector<ObjPtr<Component>>;
 
 private:
                             Entity();
