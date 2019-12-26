@@ -80,7 +80,7 @@ void RenderLight::SetDirection(const glm::vec3& inDirection)
 
 bool RenderLight::Cull(const Frustum& inFrustum) const
 {
-    if (mType == kLightType_Directional)
+    if (mType == kLightType_Directional || mRange == 0.0f)
     {
         return true;
     }
