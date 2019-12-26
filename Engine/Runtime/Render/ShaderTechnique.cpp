@@ -24,6 +24,7 @@
 #include "GPU/GPUDevice.h"
 
 #include "Render/BasicRenderPipeline.h"
+#include "Render/DeferredRenderPipeline.h"
 #include "Render/ShaderManager.h"
 
 static void GetDefaultStates(const ShaderPassType      inPassType,
@@ -38,6 +39,19 @@ static void GetDefaultStates(const ShaderPassType      inPassType,
         {
             outRenderTargetDesc.colour[0]    = BasicRenderPipeline::kColourFormat;
             outRenderTargetDesc.depthStencil = BasicRenderPipeline::kDepthFormat;
+
+            outDepthStencilDesc.depthTestEnable  = true;
+            outDepthStencilDesc.depthWriteEnable = true;
+            outDepthStencilDesc.depthCompareOp   = kGPUCompareOp_LessOrEqual;
+
+            break;
+        }
+
+        case kShaderPassType_DeferredOpaque:
+        {
+            // TODO: Temporary
+            outRenderTargetDesc.colour[0]    = DeferredRenderPipeline::kColourFormat;
+            outRenderTargetDesc.depthStencil = DeferredRenderPipeline::kDepthFormat;
 
             outDepthStencilDesc.depthTestEnable  = true;
             outDepthStencilDesc.depthWriteEnable = true;

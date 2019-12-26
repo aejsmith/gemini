@@ -35,34 +35,33 @@ class DeferredRenderPipeline final : public RenderPipeline
     CLASS();
 
 public:
-    static constexpr PixelFormat kColourFormat = kPixelFormat_R8G8B8A8;
-    static constexpr PixelFormat kDepthFormat  = kPixelFormat_Depth32;
+    static constexpr PixelFormat        kColourFormat = kPixelFormat_FloatR16G16B16A16;
+    static constexpr PixelFormat        kDepthFormat  = kPixelFormat_Depth32;
 
 public:
-                            DeferredRenderPipeline();
+                                        DeferredRenderPipeline();
 
     /** Colour to clear the background to. */
     PROPERTY()
-    glm::vec4               clearColour;
+    glm::vec4                           clearColour;
 
-    void                    SetName(std::string inName) override;
+    void                                SetName(std::string inName) override;
 
-    void                    Render(const RenderWorld&         inWorld,
-                                   const RenderView&          inView,
-                                   RenderGraph&               inGraph,
-                                   const RenderResourceHandle inTexture,
-                                   RenderResourceHandle&      outNewTexture) override;
+    void                                Render(const RenderWorld&         inWorld,
+                                               const RenderView&          inView,
+                                               RenderGraph&               inGraph,
+                                               const RenderResourceHandle inTexture,
+                                               RenderResourceHandle&      outNewTexture) override;
 
 protected:
-                            ~DeferredRenderPipeline();
+                                        ~DeferredRenderPipeline();
 
 private:
     /** Debug visualisation flags. */
-    bool                    mDrawEntityBoundingBoxes;
-    bool                    mDrawLightVolumes;
+    bool                                mDrawEntityBoundingBoxes;
+    bool                                mDrawLightVolumes;
 
-    UPtr<DeferredRenderPipelineWindow>
-                            mDebugWindow;
+    UPtr<DeferredRenderPipelineWindow>  mDebugWindow;
 
     friend class DeferredRenderPipelineWindow;
 };

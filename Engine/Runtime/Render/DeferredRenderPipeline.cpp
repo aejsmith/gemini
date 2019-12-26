@@ -43,7 +43,7 @@ public:
     using RenderContext::RenderContext;
 
     CullResults                 cullResults;
-    EntityDrawList              drawList;
+    EntityDrawList              opaqueDrawList;
 };
 
 DeferredRenderPipelineWindow::DeferredRenderPipelineWindow(DeferredRenderPipeline* const inPipeline) :
@@ -103,18 +103,18 @@ void DeferredRenderPipeline::Render(const RenderWorld&         inWorld,
     /* Get the visible entities. */
     inWorld.Cull(inView, context->cullResults);
 
-    /* Build a draw list for the entities. */
-    context->drawList.Reserve(context->cullResults.entities.size());
+    /* Build a draw list for the opaque G-Buffer pass. */
+    context->opaqueDrawList.Reserve(context->cullResults.entities.size());
     for (const RenderEntity* entity : context->cullResults.entities)
     {
-        if (entity->SupportsPassType(kShaderPassType_Basic))
+        if (entity->SupportsPassType(kShaderPassType_DeferredOpaque))
         {
-            const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_Basic);
+            const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_DeferredOpaque);
 
             const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
-            EntityDrawCall& drawCall = context->drawList.Add(sortKey);
+            EntityDrawCall& drawCall = context->opaqueDrawList.Add(sortKey);
 
-            entity->GetDrawCall(kShaderPassType_Basic, *context, drawCall);
+            entity->GetDrawCall(kShaderPassType_DeferredOpaque, *context, drawCall);
 
             if (mDrawEntityBoundingBoxes)
             {
@@ -124,7 +124,7 @@ void DeferredRenderPipeline::Render(const RenderWorld&         inWorld,
     }
 
     /* Sort them. */
-    context->drawList.Sort();
+    context->opaqueDrawList.Sort();
 
     if (mDrawLightVolumes)
     {
@@ -154,7 +154,7 @@ void DeferredRenderPipeline::Render(const RenderWorld&         inWorld,
     mainPass.ClearColour(0, this->clearColour);
     mainPass.ClearDepth(1.0f);
 
-    context->drawList.Draw(mainPass);
+    context->opaqueDrawList.Draw(mainPass);
 
     /* Blit to the final output. */
     inGraph.AddBlitPass("DeferredBlit",

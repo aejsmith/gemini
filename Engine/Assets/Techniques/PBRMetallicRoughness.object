@@ -65,6 +65,21 @@
                         "function": "PSMain"
                     }
                 ]
+            },
+            {
+                "type": "DeferredOpaque",
+                "shaders": [
+                    {
+                        "stage": "Vertex",
+                        "source": "Engine/PBR.hlsl",
+                        "function": "VSMain"
+                    },
+                    {
+                        "stage": "Pixel",
+                        "source": "Engine/PBR.hlsl",
+                        "function": "PSMain"
+                    }
+                ]
             }
         ]
     }
