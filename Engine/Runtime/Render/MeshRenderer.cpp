@@ -221,7 +221,7 @@ void MeshRenderer::CustomDebugUIEditor(const uint32_t        inFlags,
         return;
     }
 
-    ImGui::Text("materials"); ImGui::Spacing();
+    ImGui::AlignTextToFramePadding(); ImGui::Text("materials");
     ImGui::NextColumn(); ImGui::NextColumn();
 
     for (size_t i = 0; i < mMesh->GetMaterialCount(); i++)
