@@ -123,6 +123,10 @@ struct RenderViewDesc
      */
     GPUResourceState                state;
 
+    /**
+     * Format for the view. For texture views, if this is left as unknown,
+     * will be automatically set to match the underlying texture.
+     */
     PixelFormat                     format          = kPixelFormat_Unknown;
 
     uint32_t                        mipOffset       = 0;

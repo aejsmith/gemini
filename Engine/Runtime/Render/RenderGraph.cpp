@@ -152,9 +152,11 @@ RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle
                                              const RenderViewDesc&      inDesc,
                                              RenderResourceHandle*      outNewHandle)
 {
+    const bool isTexture = mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture;
+
     GPUSubresourceRange range = { 0, 1, 0, 1 };
 
-    if (mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture)
+    if (isTexture)
     {
         range.mipOffset   = inDesc.mipOffset;
         range.mipCount    = inDesc.mipCount;
@@ -180,6 +182,12 @@ RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle
     view.resource = inHandle;
     view.desc     = inDesc;
     view.view     = nullptr;
+
+    if (isTexture && view.desc.format == kPixelFormat_Unknown)
+    {
+        /* Set from texture format. */
+        view.desc.format = mGraph.GetTextureDesc(inHandle).format;
+    }
 
     return viewHandle;
 }
