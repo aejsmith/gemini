@@ -77,6 +77,14 @@
 #define kArgumentSet_ViewEntity     0   /**< View/entity arguments. */
 #define kArgumentSet_Material       1   /**< Material arguments. */
 
+/** Macros for HLSL register specifiers. */
+#define TEXTURE_REGISTER(setIndex, argumentIndex) \
+    register(t ## argumentIndex, space ## setIndex)
+#define SAMPLER_REGISTER(setIndex, argumentIndex) \
+    register(s ## argumentIndex, space ## setIndex)
+#define UAV_REGISTER(setIndex, argumentIndex) \
+    register(u ## argumentIndex, space ## setIndex)
+
 /**
  * Define a constant buffer. If the structure specified for this will be used
  * from C++ code, be careful regarding HLSL packing rules: in HLSL, members
