@@ -21,6 +21,12 @@
             },
             {
                 "objectID": 7
+            },
+            {
+                "objectID": 9
+            },
+            {
+                "objectID": 11
             }
         ]
     },
@@ -193,6 +199,118 @@
             "Material": {
                 "asset": "Game/glTF/DamagedHelmet/Material_0"
             }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 9,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Light_0",
+            "active": true,
+            "position": [
+                -4.0,
+                2.0,
+                3.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 10
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "Light",
+        "objectID": 10,
+        "entity": {
+            "objectID": 9
+        },
+        "objectProperties": {
+            "active": true,
+            "type": "Point",
+            "colour": [
+                0.0,
+                0.0,
+                1.0
+            ],
+            "intensity": 100.0,
+            "range": 25.0,
+            "innerConeAngle": 35.0,
+            "outerConeAngle": 45.0
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 11,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Light_1",
+            "active": true,
+            "position": [
+                4.0,
+                2.0,
+                3.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 12
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "Light",
+        "objectID": 12,
+        "entity": {
+            "objectID": 11
+        },
+        "objectProperties": {
+            "active": true,
+            "type": "Point",
+            "colour": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "intensity": 100.0,
+            "range": 25.0,
+            "innerConeAngle": 35.0,
+            "outerConeAngle": 45.0
         }
     }
 ]
