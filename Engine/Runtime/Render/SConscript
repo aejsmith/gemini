@@ -37,6 +37,7 @@ objects += map(env.Object, [
     'ShaderManager.cpp',
     'ShaderParameter.cpp',
     'ShaderTechnique.cpp',
+    'TonemapPass.cpp',
 ])
 
 Return('objects')

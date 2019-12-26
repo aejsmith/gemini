@@ -23,6 +23,7 @@
 #include "Render/RenderContext.h"
 #include "Render/RenderWorld.h"
 #include "Render/ShaderManager.h"
+#include "Render/TonemapPass.h"
 
 class DeferredRenderPipelineWindow : public DebugWindow
 {
@@ -74,6 +75,8 @@ void DeferredRenderPipelineWindow::Render()
 
 DeferredRenderPipeline::DeferredRenderPipeline() :
     clearColour                 (0.0f, 0.0f, 0.0f, 1.0f),
+
+    mTonemapPass                (new TonemapPass),
 
     mDrawEntityBoundingBoxes    (false),
     mDrawLightVolumes           (false),
@@ -134,10 +137,9 @@ void DeferredRenderPipeline::Render(const RenderWorld&         inWorld,
         }
     }
 
-    /* Add the main pass. Done to a temporary render target with a fixed format,
-     * since the output texture may not match the format that all PSOs have
-     * been created with. */
-    RenderGraphPass& mainPass = inGraph.AddPass("DeferredMain", kRenderGraphPassType_Render);
+    // TODO: Temporary, output G-Buffer pass to the main colour texture.
+
+    RenderGraphPass& opaquePass = inGraph.AddPass("DeferredOpaque", kRenderGraphPassType_Render);
 
     RenderTextureDesc colourTextureDesc(inGraph.GetTextureDesc(inTexture));
     colourTextureDesc.format = kColourFormat;
@@ -148,21 +150,21 @@ void DeferredRenderPipeline::Render(const RenderWorld&         inWorld,
     RenderResourceHandle colourTexture = inGraph.CreateTexture(colourTextureDesc);
     RenderResourceHandle depthTexture  = inGraph.CreateTexture(depthTextureDesc);
 
-    mainPass.SetColour(0, colourTexture, &colourTexture);
-    mainPass.SetDepthStencil(depthTexture, kGPUResourceState_DepthStencilWrite);
+    opaquePass.SetColour(0, colourTexture, &colourTexture);
+    opaquePass.SetDepthStencil(depthTexture, kGPUResourceState_DepthStencilWrite);
 
-    mainPass.ClearColour(0, this->clearColour);
-    mainPass.ClearDepth(1.0f);
+    opaquePass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    opaquePass.ClearDepth(1.0f);
 
-    context->opaqueDrawList.Draw(mainPass);
+    context->opaqueDrawList.Draw(opaquePass);
 
-    /* Blit to the final output. */
-    inGraph.AddBlitPass("DeferredBlit",
-                        inTexture,
-                        GPUSubresource{0, 0},
-                        colourTexture,
-                        GPUSubresource{0, 0},
-                        &outNewTexture);
+    // TODO: Apply clear colour to main colour target.
+
+    /* Tonemap and gamma correct onto the output texture. */
+    mTonemapPass->AddPass(inGraph,
+                          colourTexture,
+                          inTexture,
+                          outNewTexture);
 
     /* Render debug primitives for the view. */
     DebugManager::Get().RenderPrimitives(inView,

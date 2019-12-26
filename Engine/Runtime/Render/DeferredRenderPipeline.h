@@ -24,6 +24,7 @@
 #include <memory>
 
 class DeferredRenderPipelineWindow;
+class TonemapPass;
 
 /**
  * Render pipeline implementation doing deferred lighting (render geometry and
@@ -57,6 +58,8 @@ protected:
                                         ~DeferredRenderPipeline();
 
 private:
+    UPtr<TonemapPass>                   mTonemapPass;
+
     /** Debug visualisation flags. */
     bool                                mDrawEntityBoundingBoxes;
     bool                                mDrawLightVolumes;

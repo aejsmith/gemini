@@ -49,41 +49,28 @@ PSInput VSMain(VSInput input)
     return output;
 }
 
-float3 ToneMapUnchartedImpl(float3 x)
-{
-    const float A = 0.15f;
-    const float B = 0.50f;
-    const float C = 0.10f;
-    const float D = 0.20f;
-    const float E = 0.02f;
-    const float F = 0.30f;
-
-    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-}
-
-float3 ToneMapUncharted(float3 colour)
-{
-    const float whitePoint   = 11.2f;
-    const float exposureBias = 2.0f;
-
-    float3 c          = ToneMapUnchartedImpl(colour * exposureBias);
-    float3 whiteScale = ToneMapUnchartedImpl(float3(whitePoint, whitePoint, whitePoint));
-
-    return c / whiteScale;
-}
-
 float4 PSMain(PSInput input) : SV_TARGET
 {
     /* TODO. Use a single hardcoded point light source for now. */
-    LightParams light;
-    light.type            = kShaderLightType_Point;
-    light.position        = float3(0.0f, 2.0f, 3.0f);
-    light.direction       = float3(0.0f, 0.0f, 0.0f);
-    light.range           = 0.0f;
-    light.colour          = float3(1.0f, 1.0f, 1.0f);
-    light.intensity       = 10.0f;
-    light.spotAngleScale  = 0.0f;
-    light.spotAngleOffset = 0.0f;
+    LightParams lightA;
+    lightA.type            = kShaderLightType_Point;
+    lightA.position        = float3(-4.0f, 2.0f, 3.0f);
+    lightA.direction       = float3(0.0f, 0.0f, 0.0f);
+    lightA.range           = 25.0f;
+    lightA.colour          = float3(0.0f, 0.0f, 1.0f);
+    lightA.intensity       = 100.0f;
+    lightA.spotAngleScale  = 0.0f;
+    lightA.spotAngleOffset = 0.0f;
+
+    LightParams lightB;
+    lightB.type            = kShaderLightType_Point;
+    lightB.position        = float3(4.0f, 2.0f, 3.0f);
+    lightB.direction       = float3(0.0f, 0.0f, 0.0f);
+    lightB.range           = 25.0f;
+    lightB.colour          = float3(0.0f, 1.0f, 0.0f);
+    lightB.intensity       = 100.0f;
+    lightB.spotAngleScale  = 0.0f;
+    lightB.spotAngleOffset = 0.0f;
 
     /*
      * Fetch material parameters.
@@ -122,17 +109,14 @@ float4 PSMain(PSInput input) : SV_TARGET
 
     float3 result = float3(0.0f, 0.0f, 0.0f);
 
-    result += CalculateLight(light, brdf, surface);
+    result += CalculateLight(lightA, brdf, surface);
+    result += CalculateLight(lightB, brdf, surface);
 
     /* Apply occlusion. */
     result *= occlusion;
 
     /* Add emissive contribution. */
     result += emissive;
-
-    /* Tonemap and convert linear to gamma space. */
-    result = ToneMapUncharted(result);
-    result = pow(result, 1.0f / 2.2f);
 
     return float4(result, baseColourSample.a);
 }
