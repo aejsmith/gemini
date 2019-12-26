@@ -615,6 +615,9 @@ protected:
      * If kDebugUIEditor_IncludeChildren is in inFlags and there are any extra
      * child objects that should have editors, then they can be added to the
      * ioChildren array.
+     *
+     * When this is called, the GUI is in a 2-column layout, expecting name in
+     * the left column and value in the right.
      */
     virtual void                    CustomDebugUIEditor(const uint32_t        inFlags,
                                                         std::vector<Object*>& ioChildren);

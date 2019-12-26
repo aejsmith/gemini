@@ -50,6 +50,9 @@ protected:
     void                            Serialise(Serialiser& inSerialiser) const override;
     void                            Deserialise(Serialiser& inSerialiser) override;
 
+    void                            CustomDebugUIEditor(const uint32_t        inFlags,
+                                                        std::vector<Object*>& ioChildren) override;
+
     RenderEntityArray               CreateRenderEntities() override;
 
 private:

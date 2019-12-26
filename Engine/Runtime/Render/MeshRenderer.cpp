@@ -16,6 +16,8 @@
 
 #include "Render/MeshRenderer.h"
 
+#include "Engine/AssetManager.h"
+#include "Engine/DebugWindow.h"
 #include "Engine/Serialiser.h"
 
 #include "Render/EntityDrawList.h"
@@ -208,5 +210,45 @@ void MeshRenderer::SetMaterial(const std::string& inName,
     if (found)
     {
         SetMaterial(index, inMaterial);
+    }
+}
+
+void MeshRenderer::CustomDebugUIEditor(const uint32_t        inFlags,
+                                       std::vector<Object*>& ioChildren)
+{
+    if (!mMesh)
+    {
+        return;
+    }
+
+    ImGui::Text("materials"); ImGui::Spacing();
+    ImGui::NextColumn(); ImGui::NextColumn();
+
+    for (size_t i = 0; i < mMesh->GetMaterialCount(); i++)
+    {
+        ImGui::PushID(&mMaterials[i]);
+
+        ImGui::Indent();
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text(mMesh->GetMaterialName(i).c_str());
+        ImGui::Unindent();
+
+        ImGui::NextColumn();
+
+        const bool activate = ImGui::Button("Select");
+
+        AssetPtr material = mMaterials[i];
+
+        ImGui::SameLine();
+        ImGui::Text("%s", (material) ? material->GetPath().c_str() : "null");
+
+        if (AssetManager::Get().DebugUIAssetSelector(material, Material::staticMetaClass, activate))
+        {
+            SetMaterial(i, static_cast<Material*>(material.Get()));
+        }
+
+        ImGui::NextColumn();
+
+        ImGui::PopID();
     }
 }
