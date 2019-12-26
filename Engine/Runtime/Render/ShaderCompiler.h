@@ -82,10 +82,11 @@ private:
                                            const Path&  inPath,
                                            const size_t inDepth);
 
-    bool                        GenerateSource(std::string& outSource);
+    bool                        GenerateSource();
 
 private:
     Options                     mOptions;
+    std::string                 mSource;
     GPUShaderCode               mCode;
     SourceList                  mSourceFiles;
 

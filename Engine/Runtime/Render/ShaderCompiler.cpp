@@ -186,9 +186,11 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
     return true;
 }
 
-bool ShaderCompiler::GenerateSource(std::string& outSource)
+bool ShaderCompiler::GenerateSource()
 {
-    outSource += "#define __HLSL__ 1\n";
+    mSource.clear();
+
+    mSource += "#define __HLSL__ 1\n";
 
     if (mOptions.technique)
     {
@@ -223,10 +225,10 @@ bool ShaderCompiler::GenerateSource(std::string& outSource)
                 switch (parameter.type)
                 {
                     case kShaderParameterType_Texture2D:
-                        outSource += StringUtils::Format("Texture2D %s_texture : register(t%u, space%d);\n",
-                                                         parameter.name.c_str(),
-                                                         parameter.argumentIndex,
-                                                         kArgumentSet_Material);
+                        mSource += StringUtils::Format("Texture2D %s_texture : register(t%u, space%d);\n",
+                                                       parameter.name.c_str(),
+                                                       parameter.argumentIndex,
+                                                       kArgumentSet_Material);
 
                         needsSampler = true;
                         break;
@@ -239,10 +241,10 @@ bool ShaderCompiler::GenerateSource(std::string& outSource)
                 if (needsSampler)
                 {
                     /* Samplers are at argumentIndex + 1. */
-                    outSource += StringUtils::Format("SamplerState %s_sampler : register(s%u, space%d);\n",
-                                                     parameter.name.c_str(),
-                                                     parameter.argumentIndex + 1,
-                                                     kArgumentSet_Material);
+                    mSource += StringUtils::Format("SamplerState %s_sampler : register(s%u, space%d);\n",
+                                                   parameter.name.c_str(),
+                                                   parameter.argumentIndex + 1,
+                                                   kArgumentSet_Material);
                 }
             }
         }
@@ -250,14 +252,14 @@ bool ShaderCompiler::GenerateSource(std::string& outSource)
         if (!constantBuffer.empty())
         {
             constantBuffer += "};\n";
-            outSource += constantBuffer;
+            mSource += constantBuffer;
         }
     }
 
     /* Include the real source file, reusing the include logic to do so. */
-    outSource += StringUtils::Format("#include \"%s\"\n", mOptions.path.GetCString());
+    mSource += StringUtils::Format("#include \"%s\"\n", mOptions.path.GetCString());
 
-    return Preprocess(outSource, kBuiltInFileName, 0);
+    return Preprocess(mSource, kBuiltInFileName, 0);
 }
 
 void ShaderCompiler::Compile()
@@ -267,8 +269,7 @@ void ShaderCompiler::Compile()
     /* Generate the source string to pass to the compiler, containing built in
      * definitions. This #includes the real source file, so the logic for
      * loading that is in the includer. */
-    std::string source;
-    if (!GenerateSource(source))
+    if (!GenerateSource())
     {
         return;
     }
@@ -295,7 +296,7 @@ void ShaderCompiler::Compile()
     }
 
     shaderc::SpvCompilationResult module =
-        compiler.CompileGlslToSpv(source.c_str(),
+        compiler.CompileGlslToSpv(mSource.c_str(),
                                   shadercKind,
                                   kBuiltInFileName,
                                   mOptions.function.c_str(),
