@@ -654,7 +654,7 @@ static void DebugUIAssetPropertyEditor(Object* const       inObject,
     const bool activate = ImGui::Button("Select");
 
     ImGui::SameLine();
-    ImGui::Text("%s", asset->GetPath().c_str());
+    ImGui::Text("%s", (asset) ? asset->GetPath().c_str() : "null");
 
     if (AssetManager::Get().DebugUIAssetSelector(asset, pointeeClass, activate))
     {
