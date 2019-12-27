@@ -57,7 +57,6 @@ using ObjPtr = RefPtr<T>;
 /**
  * This macro must be placed on every class which derives from Object (directly
  * or indirectly) in order to add and generate definitions for type metadata.
- * It is expected to be placed in the public section of the class.
  *
  * Any header or source file using this macro must have code generated for it
  * using ObjectGen. Source files should include the ObjectGen output manually
@@ -68,7 +67,8 @@ using ObjPtr = RefPtr<T>;
  * The following attributes are supported:
  *
  *  - constructable: Set to false to disallow construction of this class through
- *    the object system. This also disables serialisation for the class.
+ *    the object system. This also disables serialisation for the class (though
+ *    constructable derived classes can still be serialised).
  *
  * Example:
  *
