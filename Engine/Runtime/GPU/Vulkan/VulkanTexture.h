@@ -43,8 +43,13 @@ public:
      * swapchain image that this refers to.
      */
     void                    SetImage(const VkImage inImage,
-                                     OnlyCalledBy<VulkanSwapchain>)
-                                { Assert(IsSwapchain()); mHandle = inImage; }
+                                     OnlyCalledBy<VulkanSwapchain>);
+
+    /**
+     * Flag to indicate whether a discard is pending for first use of a
+     * swapchain image after acquiring (see VulkanContext::ResourceBarrier()).
+     */
+    bool                    GetAndResetNeedDiscard();
 
 protected:
     void                    UpdateName() override;
@@ -55,4 +60,24 @@ private:
 
     VkImageAspectFlags      mAspectMask;
 
+    bool                    mNeedDiscard;
+
 };
+
+inline void VulkanTexture::SetImage(const VkImage inImage,
+                                    OnlyCalledBy<VulkanSwapchain>)
+{
+    Assert(IsSwapchain());
+    
+    mHandle      = inImage;
+    mNeedDiscard = true;
+}
+
+inline bool VulkanTexture::GetAndResetNeedDiscard()
+{
+    Assert(IsSwapchain());
+
+    const bool result = mNeedDiscard;
+    mNeedDiscard = false;
+    return result;
+}

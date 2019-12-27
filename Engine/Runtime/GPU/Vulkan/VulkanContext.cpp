@@ -361,12 +361,26 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
 
         /* Present is a special case in that no synchronisation is required,
          * only a layout transition. Additionally, we discard on transition
-         * away from present - we don't need to preserve existing content, and
-         * it avoids the problem that on first use the layout will be undefined. */
+         * away from present the first time this is done for this swapchain
+         * image within this frame - we don't need to preserve existing content,
+         * and it avoids the problem that on first use the layout will be
+         * undefined. */
         if (inBarriers[i].currentState & kGPUResourceState_Present)
         {
             srcStageMask  |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            oldImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+            Assert(inBarriers[i].resource->IsTexture());
+            auto texture = static_cast<VulkanTexture*>(inBarriers[i].resource);
+            Assert(texture->IsSwapchain());
+
+            if (texture->GetAndResetNeedDiscard())
+            {
+                oldImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            }
+            else
+            {
+                oldImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            }
         }
 
         if (inBarriers[i].newState & kGPUResourceState_Present)

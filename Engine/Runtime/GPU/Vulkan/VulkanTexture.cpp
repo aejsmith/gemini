@@ -22,10 +22,11 @@
 
 VulkanTexture::VulkanTexture(VulkanDevice&         inDevice,
                              const GPUTextureDesc& inDesc) :
-    GPUTexture  (inDevice, inDesc),
-    mHandle     (VK_NULL_HANDLE),
-    mAllocation (VK_NULL_HANDLE),
-    mAspectMask (0)
+    GPUTexture      (inDevice, inDesc),
+    mHandle         (VK_NULL_HANDLE),
+    mAllocation     (VK_NULL_HANDLE),
+    mAspectMask     (0),
+    mNeedDiscard    (false)
 {
     if (PixelFormatInfo::IsDepth(GetFormat()))
     {
