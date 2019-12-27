@@ -257,6 +257,7 @@ void Mesh::Deserialise(Serialiser& inSerialiser)
     while (inSerialiser.BeginGroup())
     {
         auto subMesh = new SubMesh(*this);
+        subMesh->mIndexBuffer = nullptr;
 
         success &= inSerialiser.Read("material", subMesh->mMaterial);
         success &= inSerialiser.Read("topology", subMesh->mTopology);
