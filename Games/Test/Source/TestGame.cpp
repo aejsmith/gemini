@@ -87,7 +87,7 @@ void TestGame::Init()
                     "Game/glTF/DamagedHelmet/World");
 #endif
 
-    Engine::Get().LoadWorld("Game/glTF/DamagedHelmet/World");
+    Engine::Get().LoadWorld("Game/Worlds/LightingTest");
 
 #if 0
     Engine::Get().CreateWorld();
