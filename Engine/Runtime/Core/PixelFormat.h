@@ -34,6 +34,7 @@ enum PixelFormat : uint8_t
     kPixelFormat_B8G8R8A8,              /**< BGRA, unsigned normalized, 8 bits per component. */
     kPixelFormat_B8G8R8A8sRGB,          /**< BGRA, unsigned normalized, 8 bits per component, sRGB. */
     kPixelFormat_R10G10B10A2,           /**< RGBA, unsigned normalized, 10 bits RGB, 2 bits A. */
+    kPixelFormat_FloatR11G11B10,        /**< RGBA, float, 11 bits RG, 10 bits B. */
     kPixelFormat_FloatR16G16B16A16,     /**< RGBA, float, 16 bits per component. */
     kPixelFormat_FloatR16G16B16,        /**< RGB, float, 16 bits per component. */
     kPixelFormat_FloatR16G16,           /**< RG, float, 16 bits per component. */

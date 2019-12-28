@@ -36,7 +36,7 @@ class DeferredRenderPipeline final : public RenderPipeline
     CLASS();
 
 public:
-    static constexpr PixelFormat        kColourFormat = kPixelFormat_FloatR16G16B16A16;
+    static constexpr PixelFormat        kColourFormat = kPixelFormat_FloatR11G11B10;
     static constexpr PixelFormat        kDepthFormat  = kPixelFormat_Depth32;
 
 public:

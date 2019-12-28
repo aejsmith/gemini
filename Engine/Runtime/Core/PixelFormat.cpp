@@ -90,6 +90,15 @@ PixelFormatInfo::Format PixelFormatInfo::sInfo[kPixelFormatCount] =
         /* bytesPerPixel  */ 4,
     },
 
+    /* kPixelFormat_FloatR11G11B10 */
+    {
+        /* isSRGB         */ false,
+        /* isFloat        */ true,
+        /* isDepth        */ false,
+        /* isDepthStencil */ false,
+        /* bytesPerPixel  */ 4,
+    },
+
     /* kPixelFormat_FloatR16G16B16A16 */
     {
         /* isSRGB         */ false,

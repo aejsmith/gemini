@@ -26,6 +26,7 @@ static VkFormat sFormatTable[kPixelFormatCount] =
     /* kPixelFormat_B8G8R8A8 */             VK_FORMAT_B8G8R8A8_UNORM,
     /* kPixelFormat_B8G8R8A8sRGB */         VK_FORMAT_B8G8R8A8_SRGB,
     /* kPixelFormat_R10G10B10A2 */          VK_FORMAT_A2B10G10R10_UNORM_PACK32,
+    /* kPixelFormat_FloatR11G11B10 */       VK_FORMAT_B10G11R11_UFLOAT_PACK32,
     /* kPixelFormat_FloatR16G16B16A16 */    VK_FORMAT_R16G16B16A16_SFLOAT,
     /* kPixelFormat_FloatR16G16B16 */       VK_FORMAT_R16G16B16_SFLOAT,
     /* kPixelFormat_FloatR16G16 */          VK_FORMAT_R16G16_SFLOAT,
