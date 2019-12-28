@@ -87,8 +87,8 @@ float4 PSMain(PSInput input) : SV_TARGET
 
     MaterialParams material;
     material.baseColour = baseColourSample * baseColourFactor;
-    material.metallic   = metallicRoughnessSample.b;
-    material.roughness  = metallicRoughnessSample.g;
+    material.metallic   = metallicRoughnessSample.b * metallicFactor;
+    material.roughness  = metallicRoughnessSample.g * roughnessFactor;
 
     BRDFParams brdf = CalculateBRDFParams(material);
 
