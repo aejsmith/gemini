@@ -48,7 +48,7 @@ private:
 };
 
 class VulkanArgumentSet final : public GPUArgumentSet,
-                                public VulkanDeviceChild<VulkanArgumentSetLayout>
+                                public VulkanDeviceChild<VulkanArgumentSet>
 {
 public:
                             VulkanArgumentSet(VulkanDevice&                 inDevice,
