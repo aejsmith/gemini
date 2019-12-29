@@ -133,13 +133,14 @@ inline GPUComputePipelineDesc::GPUComputePipelineDesc()
  */
 class GPUComputePipeline : public GPUObject
 {
+public:
+                                    ~GPUComputePipeline();
+
+    const GPUComputePipelineDesc&   GetDesc() const { return mDesc; }
+
 protected:
                                     GPUComputePipeline(GPUDevice&                    inDevice,
                                                        const GPUComputePipelineDesc& inDesc);
-                                    ~GPUComputePipeline();
-
-public:
-    const GPUComputePipelineDesc&   GetDesc() const { return mDesc; }
 
 protected:
     const GPUComputePipelineDesc    mDesc;
