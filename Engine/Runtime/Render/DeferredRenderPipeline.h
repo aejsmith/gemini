@@ -26,6 +26,8 @@
 class DeferredRenderPipelineWindow;
 class TonemapPass;
 
+struct DeferredRenderContext;
+
 /**
  * Render pipeline implementation doing deferred lighting (render geometry and
  * material properties to a G-Buffer and then apply lighting in a separate
@@ -39,12 +41,33 @@ public:
     static constexpr PixelFormat        kColourFormat = kPixelFormat_FloatR11G11B10;
     static constexpr PixelFormat        kDepthFormat  = kPixelFormat_Depth32;
 
+    /**
+     * G-Buffer layout:
+     *
+     *     | Format            | R            | G            | B            | A
+     *  ---|-------------------|--------------|--------------|--------------|--------------
+     *   0 | R8G8B8A8sRGB      | BaseColour.r | BaseColour.g | BaseColour.b | -
+     *  ---|-------------------|--------------|--------------|--------------|--------------
+     *   1 | R10G10B10A2       | Normal.x     | Normal.y     | Normal.z     | -
+     *  ---|-------------------|--------------|--------------|--------------|--------------
+     *   2 | R8G8B8A8          | Metallic     | Roughness    | Occlusion    | -
+     *  ---|-------------------|--------------|--------------|--------------|--------------
+     *   3 | R11G11B10         | Emissive.r   | Emissive.g   | Emissive.b   | -
+     *
+     * The normal buffer is an unsigned normalized format, therefore the normals
+     * are scaled to fit into the [0, 1] range.
+     *
+     * Position is reconstructed from the depth buffer.
+     *
+     * Emissive is output directly to the main colour target, bound as 3, during
+     * the G-Buffer pass.
+     */
+    static constexpr PixelFormat        kGBuffer0Format = kPixelFormat_R8G8B8A8sRGB;
+    static constexpr PixelFormat        kGBuffer1Format = kPixelFormat_R10G10B10A2;
+    static constexpr PixelFormat        kGBuffer2Format = kPixelFormat_R8G8B8A8;
+
 public:
                                         DeferredRenderPipeline();
-
-    /** Colour to clear the background to. */
-    PROPERTY()
-    glm::vec4                           clearColour;
 
     void                                SetName(std::string inName) override;
 
@@ -56,6 +79,16 @@ public:
 
 protected:
                                         ~DeferredRenderPipeline();
+
+private:
+    void                                CreateResources(DeferredRenderContext* const inContext,
+                                                        RenderGraph&                 inGraph,
+                                                        const RenderResourceHandle   inOutputTexture) const;
+
+    void                                BuildDrawLists(DeferredRenderContext* const inContext) const;
+
+    void                                RenderGBuffer(DeferredRenderContext* const inContext,
+                                                      RenderGraph&                 inGraph) const;
 
 private:
     UPtr<TonemapPass>                   mTonemapPass;

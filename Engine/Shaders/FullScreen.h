@@ -27,17 +27,17 @@ struct FullScreenPSInput
  * Vertex shader which outputs a counter-clockwise full-screen triangle based
  * on SV_VertexID, no vertex input data is required.
  */
-FullScreenPSInput VSFullScreen(const uint inVertexID : SV_VertexID)
+FullScreenPSInput VSFullScreen(const uint vertexID : SV_VertexID)
 {
     FullScreenPSInput output;
 
-    output.position.x = ((float)(inVertexID % 2) * 4.0f) - 1.0f;
-    output.position.y = ((float)(inVertexID / 2) * 4.0f) - 1.0f;
+    output.position.x = ((float)(vertexID % 2) * 4.0f) - 1.0f;
+    output.position.y = ((float)(vertexID / 2) * 4.0f) - 1.0f;
     output.position.z = 0.0f;
     output.position.w = 1.0f;
 
-    output.uv.x       = (float)(inVertexID % 2) * 2.0f;
-    output.uv.y       = 1.0f - ((float)(inVertexID / 2) * 2.0f);
+    output.uv.x       = (float)(vertexID % 2) * 2.0f;
+    output.uv.y       = 1.0f - ((float)(vertexID / 2) * 2.0f);
 
     return output;
 }

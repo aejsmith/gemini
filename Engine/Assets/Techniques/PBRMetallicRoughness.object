@@ -62,7 +62,7 @@
                     {
                         "stage": "Pixel",
                         "source": "Engine/PBR.hlsl",
-                        "function": "PSMain"
+                        "function": "PSBasic"
                     }
                 ]
             },
@@ -77,7 +77,7 @@
                     {
                         "stage": "Pixel",
                         "source": "Engine/PBR.hlsl",
-                        "function": "PSMain"
+                        "function": "PSDeferredOpaque"
                     }
                 ]
             }

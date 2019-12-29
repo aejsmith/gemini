@@ -41,6 +41,8 @@ struct MaterialParams
     float4      baseColour;
     float       metallic;
     float       roughness;
+    float3      emissive;
+    float       occlusion;
 };
 
 /** Parameters to the BRDF derived from material parameters. */

@@ -138,14 +138,7 @@
     {
         "objectClass": "DeferredRenderPipeline",
         "objectID": 6,
-        "objectProperties": {
-            "clearColour": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ]
-        }
+        "objectProperties": {}
     },
     {
         "objectClass": "Entity",

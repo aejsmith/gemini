@@ -49,8 +49,10 @@ static void GetDefaultStates(const ShaderPassType      inPassType,
 
         case kShaderPassType_DeferredOpaque:
         {
-            // TODO: Temporary
-            outRenderTargetDesc.colour[0]    = DeferredRenderPipeline::kColourFormat;
+            outRenderTargetDesc.colour[0]    = DeferredRenderPipeline::kGBuffer0Format;
+            outRenderTargetDesc.colour[1]    = DeferredRenderPipeline::kGBuffer1Format;
+            outRenderTargetDesc.colour[2]    = DeferredRenderPipeline::kGBuffer2Format;
+            outRenderTargetDesc.colour[3]    = DeferredRenderPipeline::kColourFormat;
             outRenderTargetDesc.depthStencil = DeferredRenderPipeline::kDepthFormat;
 
             outDepthStencilDesc.depthTestEnable  = true;
