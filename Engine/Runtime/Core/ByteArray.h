@@ -141,8 +141,13 @@ inline void ByteArray::Resize(const size_t inSize,
 
         if (inReallocate)
         {
-            uint8_t* newData = (inSize != 0) ? new uint8_t[inSize] : 0;
-            memcpy(newData, mData, std::min(inSize, mSize));
+            uint8_t* const newData = (inSize != 0) ? new uint8_t[inSize] : 0;
+
+            if (mSize != 0 && inSize != 0)
+            {
+                memcpy(newData, mData, std::min(inSize, mSize));
+            }
+
             delete[] mData;
             mData = newData;
         }
