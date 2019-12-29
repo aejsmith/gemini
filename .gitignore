@@ -4,3 +4,4 @@
 /Build
 /.options.cache
 /.sconsign.dblite
+.gdb_history
