@@ -44,6 +44,9 @@ protected:
 
     void                    Released() override;
 
+    /** Called when the asset path is changed. */
+    virtual void            PathChanged();
+
 private:
     std::string             mPath;
 

@@ -57,6 +57,8 @@ protected:
                                               const GPUSamplerDesc&     inSamplerDesc,
                                               const GPUResourceViewType inViewType);
 
+    void                        PathChanged() override;
+
 protected:
     GPUTexture*                 mTexture;
     GPUResourceView*            mResourceView;

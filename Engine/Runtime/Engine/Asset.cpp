@@ -30,6 +30,11 @@ void Asset::SetPath(std::string inPath,
                     OnlyCalledBy<AssetManager>)
 {
     mPath = std::move(inPath);
+    PathChanged();
+}
+
+void Asset::PathChanged()
+{
 }
 
 void Asset::Released()

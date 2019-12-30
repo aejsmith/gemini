@@ -183,6 +183,8 @@ private:
     void                        Serialise(Serialiser& inSerialiser) const override;
     void                        Deserialise(Serialiser& inSerialiser) override;
 
+    void                        PathChanged() override;
+
     void                        CalculateBoundingBox(SubMesh* const inSubMesh);
 
     glm::vec4                   LoadAttribute(const GPUAttributeSemantic inSemantic,

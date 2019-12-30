@@ -286,6 +286,32 @@ void Mesh::Deserialise(Serialiser& inSerialiser)
     Build();
 }
 
+void Mesh::PathChanged()
+{
+    if (GEMINI_BUILD_DEBUG && IsManaged() && mIsBuilt)
+    {
+        for (size_t i = 0; i < kMaxVertexAttributes; i++)
+        {
+            if (mVertexBuffers[i])
+            {
+                mVertexBuffers[i]->SetName(StringUtils::Format("%s (Buffer %zu)",
+                                                               GetPath().c_str(),
+                                                               i));
+            }
+        }
+
+        for (size_t i = 0; i < mSubMeshes.size(); i++)
+        {
+            if (mSubMeshes[i]->mIndexBuffer)
+            {
+                mSubMeshes[i]->mIndexBuffer->SetName(StringUtils::Format("%s (SubMesh %zu)",
+                                                                         GetPath().c_str(),
+                                                                         i));
+            }
+        }
+    }
+}
+
 bool Mesh::GetMaterial(const std::string& inName,
                        size_t&            outIndex) const
 {
@@ -503,6 +529,8 @@ void Mesh::Build()
     }
 
     mIsBuilt = true;
+
+    PathChanged();
 }
 
 void Mesh::CalculateBoundingBox(SubMesh* const inSubMesh)

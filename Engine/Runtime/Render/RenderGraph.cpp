@@ -644,7 +644,7 @@ void RenderGraph::AllocateResources()
 
                 resource->resource = RenderManager::Get().GetTransientBuffer(desc, {});
 
-                if (resource->buffer.name)
+                if (GEMINI_BUILD_DEBUG && resource->buffer.name)
                 {
                     resource->resource->SetName(resource->buffer.name);
                 }
@@ -667,7 +667,7 @@ void RenderGraph::AllocateResources()
 
                 resource->resource = RenderManager::Get().GetTransientTexture(desc, {});
 
-                if (resource->texture.name)
+                if (GEMINI_BUILD_DEBUG && resource->texture.name)
                 {
                     resource->resource->SetName(resource->texture.name);
                 }

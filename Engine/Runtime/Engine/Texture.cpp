@@ -63,6 +63,14 @@ TextureBase::~TextureBase()
     delete mTexture;
 }
 
+void TextureBase::PathChanged()
+{
+    if (GEMINI_BUILD_DEBUG && mTexture && IsManaged())
+    {
+        mTexture->SetName(GetPath());
+    }
+}
+
 Texture2D::Texture2D(const uint32_t                inWidth,
                      const uint32_t                inHeight,
                      const uint8_t                 inNumMipLevels,
