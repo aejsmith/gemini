@@ -254,39 +254,40 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
 
     for (size_t i = 0; i < inCount; i++)
     {
+        const bool isTexture = inBarriers[i].resource->IsTexture();
+
         VkAccessFlags srcAccessMask  = 0;
         VkAccessFlags dstAccessMask  = 0;
         VkImageLayout oldImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageLayout newImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-        auto HandleState =
-            [&] (const GPUResourceState     inState,
-                 const VkPipelineStageFlags inStageMask,
-                 const VkAccessFlags        inAccessMask,
-                 const VkImageLayout        inLayout = VK_IMAGE_LAYOUT_UNDEFINED)
+        auto HandleState = [&] (const GPUResourceState     inState,
+                                const VkPipelineStageFlags inStageMask,
+                                const VkAccessFlags        inAccessMask,
+                                const VkImageLayout        inLayout = VK_IMAGE_LAYOUT_UNDEFINED)
+        {
+            if (inBarriers[i].currentState & inState)
             {
-                if (inBarriers[i].currentState & inState)
-                {
-                    srcStageMask  |= inStageMask;
+                srcStageMask  |= inStageMask;
 
-                    /* Only write bits are relevant in a source access mask. */
-                    srcAccessMask |= inAccessMask & kVkAccessFlagBits_AllWrite;
+                /* Only write bits are relevant in a source access mask. */
+                srcAccessMask |= inAccessMask & kVkAccessFlagBits_AllWrite;
 
-                    /* Overwrite the image layout. The most preferential layout
-                     * is handled last below. The only case where this matters
-                     * is depth read-only states + shader read states, where we
-                     * want to use the depth/stencil layout as opposed to
-                     * SHADER_READ_ONLY. */
-                    oldImageLayout = inLayout;
-                }
+                /* Overwrite the image layout. The most preferential layout is
+                 * handled last below. The only case where this matters is depth
+                 * read-only states + shader read states, where we want to use
+                 * the depth/stencil layout as opposed to
+                 * SHADER_READ_ONLY. */
+                oldImageLayout = inLayout;
+            }
 
-                if (inBarriers[i].newState & inState)
-                {
-                    dstStageMask  |= inStageMask;
-                    dstAccessMask |= inAccessMask;
-                    newImageLayout = inLayout;
-                }
-            };
+            if (inBarriers[i].newState & inState)
+            {
+                dstStageMask  |= inStageMask;
+                dstAccessMask |= inAccessMask;
+                newImageLayout = inLayout;
+            }
+        };
 
         HandleState(kGPUResourceState_VertexShaderRead,
                     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
@@ -369,7 +370,7 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
         {
             srcStageMask  |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
-            Assert(inBarriers[i].resource->IsTexture());
+            Assert(isTexture);
             auto texture = static_cast<VulkanTexture*>(inBarriers[i].resource);
             Assert(texture->IsSwapchain());
 
@@ -400,9 +401,9 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
          * buffer, or on a texture where a layout transition is not necessary.
          * If this happens we don't need a memory barrier, just an execution
          * dependency is sufficient. */
-        if (srcAccessMask != 0 || oldImageLayout != newImageLayout)
+        if (srcAccessMask != 0 || (isTexture && oldImageLayout != newImageLayout))
         {
-            if (inBarriers[i].resource->IsTexture())
+            if (isTexture)
             {
                 auto texture = static_cast<VulkanTexture*>(inBarriers[i].resource);
                 auto range   = texture->GetExactSubresourceRange(inBarriers[i].range);
@@ -439,21 +440,26 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
         }
     }
 
-    /* Can happen for a initial state transition from kGPUResourceState_None. */
-    if (srcStageMask == 0)
-        srcStageMask |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-
     Assert(dstStageMask != 0);
 
-    vkCmdPipelineBarrier(GetCommandBuffer(),
-                         srcStageMask,
-                         dstStageMask,
-                         0,
-                         0, nullptr,
-                         bufferBarrierCount,
-                         (bufferBarrierCount > 0) ? bufferBarriers : nullptr,
-                         imageBarrierCount,
-                         (imageBarrierCount > 0) ? imageBarriers : nullptr);
+    if (srcStageMask != 0 || bufferBarrierCount > 0 || imageBarrierCount > 0)
+    {
+        /* Can happen for an initial transition from kGPUResourceState_None. */
+        if (srcStageMask == 0)
+        {
+            srcStageMask |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        }
+
+        vkCmdPipelineBarrier(GetCommandBuffer(),
+                             srcStageMask,
+                             dstStageMask,
+                             0,
+                             0, nullptr,
+                             bufferBarrierCount,
+                             (bufferBarrierCount > 0) ? bufferBarriers : nullptr,
+                             imageBarrierCount,
+                             (imageBarrierCount > 0) ? imageBarriers : nullptr);
+    }
 }
 
 void VulkanContext::BlitTexture(GPUTexture* const    inDestTexture,
