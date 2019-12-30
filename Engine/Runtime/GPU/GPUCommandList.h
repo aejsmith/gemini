@@ -437,7 +437,7 @@ inline void GPUCommandList::ValidateCommand() const
     Assert(mOwningThread == Thread::GetCurrentID());
 }
 
-#ifndef GEMINI_BUILD_DEBUG
+#if !GEMINI_BUILD_DEBUG
 
 inline void GPUCommandList::ValidateArguments() const
 {

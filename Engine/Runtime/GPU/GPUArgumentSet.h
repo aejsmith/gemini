@@ -141,7 +141,7 @@ private:
 
 };
 
-#ifndef GEMINI_BUILD_DEBUG
+#if !GEMINI_BUILD_DEBUG
 
 inline void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
                                               const GPUArgument* const      inArguments)

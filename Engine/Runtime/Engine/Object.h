@@ -40,7 +40,7 @@ using ObjPtr = RefPtr<T>;
  */
 
 /** Macro to define an annotation attribute for ObjectGen. */
-#ifdef GEMINI_OBJGEN
+#if GEMINI_OBJGEN
     #define META_ATTRIBUTE(type, ...) \
         __attribute__((annotate("gemini:" type ":" #__VA_ARGS__)))
 #else

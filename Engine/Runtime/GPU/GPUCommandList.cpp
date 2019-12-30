@@ -126,7 +126,7 @@ void GPUCommandList::ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&inLayo
     }
 }
 
-#ifdef GEMINI_BUILD_DEBUG
+#if GEMINI_BUILD_DEBUG
 
 void GPUCommandList::ValidateArguments() const
 {

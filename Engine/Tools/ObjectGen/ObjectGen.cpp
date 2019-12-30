@@ -38,7 +38,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 
-#ifdef GEMINI_PLATFORM_WIN32
+#if GEMINI_PLATFORM_WIN32
     #include <windows.h>
     #include <tchar.h>
 #endif
