@@ -560,10 +560,21 @@ void RenderGraph::DetermineRequiredPasses()
     RenderGraphPass** const passes = AllocateStackArray(RenderGraphPass*, mPasses.size());
     uint16_t passCount             = 0;
 
+    /* Get the passes forced to be executed. */
+    for (RenderGraphPass* pass : mPasses)
+    {
+        if (pass->mRequired)
+        {
+            passes[passCount++] = pass;
+        }
+    }
+
     /* Get the passes producing imported resources. */
     for (const Resource* const resource : mResources)
     {
-        if (resource->imported && resource->currentVersion > 0)
+        if (resource->imported &&
+            resource->currentVersion > 0 &&
+            !resource->producers[resource->currentVersion]->mRequired)
         {
             passes[passCount++] = resource->producers[resource->currentVersion];
         }

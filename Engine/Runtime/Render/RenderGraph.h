@@ -271,6 +271,14 @@ public:
     void                            ClearStencil(const uint32_t inValue);
 
     /**
+     * Force this pass to execute even if none of its outputs are consumed.
+     * Useful during development (e.g. when writing a new pass where the
+     * consumers aren't implemented yet), shouldn't be used otherwise.
+     */
+    void                            ForceRequired()
+                                        { mRequired = true; }
+
+    /**
      * Graph execution methods.
      */
 
