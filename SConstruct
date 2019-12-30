@@ -49,17 +49,20 @@ if not ARGUMENTS.get('V'):
 buildTypes = {
     'Debug': {
         'CPPDEFINES': {
-            'GEMINI_BUILD_DEBUG': 1
+            'GEMINI_BUILD_DEBUG':   1,
+            'GEMINI_BUILD_RELEASE': 0,
         },
     },
     'Sanitize': {
         'CPPDEFINES': {
-            'GEMINI_BUILD_DEBUG': 1,
-            'GEMINI_SANITIZE': 1
+            'GEMINI_BUILD_DEBUG':   1,
+            'GEMINI_BUILD_RELEASE': 0,
+            'GEMINI_SANITIZE':      1,
         },
     },
     'Release': {
         'CPPDEFINES': {
+            'GEMINI_BUILD_DEBUG':   0,
             'GEMINI_BUILD_RELEASE': 1,
             'NDEBUG': None
         },
