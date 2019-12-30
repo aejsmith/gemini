@@ -26,6 +26,7 @@ class GPUBuffer;
 class GPUComputeCommandList;
 class GPUGraphicsCommandList;
 class GPUResourceView;
+class GPUStagingBuffer;
 class GPUTexture;
 class GPUTransferContext;
 class RenderGraph;
@@ -401,6 +402,13 @@ public:
                                                 const RenderResourceHandle inSourceHandle,
                                                 const GPUSubresource       inSourceSubresource,
                                                 RenderResourceHandle*      outNewHandle);
+
+    /** Shortcut to add a pass to upload a buffer. */
+    RenderGraphPass&                AddUploadPass(std::string                inName,
+                                                  const RenderResourceHandle inDestHandle,
+                                                  const uint32_t             inDestOffset,
+                                                  GPUStagingBuffer           inSourceBuffer,
+                                                  RenderResourceHandle*      outNewHandle);
 
     /**
      * Create a new buffer resource. The initial content will be undefined so

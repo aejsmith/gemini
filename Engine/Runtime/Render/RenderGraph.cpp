@@ -20,6 +20,7 @@
 #include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
 #include "GPU/GPURenderPass.h"
+#include "GPU/GPUStagingResource.h"
 #include "GPU/GPUTexture.h"
 #include "GPU/GPUUtils.h"
 
@@ -27,12 +28,12 @@
 
 /**
  * TODO:
+ *  - GPU memory aliasing/reuse based on required resource lifetimes.
  *  - Reading depth from shader while bound as depth target doesn't work
  *    currently: have to declare 2 uses, they will conflict. Should combine
  *    them into one use with the union of the states.
  *  - Could add some helper functions for transfer passes for common cases,
  *    e.g. just copying a texture.
- *  - GPU memory aliasing based on required resource lifetimes.
  *  - Optimisation of barriers. Initial implementation just does barriers
  *    as needed before each pass during execution, but since we have a view of
  *    the whole frame, we should be able to move them earlier and batch them
@@ -369,6 +370,42 @@ RenderGraphPass& RenderGraph::AddBlitPass(std::string                inName,
                               inDestSubresource,
                               inGraph.GetTexture(inSourceHandle),
                               inSourceSubresource);
+    });
+
+    return pass;
+}
+
+RenderGraphPass& RenderGraph::AddUploadPass(std::string                inName,
+                                            const RenderResourceHandle inDestHandle,
+                                            const uint32_t             inDestOffset,
+                                            GPUStagingBuffer           inSourceBuffer,
+                                            RenderResourceHandle*      outNewHandle)
+{
+    Assert(GetResourceType(inDestHandle) == kRenderResourceType_Buffer);
+    Assert(outNewHandle);
+
+    RenderGraphPass& pass = AddPass(std::move(inName), kRenderGraphPassType_Transfer);
+
+    pass.UseResource(inDestHandle,
+                     GPUSubresource{0, 0},
+                     kGPUResourceState_TransferWrite,
+                     outNewHandle);
+
+    /* Ugh, non-copyable objects can't be captured in a std::function since
+     * that is copyable. Make a transient allocation to hold the staging handle
+     * instead. */
+    auto sourceBuffer = NewTransient<GPUStagingBuffer>(std::move(inSourceBuffer));
+
+    pass.SetFunction([inDestHandle, inDestOffset, sourceBuffer]
+                     (const RenderGraph&     inGraph,
+                      const RenderGraphPass& inPass,
+                      GPUTransferContext&    inContext)
+    {
+        inContext.UploadBuffer(inGraph.GetBuffer(inDestHandle),
+                               *sourceBuffer,
+                               sourceBuffer->GetSize(),
+                               inDestOffset,
+                               0);
     });
 
     return pass;

@@ -96,9 +96,12 @@ public:
                             GPUStagingBuffer(const GPUStagingAccess inAccess,
                                              const uint32_t         inSize);
 
+                            GPUStagingBuffer(GPUStagingBuffer&& ioOther);
+
                             ~GPUStagingBuffer() {}
 
-public:
+    GPUStagingBuffer&       operator =(GPUStagingBuffer&& ioOther);
+
     uint32_t                GetSize() const     { return mSize; }
 
     /**
@@ -238,9 +241,31 @@ inline GPUStagingBuffer::GPUStagingBuffer() :
 
 inline GPUStagingBuffer::GPUStagingBuffer(const GPUStagingAccess inAccess,
                                           const uint32_t         inSize) :
-    GPUStagingBuffer    ()
+    GPUStagingBuffer ()
 {
     Initialise(inAccess, inSize);
+}
+
+inline GPUStagingBuffer::GPUStagingBuffer(GPUStagingBuffer&& ioOther) :
+    GPUStagingBuffer ()
+{
+    *this = std::move(ioOther);
+}
+
+inline GPUStagingBuffer& GPUStagingBuffer::operator =(GPUStagingBuffer&& ioOther)
+{
+    mAccess    = ioOther.mAccess;
+    mHandle    = ioOther.mHandle;
+    mMapping   = ioOther.mMapping;
+    mFinalised = ioOther.mFinalised;
+    mSize      = ioOther.mSize;
+
+    ioOther.mHandle    = nullptr;
+    ioOther.mMapping   = nullptr;
+    ioOther.mFinalised = false;
+    ioOther.mSize      = 0;
+
+    return *this;
 }
 
 inline void GPUStagingBuffer::Initialise(const GPUStagingAccess inAccess,
