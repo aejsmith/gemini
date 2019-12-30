@@ -644,6 +644,11 @@ void RenderGraph::AllocateResources()
 
                 resource->resource = RenderManager::Get().GetTransientBuffer(desc, {});
 
+                if (resource->buffer.name)
+                {
+                    resource->resource->SetName(resource->buffer.name);
+                }
+
                 break;
             }
 
@@ -661,6 +666,11 @@ void RenderGraph::AllocateResources()
                 desc.numMipLevels = resource->texture.numMipLevels;
 
                 resource->resource = RenderManager::Get().GetTransientTexture(desc, {});
+
+                if (resource->texture.name)
+                {
+                    resource->resource->SetName(resource->texture.name);
+                }
 
                 break;
             }
