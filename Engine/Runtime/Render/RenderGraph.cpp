@@ -837,7 +837,12 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
             inPass.mRenderFunction(*this, inPass, *cmdList);
 
             cmdList->End();
-            context.SubmitRenderPass(cmdList);
+
+            {
+                SCOPED_DEBUG_MARKER(context, inPass.mName);
+                context.SubmitRenderPass(cmdList);
+            }
+
             break;
         }
 
@@ -854,7 +859,12 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
             inPass.mComputeFunction(*this, inPass, *cmdList);
 
             cmdList->End();
-            context.SubmitComputePass(cmdList);
+
+            {
+                SCOPED_DEBUG_MARKER(context, inPass.mName);
+                context.SubmitComputePass(cmdList);
+            }
+
             break;
         }
 
@@ -864,10 +874,21 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
 
             /* Transfer passes are just executed on the main graphics context.
              * Not worth using a transfer queue for mid-frame transfers, it'll
-             * just add synchronisation overhead. TODO: Any use case for doing
-             * transfers on the async compute queue, i.e. between async compute
-             * passes? */
-            inPass.mTransferFunction(*this, inPass, GPUGraphicsContext::Get());
+             * just add synchronisation overhead.
+             *
+             * TODO: Any use case for doing transfers on the async compute
+             * queue, i.e. between async compute passes?
+             *
+             * TODO: Could do transfers to resources with no previous use in
+             * the frame on the transfer queue? Could potentially overlap with
+             * end of previous frame. */
+            GPUComputeContext& context = GPUGraphicsContext::Get();
+
+            {
+                SCOPED_DEBUG_MARKER(context, inPass.mName);
+                inPass.mTransferFunction(*this, inPass, context);
+            }
+
             break;
         }
 

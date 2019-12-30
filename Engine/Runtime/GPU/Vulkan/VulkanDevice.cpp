@@ -305,7 +305,9 @@ void VulkanDevice::CreateDevice()
         EnableExtension(extension, 0, true);
     }
 
-    EnableExtension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, kCap_DebugMarker);
+    #if GEMINI_BUILD_DEBUG
+        EnableExtension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, kCap_DebugMarker);
+    #endif
 
     const float queuePriority = 1.0f;
 

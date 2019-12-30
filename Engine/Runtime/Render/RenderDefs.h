@@ -22,6 +22,8 @@
 
 #include "../../Shaders/ShaderDefs.h"
 
+class GPUTransferContext;
+
 /**
  * A render pipeline will perform a number of render passes, each of which will
  * need to render a subset of visible entities. The passes that an entity will
@@ -71,3 +73,42 @@ enum ENUM() LightType
      */
     kLightType_Spot,
 };
+
+/** Scoped debug marker class, does nothing on debug builds. */
+class ScopedDebugMarker
+{
+public:
+                            ScopedDebugMarker(GPUTransferContext& inContext,
+                                              const char* const   inLabel);
+
+                            ScopedDebugMarker(GPUTransferContext& inContext,
+                                              const std::string&  inLabel);
+
+                            ~ScopedDebugMarker();
+
+private:
+    #if GEMINI_BUILD_DEBUG
+    GPUTransferContext&     mContext;
+    #endif
+};
+
+#if !GEMINI_BUILD_DEBUG
+
+inline ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& inContext,
+                                            const char* const   inLabel)
+{
+}
+
+inline ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& inContext,
+                                            const std::string&  inLabel)
+{
+}
+
+inline ScopedDebugMarker::~ScopedDebugMarker()
+{
+}
+
+#endif
+
+#define SCOPED_DEBUG_MARKER(inContext, inLabel) \
+    ScopedDebugMarker label_ ## __LINE__ (inContext, inLabel)

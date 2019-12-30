@@ -724,3 +724,27 @@ void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList
     cmdList->Submit(GetCommandBuffer());
     FrameAllocator::Delete(cmdList);
 }
+
+#if GEMINI_BUILD_DEBUG
+
+void VulkanContext::BeginMarker(const char* const inLabel)
+{
+    if (GetVulkanDevice().HasCap(VulkanDevice::kCap_DebugMarker))
+    {
+        VkDebugMarkerMarkerInfoEXT markerInfo = {};
+        markerInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+        markerInfo.pMarkerName = inLabel;
+
+        vkCmdDebugMarkerBeginEXT(GetCommandBuffer(), &markerInfo);
+    }
+}
+
+void VulkanContext::EndMarker()
+{
+    if (GetVulkanDevice().HasCap(VulkanDevice::kCap_DebugMarker))
+    {
+        vkCmdDebugMarkerEndEXT(GetCommandBuffer());
+    }
+}
+
+#endif

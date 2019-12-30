@@ -349,6 +349,7 @@ void ImGUIRenderer::Render() const
     renderPass.SetColour(0, view.get());
 
     GPUGraphicsContext& context = GPUGraphicsContext::Get();
+    SCOPED_DEBUG_MARKER(context, "ImGUI");
 
     context.ResourceBarrier(view.get(), kGPUResourceState_Present, kGPUResourceState_RenderTarget);
 
