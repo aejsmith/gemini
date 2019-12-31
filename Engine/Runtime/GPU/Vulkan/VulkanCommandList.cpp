@@ -415,31 +415,38 @@ void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
         mDirtyState &= ~kDirtyState_Scissor;
     }
 
-    // TODO: Could batch these.
-    if (mDirtyVertexBuffers.Any())
+    const size_t vertexDirtyStart = mDirtyVertexBuffers.FindFirst();
+    const size_t vertexDirtyEnd   = mDirtyVertexBuffers.FindLast();
+
+    if (vertexDirtyStart != kMaxVertexAttributes)
     {
-        for (size_t i = 0; i < kMaxVertexAttributes; i++)
+        VkBuffer handles[kMaxVertexAttributes];
+        VkDeviceSize offsets[kMaxVertexAttributes];
+
+        const size_t count = (vertexDirtyEnd - vertexDirtyStart) + 1;
+
+        for (size_t i = 0; i < count; i++)
         {
             auto& vertexBuffer = mVertexBuffers[i];
 
-            if (mDirtyVertexBuffers.Test(i) && vertexBuffer.offset != kInvalidBuffer)
-            {
-                const VkBuffer handle =
-                    (vertexBuffer.buffer)
-                        ? static_cast<VulkanBuffer*>(vertexBuffer.buffer)->GetHandle()
-                        : GetVulkanDevice().GetGeometryPool().GetHandle();
+            handles[i] =
+                (vertexBuffer.buffer)
+                    ? static_cast<VulkanBuffer*>(vertexBuffer.buffer)->GetHandle()
+                    : GetVulkanDevice().GetGeometryPool().GetHandle();
 
-                const VkDeviceSize offset = vertexBuffer.offset;
-
-                vkCmdBindVertexBuffers(GetCommandBuffer(),
-                                       i,
-                                       1,
-                                       &handle,
-                                       &offset);
-
-                mDirtyVertexBuffers.Clear(i);
-            }
+            offsets[i] =
+                (vertexBuffer.offset != kInvalidBuffer)
+                    ? vertexBuffer.offset
+                    : 0;
         }
+
+        vkCmdBindVertexBuffers(GetCommandBuffer(),
+                               vertexDirtyStart,
+                               count,
+                               handles,
+                               offsets);
+
+        mDirtyVertexBuffers.Reset();
     }
 
     if (inIsIndexed && mDirtyState & kDirtyState_IndexBuffer)
