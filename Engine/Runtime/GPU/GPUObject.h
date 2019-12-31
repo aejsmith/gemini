@@ -49,9 +49,3 @@ inline GPUObject::GPUObject(GPUDevice& inDevice) :
     GPUDeviceChild (inDevice)
 {
 }
-
-inline void GPUObject::SetName(std::string inName)
-{
-    mName = std::move(inName);
-    UpdateName();
-}
