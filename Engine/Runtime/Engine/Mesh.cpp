@@ -90,7 +90,7 @@ void Mesh::Serialise(Serialiser& inSerialiser) const
 
         for (uint32_t bufferIndex = 0; bufferIndex < kMaxVertexAttributes; bufferIndex++)
         {
-            if (mUsedVertexBuffers.test(bufferIndex))
+            if (mUsedVertexBuffers.Test(bufferIndex))
             {
                 const auto& buffer = inputDesc.buffers[bufferIndex];
 
@@ -122,7 +122,7 @@ void Mesh::Serialise(Serialiser& inSerialiser) const
 
     for (uint32_t bufferIndex = 0; bufferIndex < kMaxVertexAttributes; bufferIndex++)
     {
-        if (mUsedVertexBuffers.test(bufferIndex))
+        if (mUsedVertexBuffers.Test(bufferIndex))
         {
             inSerialiser.BeginGroup();
 
@@ -241,7 +241,7 @@ void Mesh::Deserialise(Serialiser& inSerialiser)
         uint32_t bufferIndex;
         success &= inSerialiser.Read("index", bufferIndex);
         Assert(success);
-        Assert(mUsedVertexBuffers.test(bufferIndex));
+        Assert(mUsedVertexBuffers.Test(bufferIndex));
 
         success &= inSerialiser.ReadBinary("data", mVertexData[bufferIndex]);
         Assert(success);
@@ -345,7 +345,7 @@ void Mesh::SetVertexLayout(const GPUVertexInputStateDesc& inDesc,
 
         if (attribute.semantic != kGPUAttributeSemantic_Unknown)
         {
-            mUsedVertexBuffers.set(attribute.buffer);
+            mUsedVertexBuffers.Set(attribute.buffer);
 
             if (attribute.semantic == kGPUAttributeSemantic_Position)
             {
@@ -364,7 +364,7 @@ void Mesh::SetVertexData(const uint32_t inIndex,
                          ByteArray      inData)
 {
     Assert(!mIsBuilt);
-    Assert(mUsedVertexBuffers.test(inIndex));
+    Assert(mUsedVertexBuffers.Test(inIndex));
     Assert(inData.GetSize() == mVertexInputState->GetDesc().buffers[inIndex].stride * mVertexCount);
 
     mVertexData[inIndex] = std::move(inData);
@@ -502,7 +502,7 @@ void Mesh::Build()
 
     for (size_t i = 0; i < kMaxVertexAttributes; i++)
     {
-        if (mUsedVertexBuffers.test(i))
+        if (mUsedVertexBuffers.Test(i))
         {
             Assert(mVertexData[i]);
 

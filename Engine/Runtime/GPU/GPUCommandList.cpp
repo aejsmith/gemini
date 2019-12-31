@@ -274,7 +274,7 @@ void GPUGraphicsCommandList::SetVertexBuffer(const uint32_t   inIndex,
         vertexBuffer.buffer = inBuffer;
         vertexBuffer.offset = inOffset;
 
-        mDirtyVertexBuffers.set(inIndex);
+        mDirtyVertexBuffers.Set(inIndex);
     }
 }
 
@@ -307,7 +307,7 @@ void GPUGraphicsCommandList::WriteVertexBuffer(const uint32_t    inIndex,
 
     memcpy(mapping, inData, inSize);
 
-    mDirtyVertexBuffers.set(inIndex);
+    mDirtyVertexBuffers.Set(inIndex);
 }
 
 void GPUGraphicsCommandList::WriteIndexBuffer(const GPUIndexType inType,

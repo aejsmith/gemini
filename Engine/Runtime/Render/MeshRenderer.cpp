@@ -80,7 +80,7 @@ void SubMeshRenderEntity::GetGeometry(EntityDrawCall& ioDrawCall) const
 
     for (size_t i = 0; i < kMaxVertexAttributes; i++)
     {
-        if (usedVertexBuffers.test(i))
+        if (usedVertexBuffers.Test(i))
         {
             ioDrawCall.vertexBuffers[i].buffer = mMesh.GetVertexBuffer(i);
         }

@@ -16,13 +16,13 @@
 
 #pragma once
 
+#include "Core/Bitset.h"
 #include "Core/Math/Rect.h"
 #include "Core/PixelFormat.h"
 #include "Core/Utility.h"
 
 #include "Engine/Object.h"
 
-#include <bitset>
 #include <vector>
 
 class GPUResource;
@@ -49,7 +49,7 @@ static constexpr uint32_t kMaxConstantsSize = 65536;
 using GPUConstants = uint32_t;
 static constexpr GPUConstants kGPUConstants_Invalid = std::numeric_limits<uint32_t>::max();
 
-using GPUVertexBufferBitset = std::bitset<kMaxVertexAttributes>;
+using GPUVertexBufferBitset = Bitset<kMaxVertexAttributes>;
 
 using GPUShaderID   = uint16_t;
 using GPUPipelineID = uint16_t;
