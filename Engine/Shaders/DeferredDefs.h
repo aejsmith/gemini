@@ -29,8 +29,12 @@
 #define kDeferredVisibleLightsPerEntry                  3
 #define kDeferredVisibleLightsTileEntryCount            342
 
-/** Light culling shader arguments. */
-#define kArgumentSet_DeferredCulling                    0
+/**
+ * Light culling shader arguments.
+ */
+
+/** Culling uses the ViewEntity set at index 0. */
+#define kArgumentSet_DeferredCulling                    1
 
 #define kDeferredCullingArguments_DepthTexture          0
 #define kDeferredCullingArguments_LightParams           1

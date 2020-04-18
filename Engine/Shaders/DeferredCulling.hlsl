@@ -58,8 +58,12 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
 
     GroupMemoryBarrierWithGroupSync();
 
+    /* Clamp to target size in case the target is not a multiple of tile
+     * dimensions. */
+    uint2 targetPos = min(dispatchThreadID.xy, view.targetSize);
+    float depth     = depthTexture.Load(uint3(targetPos, 0)).x;
+
     /* Compute min/max depth for the tile. TODO: Subgroup-based implementation. */
-    float depth   = depthTexture.Load(uint3(dispatchThreadID.xy, 0)).x;
     uint depthInt = asuint(depth);
     InterlockedMin(tileMinDepth, depthInt);
     InterlockedMax(tileMaxDepth, depthInt);

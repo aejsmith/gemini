@@ -27,6 +27,7 @@
 
 #include "Render/EntityDrawList.h"
 #include "Render/RenderContext.h"
+#include "Render/RenderManager.h"
 #include "Render/RenderWorld.h"
 #include "Render/ShaderManager.h"
 #include "Render/TonemapPass.h"
@@ -110,6 +111,7 @@ void DeferredRenderPipeline::CreateShaders()
         const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
         GPUComputePipelineDesc pipelineDesc;
+        pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity]      = RenderManager::Get().GetViewArgumentSetLayout();
         pipelineDesc.argumentSetLayouts[kArgumentSet_DeferredCulling] = argumentLayout;
         pipelineDesc.shader                                           = mCullingShader;
 
@@ -347,6 +349,10 @@ void DeferredRenderPipeline::AddCullingPass(DeferredRenderContext* const inConte
                                  &constants,
                                  sizeof(constants));
 
+        inCmdList.SetConstants(kArgumentSet_ViewEntity,
+                               kViewEntityArguments_ViewConstants,
+                               inContext->GetView().GetConstants());
+
         inCmdList.Dispatch(inContext->tilesWidth, inContext->tilesHeight, 1);
     });
 }
@@ -363,7 +369,7 @@ DeferredRenderPipelineWindow::DeferredRenderPipelineWindow(DeferredRenderPipelin
 
 void DeferredRenderPipelineWindow::Render()
 {
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 300 - 10, 30), ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiCond_Once);
 
