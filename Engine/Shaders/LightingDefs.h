@@ -47,7 +47,12 @@ struct LightParams
     shader_float    spotAngleScale;
     shader_float    spotAngleOffset;
 
+    /** Padding for 16-byte alignment. */
     shader_float2   _pad0;
 };
+
+#ifdef __cplusplus
+static_assert((sizeof(LightParams) % 16) == 0);
+#endif
 
 #endif /* SHADERS_LIGHTINGDEFS_H */

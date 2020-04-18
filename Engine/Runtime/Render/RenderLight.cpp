@@ -21,6 +21,8 @@
 #include "Core/Math/Cone.h"
 #include "Core/Math/Intersect.h"
 
+#include "../../Shaders/LightingDefs.h"
+
 RenderLight::RenderLight() :
     /* Parent Light object should initialise everything else. */
     mPosition   (0.0f, 0.0f, 0.0f),
@@ -88,6 +90,23 @@ bool RenderLight::Cull(const Frustum& inFrustum) const
     {
         return Math::Intersect(mBoundingSphere, inFrustum);
     }
+}
+
+void RenderLight::GetLightParams(LightParams& outParams) const
+{
+    static_assert(kLightType_Directional == kShaderLightType_Directional);
+    static_assert(kLightType_Point       == kShaderLightType_Point);
+    static_assert(kLightType_Spot        == kShaderLightType_Spot);
+
+    outParams.position        = mPosition;
+    outParams.type            = mType;
+    outParams.direction       = mDirection;
+    outParams.range           = mRange;
+    outParams.colour          = mColour;
+    outParams.intensity       = mIntensity;
+    outParams.spotAngleScale  = mConeAngleScale;
+    outParams.spotAngleOffset = mConeAngleOffset;
+    outParams._pad0           = glm::vec2(0.0f, 0.0f);
 }
 
 void RenderLight::UpdateBoundingSphere()

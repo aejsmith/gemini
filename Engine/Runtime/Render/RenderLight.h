@@ -22,6 +22,8 @@
 
 #include "Render/RenderDefs.h"
 
+struct LightParams;
+
 /**
  * Internal implementation of a light.
  * 
@@ -62,6 +64,9 @@ public:
 
     /** Returns whether the light's area of effect intersects with a frustum. */
     bool                        Cull(const Frustum& inFrustum) const;
+
+    /** Fill in a shader LightParams structure for the light. */
+    void                        GetLightParams(LightParams& outParams) const;
 
     /** Draw the light to the debug overlay. */
     void                        DrawDebugPrimitive() const;

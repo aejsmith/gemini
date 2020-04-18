@@ -21,9 +21,8 @@
 
 #include "Render/RenderPipeline.h"
 
-#include <memory>
-
 class DeferredRenderPipelineWindow;
+class GPUComputePipeline;
 class TonemapPass;
 
 struct DeferredRenderContext;
@@ -81,16 +80,27 @@ protected:
                                         ~DeferredRenderPipeline();
 
 private:
+    void                                CreateShaders();
+
     void                                CreateResources(DeferredRenderContext* const inContext,
                                                         RenderGraph&                 inGraph,
                                                         const RenderResourceHandle   inOutputTexture) const;
 
     void                                BuildDrawLists(DeferredRenderContext* const inContext) const;
 
-    void                                RenderGBuffer(DeferredRenderContext* const inContext,
+    void                                PrepareLights(DeferredRenderContext* const inContext,
                                                       RenderGraph&                 inGraph) const;
 
+    void                                AddGBufferPasses(DeferredRenderContext* const inContext,
+                                                         RenderGraph&                 inGraph) const;
+
+    void                                AddCullingPass(DeferredRenderContext* const inContext,
+                                                       RenderGraph&                 inGraph) const;
+
 private:
+    GPUShaderPtr                        mCullingShader;
+    UPtr<GPUComputePipeline>            mCullingPipeline;
+
     UPtr<TonemapPass>                   mTonemapPass;
 
     /** Debug visualisation flags. */

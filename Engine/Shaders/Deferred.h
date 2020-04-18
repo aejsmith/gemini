@@ -17,6 +17,7 @@
 #ifndef SHADERS_DEFERRED_H
 #define SHADERS_DEFERRED_H
 
+#include "DeferredDefs.h"
 #include "Lighting.h"
 
 /** Outputs for a G-Buffer pass pixel shader. */

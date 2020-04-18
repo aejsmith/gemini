@@ -58,8 +58,6 @@ void TonemapPass::AddPass(RenderGraph&               inGraph,
                                          const RenderGraphPass&  inPass,
                                          GPUGraphicsCommandList& inCmdList)
     {
-        GPUResourceView* const view = inPass.GetView(viewHandle);
-
         GPUPipelineDesc pipelineDesc;
         pipelineDesc.shaders[kGPUShaderStage_Vertex]          = mVertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Pixel]           = mPixelShader;
@@ -74,7 +72,7 @@ void TonemapPass::AddPass(RenderGraph&               inGraph,
         inCmdList.SetPipeline(pipelineDesc);
 
         GPUArgument arguments[kTonemapArgumentsCount];
-        arguments[kTonemapArguments_SourceTexture].view = view;
+        arguments[kTonemapArguments_SourceTexture].view = inPass.GetView(viewHandle);
 
         inCmdList.SetArguments(kArgumentSet_Tonemap, arguments);
 
