@@ -118,6 +118,10 @@ public:
      */
     void*                   MapWrite();
 
+    template <typename T>
+    T*                      MapWrite()
+                                { return reinterpret_cast<T*>(MapWrite()); }
+
     /**
      * Copy data from elsewhere into the buffer. Same rules apply as for
      * MapWrite().
