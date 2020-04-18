@@ -33,12 +33,21 @@ SINGLETON_IMPL(RenderManager);
 
 RenderManager::RenderManager()
 {
-    GPUArgumentSetLayoutDesc argumentLayoutDesc(kViewEntityArgumentCount);
-    argumentLayoutDesc.arguments[kViewEntityArguments_ViewConstants]   = kGPUArgumentType_Constants;
-    argumentLayoutDesc.arguments[kViewEntityArguments_EntityConstants] = kGPUArgumentType_Constants;
+    {
+        GPUArgumentSetLayoutDesc argumentLayoutDesc(kViewEntityArgumentCount);
+        argumentLayoutDesc.arguments[kViewEntityArguments_ViewConstants]   = kGPUArgumentType_Constants;
+        argumentLayoutDesc.arguments[kViewEntityArguments_EntityConstants] = kGPUArgumentType_Constants;
 
-    mViewEntityArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
-    mViewEntityArgumentSet       = GPUDevice::Get().CreateArgumentSet(mViewEntityArgumentSetLayout, nullptr);
+        mViewEntityArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+        mViewEntityArgumentSet       = GPUDevice::Get().CreateArgumentSet(mViewEntityArgumentSetLayout, nullptr);
+    }
+
+    {
+        GPUArgumentSetLayoutDesc argumentLayoutDesc(1);
+        argumentLayoutDesc.arguments[kViewEntityArguments_ViewConstants] = kGPUArgumentType_Constants;
+
+        mViewArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+    }
 }
 
 RenderManager::~RenderManager()

@@ -45,6 +45,14 @@ public:
     GPUArgumentSet*             GetViewEntityArgumentSet() const        { return mViewEntityArgumentSet; }
 
     /**
+     * Get a argument set layout with only view arguments (at argument index
+     * kViewEntityArguments_ViewConstants, thus compatible with the normal
+     * ShaderDefs.h ViewConstants definition). This can be used where only view
+     * arguments are needed.
+     */
+    GPUArgumentSetLayoutRef     GetViewArgumentSetLayout() const        { return mViewArgumentSetLayout; }
+
+    /**
      * Interface with RenderOutput.
      */
 
@@ -98,6 +106,7 @@ private:
 private:
     GPUArgumentSetLayoutRef     mViewEntityArgumentSetLayout;
     GPUArgumentSet*             mViewEntityArgumentSet;
+    GPUArgumentSetLayoutRef     mViewArgumentSetLayout;
 
     std::list<RenderOutput*>    mOutputs;
 
