@@ -572,19 +572,20 @@ void RenderGraph::DetermineRequiredPasses()
     /* Get the passes producing imported resources. */
     for (const Resource* const resource : mResources)
     {
-        if (resource->imported &&
-            resource->currentVersion > 0 &&
-            !resource->producers[resource->currentVersion]->mRequired)
+        if (resource->imported && resource->currentVersion > 0)
         {
-            passes[passCount++] = resource->producers[resource->currentVersion];
+            RenderGraphPass* pass = resource->producers[resource->currentVersion];
+            if (!pass->mRequired)
+            {
+                pass->mRequired = true;
+                passes[passCount++] = pass;
+            }
         }
     }
 
     while (passCount > 0)
     {
         RenderGraphPass* const pass = passes[--passCount];
-
-        pass->mRequired = true;
 
         for (const RenderGraphPass::UsedResource& use : pass->mUsedResources)
         {
@@ -598,6 +599,7 @@ void RenderGraph::DetermineRequiredPasses()
             /* Don't revisit passes we've already been to. */
             if (producer && !producer->mRequired)
             {
+                producer->mRequired = true;
                 passes[passCount++] = producer;
             }
         }
