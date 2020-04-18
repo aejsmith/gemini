@@ -24,6 +24,6 @@ struct DebugPrimitiveConstants
     shader_float3   colour;
 };
 
-CBUFFER(DebugPrimitiveConstants, primitive, kArgumentSet_ViewEntity, kViewEntityArguments_EntityConstants);
+CBUFFER(DebugPrimitiveConstants, primitive, ViewEntity, EntityConstants);
 
 #endif /* SHADERS_DEBUGPRIMITIVE_H */

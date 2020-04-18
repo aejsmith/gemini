@@ -77,13 +77,36 @@
 #define kArgumentSet_ViewEntity     0   /**< View/entity arguments. */
 #define kArgumentSet_Material       1   /**< Material arguments. */
 
-/** Macros for HLSL register specifiers. */
-#define TEXTURE_REGISTER(setIndex, argumentIndex) \
-    register(t ## argumentIndex, space ## setIndex)
-#define SAMPLER_REGISTER(setIndex, argumentIndex) \
-    register(s ## argumentIndex, space ## setIndex)
-#define UAV_REGISTER(setIndex, argumentIndex) \
-    register(u ## argumentIndex, space ## setIndex)
+/**
+ * Macros for HLSL register specifiers.
+ *
+ * The index forms take a set and argument index (can come from definitions).
+ * 
+ * The name forms are helpers to shorten use of set/argument index defines
+ * named in the standard form: SRV(MySet, MyArgument) expands to use the set
+ * index defined by kArgumentSet_MySet, and the argument index defined bt
+ * kMySetArguments_MyArgument.
+ */
+#if __HLSL__
+    #define SRV_INDEX(setIndex, argumentIndex) \
+        register(t ## argumentIndex, space ## setIndex)
+    #define SMP_INDEX(setIndex, argumentIndex) \
+        register(s ## argumentIndex, space ## setIndex)
+    #define UAV_INDEX(setIndex, argumentIndex) \
+        register(u ## argumentIndex, space ## setIndex)
+
+    #define SET_DEFINE(setName) \
+        kArgumentSet_ ## setName
+    #define ARGUMENT_DEFINE(setName, argumentName) \
+        k ## setName ## Arguments_ ## argumentName
+
+    #define SRV(setName, argumentName) \
+        SRV_INDEX(SET_DEFINE(setName), ARGUMENT_DEFINE(setName, argumentName))
+    #define SMP(setName, argumentName) \
+        SMP_INDEX(SET_DEFINE(setName), ARGUMENT_DEFINE(setName, argumentName))
+    #define UAV(setName, argumentName) \
+        UAV_INDEX(SET_DEFINE(setName), ARGUMENT_DEFINE(setName, argumentName))
+#endif
 
 /**
  * Define a constant buffer. If the structure specified for this will be used
@@ -92,10 +115,13 @@
  * explicit padding to ensure match between HLSL and C++.
  */
 #if __HLSL__
-    #define CBUFFER(structName, name, setIndex, argumentIndex) \
+    #define CBUFFER_INDEX(structName, name, setIndex, argumentIndex) \
         ConstantBuffer<structName> name : register(b ## argumentIndex, space ## setIndex)
+    #define CBUFFER(structName, name, setName, argumentName) \
+        CBUFFER_INDEX(structName, name, SET_DEFINE(setName), ARGUMENT_DEFINE(setName, argumentName))
 #else
-    #define CBUFFER(structName, name, setIndex, argumentIndex)
+    #define CBUFFER_INDEX(structName, name, setIndex, argumentIndex)
+    #define CBUFFER(structName, name, setName, argumentName)
 #endif
 
 /**
@@ -117,7 +143,7 @@ struct ViewConstants
     shader_int2         targetSize;
 };
 
-CBUFFER(ViewConstants, view, kArgumentSet_ViewEntity, kViewEntityArguments_ViewConstants);
+CBUFFER(ViewConstants, view, ViewEntity, ViewConstants);
 
 /** Standard entity constants. */
 struct EntityConstants
@@ -126,7 +152,7 @@ struct EntityConstants
     shader_float3       position;
 };
 
-CBUFFER(EntityConstants, entity, kArgumentSet_ViewEntity, kViewEntityArguments_EntityConstants);
+CBUFFER(EntityConstants, entity, ViewEntity, EntityConstants);
 
 #if __HLSL__
 

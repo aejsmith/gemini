@@ -17,7 +17,7 @@
 #include "FullScreen.h"
 #include "Tonemap.h"
 
-Texture2D sourceTexture : TEXTURE_REGISTER(kArgumentSet_Tonemap, kTonemapArguments_SourceTexture);
+Texture2D sourceTexture : SRV(Tonemap, SourceTexture);
 
 float3 ToneMapUnchartedImpl(float3 x)
 {
