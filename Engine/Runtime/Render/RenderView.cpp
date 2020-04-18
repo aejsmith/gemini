@@ -24,7 +24,7 @@ RenderView RenderView::CreatePerspective(const glm::vec3&  inPosition,
                                          const Radians     inVerticalFOV,
                                          const float       inZNear,
                                          const float       inZFar,
-                                         const glm::ivec2& inTargetSize)
+                                         const glm::uvec2& inTargetSize)
 {
     RenderView view;
 

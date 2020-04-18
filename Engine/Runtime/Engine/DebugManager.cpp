@@ -159,7 +159,7 @@ void DebugManager::BeginFrame(OnlyCalledBy<Engine>)
     }
 
     /* Begin the debug text window. */
-    const glm::ivec2 size = MainWindow::Get().GetSize();
+    const glm::uvec2 size = MainWindow::Get().GetSize();
     const uint32_t offset = (mOverlayState >= kOverlayState_Active) ? kMenuBarHeight : 0;
     ImGui::SetNextWindowSize(ImVec2(size.x - 20, size.y - 20 - offset));
     ImGui::SetNextWindowPos(ImVec2(10, 10 + offset));

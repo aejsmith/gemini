@@ -141,7 +141,7 @@ struct ViewConstants
     shader_float4x4     inverseViewProjection;
     shader_float3       position;
     shader_float        _pad0;
-    shader_int2         targetSize;
+    shader_uint2        targetSize;
 };
 
 CBUFFER(ViewConstants, view, ViewEntity, ViewConstants);

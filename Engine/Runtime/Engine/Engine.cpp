@@ -97,7 +97,7 @@ Engine::Engine() :
 
     /* Set up the main window and graphics API. TODO: Make parameters
      * configurable. */
-    new MainWindow(glm::ivec2(1600, 900), 0);
+    new MainWindow(glm::uvec2(1600, 900), 0);
     GPUDevice::Create();
 
     new RenderManager();

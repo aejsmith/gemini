@@ -27,7 +27,7 @@
 SINGLETON_IMPL(MainWindow);
 
 Window::Window(std::string       inTitle,
-               const glm::ivec2& inSize,
+               const glm::uvec2& inSize,
                const uint32_t    inFlags) :
     RenderOutput    (inSize),
     mSDLWindow      (nullptr),
@@ -97,7 +97,7 @@ void Window::EndRender()
     GPUGraphicsContext::Get().EndPresent(*mSwapchain);
 }
 
-MainWindow::MainWindow(const glm::ivec2& inSize,
+MainWindow::MainWindow(const glm::uvec2& inSize,
                        const uint32_t    inFlags) :
     Window (Game::Get().GetName(),
             inSize,

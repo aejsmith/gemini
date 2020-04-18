@@ -41,7 +41,7 @@ public:
 public:
 
                             Window(std::string       inTitle,
-                                   const glm::ivec2& inSize,
+                                   const glm::uvec2& inSize,
                                    const uint32_t    inFlags);
     virtual                 ~Window();
 
@@ -75,7 +75,7 @@ class MainWindow : public Window,
                    public Singleton<MainWindow>
 {
 public:
-                            MainWindow(const glm::ivec2& inSize,
+                            MainWindow(const glm::uvec2& inSize,
                                        const uint32_t    inFlags);
 
     void                    Present(OnlyCalledBy<Engine>);

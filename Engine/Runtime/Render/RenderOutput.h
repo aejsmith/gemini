@@ -48,13 +48,13 @@ public:
                                                 OnlyCalledBy<RenderLayer>);
 
     /** Get the size of the output. */
-    const glm::ivec2&           GetSize() const { return mSize; }
+    const glm::uvec2&           GetSize() const { return mSize; }
 
     /** Get the texture for this output. */
     virtual GPUTexture*         GetTexture() const = 0;
 
 protected:
-                                RenderOutput(const glm::ivec2& inSize);
+                                RenderOutput(const glm::uvec2& inSize);
                                 ~RenderOutput();
 
     void                        RegisterOutput();
@@ -75,7 +75,7 @@ protected:
     virtual void                EndRender()     {}
 
 private:
-    const glm::ivec2            mSize;
+    const glm::uvec2            mSize;
     std::list<RenderLayer*>     mLayers;
 
 };

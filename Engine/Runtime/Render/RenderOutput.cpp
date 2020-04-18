@@ -22,7 +22,7 @@
 #include "Render/RenderLayer.h"
 #include "Render/RenderManager.h"
 
-RenderOutput::RenderOutput(const glm::ivec2& inSize) :
+RenderOutput::RenderOutput(const glm::uvec2& inSize) :
     mSize   (inSize)
 {
 }

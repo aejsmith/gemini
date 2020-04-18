@@ -33,11 +33,11 @@ public:
                                               const Radians     inVerticalFOV,
                                               const float       inZNear,
                                               const float       inZFar,
-                                              const glm::ivec2& inTargetSize);
+                                              const glm::uvec2& inTargetSize);
 
     const glm::vec3&        GetPosition() const                     { return mPosition; }
     const glm::quat&        GetOrientation() const                  { return mOrientation; }
-    const glm::ivec2&       GetTargetSize() const                   { return mTargetSize; }
+    const glm::uvec2&       GetTargetSize() const                   { return mTargetSize; }
     const glm::mat4&        GetViewMatrix() const                   { return mViewMatrix; }
     const glm::mat4&        GetProjectionMatrix() const             { return mProjectionMatrix; }
     const glm::mat4&        GetViewProjectionMatrix() const         { return mViewProjectionMatrix; }
@@ -53,7 +53,7 @@ private:
 
     glm::vec3               mPosition;
     glm::quat               mOrientation;
-    glm::ivec2              mTargetSize;
+    glm::uvec2              mTargetSize;
     glm::mat4               mViewMatrix;
     glm::mat4               mProjectionMatrix;
     glm::mat4               mViewProjectionMatrix;
