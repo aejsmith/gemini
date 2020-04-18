@@ -33,9 +33,9 @@ SINGLETON_IMPL(RenderManager);
 
 RenderManager::RenderManager()
 {
-    GPUArgumentSetLayoutDesc argumentLayoutDesc(2);
-    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Constants;
-    argumentLayoutDesc.arguments[1] = kGPUArgumentType_Constants;
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(kViewEntityArgumentCount);
+    argumentLayoutDesc.arguments[kViewEntityArguments_ViewConstants]   = kGPUArgumentType_Constants;
+    argumentLayoutDesc.arguments[kViewEntityArguments_EntityConstants] = kGPUArgumentType_Constants;
 
     mViewEntityArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
     mViewEntityArgumentSet       = GPUDevice::Get().CreateArgumentSet(mViewEntityArgumentSetLayout, nullptr);

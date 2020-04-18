@@ -28,6 +28,7 @@
 #include "Input/InputManager.h"
 
 #include "Render/RenderGraph.h"
+#include "Render/RenderManager.h"
 #include "Render/RenderView.h"
 #include "Render/ShaderManager.h"
 
@@ -123,14 +124,6 @@ DebugManager::DebugManager() :
 {
     mVertexShader = ShaderManager::Get().GetShader("Engine/DebugPrimitive.hlsl", "VSMain", kGPUShaderStage_Vertex);
     mPixelShader  = ShaderManager::Get().GetShader("Engine/DebugPrimitive.hlsl", "PSMain", kGPUShaderStage_Pixel);
-
-    GPUArgumentSetLayoutDesc argumentLayoutDesc(2);
-    static_assert(kArgumentSet_ViewEntity == 0 && kViewEntityArguments_ViewConstants == 0,
-                  "View entity argument set indices not as expected");
-    argumentLayoutDesc.arguments[kViewEntityArguments_ViewConstants]   = kGPUArgumentType_Constants;
-    argumentLayoutDesc.arguments[kViewEntityArguments_EntityConstants] = kGPUArgumentType_Constants;
-
-    mArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
     GPURasterizerStateDesc rasterizerDesc;
     rasterizerDesc.polygonMode = kGPUPolygonMode_Line;
@@ -271,8 +264,8 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
         GPUPipelineDesc pipelineDesc;
         pipelineDesc.shaders[kGPUShaderStage_Vertex]             = mVertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Pixel]              = mPixelShader;
-        pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity] = mArgumentSetLayout;
-        pipelineDesc.blendState                                  = GPUBlendState::GetDefault();;
+        pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity] = RenderManager::Get().GetViewEntityArgumentSetLayout();
+        pipelineDesc.blendState                                  = GPUBlendState::GetDefault();
         pipelineDesc.depthStencilState                           = GPUDepthStencilState::GetDefault();
         pipelineDesc.rasterizerState                             = mRasterizerState;
         pipelineDesc.renderTargetState                           = inCmdList.GetRenderTargetState();

@@ -137,7 +137,6 @@ private:
 
     GPUShaderPtr                mVertexShader;
     GPUShaderPtr                mPixelShader;
-    GPUArgumentSetLayoutRef     mArgumentSetLayout;
     GPURasterizerStateRef       mRasterizerState;
     GPURasterizerStateRef       mFillRasterizerState;
     GPUVertexInputStateRef      mVertexInputState;

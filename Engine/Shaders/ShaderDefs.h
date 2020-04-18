@@ -130,6 +130,7 @@
 
 #define kViewEntityArguments_ViewConstants      0
 #define kViewEntityArguments_EntityConstants    1
+#define kViewEntityArgumentCount                2
 
 /** Standard view constants. */
 struct ViewConstants
