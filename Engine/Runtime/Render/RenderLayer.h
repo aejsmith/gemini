@@ -56,6 +56,9 @@ public:
     void                    DeactivateLayer();
     bool                    IsLayerActive() const   { return mActive; }
 
+    /** Get a name for the layer (for debug/informational purposes). */
+    virtual std::string     GetName() const = 0;
+
 protected:
     /**
      * Add render passes to the render graph for this layer. The supplied

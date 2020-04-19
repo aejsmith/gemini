@@ -30,6 +30,8 @@ class CameraRenderLayer final : public RenderLayer
 public:
                             CameraRenderLayer(const Camera& inCamera);
 
+    std::string             GetName() const override;
+
 protected:
      void                   AddPasses(RenderGraph&               inGraph,
                                       const RenderResourceHandle inTexture,
@@ -44,6 +46,11 @@ CameraRenderLayer::CameraRenderLayer(const Camera& inCamera) :
     RenderLayer (RenderLayer::kOrder_World),
     mCamera     (inCamera)
 {
+}
+
+std::string CameraRenderLayer::GetName() const
+{
+    return std::string("Camera '") + mCamera.GetEntity()->GetPath() + std::string("'");
 }
 
 void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,

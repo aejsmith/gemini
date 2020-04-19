@@ -80,6 +80,11 @@ GPUTexture* Window::GetTexture() const
     return mSwapchain->GetTexture();
 }
 
+std::string Window::GetName() const
+{
+    return std::string("Window '") + mTitle + std::string("'");
+}
+
 GPUResourceState Window::GetFinalState() const
 {
     return kGPUResourceState_Present;

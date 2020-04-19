@@ -57,6 +57,8 @@ public:
 
     GPUTexture*             GetTexture() const final override;
 
+    std::string             GetName() const final override;
+
 protected:
     GPUResourceState        GetFinalState() const final override;
     void                    BeginRender() final override;
@@ -71,8 +73,8 @@ private:
 
 };
 
-class MainWindow : public Window,
-                   public Singleton<MainWindow>
+class MainWindow final : public Window,
+                         public Singleton<MainWindow>
 {
 public:
                             MainWindow(const glm::uvec2& inSize,

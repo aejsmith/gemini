@@ -53,6 +53,9 @@ public:
     /** Get the texture for this output. */
     virtual GPUTexture*         GetTexture() const = 0;
 
+    /** Get a name for the output (for debug/informational purposes). */
+    virtual std::string         GetName() const = 0;
+
 protected:
                                 RenderOutput(const glm::uvec2& inSize);
                                 ~RenderOutput();
