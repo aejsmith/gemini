@@ -38,15 +38,18 @@ void RenderOutput::AddPasses(RenderGraph& inGraph,
                              OnlyCalledBy<RenderManager>)
 {
     /* Import our output texture into the render graph. */
-    RenderResourceHandle outputTexture = inGraph.ImportResource(GetTexture(),
-                                                                GetFinalState(),
-                                                                [this] () { BeginRender(); },
-                                                                [this] () { EndRender(); });
+    RenderResourceHandle outputTexture =
+        inGraph.ImportResource(GetTexture(),
+                               GetFinalState(),
+                               "Output",
+                               [this] () { BeginRender(); },
+                               [this] () { EndRender(); });
 
     /* Each layer gets the previous layer's result handle as its target, so
      * that they get rendered on top of each other in order. */
     for (RenderLayer* layer : mLayers)
     {
+        inGraph.SetCurrentLayer(layer);
         layer->AddPasses(inGraph, outputTexture, outputTexture);
     }
 }

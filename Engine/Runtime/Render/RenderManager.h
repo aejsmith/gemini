@@ -33,10 +33,15 @@ class RenderOutput;
 class RenderManager : public Singleton<RenderManager>
 {
 public:
+    using OutputList          = std::list<RenderOutput*>;
+
+public:
                                 RenderManager();
                                 ~RenderManager();
 
-public:
+    /** Get a list of outputs. */
+    const OutputList&           GetOutputs() const                      { return mOutputs; }
+
     /** Render all outputs for the frame. */
     void                        Render(OnlyCalledBy<Engine>);
 
@@ -108,7 +113,7 @@ private:
     GPUArgumentSet*             mViewEntityArgumentSet;
     GPUArgumentSetLayoutRef     mViewArgumentSetLayout;
 
-    std::list<RenderOutput*>    mOutputs;
+    OutputList                  mOutputs;
 
     std::list<TransientBuffer>  mTransientBuffers;
     std::list<TransientTexture> mTransientTextures;

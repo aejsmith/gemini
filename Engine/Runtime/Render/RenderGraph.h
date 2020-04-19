@@ -31,6 +31,8 @@ class GPUTexture;
 class GPUTransferContext;
 class RenderGraph;
 class RenderGraphPass;
+class RenderGraphWindow;
+class RenderLayer;
 
 enum RenderGraphPassType
 {
@@ -62,6 +64,7 @@ private:
 
     friend class RenderGraph;
     friend class RenderGraphPass;
+    friend class RenderGraphWindow;
 };
 
 inline RenderResourceHandle::RenderResourceHandle() :
@@ -153,6 +156,7 @@ private:
 
     friend class RenderGraph;
     friend class RenderGraphPass;
+    friend class RenderGraphWindow;
 };
 
 inline RenderViewHandle::RenderViewHandle() :
@@ -309,13 +313,15 @@ private:
 private:
                                     RenderGraphPass(RenderGraph&              inGraph,
                                                     std::string               inName,
-                                                    const RenderGraphPassType inType);
+                                                    const RenderGraphPassType inType,
+                                                    const RenderLayer*        inLayer);
                                     ~RenderGraphPass() {}
 
 private:
     RenderGraph&                    mGraph;
     const std::string               mName;
     const RenderGraphPassType       mType;
+    const RenderLayer* const        mLayer;
 
     bool                            mRequired;
 
@@ -330,6 +336,7 @@ private:
     Attachment                      mDepthStencil;
 
     friend class RenderGraph;
+    friend class RenderGraphWindow;
 };
 
 using RenderGraphPassArray = std::vector<RenderGraphPass*>;
@@ -447,6 +454,7 @@ public:
      */
     RenderResourceHandle            ImportResource(GPUResource* const     inResource,
                                                    const GPUResourceState inState,
+                                                   const char* const      inName,
                                                    std::function<void ()> inBeginCallback = {},
                                                    std::function<void ()> inEndCallback = {});
 
@@ -459,6 +467,9 @@ public:
      */
     template <typename T, typename... Args>
     T*                              NewTransient(Args&&... inArgs);
+
+    void                            SetCurrentLayer(const RenderLayer* const inLayer)
+                                        { mCurrentLayer = inLayer; }
 
     /**
      * Graph execution methods.
@@ -477,6 +488,7 @@ private:
     struct Resource
     {
         RenderResourceType          type;
+        const RenderLayer*          layer;
 
         union
         {
@@ -512,9 +524,35 @@ private:
 
     public:
                                     Resource();
+
+        const char*                 GetName() const;
     };
 
     using Destructor              = std::function<void()>;
+
+    /**
+     * Key to identify a pass. The use of this is for the debug window to have
+     * some persistent way to identify a pass - since all the graph structures
+     * are transient we cannot just use a pointer to refer to a pass across
+     * frames. Pass names are expected to be unique within a layer.
+     */
+    struct PassKey
+    {
+        const RenderLayer*          layer = nullptr;
+        std::string                 name;
+    };
+
+    /**
+     * Key to identify a resource, same as for PassKey. This can optionally
+     * refer to a specific version of a resource by including a producer pass
+     * name (also within the same layer).
+     */
+    struct ResourceKey
+    {
+        const RenderLayer*          layer = nullptr;
+        const char*                 name  = nullptr;
+        std::string                 versionProducer;
+    };
 
 private:
     void                            AddDestructor(Destructor inDestructor);
@@ -533,10 +571,14 @@ private:
     void                            DestroyViews(RenderGraphPass& inPass);
     void                            ExecutePass(RenderGraphPass& inPass);
 
+    const RenderGraphPass*          FindPass(const PassKey& inKey) const;
+    const Resource*                 FindResource(const ResourceKey& inKey) const;
+
 private:
     RenderGraphPassArray            mPasses;
     std::vector<Resource*>          mResources;
 
+    const RenderLayer*              mCurrentLayer;
     bool                            mIsExecuting;
 
     std::vector<GPUResourceBarrier> mBarriers;
@@ -544,6 +586,7 @@ private:
     std::vector<Destructor>         mDestructors;
 
     friend class RenderGraphPass;
+    friend class RenderGraphWindow;
 };
 
 inline RenderResourceType RenderGraph::GetResourceType(const RenderResourceHandle inHandle) const

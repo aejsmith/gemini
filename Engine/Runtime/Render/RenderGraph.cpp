@@ -16,6 +16,8 @@
 
 #include "Render/RenderGraph.h"
 
+#include "Engine/DebugWindow.h"
+
 #include "GPU/GPUBuffer.h"
 #include "GPU/GPUContext.h"
 #include "GPU/GPUDevice.h"
@@ -24,7 +26,9 @@
 #include "GPU/GPUTexture.h"
 #include "GPU/GPUUtils.h"
 
+#include "Render/RenderLayer.h"
 #include "Render/RenderManager.h"
+#include "Render/RenderOutput.h"
 
 /**
  * TODO:
@@ -60,12 +64,31 @@
  *    which avoids unnecessary store/load between the passes.
  */
 
+class RenderGraphWindow : public DebugWindow
+{
+public:
+                                RenderGraphWindow();
+
+    void                        RenderWindow(const RenderGraph& inGraph);
+
+    static RenderGraphWindow&   Get();
+
+private:
+    RenderGraph::PassKey        mCurrentPass;
+    RenderGraph::ResourceKey    mCurrentResource;
+
+    RenderGraph::PassKey        mJumpToPass;
+    RenderGraph::ResourceKey    mJumpToResource;
+};
+
 RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
                                  std::string               inName,
-                                 const RenderGraphPassType inType) :
+                                 const RenderGraphPassType inType,
+                                 const RenderLayer* const  inLayer) :
     mGraph      (inGraph),
     mName       (inName),
     mType       (inType),
+    mLayer      (inLayer),
     mRequired   (false)
 {
 }
@@ -332,7 +355,8 @@ RenderGraphPass& RenderGraph::AddPass(std::string               inName,
 {
     RenderGraphPass* pass = new RenderGraphPass(*this,
                                                 std::move(inName),
-                                                inType);
+                                                inType,
+                                                mCurrentLayer);
 
     mPasses.emplace_back(pass);
 
@@ -428,10 +452,18 @@ RenderGraph::Resource::Resource() :
     producers.emplace_back(nullptr);
 }
 
+const char* RenderGraph::Resource::GetName() const
+{
+    return (this->type == kRenderResourceType_Texture)
+               ? this->texture.name
+               : this->buffer.name;
+}
+
 RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
 {
     Resource* resource = new Resource;
     resource->type     = kRenderResourceType_Buffer;
+    resource->layer    = mCurrentLayer;
     resource->buffer   = inDesc;
 
     RenderResourceHandle handle;
@@ -446,6 +478,7 @@ RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
 RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& inDesc)
 {
     Resource* resource = new Resource;
+    resource->layer    = mCurrentLayer;
     resource->type     = kRenderResourceType_Texture;
     resource->texture  = inDesc;
 
@@ -460,10 +493,12 @@ RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& inDesc)
 
 RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResource,
                                                  const GPUResourceState inState,
+                                                 const char* const      inName,
                                                  std::function<void ()> inBeginCallback,
                                                  std::function<void ()> inEndCallback)
 {
     Resource* resource      = new Resource;
+    resource->layer         = nullptr;
     resource->imported      = true;
     resource->resource      = inResource;
     resource->originalState = inState;
@@ -478,7 +513,7 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
         const auto texture      = static_cast<const GPUTexture*>(inResource);
         RenderTextureDesc& desc = resource->texture;
 
-        desc.name         = nullptr;
+        desc.name         = inName;
         desc.type         = texture->GetType();
         desc.flags        = texture->GetFlags();
         desc.format       = texture->GetFormat();
@@ -495,7 +530,7 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
         const auto buffer      = static_cast<const GPUBuffer*>(inResource);
         RenderBufferDesc& desc = resource->buffer;
 
-        desc.name = nullptr;
+        desc.name = inName;
         desc.size = buffer->GetSize();
     }
 
@@ -938,6 +973,9 @@ void RenderGraph::Execute()
     {
         destructor();
     }
+
+    /* Our state is transient so we render the window manually here. */
+    RenderGraphWindow::Get().RenderWindow(*this);
 }
 
 GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle) const
@@ -961,4 +999,413 @@ GPUTexture* RenderGraph::GetTexture(const RenderResourceHandle inHandle) const
 void RenderGraph::AddDestructor(Destructor inDestructor)
 {
     mDestructors.emplace_back(std::move(inDestructor));
+}
+
+const RenderGraphPass* RenderGraph::FindPass(const PassKey& inKey) const
+{
+    if (!inKey.name.empty())
+    {
+        for (const RenderGraphPass* pass : mPasses)
+        {
+            if (pass->mLayer == inKey.layer && pass->mName == inKey.name)
+            {
+                return pass;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+const RenderGraph::Resource* RenderGraph::FindResource(const ResourceKey& inKey) const
+{
+    if (inKey.name)
+    {
+        for (const Resource* resource : mResources)
+        {
+            if (resource->layer == inKey.layer &&
+                resource->GetName() &&
+                strcmp(resource->GetName(), inKey.name) == 0)
+            {
+                return resource;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+/**
+ * Debug window implementation.
+ */
+
+RenderGraphWindow::RenderGraphWindow() :
+    DebugWindow ("Render", "Render Graph")
+{
+}
+
+RenderGraphWindow& RenderGraphWindow::Get()
+{
+    static RenderGraphWindow sWindow;
+    return sWindow;
+}
+
+void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
+{
+    ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_Once);
+
+    if (!Begin())
+    {
+        return;
+    }
+
+    if (!ImGui::BeginTabBar("##TabBar"))
+    {
+        ImGui::End();
+        return;
+    }
+
+    constexpr ImGuiTreeNodeFlags kNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow |
+                                              ImGuiTreeNodeFlags_DefaultOpen;
+    constexpr ImGuiTreeNodeFlags kLeafFlags = ImGuiTreeNodeFlags_Leaf |
+                                              ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+    auto GetPassKey = [] (const RenderGraphPass* inPass) -> RenderGraph::PassKey
+    {
+        RenderGraph::PassKey key;
+
+        if (inPass)
+        {
+            key.layer = inPass->mLayer;
+            key.name  = inPass->mName;
+        }
+
+        return key;
+    };
+
+    auto GetResourceKey = [] (const RenderGraph::Resource* inResource) -> RenderGraph::ResourceKey
+    {
+        RenderGraph::ResourceKey key;
+
+        if (inResource)
+        {
+            key.layer = inResource->layer;
+            key.name  = inResource->GetName();
+        }
+
+        return key;
+    };
+
+    bool selectPasses    = false;
+    bool selectResources = false;
+
+    {
+        const RenderGraphPass* jumpToPass           = inGraph.FindPass(mJumpToPass);
+        const RenderGraph::Resource* jumpToResource = inGraph.FindResource(mJumpToResource);
+
+        if (jumpToPass)
+        {
+            selectPasses = true;
+            mCurrentPass = mJumpToPass;
+        }
+        else if (jumpToResource)
+        {
+            selectResources  = true;
+            mCurrentResource = mJumpToResource;
+        }
+
+        mJumpToPass     = RenderGraph::PassKey();
+        mJumpToResource = RenderGraph::ResourceKey();
+    }
+
+    if (ImGui::BeginTabItem("Passes", nullptr, (selectPasses) ? ImGuiTabItemFlags_SetSelected : 0))
+    {
+        const RenderGraphPass* currentPass = inGraph.FindPass(mCurrentPass);
+
+        /* Tree of all outputs/layers/passes. */
+        {
+            ImGui::BeginChild("PassTree",
+                              ImVec2(0, ImGui::GetContentRegionAvail().y * 0.4f),
+                              false);
+
+            for (const RenderOutput* output : RenderManager::Get().GetOutputs())
+            {
+                if (!ImGui::TreeNodeEx(output, kNodeFlags, "%s", output->GetName().c_str()))
+                {
+                    continue;
+                }
+
+                for (const RenderLayer* layer : output->GetLayers())
+                {
+                    if (!ImGui::TreeNodeEx(output, kNodeFlags, "%s", layer->GetName().c_str()))
+                    {
+                        continue;
+                    }
+
+                    for (const RenderGraphPass* pass : inGraph.mPasses)
+                    {
+                        if (pass->mLayer != layer)
+                        {
+                            continue;
+                        }
+
+                        ImGuiTreeNodeFlags flags = kLeafFlags;
+                        if (pass == currentPass)
+                        {
+                            flags |= ImGuiTreeNodeFlags_Selected;
+                        }
+
+                        ImGui::TreeNodeEx(pass->mName.c_str(), flags, "%s", pass->mName.c_str());
+
+                        if (ImGui::IsItemClicked())
+                        {
+                            currentPass  = pass;
+                            mCurrentPass = GetPassKey(pass);
+                        }
+                    }
+
+                    ImGui::TreePop();
+                }
+
+                ImGui::TreePop();
+            }
+
+            ImGui::EndChild();
+        }
+
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        /* Information about the pass. */
+        if (currentPass)
+        {
+            const char* typeStr = "";
+            switch (currentPass->mType)
+            {
+                case kRenderGraphPassType_Render:   typeStr = "Render"; break;
+                case kRenderGraphPassType_Compute:  typeStr = "Compute"; break;
+                case kRenderGraphPassType_Transfer: typeStr = "Transfer"; break;
+            }
+
+            ImGui::Text("Type:     %s", typeStr);
+            ImGui::Text("Required: %s", (currentPass->mRequired) ? "Yes" : "No");
+
+            ImGui::NewLine();
+
+            ImGui::Text("Inputs:");
+            ImGui::PushID("InputTree");
+
+            for (const RenderGraphPass::UsedResource& use : currentPass->mUsedResources)
+            {
+                const RenderGraph::Resource* resource = inGraph.mResources[use.handle.index];
+
+                /* Don't list as an input if this is the first producer. */
+                if (resource->imported || use.handle.version != 0)
+                {
+                    ImGui::TreeNodeEx(resource->GetName(),
+                                      kLeafFlags | ImGuiTreeNodeFlags_Bullet,
+                                      "%s (version %u)",
+                                      resource->GetName(),
+                                      use.handle.version);
+
+                    if (ImGui::IsItemClicked())
+                    {
+                        mJumpToResource = GetResourceKey(resource);
+                    }
+                }
+            }
+
+            ImGui::PopID();
+            ImGui::NewLine();
+
+            ImGui::Text("Outputs:");
+            ImGui::PushID("OutputTree");
+
+            for (const RenderGraphPass::UsedResource& use : currentPass->mUsedResources)
+            {
+                const RenderGraph::Resource* resource = inGraph.mResources[use.handle.index];
+
+                if (use.state & kGPUResourceState_AllWrite)
+                {
+                    ImGui::TreeNodeEx(resource->GetName(),
+                                      kLeafFlags | ImGuiTreeNodeFlags_Bullet,
+                                      "%s (version %u)",
+                                      resource->GetName(),
+                                      use.handle.version + 1);
+
+                    if (ImGui::IsItemClicked())
+                    {
+                        mJumpToResource = GetResourceKey(resource);
+                    }
+                }
+            }
+
+            ImGui::PopID();
+        }
+
+        ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("Resources", nullptr, (selectResources) ? ImGuiTabItemFlags_SetSelected : 0))
+    {
+        const RenderGraph::Resource* currentResource = inGraph.FindResource(mCurrentResource);
+
+        /* Tree of all outputs/layers/resources. */
+        {
+            ImGui::BeginChild("ResourceTree",
+                              ImVec2(0, ImGui::GetContentRegionAvail().y * 0.4f),
+                              false);
+
+            for (const RenderOutput* output : RenderManager::Get().GetOutputs())
+            {
+                if (!ImGui::TreeNodeEx(output, kNodeFlags, "%s", output->GetName().c_str()))
+                {
+                    continue;
+                }
+
+                for (const RenderLayer* layer : output->GetLayers())
+                {
+                    if (!ImGui::TreeNodeEx(output, kNodeFlags, "%s", layer->GetName().c_str()))
+                    {
+                        continue;
+                    }
+
+                    for (const RenderGraph::Resource* resource : inGraph.mResources)
+                    {
+                        if (resource->layer != layer)
+                        {
+                            continue;
+                        }
+
+                        ImGuiTreeNodeFlags flags = kLeafFlags;
+                        if (resource == currentResource)
+                        {
+                            flags |= ImGuiTreeNodeFlags_Selected;
+                        }
+
+                        ImGui::TreeNodeEx(resource->GetName(), flags, "%s", resource->GetName());
+
+                        if (ImGui::IsItemClicked())
+                        {
+                            currentResource  = resource;
+                            mCurrentResource = GetResourceKey(resource);
+                        }
+                    }
+
+                    ImGui::TreePop();
+                }
+
+                ImGui::TreePop();
+            }
+
+            ImGui::EndChild();
+        }
+
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        /* Information about the resource. */
+        if (currentResource)
+        {
+            const char* typeStr;
+            if (currentResource->type == kRenderResourceType_Texture)
+            {
+                switch (currentResource->texture.type)
+                {
+                    case kGPUResourceType_Texture1D: typeStr = "Texture1D"; break;
+                    case kGPUResourceType_Texture2D: typeStr = "Texture2D"; break;
+                    case kGPUResourceType_Texture3D: typeStr = "Texture3D"; break;
+                    default: break;
+                }
+            }
+            else
+            {
+                typeStr = "Buffer";
+            }
+
+            ImGui::Text("Type:     %s", typeStr);
+            ImGui::Text("Imported: %s", (currentResource->imported) ? "Yes" : "No");
+            ImGui::Text("Required: %s", (currentResource->required) ? "Yes" : "No");
+            ImGui::Text("Usage:   ");
+
+            if (currentResource->usage == kGPUResourceUsage_Standard)
+            {
+                ImGui::SameLine(); ImGui::Text("Standard");
+            }
+            else
+            {
+                auto DoUsage = [&] (const GPUResourceUsage inUsage, const char* const inStr)
+                {
+                    if (currentResource->usage & inUsage)
+                    {
+                        ImGui::SameLine(); ImGui::Text("%s", inStr);
+                    }
+                };
+
+                DoUsage(kGPUResourceUsage_ShaderRead,   "ShaderRead");
+                DoUsage(kGPUResourceUsage_ShaderWrite,  "ShaderWrite");
+                DoUsage(kGPUResourceUsage_RenderTarget, "RenderTarget");
+                DoUsage(kGPUResourceUsage_DepthStencil, "DepthStencil");
+            }
+
+            if (currentResource->type == kRenderResourceType_Texture)
+            {
+                const RenderTextureDesc& texture = currentResource->texture;
+
+                ImGui::Text("Layers:   %u", texture.arraySize);
+                ImGui::Text("Mips:     %u", texture.numMipLevels);
+                ImGui::Text("Width:    %u", texture.width);
+
+                if (texture.type >= kGPUResourceType_Texture2D)
+                {
+                    ImGui::Text("Height:   %u", texture.height);
+
+                    if (texture.type >= kGPUResourceType_Texture3D)
+                    {
+                        ImGui::Text("Depth:    %u", texture.depth);
+                    }
+                }
+            }
+            else
+            {
+                const RenderBufferDesc& buffer = currentResource->buffer;
+
+                ImGui::Text("Size:     %zu (%.2f KiB)",
+                            buffer.size,
+                            static_cast<float>(buffer.size) / 1024);
+            }
+
+            ImGui::NewLine();
+
+            ImGui::Text("Versions:");
+            ImGui::PushID("VersionTree");
+
+            /* Nothing produces initial version. */
+            for (size_t version = 1; version < currentResource->producers.size(); version++)
+            {
+                const RenderGraphPass* const producer = currentResource->producers[version];
+
+                ImGui::TreeNodeEx(producer->mName.c_str(),
+                                  kLeafFlags | ImGuiTreeNodeFlags_Bullet,
+                                  "%zu: %s",
+                                  version,
+                                  producer->mName.c_str());
+
+                if (ImGui::IsItemClicked())
+                {
+                    mJumpToPass = GetPassKey(producer);
+                }
+
+                // TODO: Debug output textures.
+            }
+
+            ImGui::PopID();
+        }
+
+        ImGui::EndTabItem();
+    }
+
+    ImGui::EndTabBar();
+    ImGui::End();
 }

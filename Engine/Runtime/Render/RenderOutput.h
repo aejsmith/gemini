@@ -39,6 +39,9 @@ class RenderManager;
 class RenderOutput
 {
 public:
+    using LayerList           = std::list<RenderLayer*>;
+
+public:
     void                        AddPasses(RenderGraph& inGraph,
                                           OnlyCalledBy<RenderManager>);
 
@@ -49,6 +52,9 @@ public:
 
     /** Get the size of the output. */
     const glm::uvec2&           GetSize() const { return mSize; }
+
+    /** Get a list of layers on the output. */
+    const LayerList&            GetLayers() const { return mLayers; }
 
     /** Get the texture for this output. */
     virtual GPUTexture*         GetTexture() const = 0;
