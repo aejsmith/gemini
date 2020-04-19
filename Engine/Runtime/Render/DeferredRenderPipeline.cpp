@@ -117,6 +117,31 @@ void DeferredRenderPipeline::CreateShaders()
 
         mCullingPipeline.reset(GPUDevice::Get().CreateComputePipeline(pipelineDesc));
     }
+
+    /* Lighting compute shader. */
+    {
+        mLightingShader = ShaderManager::Get().GetShader("Engine/DeferredLighting.hlsl", "CSMain", kGPUShaderStage_Compute);
+
+        GPUArgumentSetLayoutDesc argumentLayoutDesc(kDeferredLightingArgumentsCount);
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_GBuffer0Texture]   = kGPUArgumentType_Texture;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_GBuffer1Texture]   = kGPUArgumentType_Texture;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_GBuffer2Texture]   = kGPUArgumentType_Texture;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_DepthTexture]      = kGPUArgumentType_Texture;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_LightParams]       = kGPUArgumentType_Buffer;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_VisibleLightCount] = kGPUArgumentType_Buffer;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_VisibleLights]     = kGPUArgumentType_Buffer;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_ColourTexture]     = kGPUArgumentType_RWTexture;
+        argumentLayoutDesc.arguments[kDeferredLightingArguments_Constants]         = kGPUArgumentType_Constants;
+
+        const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+
+        GPUComputePipelineDesc pipelineDesc;
+        pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity]       = RenderManager::Get().GetViewArgumentSetLayout();
+        pipelineDesc.argumentSetLayouts[kArgumentSet_DeferredLighting] = argumentLayout;
+        pipelineDesc.shader                                            = mLightingShader;
+
+        mLightingPipeline.reset(GPUDevice::Get().CreateComputePipeline(pipelineDesc));
+    }
 }
 
 void DeferredRenderPipeline::SetName(std::string inName)
@@ -132,16 +157,17 @@ void DeferredRenderPipeline::Render(const RenderWorld&         inWorld,
                                     const RenderResourceHandle inTexture,
                                     RenderResourceHandle&      outNewTexture)
 {
-    DeferredRenderContext* const context = inGraph.NewTransient<DeferredRenderContext>(inWorld, inView);
+    DeferredRenderContext* const context = inGraph.NewTransient<DeferredRenderContext>(inGraph, inWorld, inView);
 
     /* Get the visible entities and lights. */
     context->GetWorld().Cull(context->GetView(), context->cullResults);
 
-    CreateResources(context, inGraph, inTexture);
+    CreateResources(context, inTexture);
     BuildDrawLists(context);
-    PrepareLights(context, inGraph);
-    AddGBufferPasses(context, inGraph);
-    AddCullingPass(context, inGraph);
+    PrepareLights(context);
+    AddGBufferPasses(context);
+    AddCullingPass(context);
+    AddLightingPass(context);
 
     // TODO: Lighting
 
@@ -159,10 +185,11 @@ void DeferredRenderPipeline::Render(const RenderWorld&         inWorld,
 }
 
 void DeferredRenderPipeline::CreateResources(DeferredRenderContext* const inContext,
-                                             RenderGraph&                 inGraph,
                                              const RenderResourceHandle   inOutputTexture) const
 {
-    const RenderTextureDesc& outputDesc = inGraph.GetTextureDesc(inOutputTexture);
+    RenderGraph& graph = inContext->GetGraph();
+
+    const RenderTextureDesc& outputDesc = graph.GetTextureDesc(inOutputTexture);
 
     /* Calculate output dimensions in number of tiles. */
     inContext->tilesWidth  = RoundUp(outputDesc.width,  static_cast<uint32_t>(kDeferredTileSize)) / kDeferredTileSize;
@@ -176,37 +203,37 @@ void DeferredRenderPipeline::CreateResources(DeferredRenderContext* const inCont
 
     textureDesc.name                   = "DeferredColour";
     textureDesc.format                 = kColourFormat;
-    inContext->colourTexture           = inGraph.CreateTexture(textureDesc);
+    inContext->colourTexture           = graph.CreateTexture(textureDesc);
 
     textureDesc.name                   = "DeferredDepth";
     textureDesc.format                 = kDepthFormat;
-    inContext->depthTexture            = inGraph.CreateTexture(textureDesc);
+    inContext->depthTexture            = graph.CreateTexture(textureDesc);
 
     textureDesc.name                   = "DeferredGBuffer0";
     textureDesc.format                 = kGBuffer0Format;
-    inContext->GBuffer0Texture         = inGraph.CreateTexture(textureDesc);
+    inContext->GBuffer0Texture         = graph.CreateTexture(textureDesc);
 
     textureDesc.name                   = "DeferredGBuffer1";
     textureDesc.format                 = kGBuffer1Format;
-    inContext->GBuffer1Texture         = inGraph.CreateTexture(textureDesc);
+    inContext->GBuffer1Texture         = graph.CreateTexture(textureDesc);
 
     textureDesc.name                   = "DeferredGBuffer2";
     textureDesc.format                 = kGBuffer2Format;
-    inContext->GBuffer2Texture         = inGraph.CreateTexture(textureDesc);
+    inContext->GBuffer2Texture         = graph.CreateTexture(textureDesc);
 
     RenderBufferDesc bufferDesc;
 
     bufferDesc.name                    = "DeferredLightParams";
     bufferDesc.size                    = sizeof(LightParams) * kDeferredMaxLightCount;
-    inContext->lightParamsBuffer       = inGraph.CreateBuffer(bufferDesc);
+    inContext->lightParamsBuffer       = graph.CreateBuffer(bufferDesc);
 
     bufferDesc.name                    = "DeferredVisibleLightCount";
     bufferDesc.size                    = sizeof(uint32_t) * inContext->tilesCount;
-    inContext->visibleLightCountBuffer = inGraph.CreateBuffer(bufferDesc);
+    inContext->visibleLightCountBuffer = graph.CreateBuffer(bufferDesc);
 
     bufferDesc.name                    = "DeferredVisibleLights";
     bufferDesc.size                    = sizeof(uint32_t) * kDeferredVisibleLightsTileEntryCount * inContext->tilesCount;
-    inContext->visibleLightsBuffer     = inGraph.CreateBuffer(bufferDesc);
+    inContext->visibleLightsBuffer     = graph.CreateBuffer(bufferDesc);
 }
 
 void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const inContext) const
@@ -234,8 +261,7 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const inConte
     inContext->opaqueDrawList.Sort();
 }
 
-void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const inContext,
-                                           RenderGraph&                 inGraph) const
+void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const inContext) const
 {
     auto& lightList = inContext->cullResults.lights;
 
@@ -270,17 +296,16 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const inContex
 
     stagingBuffer.Finalise();
 
-    inGraph.AddUploadPass("DeferredLightParamsUpload",
-                          inContext->lightParamsBuffer,
-                          0,
-                          std::move(stagingBuffer),
-                          &inContext->lightParamsBuffer);
+    inContext->GetGraph().AddUploadPass("DeferredLightParamsUpload",
+                                        inContext->lightParamsBuffer,
+                                        0,
+                                        std::move(stagingBuffer),
+                                        &inContext->lightParamsBuffer);
 }
 
-void DeferredRenderPipeline::AddGBufferPasses(DeferredRenderContext* const inContext,
-                                              RenderGraph&                 inGraph) const
+void DeferredRenderPipeline::AddGBufferPasses(DeferredRenderContext* const inContext) const
 {
-    RenderGraphPass& opaquePass = inGraph.AddPass("DeferredOpaque", kRenderGraphPassType_Render);
+    RenderGraphPass& opaquePass = inContext->GetGraph().AddPass("DeferredOpaque", kRenderGraphPassType_Render);
 
     /* Colour output is bound as target 3 for emissive materials to output
      * directly to.
@@ -304,10 +329,11 @@ void DeferredRenderPipeline::AddGBufferPasses(DeferredRenderContext* const inCon
     inContext->opaqueDrawList.Draw(opaquePass);
 }
 
-void DeferredRenderPipeline::AddCullingPass(DeferredRenderContext* const inContext,
-                                            RenderGraph&                 inGraph) const
+void DeferredRenderPipeline::AddCullingPass(DeferredRenderContext* const inContext) const
 {
-    RenderGraphPass& pass = inGraph.AddPass("DeferredCulling", kRenderGraphPassType_Compute);
+    RenderGraph& graph = inContext->GetGraph();
+
+    RenderGraphPass& pass = graph.AddPass("DeferredCulling", kRenderGraphPassType_Compute);
 
     RenderViewDesc viewDesc;
 
@@ -316,14 +342,14 @@ void DeferredRenderPipeline::AddCullingPass(DeferredRenderContext* const inConte
     const RenderViewHandle depthHandle        = pass.CreateView(inContext->depthTexture, viewDesc);
 
     viewDesc.type                             = kGPUResourceViewType_Buffer;
-    viewDesc.elementCount                     = inGraph.GetBufferDesc(inContext->lightParamsBuffer).size;
+    viewDesc.elementCount                     = graph.GetBufferDesc(inContext->lightParamsBuffer).size;
     const RenderViewHandle paramsHandle       = pass.CreateView(inContext->lightParamsBuffer, viewDesc);
 
     viewDesc.state                            = kGPUResourceState_ComputeShaderWrite;
-    viewDesc.elementCount                     = inGraph.GetBufferDesc(inContext->visibleLightCountBuffer).size;
+    viewDesc.elementCount                     = graph.GetBufferDesc(inContext->visibleLightCountBuffer).size;
     const RenderViewHandle visibleCountHandle = pass.CreateView(inContext->visibleLightCountBuffer, viewDesc, &inContext->visibleLightCountBuffer);
 
-    viewDesc.elementCount                     = inGraph.GetBufferDesc(inContext->visibleLightsBuffer).size;
+    viewDesc.elementCount                     = graph.GetBufferDesc(inContext->visibleLightsBuffer).size;
     const RenderViewHandle visibleHandle      = pass.CreateView(inContext->visibleLightsBuffer, viewDesc, &inContext->visibleLightsBuffer);
 
     pass.SetFunction([=] (const RenderGraph&     inGraph,
@@ -346,6 +372,77 @@ void DeferredRenderPipeline::AddCullingPass(DeferredRenderContext* const inConte
 
         inCmdList.WriteConstants(kArgumentSet_DeferredCulling,
                                  kDeferredCullingArguments_Constants,
+                                 &constants,
+                                 sizeof(constants));
+
+        inCmdList.SetConstants(kArgumentSet_ViewEntity,
+                               kViewEntityArguments_ViewConstants,
+                               inContext->GetView().GetConstants());
+
+        inCmdList.Dispatch(inContext->tilesWidth, inContext->tilesHeight, 1);
+    });
+}
+
+void DeferredRenderPipeline::AddLightingPass(DeferredRenderContext* const inContext) const
+{
+    /* TODO: Investigate performance of compute vs pixel shader. Pixel may be
+     * beneficial due to colour compression - AMD pre-Navi can't do compressed
+     * UAV writes, same for at least NVIDIA Maxwell (unsure about anything
+     * newer). However a pixel shader would probably need some tricks to
+     * scalarize access to the tile/light data, as we have no guarantees on
+     * whether or not pixel shader wavefronts can cross tile boundaries, and
+     * the compiler would not be able to scalarize by itself. */
+
+    RenderGraph& graph = inContext->GetGraph();
+
+    RenderGraphPass& pass = graph.AddPass("DeferredLighting", kRenderGraphPassType_Compute);
+
+    RenderViewDesc viewDesc;
+
+    viewDesc.type                             = kGPUResourceViewType_Texture2D;
+    viewDesc.state                            = kGPUResourceState_ComputeShaderRead;
+    const RenderViewHandle GBuffer0Handle     = pass.CreateView(inContext->GBuffer0Texture, viewDesc);
+    const RenderViewHandle GBuffer1Handle     = pass.CreateView(inContext->GBuffer1Texture, viewDesc);
+    const RenderViewHandle GBuffer2Handle     = pass.CreateView(inContext->GBuffer2Texture, viewDesc);
+    const RenderViewHandle depthHandle        = pass.CreateView(inContext->depthTexture, viewDesc);
+
+    viewDesc.state                            = kGPUResourceState_ComputeShaderWrite;
+    const RenderViewHandle colourHandle       = pass.CreateView(inContext->colourTexture, viewDesc, &inContext->colourTexture);
+
+    viewDesc.type                             = kGPUResourceViewType_Buffer;
+    viewDesc.state                            = kGPUResourceState_ComputeShaderRead;
+    viewDesc.elementCount                     = graph.GetBufferDesc(inContext->lightParamsBuffer).size;
+    const RenderViewHandle paramsHandle       = pass.CreateView(inContext->lightParamsBuffer, viewDesc);
+
+    viewDesc.elementCount                     = graph.GetBufferDesc(inContext->visibleLightCountBuffer).size;
+    const RenderViewHandle visibleCountHandle = pass.CreateView(inContext->visibleLightCountBuffer, viewDesc);
+
+    viewDesc.elementCount                     = graph.GetBufferDesc(inContext->visibleLightsBuffer).size;
+    const RenderViewHandle visibleHandle      = pass.CreateView(inContext->visibleLightsBuffer, viewDesc);
+
+    pass.SetFunction([=] (const RenderGraph&     inGraph,
+                          const RenderGraphPass& inPass,
+                          GPUComputeCommandList& inCmdList)
+    {
+        inCmdList.SetPipeline(mLightingPipeline.get());
+
+        GPUArgument arguments[kDeferredLightingArgumentsCount];
+        arguments[kDeferredLightingArguments_GBuffer0Texture].view   = inPass.GetView(GBuffer0Handle);
+        arguments[kDeferredLightingArguments_GBuffer1Texture].view   = inPass.GetView(GBuffer1Handle);
+        arguments[kDeferredLightingArguments_GBuffer2Texture].view   = inPass.GetView(GBuffer2Handle);
+        arguments[kDeferredLightingArguments_DepthTexture].view      = inPass.GetView(depthHandle);
+        arguments[kDeferredLightingArguments_LightParams].view       = inPass.GetView(paramsHandle);
+        arguments[kDeferredLightingArguments_VisibleLightCount].view = inPass.GetView(visibleCountHandle);
+        arguments[kDeferredLightingArguments_VisibleLights].view     = inPass.GetView(visibleHandle);
+        arguments[kDeferredLightingArguments_ColourTexture].view     = inPass.GetView(colourHandle);
+
+        inCmdList.SetArguments(kArgumentSet_DeferredLighting, arguments);
+
+        DeferredLightingConstants constants;
+        constants.tileDimensions = glm::uvec2(inContext->tilesWidth, inContext->tilesHeight);
+
+        inCmdList.WriteConstants(kArgumentSet_DeferredLighting,
+                                 kDeferredLightingArguments_Constants,
                                  &constants,
                                  sizeof(constants));
 

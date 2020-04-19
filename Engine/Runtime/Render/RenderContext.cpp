@@ -16,8 +16,10 @@
 
 #include "Render/RenderContext.h"
 
-RenderContext::RenderContext(const RenderWorld& inWorld,
+RenderContext::RenderContext(RenderGraph&       inGraph,
+                             const RenderWorld& inWorld,
                              const RenderView&  inView) :
+    mGraph  (inGraph),
     mWorld  (inWorld),
     mView   (inView)
 {

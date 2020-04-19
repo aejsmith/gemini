@@ -56,4 +56,36 @@ DeferredPSOutput EncodeGBuffer(const MaterialParams material,
     return output;
 }
 
+/**
+ * Decode G-Buffer outputs to material/surface parameters. Requires view
+ * constants to be bound.
+ */
+void DecodeGBuffer(const DeferredPSOutput output,
+                   const float            depth,
+                   const uint2            targetPos,
+                   out MaterialParams     outMaterial,
+                   out SurfaceParams      outSurface)
+{
+    MaterialParams material;
+
+    material.baseColour = float4(output.target0.rgb, 1.0);
+    material.metallic   = output.target2.r;
+    material.roughness  = output.target2.g;
+    material.occlusion  = output.target2.b;
+    material.emissive   = output.target3.rgb;
+
+    float3 normal = (output.target1.rgb * 2.0f) - 1.0f;
+
+    /* Reconstruct world-space position from depth. */
+    float4 ndcPosition = float4(
+        ((float2(targetPos.x, view.targetSize.y - targetPos.y) / view.targetSize) * 2.0f) - 1.0f,
+        depth,
+        1.0f);
+    float4 homogeneousPosition = mul(view.inverseViewProjection, ndcPosition);
+    float3 position = homogeneousPosition.xyz / homogeneousPosition.w;
+
+    outMaterial = material;
+    outSurface  = CalculateSurfaceParams(position, normal);
+}
+
 #endif /* SHADERS_DEFERRED_H */

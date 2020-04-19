@@ -18,6 +18,7 @@
 
 #include "Render/RenderView.h"
 
+class RenderGraph;
 class RenderWorld;
 
 /**
@@ -27,13 +28,16 @@ class RenderWorld;
 class RenderContext
 {
 public:
-                                RenderContext(const RenderWorld& inWorld,
+                                RenderContext(RenderGraph&       inGraph,
+                                              const RenderWorld& inWorld,
                                               const RenderView&  inView);
 
+    RenderGraph&                GetGraph() const    { return mGraph; }
     const RenderWorld&          GetWorld() const    { return mWorld; }
     const RenderView&           GetView() const     { return mView; }
 
 private:
+    RenderGraph&                mGraph;
     const RenderWorld&          mWorld;
 
     /* Store a copy of the view since the context will usually outlive it. */

@@ -47,7 +47,7 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
                                  const RenderResourceHandle inTexture,
                                  RenderResourceHandle&      outNewTexture)
 {
-    BasicRenderContext* const context = inGraph.NewTransient<BasicRenderContext>(inWorld, inView);
+    BasicRenderContext* const context = inGraph.NewTransient<BasicRenderContext>(inGraph, inWorld, inView);
 
     /* Get the visible entities. */
     inWorld.Cull(inView, context->cullResults);

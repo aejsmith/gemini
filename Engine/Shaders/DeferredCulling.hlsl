@@ -47,6 +47,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
 {
     uint tileIndex   = (groupID.y * constants.tileDimensions.x) + groupID.x;
     uint threadIndex = (groupThreadID.y * kDeferredTileSize) + groupThreadID.x;
+    uint threadCount = kDeferredTileSize * kDeferredTileSize;
 
     /* Initialise shared memory state. */
     if (threadIndex == 0)
@@ -74,7 +75,6 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
     float maxDepth = asfloat(tileMaxDepth);
 
     /* Iterate over lights. Each thread processes a single light. */
-    uint threadCount    = kDeferredTileSize * kDeferredTileSize;
     uint lightCount     = constants.lightCount;
     uint lightLoopCount = (lightCount + (threadCount - 1)) / threadCount;
 
@@ -105,23 +105,23 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
         visibleLightCount[tileIndex] = tileLightCount;
     }
 
-    uint exportCount     = (tileLightCount + 2) / 3;
-    uint exportLoopCount = (exportCount + (threadCount - 1)) / threadCount;
-    uint exportOffset    = tileIndex * kDeferredVisibleLightsTileEntryCount;
+    uint elementCount     = (tileLightCount + 2) / 3;
+    uint elementLoopCount = (elementCount + (threadCount - 1)) / threadCount;
+    uint elementOffset    = tileIndex * kDeferredVisibleLightsTileEntryCount;
 
-    for (uint i = 0; i < exportLoopCount; i++)
+    for (uint i = 0; i < elementLoopCount; i++)
     {
-        uint exportIndex = (i * threadCount) + threadIndex;
+        uint elementIndex = (i * threadCount) + threadIndex;
 
-        if (exportIndex < exportCount)
+        if (elementIndex < elementCount)
         {
             /* Last 2 indices can go out of bounds of the light array. */
-            uint lightOffset = exportIndex * 3;
+            uint lightOffset = elementIndex * 3;
             uint light0      = tileLightIndices[lightOffset];
             uint light1      = ((lightOffset + 1) < tileLightCount) ? tileLightIndices[lightOffset + 1] : 0;
             uint light2      = ((lightOffset + 2) < tileLightCount) ? tileLightIndices[lightOffset + 2] : 0;
 
-            visibleLights[exportOffset + exportIndex] = (light2 << 20) | (light1 << 10) | light0;
+            visibleLights[elementOffset + elementIndex] = (light2 << 20) | (light1 << 10) | light0;
         }
     }
 }

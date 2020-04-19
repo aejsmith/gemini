@@ -83,23 +83,19 @@ private:
     void                                CreateShaders();
 
     void                                CreateResources(DeferredRenderContext* const inContext,
-                                                        RenderGraph&                 inGraph,
                                                         const RenderResourceHandle   inOutputTexture) const;
 
     void                                BuildDrawLists(DeferredRenderContext* const inContext) const;
-
-    void                                PrepareLights(DeferredRenderContext* const inContext,
-                                                      RenderGraph&                 inGraph) const;
-
-    void                                AddGBufferPasses(DeferredRenderContext* const inContext,
-                                                         RenderGraph&                 inGraph) const;
-
-    void                                AddCullingPass(DeferredRenderContext* const inContext,
-                                                       RenderGraph&                 inGraph) const;
+    void                                PrepareLights(DeferredRenderContext* const inContext) const;
+    void                                AddGBufferPasses(DeferredRenderContext* const inContext) const;
+    void                                AddCullingPass(DeferredRenderContext* const inContext) const;
+    void                                AddLightingPass(DeferredRenderContext* const inContext) const;
 
 private:
     GPUShaderPtr                        mCullingShader;
+    GPUShaderPtr                        mLightingShader;
     UPtr<GPUComputePipeline>            mCullingPipeline;
+    UPtr<GPUComputePipeline>            mLightingPipeline;
 
     UPtr<TonemapPass>                   mTonemapPass;
 

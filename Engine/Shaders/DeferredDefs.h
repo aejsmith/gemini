@@ -49,4 +49,27 @@ struct DeferredCullingConstants
     shader_uint     lightCount;
 };
 
+/**
+ * Lighting shader arguments.
+ */
+
+/** Deferred lighting uses the ViewEntity set at index 0. */
+#define kArgumentSet_DeferredLighting                   1
+
+#define kDeferredLightingArguments_GBuffer0Texture      0
+#define kDeferredLightingArguments_GBuffer1Texture      1
+#define kDeferredLightingArguments_GBuffer2Texture      2
+#define kDeferredLightingArguments_DepthTexture         3
+#define kDeferredLightingArguments_LightParams          4
+#define kDeferredLightingArguments_VisibleLightCount    5
+#define kDeferredLightingArguments_VisibleLights        6
+#define kDeferredLightingArguments_ColourTexture        7
+#define kDeferredLightingArguments_Constants            8
+#define kDeferredLightingArgumentsCount                 9
+
+struct DeferredLightingConstants
+{
+    shader_uint2    tileDimensions;
+};
+
 #endif /* SHADERS_DEFERREDDEFS_H */
