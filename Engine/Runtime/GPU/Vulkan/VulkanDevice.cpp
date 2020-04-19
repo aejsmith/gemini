@@ -252,6 +252,8 @@ void VulkanDevice::CreateDevice()
         Fatal("No suitable graphics queue families");
     }
 
+    LogInfo("Using graphics queue family %u", mGraphicsQueueFamily);
+
     std::unordered_set<std::string> availableExtensions;
 
     auto EnumerateExtensions =
