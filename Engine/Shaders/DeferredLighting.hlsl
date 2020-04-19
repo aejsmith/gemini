@@ -27,7 +27,6 @@ RWTexture2D<float4>           colourTexture     : UAV(DeferredLighting, ColourTe
 
 CBUFFER(DeferredLightingConstants, constants, DeferredLighting, Constants);
 
-groupshared uint tileLightCount;
 groupshared uint tileLightIndices[kDeferredMaxLightCount];
 
 [numthreads(kDeferredTileSize, kDeferredTileSize, 1)]
@@ -39,12 +38,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
     uint threadIndex = (groupThreadID.y * kDeferredTileSize) + groupThreadID.x;
     uint threadCount = kDeferredTileSize * kDeferredTileSize;
 
-    if (threadIndex == 0)
-    {
-        tileLightCount = visibleLightCount.Load(tileIndex);
-    }
-
-    GroupMemoryBarrierWithGroupSync();
+    uint tileLightCount = visibleLightCount.Load(tileIndex);
 
     /* Early exit without bothering to read anything else if there's nothing
      * affecting this tile. */
