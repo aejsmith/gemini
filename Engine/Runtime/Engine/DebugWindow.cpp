@@ -34,3 +34,18 @@ DebugWindow::~DebugWindow()
 {
     DebugManager::Get().UnregisterWindow(this, {});
 }
+
+bool DebugWindow::Begin(const ImGuiWindowFlags inFlags)
+{
+    if (!mOpen || !DebugManager::Get().IsOverlayVisible())
+    {
+        return false;
+    }
+    else if (!ImGui::Begin(GetTitle().c_str(), &mOpen, inFlags))
+    {
+        ImGui::End();
+        return false;
+    }
+
+    return true;
+}

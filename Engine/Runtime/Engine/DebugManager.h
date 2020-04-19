@@ -67,6 +67,9 @@ public:
     void                        UnregisterWindow(DebugWindow* const inWindow,
                                                  OnlyCalledBy<DebugWindow>);
 
+    bool                        IsOverlayVisible() const
+                                    { return mOverlayState >= kOverlayState_Visible; }
+
     /**
      * World-space debug drawing API.
      */

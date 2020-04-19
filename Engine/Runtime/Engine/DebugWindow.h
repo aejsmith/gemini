@@ -37,8 +37,20 @@ protected:
                                             std::string inTitle);
     virtual                     ~DebugWindow();
 
-    /** Render the contents of the window. */
-    virtual void                Render() = 0;
+    /**
+     * Render the contents of the window.
+     *
+     * This method will be called every frame when the overlay is active,
+     * during DebugManager::RenderOverlay() near the end of the frame.
+     *
+     * Some window implementations may not be able to be drawn at that point
+     * (e.g. ones which are based on transient state throughout a frame). In
+     * this case, it is possible to leave this function empty and perform
+     * rendering of the window manually at the appropriate point in the frame.
+     * Begin()should be used to begin drawing the window, which will handle not
+     * displaying it if the overlay or window are not visible.
+     */
+    virtual void                Render() {}
 
     bool                        Begin(const ImGuiWindowFlags inFlags = 0);
 
@@ -50,14 +62,3 @@ protected:
 
     friend class DebugManager;
 };
-
-inline bool DebugWindow::Begin(const ImGuiWindowFlags inFlags)
-{
-    if (!ImGui::Begin(GetTitle().c_str(), &mOpen, inFlags))
-    {
-        ImGui::End();
-        return false;
-    }
-
-    return true;
-}
