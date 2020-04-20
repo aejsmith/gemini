@@ -12,7 +12,7 @@ env['CPPPATH'].append(Dir('Include'))
 
 # We have our own imconfig.h so we have to copy here to ensure that our version
 # is included.
-map(lambda f: Util.Copy(env, f, 'Repo/%s' % (f)), [
+copy = [
     'imgui.cpp',
     'imgui_draw.cpp',
     'imgui_widgets.cpp',
@@ -20,14 +20,16 @@ map(lambda f: Util.Copy(env, f, 'Repo/%s' % (f)), [
     'imstb_rectpack.h',
     'imstb_textedit.h',
     'imstb_truetype.h',
-])
+]
+for f in copy:
+    Util.Copy(env, f, 'Repo/%s' % (f))
 
 manager.AddComponent(
     name = '3rdParty/imgui',
     depends = depends,
     includePath = ['Include', Dir('Include')],
-    objects = map(env.Object, [
+    objects = list(map(env.Object, [
         'imgui.cpp',
         'imgui_draw.cpp',
         'imgui_widgets.cpp',
-    ]))
+    ])))

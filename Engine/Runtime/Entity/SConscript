@@ -2,19 +2,19 @@ import VCS
 
 Import('env')
 
-objects = map(env.ObjectGenHeader, [
+objects = list(map(env.ObjectGenHeader, [
     'Behaviour.h',
     'Component.h',
     'Entity.h',
     'World.h',
-])
+]))
 
-objects += map(env.Object, [
+objects += list(map(env.Object, [
     'Behaviour.cpp',
     'Component.cpp',
     'Entity.cpp',
     'World.cpp',
     'WorldEditorWindow.cpp',
-])
+]))
 
 Return('objects')

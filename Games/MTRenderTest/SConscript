@@ -2,13 +2,13 @@ Import('manager')
 
 env = manager.CreateEnvironment(depends = ['Engine/Base'])
 
-objects = map(env.ObjectGenHeader, [
+objects = list(map(env.ObjectGenHeader, [
     'Source/MTRenderTestGame.h',
-])
+]))
 
-objects += map(env.Object, [
+objects += list(map(env.Object, [
     'Source/MTRenderTestGame.cpp',
-])
+]))
 
 target = env.GeminiGame(name = 'MTRenderTest', sources = objects)
 Return('target')

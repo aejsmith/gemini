@@ -11,7 +11,7 @@ depends = [
 env = manager.CreateEnvironment(depends = depends)
 Export('env')
 
-objects = map(env.Object, [
+objects = list(map(env.Object, [
     'Math/BoundingBox.cpp',
     'Math/Cone.cpp',
     'Math/Frustum.cpp',
@@ -27,7 +27,7 @@ objects = map(env.Object, [
     'RefCounted.cpp',
     'String.cpp',
     'Thread.cpp',
-])
+]))
 
 manager.AddComponent(
     name = 'Engine/Core',

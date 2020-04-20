@@ -2,15 +2,15 @@ Import('manager')
 
 env = manager.CreateEnvironment(depends = ['Engine'])
 
-objects = map(env.ObjectGenHeader, [
+objects = list(map(env.ObjectGenHeader, [
     'Source/PlayerController.h',
     'Source/TestGame.h',
-])
+]))
 
-objects += map(env.Object, [
+objects += list(map(env.Object, [
     'Source/PlayerController.cpp',
     'Source/TestGame.cpp',
-])
+]))
 
 target = env.GeminiGame(name = 'Test', sources = objects)
 Return('target')

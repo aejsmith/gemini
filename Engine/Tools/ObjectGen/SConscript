@@ -51,7 +51,7 @@ manager.baseEnv['OBJECTGEN'] = env.GeminiTool(
 
 # libclang doesn't add the compiler's built-in include directory to the default
 # path. Therefore we must get this manually and pass it to ObjectGen.
-incdir = Popen([env['CC'], '-print-file-name=include'], stdout=PIPE).communicate()[0].strip()
+incdir = Popen([env['CC'], '-print-file-name=include'], stdout=PIPE).communicate()[0].decode('ascii').strip()
 manager.baseEnv['OBJECTGENFLAGS'] = '$_CPPDEFFLAGS -I%s $_CPPINCFLAGS' % (incdir)
 
 #

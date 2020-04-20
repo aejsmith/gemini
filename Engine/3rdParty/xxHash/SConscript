@@ -6,9 +6,9 @@ env = manager.CreateEnvironment()
 
 env['CPPDEFINES'].update({'XXH_NAMESPACE': 'Gemini_'})
 
-objects = map(env.Object, [
+objects = list(map(env.Object, [
     'Repo/xxhash.c',
-])
+]))
 
 manager.AddComponent(
     name = '3rdParty/xxHash',

@@ -1,9 +1,9 @@
 Import('env')
 
-objects = map(env.Object, [
+objects = list(map(env.Object, [
     'InputHandler.cpp',
     'InputInfo.cpp',
     'InputManager.cpp',
-])
+]))
 
 Return('objects')

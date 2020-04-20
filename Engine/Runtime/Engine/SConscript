@@ -2,16 +2,16 @@ import VCS
 
 Import('env')
 
-objects = map(env.ObjectGenHeader, [
+objects = list(map(env.ObjectGenHeader, [
     'Asset.h',
     'AssetLoader.h',
     'Game.h',
     'Mesh.h',
     'Object.h',
     'Texture.h',
-])
+]))
 
-objects += map(env.Object, [
+objects += list(map(env.Object, [
     'Asset.cpp',
     'AssetLoader.cpp',
     'AssetManager.cpp',
@@ -28,7 +28,7 @@ objects += map(env.Object, [
     'Texture.cpp',
     'Version.cpp',
     'Window.cpp',
-])
+]))
 
 # Generate the version information file.
 def GenerateVersionCPP(target, source, env):

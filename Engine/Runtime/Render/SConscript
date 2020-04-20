@@ -1,6 +1,6 @@
 Import('env')
 
-objects = map(env.ObjectGenHeader, [
+objects = list(map(env.ObjectGenHeader, [
     'BasicRenderPipeline.h',
     'Camera.h',
     'DeferredRenderPipeline.h',
@@ -12,9 +12,9 @@ objects = map(env.ObjectGenHeader, [
     'RenderPipeline.h',
     'ShaderParameter.h',
     'ShaderTechnique.h',
-])
+]))
 
-objects += map(env.Object, [
+objects += list(map(env.Object, [
     'BasicRenderPipeline.cpp',
     'Camera.cpp',
     'DeferredRenderPipeline.cpp',
@@ -39,6 +39,6 @@ objects += map(env.Object, [
     'ShaderParameter.cpp',
     'ShaderTechnique.cpp',
     'TonemapPass.cpp',
-])
+]))
 
 Return('objects')

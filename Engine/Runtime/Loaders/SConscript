@@ -1,16 +1,16 @@
 Import('env')
 
-objects = map(env.ObjectGenHeader, [
+objects = list(map(env.ObjectGenHeader, [
     'OBJLoader.h',
     'STBLoader.h',
     'TextureLoader.h',
-])
+]))
 
-objects += map(env.Object, [
+objects += list(map(env.Object, [
     'GLTFImporter.cpp',
     'OBJLoader.cpp',
     'STBLoader.cpp',
     'TextureLoader.cpp',
-])
+]))
 
 Return('objects')

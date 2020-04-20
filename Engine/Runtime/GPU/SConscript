@@ -1,10 +1,10 @@
 Import('env')
 
-objects = map(env.ObjectGenHeader, [
+objects = list(map(env.ObjectGenHeader, [
     'GPUDefs.h',
-])
+]))
 
-objects += map(env.Object, [
+objects += list(map(env.Object, [
     'GPUArgumentSet.cpp',
     'GPUBuffer.cpp',
     'GPUCommandList.cpp',
@@ -44,6 +44,6 @@ objects += map(env.Object, [
 
     'Vulkan/${PLATFORM}/${PLATFORM}VulkanInstance.cpp',
     'Vulkan/${PLATFORM}/${PLATFORM}VulkanSwapchain.cpp',
-])
+]))
 
 Return('objects')
