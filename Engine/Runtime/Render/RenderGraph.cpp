@@ -81,6 +81,8 @@ private:
     RenderGraph::ResourceKey    mJumpToResource;
 };
 
+RenderGraph::ResourceKey RenderGraph::mDebugOutput;
+
 RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
                                  std::string               inName,
                                  const RenderGraphPassType inType,
@@ -440,13 +442,15 @@ RenderGraph::Resource::Resource() :
     usage           (kGPUResourceUsage_Standard),
     currentVersion  (0),
     originalState   (kGPUResourceState_None),
+    output          (nullptr),
     imported        (false),
     required        (false),
     begun           (false),
     firstPass       (nullptr),
     lastPass        (nullptr),
     resource        (nullptr),
-    currentState    (kGPUResourceState_None)
+    currentState    (kGPUResourceState_None),
+    debugResource   (nullptr)
 {
     /* Nothing produced the initial version. */
     producers.emplace_back(nullptr);
@@ -491,11 +495,12 @@ RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& inDesc)
     return handle;
 }
 
-RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResource,
-                                                 const GPUResourceState inState,
-                                                 const char* const      inName,
-                                                 std::function<void ()> inBeginCallback,
-                                                 std::function<void ()> inEndCallback)
+RenderResourceHandle RenderGraph::ImportResource(GPUResource* const        inResource,
+                                                 const GPUResourceState    inState,
+                                                 const char* const         inName,
+                                                 std::function<void ()>    inBeginCallback,
+                                                 std::function<void ()>    inEndCallback,
+                                                 const RenderOutput* const inOutput)
 {
     Resource* resource      = new Resource;
     resource->layer         = nullptr;
@@ -503,6 +508,7 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const     inResour
     resource->resource      = inResource;
     resource->originalState = inState;
     resource->currentState  = inState;
+    resource->output        = inOutput;
     resource->beginCallback = std::move(inBeginCallback);
     resource->endCallback   = std::move(inEndCallback);
 
@@ -662,6 +668,27 @@ void RenderGraph::DetermineRequiredPasses()
     }
 }
 
+void RenderGraph::MakeBufferDesc(const Resource* const inResource,
+                                 GPUBufferDesc&        outDesc)
+{
+    outDesc.usage = inResource->usage;
+    outDesc.size  = inResource->buffer.size;
+}
+
+void RenderGraph::MakeTextureDesc(const Resource* const inResource,
+                                  GPUTextureDesc&       outDesc)
+{
+    outDesc.type         = inResource->texture.type;
+    outDesc.usage        = inResource->usage;
+    outDesc.flags        = inResource->texture.flags;
+    outDesc.format       = inResource->texture.format;
+    outDesc.width        = inResource->texture.width;
+    outDesc.height       = inResource->texture.height;
+    outDesc.depth        = inResource->texture.depth;
+    outDesc.arraySize    = inResource->texture.arraySize;
+    outDesc.numMipLevels = inResource->texture.numMipLevels;
+}
+
 void RenderGraph::AllocateResources()
 {
     for (Resource* resource : mResources)
@@ -676,8 +703,7 @@ void RenderGraph::AllocateResources()
             case kRenderResourceType_Buffer:
             {
                 GPUBufferDesc desc;
-                desc.usage = resource->usage;
-                desc.size  = resource->buffer.size;
+                MakeBufferDesc(resource, desc);
 
                 resource->resource = RenderManager::Get().GetTransientBuffer(desc, {});
 
@@ -692,15 +718,7 @@ void RenderGraph::AllocateResources()
             case kRenderResourceType_Texture:
             {
                 GPUTextureDesc desc;
-                desc.type         = resource->texture.type;
-                desc.usage        = resource->usage;
-                desc.flags        = resource->texture.flags;
-                desc.format       = resource->texture.format;
-                desc.width        = resource->texture.width;
-                desc.height       = resource->texture.height;
-                desc.depth        = resource->texture.depth;
-                desc.arraySize    = resource->texture.arraySize;
-                desc.numMipLevels = resource->texture.numMipLevels;
+                MakeTextureDesc(resource, desc);
 
                 resource->resource = RenderManager::Get().GetTransientTexture(desc, {});
 
@@ -723,11 +741,34 @@ void RenderGraph::AllocateResources()
 
 void RenderGraph::EndResources()
 {
+    const Resource* const debugResource = FindResource(mDebugOutput);
+    if (mDebugOutput.IsValid() && !debugResource)
+    {
+        /* Clear debug resource key if it is no longer present. */
+        mDebugOutput = ResourceKey();
+    }
+
     /* Transition imported resources back to the original state. */
     for (Resource* resource : mResources)
     {
         if (resource->begun && resource->imported)
         {
+            /* If there is currently a debug output resource, blit it onto the
+             * RenderOutput that it was created within (before we transition
+             * the output's resource to its final state). */
+            if (debugResource && debugResource->layer->GetLayerOutput() == resource->output)
+            {
+                TransitionResource(*resource,
+                                   resource->resource->GetSubresourceRange(),
+                                   kGPUResourceState_TransferWrite);
+                FlushBarriers();
+
+                GPUGraphicsContext::Get().BlitTexture(static_cast<GPUTexture*>(resource->resource),
+                                                      { 0, 0 },
+                                                      static_cast<GPUTexture*>(debugResource->debugResource),
+                                                      { 0, 0 });
+            }
+
             TransitionResource(*resource,
                                resource->resource->GetSubresourceRange(),
                                resource->originalState);
@@ -945,6 +986,44 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
             break;
         }
     }
+
+    if (mDebugOutput.IsValid())
+    {
+        /* Check if this pass produces the resource version we want as the debug
+         * output, and if so, copy it. */
+        for (const RenderGraphPass::UsedResource& use : inPass.mUsedResources)
+        {
+            RenderGraph::Resource* resource = mResources[use.handle.index];
+
+            if (resource->layer == mDebugOutput.layer &&
+                resource->GetName() &&
+                strcmp(resource->GetName(), mDebugOutput.name) == 0 &&
+                inPass.mName == mDebugOutput.versionProducer)
+            {
+                Assert(!resource->debugResource);
+                Assert(resource->type == kRenderResourceType_Texture);
+
+                /* TODO: Depth textures - we'll need a shader-based copy to a
+                 * colour format texture. */
+                GPUTextureDesc desc;
+                MakeTextureDesc(resource, desc);
+
+                resource->debugResource = RenderManager::Get().GetTransientTexture(desc, {});
+
+                GPUTexture* const texture      = static_cast<GPUTexture*>(resource->resource);
+                GPUTexture* const debugTexture = static_cast<GPUTexture*>(resource->debugResource);
+
+                GPUTransferContext& context = GPUGraphicsContext::Get();
+                context.ResourceBarrier(texture, resource->currentState, kGPUResourceState_TransferRead);
+                context.ResourceBarrier(debugTexture, kGPUResourceState_None, kGPUResourceState_TransferWrite);
+                context.BlitTexture(debugTexture, { 0, 0 }, texture, { 0, 0 });
+                context.ResourceBarrier(texture, kGPUResourceState_TransferRead, resource->currentState);
+                context.ResourceBarrier(debugTexture, kGPUResourceState_TransferWrite, kGPUResourceState_TransferRead);
+
+                break;
+            }
+        }
+    }
 }
 
 void RenderGraph::Execute()
@@ -1053,7 +1132,7 @@ RenderGraphWindow& RenderGraphWindow::Get()
 void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
 {
     ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(450, 600), ImGuiCond_Once);
 
     if (!Begin())
     {
@@ -1070,6 +1149,16 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
                                               ImGuiTreeNodeFlags_DefaultOpen;
     constexpr ImGuiTreeNodeFlags kLeafFlags = ImGuiTreeNodeFlags_Leaf |
                                               ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+    auto SmallButton = [] (const char* const inLabel, const uint32_t inWidth)
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        const float padding = style.FramePadding.y;
+        style.FramePadding.y = 0.0f;
+        const bool pressed = ImGui::Button(inLabel, ImVec2(inWidth, 0));
+        style.FramePadding.y = padding;
+        return pressed;
+    };
 
     auto GetPassKey = [] (const RenderGraphPass* inPass) -> RenderGraph::PassKey
     {
@@ -1305,6 +1394,30 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
         ImGui::Separator();
         ImGui::Spacing();
 
+        ImGui::Text("Debug Output:");
+        ImGui::SameLine();
+
+        if (inGraph.FindResource(RenderGraph::mDebugOutput))
+        {
+            ImGui::Text("%s (%s)",
+                        RenderGraph::mDebugOutput.name,
+                        RenderGraph::mDebugOutput.versionProducer.c_str());
+        }
+        else
+        {
+            ImGui::Text("None");
+        }
+
+        ImGui::SameLine(ImGui::GetWindowWidth() - 60);
+        if (SmallButton("Clear", 50))
+        {
+            RenderGraph::mDebugOutput = RenderGraph::ResourceKey();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
         /* Information about the resource. */
         if (currentResource)
         {
@@ -1397,7 +1510,17 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
                     mJumpToPass = GetPassKey(producer);
                 }
 
-                // TODO: Debug output textures.
+                if (currentResource->type == kRenderResourceType_Texture)
+                {
+                    ImGui::PushID(version);
+                    ImGui::SameLine(ImGui::GetWindowWidth() - 60);
+                    if (SmallButton("Output", 50))
+                    {
+                        RenderGraph::mDebugOutput = GetResourceKey(currentResource);
+                        RenderGraph::mDebugOutput.versionProducer = producer->mName;
+                    }
+                    ImGui::PopID();
+                }
             }
 
             ImGui::PopID();

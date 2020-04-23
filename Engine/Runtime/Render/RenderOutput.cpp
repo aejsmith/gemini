@@ -43,7 +43,8 @@ void RenderOutput::AddPasses(RenderGraph& inGraph,
                                GetFinalState(),
                                "Output",
                                [this] () { BeginRender(); },
-                               [this] () { EndRender(); });
+                               [this] () { EndRender(); },
+                               this);
 
     /* Each layer gets the previous layer's result handle as its target, so
      * that they get rendered on top of each other in order. */

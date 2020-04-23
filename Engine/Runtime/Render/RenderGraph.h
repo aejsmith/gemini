@@ -33,6 +33,10 @@ class RenderGraph;
 class RenderGraphPass;
 class RenderGraphWindow;
 class RenderLayer;
+class RenderOutput;
+
+struct GPUBufferDesc;
+struct GPUTextureDesc;
 
 enum RenderGraphPassType
 {
@@ -452,11 +456,12 @@ public:
      * and after all passes have executed. The begin callback will be called
      * before any views to the resource are created.
      */
-    RenderResourceHandle            ImportResource(GPUResource* const     inResource,
-                                                   const GPUResourceState inState,
-                                                   const char* const      inName,
-                                                   std::function<void ()> inBeginCallback = {},
-                                                   std::function<void ()> inEndCallback = {});
+    RenderResourceHandle            ImportResource(GPUResource* const        inResource,
+                                                   const GPUResourceState    inState,
+                                                   const char* const         inName,
+                                                   std::function<void ()>    inBeginCallback = {},
+                                                   std::function<void ()>    inEndCallback = {},
+                                                   const RenderOutput* const inOutput = nullptr);
 
     /**
      * Allocate a transient object that needs to remain alive until graph
@@ -488,6 +493,11 @@ private:
     struct Resource
     {
         RenderResourceType          type;
+
+        /**
+         * Layer that the resource was created inside. Resources are scoped to
+         * layers, resource names within a layer must be unique.
+         */
         const RenderLayer*          layer;
 
         union
@@ -506,9 +516,11 @@ private:
 
         /** Imported resource details. */
         GPUResourceState            originalState;
+        const RenderOutput*         output;
         std::function<void ()>      beginCallback;
         std::function<void ()>      endCallback;
 
+        /** Flags. */
         bool                        imported : 1;
         bool                        required : 1;
         bool                        begun : 1;
@@ -517,10 +529,13 @@ private:
         RenderGraphPass*            firstPass;
         RenderGraphPass*            lastPass;
 
+        /** Execution phase state. */
         GPUResource*                resource;
-
         // TODO: Per-subresource state tracking.
         GPUResourceState            currentState;
+
+        /** If this resource is the debug output, this contains a copy of it. */
+        GPUResource*                debugResource;
 
     public:
                                     Resource();
@@ -552,6 +567,9 @@ private:
         const RenderLayer*          layer = nullptr;
         const char*                 name  = nullptr;
         std::string                 versionProducer;
+
+    public:
+        bool                        IsValid() const { return name != nullptr; }
     };
 
 private:
@@ -562,6 +580,11 @@ private:
                                                        const GPUResourceState     inState);
 
     void                            FlushBarriers();
+
+    void                            MakeBufferDesc(const Resource* const inResource,
+                                                   GPUBufferDesc&        outDesc);
+    void                            MakeTextureDesc(const Resource* const inResource,
+                                                    GPUTextureDesc&       outDesc);
 
     void                            DetermineRequiredPasses();
     void                            AllocateResources();
@@ -584,6 +607,9 @@ private:
     std::vector<GPUResourceBarrier> mBarriers;
 
     std::vector<Destructor>         mDestructors;
+
+    /** Resource to display as debug output, controlled by GUI. */
+    static ResourceKey              mDebugOutput;
 
     friend class RenderGraphPass;
     friend class RenderGraphWindow;
