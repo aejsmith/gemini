@@ -5,6 +5,7 @@ Import('env')
 objects = list(map(env.ObjectGenHeader, [
     'Asset.h',
     'AssetLoader.h',
+    'EngineSettings.h',
     'Game.h',
     'Mesh.h',
     'Object.h',
@@ -18,6 +19,7 @@ objects += list(map(env.Object, [
     'DebugManager.cpp',
     'DebugWindow.cpp',
     'Engine.cpp',
+    'EngineSettings.cpp',
     'FrameAllocator.cpp',
     'ImGUI.cpp',
     'JSONSerialiser.cpp',

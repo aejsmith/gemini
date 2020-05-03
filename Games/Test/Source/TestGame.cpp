@@ -123,3 +123,8 @@ const char* TestGame::GetName() const
 {
     return "Test";
 }
+
+const char* TestGame::GetTitle() const
+{
+    return "Test";
+}

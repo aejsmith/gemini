@@ -35,7 +35,15 @@ class Game : public Object,
 public:
     virtual void                Init() = 0;
 
+    /**
+     * Return a name string for the game. This should be a short name without
+     * spaces. It is used for game-specific filesystem paths (e.g. user settings
+     * folder name).
+     */
     virtual const char*         GetName() const = 0;
+
+    /** Return a full title string for the game, used for display purposes. */
+    virtual const char*         GetTitle() const = 0;
 
 protected:
                                 Game() {}

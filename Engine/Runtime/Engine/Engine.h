@@ -21,6 +21,7 @@
 
 #include "Engine/Object.h"
 
+class EngineSettings;
 class World;
 
 /**
@@ -35,6 +36,12 @@ public:
 public:
     void                    Run();
 
+    EngineSettings*         GetSettings() const         { return mSettings; }
+
+    /**
+     * Per-frame state.
+     */
+
     /** Get the frame index (value incremented by 1 every frame). */
     uint64_t                GetFrameIndex() const       { return mFrameIndex; }
 
@@ -47,6 +54,10 @@ public:
     /** Get the time delta for the current frame, in seconds. */
     float                   GetDeltaTime() const        { return mDeltaTime; }
 
+    /**
+     * World state.
+     */
+
     /** Get the current game world. */
     World*                  GetWorld() const            { return mWorld; }
 
@@ -58,8 +69,12 @@ public:
 
 private:
     void                    InitSDL();
+    void                    InitSettings();
 
 private:
+    Path                    mUserDirectoryPath;
+    ObjPtr<EngineSettings>  mSettings;
+
     uint64_t                mFrameIndex;
     uint64_t                mFrameStartTime;
     uint64_t                mLastFrameTime;

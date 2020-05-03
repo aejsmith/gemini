@@ -104,7 +104,7 @@ void Window::EndRender()
 
 MainWindow::MainWindow(const glm::uvec2& inSize,
                        const uint32_t    inFlags) :
-    Window (Game::Get().GetName(),
+    Window (Game::Get().GetTitle(),
             inSize,
             inFlags)
 {

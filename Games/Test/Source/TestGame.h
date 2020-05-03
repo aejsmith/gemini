@@ -29,6 +29,7 @@ public:
     void                        Init() override;
 
     const char*                 GetName() const override;
+    const char*                 GetTitle() const override;
 
 protected:
                                 ~TestGame();

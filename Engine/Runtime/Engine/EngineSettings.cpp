@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019 Alex Smith
+ * Copyright (C) 2018-2020 Alex Smith
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,22 +14,27 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "Engine/EngineSettings.h"
 
-#include "Core/Path.h"
-#include "Core/String.h"
-
-namespace Platform
+EngineSettings::EngineSettings() :
+    mMainWindowSize         (1600, 900),
+    mMainWindowFullscreen   (false)
 {
-    /** Get the program executable name (without extensions). */
-    std::string             GetProgramName();
+}
 
-    /** Get the directory in which to store per-user data. */
-    Path                    GetUserDirectory();
+EngineSettings::~EngineSettings()
+{
+}
 
-    /**
-     * Get the performance counter value, a monotonic counter in units of
-     * nanoseconds useful for performance measurements.
-     */
-    uint64_t                GetPerformanceCounter();
+void EngineSettings::SetMainWindowSize(const glm::uvec2& inSize)
+{
+    // TODO: Support changing at runtime, this is only used for deserialisation
+    // so far.
+    mMainWindowSize = inSize;
+}
+
+void EngineSettings::SetMainWindowFullscreen(const bool inFullscreen)
+{
+    // TODO: Support changing at runtime.
+    mMainWindowFullscreen = inFullscreen;
 }

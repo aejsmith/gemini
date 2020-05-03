@@ -16,7 +16,6 @@
 
 #include "Core/Platform.h"
 
-#include "Core/Path.h"
 #include "Core/Time.h"
 
 #include <errno.h>
@@ -37,7 +36,23 @@ std::string Platform::GetProgramName()
 
     str[ret] = 0;
     str.resize(ret);
-    return Path(str).GetBaseFileName();
+    return Path(str, Path::kUnnormalizedPlatform).GetBaseFileName();
+}
+
+Path Platform::GetUserDirectory()
+{
+    const char* env = getenv("XDG_DATA_HOME");
+
+    if (env)
+    {
+        return Path(env, Path::kUnnormalizedPlatform);
+    }
+    else
+    {
+        env = getenv("HOME");
+        Assert(env);
+        return Path(env, Path::kUnnormalizedPlatform) / ".local/share";
+    }
 }
 
 uint64_t Platform::GetPerformanceCounter()

@@ -23,6 +23,7 @@
 
 #include "Engine/AssetManager.h"
 #include "Engine/DebugManager.h"
+#include "Engine/EngineSettings.h"
 #include "Engine/FrameAllocator.h"
 #include "Engine/Game.h"
 #include "Engine/ImGUI.h"
@@ -40,6 +41,8 @@
 #include <SDL.h>
 
 #include <imgui.h>
+
+static constexpr char kEngineSettingsFileName[] = "EngineSettings.object";
 
 SINGLETON_IMPL(Engine);
 SINGLETON_IMPL(Game);
@@ -95,9 +98,12 @@ Engine::Engine() :
 
     SDL_free(platformBasePath);
 
-    /* Set up the main window and graphics API. TODO: Make parameters
-     * configurable. */
-    new MainWindow(glm::uvec2(1920, 1080), 0);
+    InitSettings();
+
+    /* Set up the main window and graphics API. */
+    new MainWindow(
+        mSettings->GetMainWindowSize(),
+        (mSettings->GetMainWindowFullscreen()) ? Window::kWindow_Fullscreen : 0);
     GPUDevice::Create();
 
     new RenderManager();
@@ -130,6 +136,29 @@ void Engine::InitSDL()
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         Fatal("Failed to initialize SDL: %s", SDL_GetError());
+    }
+}
+
+void Engine::InitSettings()
+{
+    mUserDirectoryPath = Platform::GetUserDirectory() / "Gemini" / Game::Get().GetName();
+    LogInfo("User directory is '%s'", mUserDirectoryPath.GetCString());
+
+    Path settingsPath = mUserDirectoryPath / kEngineSettingsFileName;
+
+    if (Filesystem::Exists(settingsPath))
+    {
+        LogInfo("Loading settings from '%s'", settingsPath.GetCString());
+        mSettings = Object::LoadObject<EngineSettings>(settingsPath);
+        if (!mSettings)
+        {
+            LogWarning("Failed to load settings, using defaults");
+        }
+    }
+
+    if (!mSettings)
+    {
+        mSettings = new EngineSettings;
     }
 }
 

@@ -290,5 +290,10 @@ void MTRenderTestGame::Init()
 
 const char* MTRenderTestGame::GetName() const
 {
+    return "MTRenderTest";
+}
+
+const char* MTRenderTestGame::GetTitle() const
+{
     return "Multi-Threaded Render Test";
 }
