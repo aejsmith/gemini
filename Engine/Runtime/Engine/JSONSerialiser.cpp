@@ -280,7 +280,12 @@ ObjPtr<> JSONSerialiser::FindObject(const uint32_t   inID,
         return existing->second;
     }
 
-    if (inID >= mState->document.Size())
+    if (!mState->document.IsArray())
+    {
+        LogError("Serialised data is not an array");
+        return nullptr;
+    }
+    else if (inID >= mState->document.Size())
     {
         LogError("Invalid serialised object ID %zu (only %zu objects available)",
                  inID,
