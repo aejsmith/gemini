@@ -167,34 +167,65 @@ void DebugManager::BeginFrame(OnlyCalledBy<Engine>)
                  nullptr,
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground);
     ImGui::End();
+
+    /* Begin the docking space. */
+    if (mOverlayState >= kOverlayState_Visible)
+    {
+        ImGuiWindowFlags windowFlags =
+            ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoNavFocus |
+            ImGuiWindowFlags_NoBackground;
+
+        if (mOverlayState >= kOverlayState_Active)
+        {
+            windowFlags |= ImGuiWindowFlags_MenuBar;
+        }
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->GetWorkPos());
+        ImGui::SetNextWindowSize(viewport->GetWorkSize());
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("Overlay", nullptr, windowFlags);
+
+        ImGui::PopStyleVar(2);
+
+        ImGui::DockSpace(ImGui::GetID("OverlayDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        if (mOverlayState >= kOverlayState_Active && ImGui::BeginMenuBar())
+        {
+            for (const auto& it : mWindows)
+            {
+                if (!it.second.empty() && ImGui::BeginMenu(it.first.c_str()))
+                {
+                    for (DebugWindow* const window : it.second)
+                    {
+                        ImGui::MenuItem(window->GetTitle().c_str(), nullptr, &window->mOpen);
+                    }
+
+                    ImGui::EndMenu();
+                }
+            }
+
+            ImGui::EndMenuBar();
+        }
+
+        ImGui::End();
+    }
 }
 
 void DebugManager::RenderOverlay(OnlyCalledBy<Engine>)
 {
     if (mOverlayState >= kOverlayState_Visible)
     {
-        if (mOverlayState >= kOverlayState_Active)
-        {
-            /* Draw the main menu. */
-            if (ImGui::BeginMainMenuBar())
-            {
-                for (const auto& it : mWindows)
-                {
-                    if (!it.second.empty() && ImGui::BeginMenu(it.first.c_str()))
-                    {
-                        for (DebugWindow* const window : it.second)
-                        {
-                            ImGui::MenuItem(window->GetTitle().c_str(), nullptr, &window->mOpen);
-                        }
-
-                        ImGui::EndMenu();
-                    }
-                }
-
-                ImGui::EndMainMenuBar();
-            }
-        }
-
         for (const auto& it : mWindows)
         {
             for (DebugWindow* const window : it.second)

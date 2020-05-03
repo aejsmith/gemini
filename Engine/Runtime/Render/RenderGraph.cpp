@@ -1132,7 +1132,7 @@ RenderGraphWindow& RenderGraphWindow::Get()
 void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
 {
     ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(450, 600), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(350, 600), ImGuiCond_Once);
 
     if (!Begin())
     {

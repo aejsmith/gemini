@@ -73,6 +73,7 @@ ImGUIManager::ImGUIManager() :
 
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     /* Set up key mapping. */
     io.KeyMap[ImGuiKey_Tab]         = kInputCode_Tab;
@@ -100,6 +101,7 @@ ImGUIManager::ImGUIManager() :
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowBorderSize = 0.0f;
+    style.WindowRounding   = 0.0f;
 
     mInputHandler = new ImGUIInputHandler;
     mRenderer     = new ImGUIRenderer;
