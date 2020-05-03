@@ -25,6 +25,7 @@
 #include <vector>
 
 class Object;
+class Path;
 class Serialiser;
 
 /**
@@ -576,6 +577,16 @@ public:
     void                            DebugUIEditor(const uint32_t inFlags,
                                                   bool*          outDestroyObject = nullptr);
 
+    /**
+     * Load an object from a file. The object is expected to be an instance of
+     * the specified class (or a derived class). Returns null on failure.
+     */
+    static ObjPtr<>                 LoadObject(const Path&      inPath,
+                                               const MetaClass& inExpectedClass);
+
+    template <typename T>
+    static ObjPtr<T>                LoadObject(const Path& inPath);
+
 protected:
                                     Object() {}
                                     ~Object() {}
@@ -641,6 +652,13 @@ inline bool Object::SetProperty(const char* inName,
     return SetProperty(inName,
                        MetaType::Lookup<T>(),
                        std::addressof(inValue));
+}
+
+template <typename T>
+inline ObjPtr<T> Object::LoadObject(const Path& inPath)
+{
+    ObjPtr<> object = LoadObject(inPath, T::staticMetaClass);
+    return object.StaticCast<T>();
 }
 
 /**

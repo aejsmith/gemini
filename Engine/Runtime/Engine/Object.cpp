@@ -32,8 +32,11 @@
 
 #include "Engine/Object.h"
 
+#include "Core/Filesystem.h"
+
 #include "Engine/AssetManager.h"
 #include "Engine/DebugWindow.h"
+#include "Engine/JSONSerialiser.h"
 #include "Engine/Serialiser.h"
 
 #include "Entity/Entity.h"
@@ -433,6 +436,36 @@ void Object::Deserialise(Serialiser &inSerialiser)
 
         inSerialiser.EndGroup();
     }
+}
+
+ObjPtr<> Object::LoadObject(const Path&      inPath,
+                            const MetaClass& inExpectedClass)
+{
+    UPtr<File> file(Filesystem::OpenFile(inPath));
+    if (!file)
+    {
+        LogError("Failed to open '%s'", inPath.GetCString());
+        return nullptr;
+    }
+
+    ByteArray serialisedData(file->GetSize());
+    if (!file->Read(serialisedData.Get(), file->GetSize()))
+    {
+        LogError("Failed to read '%s'", inPath.GetCString());
+        return nullptr;
+    }
+
+    /* TODO: Assumed as JSON for now. When we have binary serialisation this
+     * will need to detect the file type. */
+    JSONSerialiser serialiser;
+    ObjPtr<> object = serialiser.Deserialise(serialisedData, inExpectedClass);
+    if (!object)
+    {
+        LogError("Failed to deserialise '%s'", inPath.GetCString());
+        return nullptr;
+    }
+
+    return object;
 }
 
 /**
