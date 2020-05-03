@@ -60,10 +60,10 @@ public:
      * compiled with parameter definitions derived from the technique's
      * parameters.
      */
-    GPUShaderPtr            GetShader(const Path&                  inPath,
-                                      const std::string&           inFunction,
-                                      const GPUShaderStage         inStage,
-                                      const ShaderTechnique* const inTechnique = nullptr);
+    GPUShaderPtr            GetShader(const Path&                  path,
+                                      const std::string&           function,
+                                      const GPUShaderStage         stage,
+                                      const ShaderTechnique* const technique = nullptr);
 
 private:
     SearchPathMap           mSearchPaths;

@@ -39,14 +39,14 @@ public:
     };
 
 protected:
-                            RenderLayer(const uint8_t inOrder);
+                            RenderLayer(const uint8_t order);
                             ~RenderLayer();
 
 public:
     uint8_t                 GetLayerOrder() const   { return mOrder; }
 
     RenderOutput*           GetLayerOutput() const  { return mOutput; }
-    void                    SetLayerOutput(RenderOutput* const inOutput);
+    void                    SetLayerOutput(RenderOutput* const output);
 
     /**
      * (De)activate the layer. The layer will only be rendered while active. A
@@ -65,8 +65,8 @@ protected:
      * handle is the texture that the layer output should be written to. If the
      * layer has anything to render, a new resource handle should be returned.
      */
-    virtual void            AddPasses(RenderGraph&               inGraph,
-                                      const RenderResourceHandle inTexture,
+    virtual void            AddPasses(RenderGraph&               graph,
+                                      const RenderResourceHandle texture,
                                       RenderResourceHandle&      outNewTexture) = 0;
 
 private:

@@ -43,18 +43,18 @@ public:
 
 public:
                                     Path();
-                                    Path(const Path& inOther);
-                                    Path(Path&& inOther);
-                                    Path(const std::string&       inPath,
-                                         const NormalizationState inState = kUnnormalized);
-                                    Path(const char*              inPath,
-                                         const NormalizationState inState = kUnnormalized);
+                                    Path(const Path& other);
+                                    Path(Path&& other);
+                                    Path(const std::string&       path,
+                                         const NormalizationState state = kUnnormalized);
+                                    Path(const char*              path,
+                                         const NormalizationState state = kUnnormalized);
 
 public:
-    Path&                           operator =(const Path& inOther);
-    Path&                           operator =(Path&& inOther);
+    Path&                           operator =(const Path& other);
+    Path&                           operator =(Path&& other);
 
-    bool                            operator ==(const Path& inOther) const;
+    bool                            operator ==(const Path& other) const;
 
     const std::string&              GetString() const       { return mPath; }
     const char*                     GetCString() const      { return mPath.c_str(); }
@@ -69,8 +69,8 @@ public:
      * than the number of components, the returned path will include up to the
      * end.
      */
-    Path                            Subset(const size_t inFirstComponent,
-                                           const size_t inCount = std::numeric_limits<size_t>::max()) const;
+    Path                            Subset(const size_t firstComponent,
+                                           const size_t incount = std::numeric_limits<size_t>::max()) const;
 
     /** Convert to a platform-specific representation of the path. */
     std::string                     ToPlatform() const;
@@ -79,19 +79,19 @@ public:
      * Append another path to this path, with a separator between them. If the
      * second path is an absolute path, it will replace this one.
      */
-    Path&                           operator /=(const Path& inOther);
+    Path&                           operator /=(const Path& other);
 
     /**
      * Concatenate two paths, with a separator between them. If the other path
      * is an absolute path, the returned path will be just that one.
      */
-    Path                            operator /(const Path& inOther) const;
+    Path                            operator /(const Path& other) const;
 
     /** Append a string to the path, not accounting for separators. */
-    Path&                           operator +=(const std::string& inString);
+    Path&                           operator +=(const std::string& string);
 
     /** Concatenate two path strings, not accounting for separators. */
-    Path                            operator +(const std::string& inString) const;
+    Path                            operator +(const std::string& string) const;
 
     /**
      * Queries.
@@ -116,12 +116,12 @@ public:
 
     /** Separate into base (without extension) and extension. */
     std::string                     GetBaseFileName() const;
-    std::string                     GetExtension(const bool inKeepDot = false) const;
+    std::string                     GetExtension(const bool keepDot = false) const;
 
 private:
-    static void                     Normalize(const char*              inPath,
-                                              const size_t             inLength,
-                                              const NormalizationState inState,
+    static void                     Normalize(const char*              path,
+                                              const size_t             length,
+                                              const NormalizationState state,
                                               std::string&             outNormalized);
 
 private:
@@ -134,84 +134,84 @@ inline Path::Path() :
 {
 }
 
-inline Path::Path(const Path& inOther) :
-    mPath   (inOther.mPath)
+inline Path::Path(const Path& other) :
+    mPath   (other.mPath)
 {
 }
 
-inline Path::Path(Path&& inOther) :
-    mPath   (std::move(inOther.mPath))
+inline Path::Path(Path&& other) :
+    mPath   (std::move(other.mPath))
 {
 }
 
-inline Path::Path(const std::string&       inPath,
-                  const NormalizationState inState)
+inline Path::Path(const std::string&       path,
+                  const NormalizationState state)
 {
-    if (inState == kNormalized)
+    if (state == kNormalized)
     {
-        mPath = inPath;
+        mPath = path;
     }
     else
     {
-        Normalize(inPath.c_str(),
-                  inPath.length(),
-                  inState,
+        Normalize(path.c_str(),
+                  path.length(),
+                  state,
                   mPath);
     }
 }
 
-inline Path::Path(const char*              inPath,
-                  const NormalizationState inState)
+inline Path::Path(const char*              path,
+                  const NormalizationState state)
 {
-    if (inState == kNormalized)
+    if (state == kNormalized)
     {
-        mPath = inPath;
+        mPath = path;
     }
     else
     {
-        Normalize(inPath,
-                  strlen(inPath),
-                  inState,
+        Normalize(path,
+                  strlen(path),
+                  state,
                   mPath);
     }
 }
 
-inline Path& Path::operator =(const Path& inOther)
+inline Path& Path::operator =(const Path& other)
 {
-    mPath = inOther.mPath;
+    mPath = other.mPath;
     return *this;
 }
 
-inline Path& Path::operator =(Path&& inOther)
+inline Path& Path::operator =(Path&& other)
 {
-    mPath = std::move(inOther.mPath);
+    mPath = std::move(other.mPath);
     return *this;
 }
 
-inline bool Path::operator ==(const Path& inOther) const
+inline bool Path::operator ==(const Path& other) const
 {
-    return mPath == inOther.mPath;
+    return mPath == other.mPath;
 }
 
-inline Path Path::operator /(const Path& inOther) const
+inline Path Path::operator /(const Path& other) const
 {
-    if (inOther.IsAbsolute())
+    if (other.IsAbsolute())
     {
-        return inOther;
+        return other;
     }
     else
     {
-        return Path(*this) /= inOther;
+        return Path(*this) /= other;
     }
 }
 
-inline Path& Path::operator +=(const std::string& inString)
+inline Path& Path::operator +=(const std::string& string)
 {
-    mPath += inString;
+    mPath += string;
     return *this;
 }
 
-inline Path Path::operator +(const std::string& inString) const
+inline Path Path::operator +(const std::string& string) const
 {
-    return Path(*this) += inString;
+    return Path(*this) += string;
 }

@@ -48,9 +48,9 @@ GPUState<D>::Cache::~Cache()
 }
 
 template <typename D>
-const GPUState<D>* GPUState<D>::Get(const Desc& inDesc)
+const GPUState<D>* GPUState<D>::Get(const Desc& desc)
 {
-    const size_t hash = HashValue(inDesc);
+    const size_t hash = HashValue(desc);
 
     /* Check whether we have a copy of the descriptor stored. Lock for reading
      * to begin with. */
@@ -65,7 +65,7 @@ const GPUState<D>* GPUState<D>::Get(const Desc& inDesc)
             state = it->second;
 
             /* Sanity check that we aren't getting any hash collisions. */
-            Assert(inDesc == state->GetDesc());
+            Assert(desc == state->GetDesc());
         }
     }
 
@@ -73,7 +73,7 @@ const GPUState<D>* GPUState<D>::Get(const Desc& inDesc)
     {
         std::unique_lock lock(mCache.lock);
 
-        state = new GPUState(inDesc);
+        state = new GPUState(desc);
 
         auto ret = mCache.cache.emplace(hash, state);
 
@@ -82,7 +82,7 @@ const GPUState<D>* GPUState<D>::Get(const Desc& inDesc)
             delete state;
             state = ret.first->second;
 
-            Assert(inDesc == state->GetDesc());
+            Assert(desc == state->GetDesc());
         }
     }
 

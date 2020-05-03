@@ -62,16 +62,16 @@ GlobalInputInfo::InfoArray& GlobalInputInfo::GetInfoArray()
     return array;
 }
 
-const InputInfo* InputInfo::Lookup(const InputCode inCode)
+const InputInfo* InputInfo::Lookup(const InputCode code)
 {
-    return GlobalInputInfo::GetInfoArray()[inCode];
+    return GlobalInputInfo::GetInfoArray()[code];
 }
 
-const InputInfo* InputInfo::Lookup(const char* const inName)
+const InputInfo* InputInfo::Lookup(const char* const name)
 {
     const auto& map = GlobalInputInfo::GetInfoMap();
 
-    auto ret = map.find(inName);
+    auto ret = map.find(name);
     return (ret != map.end()) ? ret->second : nullptr;
 }
 

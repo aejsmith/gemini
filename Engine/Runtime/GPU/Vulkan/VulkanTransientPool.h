@@ -33,17 +33,17 @@
 class VulkanTransientPool
 {
 public:
-                            VulkanTransientPool(VulkanDevice&            inDevice,
-                                                const VkBufferUsageFlags inUsageFlags,
-                                                const uint32_t           inPerFramePoolSize,
-                                                const uint32_t           inAlignment,
-                                                const char* const        inName);
+                            VulkanTransientPool(VulkanDevice&            device,
+                                                const VkBufferUsageFlags usageFlags,
+                                                const uint32_t           perFramePoolSize,
+                                                const uint32_t           alignment,
+                                                const char* const        name);
 
                             ~VulkanTransientPool();
 
     VkBuffer                GetHandle() const   { return mHandle; }
 
-    uint32_t                Allocate(const size_t inSize,
+    uint32_t                Allocate(const size_t size,
                                      void*&       outMapping);
 
     void                    BeginFrame();
@@ -65,18 +65,18 @@ class VulkanConstantPool final : public GPUConstantPool,
                                  public VulkanTransientPool
 {
 public:
-                            VulkanConstantPool(VulkanDevice& inDevice);
+                            VulkanConstantPool(VulkanDevice& device);
                             ~VulkanConstantPool();
 
-    GPUConstants            Allocate(const size_t inSize,
+    GPUConstants            Allocate(const size_t size,
                                      void*&       outMapping) override
-                                { return VulkanTransientPool::Allocate(inSize, outMapping); }
+                                { return VulkanTransientPool::Allocate(size, outMapping); }
 
 };
 
 class VulkanGeometryPool final : public VulkanTransientPool
 {
 public:
-                            VulkanGeometryPool(VulkanDevice& inDevice);
+                            VulkanGeometryPool(VulkanDevice& device);
                             ~VulkanGeometryPool();
 };

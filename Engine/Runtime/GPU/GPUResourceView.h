@@ -59,8 +59,8 @@ struct GPUResourceViewDesc
 class GPUResourceView : public GPUObject
 {
 protected:
-                                GPUResourceView(GPUResource&               inResource,
-                                                const GPUResourceViewDesc& inDesc);
+                                GPUResourceView(GPUResource&               resource,
+                                                const GPUResourceViewDesc& desc);
 
 public:
                                 ~GPUResourceView();

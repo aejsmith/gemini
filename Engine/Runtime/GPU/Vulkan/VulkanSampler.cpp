@@ -19,25 +19,25 @@
 #include "VulkanDevice.h"
 #include "VulkanUtils.h"
 
-VulkanSampler::VulkanSampler(VulkanDevice&         inDevice,
-                             const GPUSamplerDesc& inDesc) :
-    GPUSampler  (inDevice)
+VulkanSampler::VulkanSampler(VulkanDevice&         device,
+                             const GPUSamplerDesc& desc) :
+    GPUSampler  (device)
 {
     VkSamplerCreateInfo createInfo = {};
     createInfo.sType            = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    createInfo.magFilter        = VulkanUtils::ConvertFilter(inDesc.magFilter);
-    createInfo.minFilter        = VulkanUtils::ConvertFilter(inDesc.minFilter);
-    createInfo.mipmapMode       = VulkanUtils::ConvertMipmapMode(inDesc.mipmapFilter);
-    createInfo.addressModeU     = VulkanUtils::ConvertAddressMode(inDesc.addressU);
-    createInfo.addressModeV     = VulkanUtils::ConvertAddressMode(inDesc.addressV);
-    createInfo.addressModeW     = VulkanUtils::ConvertAddressMode(inDesc.addressW);
-    createInfo.mipLodBias       = inDesc.lodBias;
-    createInfo.anisotropyEnable = inDesc.maxAnisotropy > 0;
-    createInfo.maxAnisotropy    = inDesc.maxAnisotropy;
-    createInfo.compareEnable    = inDesc.compareOp != kGPUCompareOp_Always;
-    createInfo.compareOp        = VulkanUtils::ConvertCompareOp(inDesc.compareOp);
-    createInfo.minLod           = inDesc.minLod;
-    createInfo.maxLod           = inDesc.maxLod;
+    createInfo.magFilter        = VulkanUtils::ConvertFilter(desc.magFilter);
+    createInfo.minFilter        = VulkanUtils::ConvertFilter(desc.minFilter);
+    createInfo.mipmapMode       = VulkanUtils::ConvertMipmapMode(desc.mipmapFilter);
+    createInfo.addressModeU     = VulkanUtils::ConvertAddressMode(desc.addressU);
+    createInfo.addressModeV     = VulkanUtils::ConvertAddressMode(desc.addressV);
+    createInfo.addressModeW     = VulkanUtils::ConvertAddressMode(desc.addressW);
+    createInfo.mipLodBias       = desc.lodBias;
+    createInfo.anisotropyEnable = desc.maxAnisotropy > 0;
+    createInfo.maxAnisotropy    = desc.maxAnisotropy;
+    createInfo.compareEnable    = desc.compareOp != kGPUCompareOp_Always;
+    createInfo.compareOp        = VulkanUtils::ConvertCompareOp(desc.compareOp);
+    createInfo.minLod           = desc.minLod;
+    createInfo.maxLod           = desc.maxLod;
 
     VulkanCheck(vkCreateSampler(GetVulkanDevice().GetHandle(),
                                 &createInfo,

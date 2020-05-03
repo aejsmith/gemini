@@ -18,10 +18,10 @@
 
 #include "GPU/GPUResourceView.h"
 
-GPUArgumentSetLayout::GPUArgumentSetLayout(GPUDevice&                 inDevice,
-                                           GPUArgumentSetLayoutDesc&& inDesc) :
-    GPUDeviceChild  (inDevice),
-    mDesc           (std::move(inDesc))
+GPUArgumentSetLayout::GPUArgumentSetLayout(GPUDevice&                 device,
+                                           GPUArgumentSetLayoutDesc&& desc) :
+    GPUDeviceChild  (device),
+    mDesc           (std::move(desc))
 {
     Assert(GetArgumentCount() <= kMaxArgumentsPerSet);
 
@@ -40,13 +40,13 @@ GPUArgumentSetLayout::~GPUArgumentSetLayout()
 {
 }
 
-GPUArgumentSet::GPUArgumentSet(GPUDevice&                    inDevice,
-                               const GPUArgumentSetLayoutRef inLayout,
-                               const GPUArgument* const      inArguments) :
-    GPUObject   (inDevice),
-    mLayout     (inLayout)
+GPUArgumentSet::GPUArgumentSet(GPUDevice&                    device,
+                               const GPUArgumentSetLayoutRef layout,
+                               const GPUArgument* const      arguments) :
+    GPUObject   (device),
+    mLayout     (layout)
 {
-    ValidateArguments(inLayout, inArguments);
+    ValidateArguments(layout, arguments);
 }
 
 GPUArgumentSet::~GPUArgumentSet()
@@ -55,25 +55,25 @@ GPUArgumentSet::~GPUArgumentSet()
 
 #if GEMINI_BUILD_DEBUG
 
-void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
-                                       const GPUArgument* const      inArguments)
+void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef layout,
+                                       const GPUArgument* const      arguments)
 {
-    Assert(inLayout);
+    Assert(layout);
 
-    const auto& argumentTypes = inLayout->GetArguments();
+    const auto& argumentTypes = layout->GetArguments();
 
-    for (size_t i = 0; i < inLayout->GetArgumentCount(); i++)
+    for (size_t i = 0; i < layout->GetArgumentCount(); i++)
     {
         if (argumentTypes[i] == kGPUArgumentType_Constants)
         {
-            Assert(!inArguments || (!inArguments[i].view && !inArguments[i].sampler));
+            Assert(!arguments || (!arguments[i].view && !arguments[i].sampler));
         }
         else
         {
-            Assert(inArguments);
+            Assert(arguments);
 
-            const auto view    = inArguments[i].view;
-            const auto sampler = inArguments[i].sampler;
+            const auto view    = arguments[i].view;
+            const auto sampler = arguments[i].sampler;
 
             /* Must have only 1 of a view or sampler. */
             Assert(!view != !sampler);

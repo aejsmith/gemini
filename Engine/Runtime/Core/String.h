@@ -24,28 +24,28 @@ namespace StringUtils
 {
     /** Splits a string into tokens. */
     template <typename Container>
-    void                        Tokenize(const std::string& inString,
+    void                        Tokenize(const std::string& string,
                                          Container&         outTokens,
-                                         const char*        inDelimiters = " ",
-                                         const int          inMaxTokens  = -1,
-                                         const bool         inTrimEmpty  = true);
+                                         const char*        delimiters = " ",
+                                         const int          maxTokens  = -1,
+                                         const bool         trimEmpty  = true);
 
     /** Format a string as per printf(). */
-    std::string                 VFormat(const char* const inFormat,
-                                        va_list           inArgs);
+    std::string                 VFormat(const char* const format,
+                                        va_list           args);
 
     /** Format a string as per printf(). */
-    std::string                 Format(const char* const inFormat,
+    std::string                 Format(const char* const format,
                                        ...);
 
 };
 
 template <typename Container>
-inline void StringUtils::Tokenize(const std::string& inString,
+inline void StringUtils::Tokenize(const std::string& string,
                                   Container&         outTokens,
-                                  const char*        inDelimiters,
-                                  const int          inMaxTokens,
-                                  const bool         inTrimEmpty)
+                                  const char*        delimiters,
+                                  const int          maxTokens,
+                                  const bool         trimEmpty)
 {
     size_t last   = 0;
     size_t pos    = 0;
@@ -53,17 +53,19 @@ inline void StringUtils::Tokenize(const std::string& inString,
 
     while (pos != std::string::npos)
     {
-        if (inMaxTokens > 0 && numTokens == inMaxTokens - 1)
+        if (maxTokens > 0 && numTokens == maxTokens - 1)
         {
-            outTokens.emplace_back(inString, last);
+            outTokens.emplace_back(string, last);
             break;
         }
         else
         {
-            pos = inString.find_first_of(inDelimiters, last);
+            pos = string.find_first_of(delimiters, last);
 
-            if (!inTrimEmpty || last != ((pos == std::string::npos) ? inString.length() : pos))
-                outTokens.emplace_back(inString, last, pos - last);
+            if (!trimEmpty || last != ((pos == std::string::npos) ? string.length() : pos))
+            {
+                outTokens.emplace_back(string, last, pos - last);
+            }
 
             last = pos + 1;
             numTokens++;

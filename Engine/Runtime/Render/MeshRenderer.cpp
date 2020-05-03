@@ -26,10 +26,10 @@
 class SubMeshRenderEntity final : public RenderEntity
 {
 public:
-                                SubMeshRenderEntity(const MeshRenderer& inRenderer,
-                                                    const Mesh&         inMesh,
-                                                    const SubMesh&      inSubMesh,
-                                                    Material&           inMaterial);
+                                SubMeshRenderEntity(const MeshRenderer& renderer,
+                                                    const Mesh&         mesh,
+                                                    const SubMesh&      subMesh,
+                                                    Material&           material);
 
 protected:
     BoundingBox                 GetLocalBoundingBox() override;
@@ -49,13 +49,13 @@ private:
 
 };
 
-SubMeshRenderEntity::SubMeshRenderEntity(const MeshRenderer& inRenderer,
-                                         const Mesh&         inMesh,
-                                         const SubMesh&      inSubMesh,
-                                         Material&           inMaterial) :
-    RenderEntity    (inRenderer, inMaterial),
-    mMesh           (inMesh),
-    mSubMesh        (inSubMesh)
+SubMeshRenderEntity::SubMeshRenderEntity(const MeshRenderer& renderer,
+                                         const Mesh&         mesh,
+                                         const SubMesh&      subMesh,
+                                         Material&           material) :
+    RenderEntity    (renderer, material),
+    mMesh           (mesh),
+    mSubMesh        (subMesh)
 {
 }
 
@@ -107,49 +107,49 @@ MeshRenderer::~MeshRenderer()
 {
 }
 
-void MeshRenderer::Serialise(Serialiser& inSerialiser) const
+void MeshRenderer::Serialise(Serialiser& serialiser) const
 {
-    EntityRenderer::Serialise(inSerialiser);
+    EntityRenderer::Serialise(serialiser);
 
-    inSerialiser.BeginGroup("materials");
+    serialiser.BeginGroup("materials");
 
     for (size_t i = 0; i < mMesh->GetMaterialCount(); i++)
     {
         if (mMaterials[i])
         {
-            inSerialiser.Write(mMesh->GetMaterialName(i).c_str(), mMaterials[i]);
+            serialiser.Write(mMesh->GetMaterialName(i).c_str(), mMaterials[i]);
         }
     }
 
-    inSerialiser.EndGroup();
+    serialiser.EndGroup();
 }
 
-void MeshRenderer::Deserialise(Serialiser& inSerialiser)
+void MeshRenderer::Deserialise(Serialiser& serialiser)
 {
-    EntityRenderer::Deserialise(inSerialiser);
+    EntityRenderer::Deserialise(serialiser);
 
     bool success = true;
     Unused(success);
 
-    success &= inSerialiser.BeginGroup("materials");
+    success &= serialiser.BeginGroup("materials");
     Assert(success);
 
     for (size_t i = 0; i < mMesh->GetMaterialCount(); i++)
     {
-        success &= inSerialiser.Read(mMesh->GetMaterialName(i).c_str(), mMaterials[i]);
+        success &= serialiser.Read(mMesh->GetMaterialName(i).c_str(), mMaterials[i]);
         Assert(success);
     }
 
-    inSerialiser.EndGroup();
+    serialiser.EndGroup();
 }
 
-void MeshRenderer::SetMesh(Mesh* const inMesh)
+void MeshRenderer::SetMesh(Mesh* const mesh)
 {
     /* Need to recreate the RenderEntities to take effect. */
     ScopedComponentDeactivation deactivate(this);
 
-    mMesh = inMesh;
-    mMaterials.resize(inMesh->GetMaterialCount());
+    mMesh = mesh;
+    mMaterials.resize(mesh->GetMaterialCount());
 
     /* TODO: Can't reactivate unless there is a material in all slots. Should
      * perhaps populate new slots with a dummy material. */
@@ -181,39 +181,39 @@ EntityRenderer::RenderEntityArray MeshRenderer::CreateRenderEntities()
     return renderEntities;
 }
 
-Material* MeshRenderer::GetMaterial(const std::string& inName) const
+Material* MeshRenderer::GetMaterial(const std::string& name) const
 {
     size_t index;
-    const bool found = mMesh->GetMaterial(inName, index);
+    const bool found = mMesh->GetMaterial(name, index);
     Assert(found);
 
     return (found) ? mMaterials[index] : nullptr;
 }
 
-void MeshRenderer::SetMaterial(const uint32_t  inIndex,
-                               Material* const inMaterial)
+void MeshRenderer::SetMaterial(const uint32_t  index,
+                               Material* const material)
 {
-    Assert(inIndex < mMaterials.size());
+    Assert(index < mMaterials.size());
 
     /* Need to recreate the RenderEntities to take effect. */
     ScopedComponentDeactivation deactivate(this);
-    mMaterials[inIndex] = inMaterial;
+    mMaterials[index] = material;
 }
 
-void MeshRenderer::SetMaterial(const std::string& inName,
-                               Material* const    inMaterial)
+void MeshRenderer::SetMaterial(const std::string& name,
+                               Material* const    material)
 {
     size_t index;
-    const bool found = mMesh->GetMaterial(inName, index);
+    const bool found = mMesh->GetMaterial(name, index);
     Assert(found);
 
     if (found)
     {
-        SetMaterial(index, inMaterial);
+        SetMaterial(index, material);
     }
 }
 
-void MeshRenderer::CustomDebugUIEditor(const uint32_t        inFlags,
+void MeshRenderer::CustomDebugUIEditor(const uint32_t        flags,
                                        std::vector<Object*>& ioChildren)
 {
     if (!mMesh)

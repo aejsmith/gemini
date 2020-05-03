@@ -20,15 +20,15 @@
 
 #include <glm/gtx/quaternion.hpp>
 
-void Cone::CreateGeometry(const uint32_t          inBaseVertices,
+void Cone::CreateGeometry(const uint32_t          baseVertices,
                           std::vector<glm::vec3>& outVertices,
                           std::vector<uint16_t>&  outIndices) const
 {
     outVertices.clear();
-    outVertices.reserve(inBaseVertices + 2);
+    outVertices.reserve(baseVertices + 2);
 
     outIndices.clear();
-    outIndices.reserve(6 * inBaseVertices);
+    outIndices.reserve(6 * baseVertices);
 
     /* Calculate a transformation between a unit cone in the negative Z
      * direction and a cone with the properties we want. */
@@ -41,8 +41,8 @@ void Cone::CreateGeometry(const uint32_t          inBaseVertices,
     /* Add the vertices. Head, then the base. */
     outVertices.emplace_back(mOrigin);
     outVertices.emplace_back(mOrigin + (mDirection * mHeight));
-    const float delta = (2 * glm::pi<float>()) / inBaseVertices;
-    for (uint32_t i = 0; i < inBaseVertices; i++)
+    const float delta = (2 * glm::pi<float>()) / baseVertices;
+    for (uint32_t i = 0; i < baseVertices; i++)
     {
         const float angle = i * delta;
         const float x = cosf(angle);
@@ -52,17 +52,17 @@ void Cone::CreateGeometry(const uint32_t          inBaseVertices,
     }
 
     /* Add indices. Cone head to base, then the base. */
-    for (uint32_t i = 0; i < inBaseVertices; i++)
+    for (uint32_t i = 0; i < baseVertices; i++)
     {
         outIndices.emplace_back(0);
         outIndices.emplace_back(i + 2);
-        outIndices.emplace_back(((i + 1) % inBaseVertices) + 2);
+        outIndices.emplace_back(((i + 1) % baseVertices) + 2);
     }
-    for (uint32_t i = 0; i < inBaseVertices; i++)
+    for (uint32_t i = 0; i < baseVertices; i++)
     {
         outIndices.emplace_back(1);
         outIndices.emplace_back(i + 2);
-        outIndices.emplace_back(((i + 1) % inBaseVertices) + 2);
+        outIndices.emplace_back(((i + 1) % baseVertices) + 2);
     }
 }
 

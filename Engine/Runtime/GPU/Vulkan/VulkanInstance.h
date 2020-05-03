@@ -42,12 +42,12 @@ public:
     VkInstance                  GetHandle() const           { return mHandle; }
     const LayerList&            GetEnabledLayers() const    { return mEnabledLayers; }
 
-    bool                        HasCap(const Caps inCap) const
-                                    { return (mCaps & inCap) == inCap; }
+    bool                        HasCap(const Caps cap) const
+                                    { return (mCaps & cap) == cap; }
 
     template <typename Function>
-    Function                    Load(const char* inName,
-                                     const bool  inRequired);
+    Function                    Load(const char* name,
+                                     const bool  required);
 
 private:
     /* Implemented by platform-specific code. */
@@ -70,14 +70,14 @@ private:
 };
 
 template <typename Function>
-inline Function VulkanInstance::Load(const char* inName,
-                                     const bool  inRequired)
+inline Function VulkanInstance::Load(const char* name,
+                                     const bool  required)
 {
-    auto func = reinterpret_cast<Function>(vkGetInstanceProcAddr(mHandle, inName));
+    auto func = reinterpret_cast<Function>(vkGetInstanceProcAddr(mHandle, name));
 
-    if (!func && inRequired)
+    if (!func && required)
     {
-        Fatal("Failed to load Vulkan function '%s'", inName);
+        Fatal("Failed to load Vulkan function '%s'", name);
     }
 
     return func;

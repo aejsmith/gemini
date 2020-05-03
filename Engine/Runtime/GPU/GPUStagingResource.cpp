@@ -26,16 +26,16 @@ GPUStagingResource::~GPUStagingResource()
     }
 }
 
-void GPUStagingResource::Allocate(const GPUStagingAccess inAccess,
-                                  const uint32_t         inSize)
+void GPUStagingResource::Allocate(const GPUStagingAccess access,
+                                  const uint32_t         size)
 {
     if (IsAllocated())
     {
         GetDevice().GetStagingPool().Free(mHandle);
     }
 
-    mHandle    = GetDevice().GetStagingPool().Allocate(inAccess, inSize, mMapping);
-    mAccess    = inAccess;
+    mHandle    = GetDevice().GetStagingPool().Allocate(access, size, mMapping);
+    mAccess    = access;
     mFinalised = false;
 }
 
@@ -48,10 +48,10 @@ GPUStagingTexture::~GPUStagingTexture()
 {
 }
 
-void GPUStagingTexture::Initialise(const GPUStagingAccess inAccess,
-                                   const GPUTextureDesc&  inDesc)
+void GPUStagingTexture::Initialise(const GPUStagingAccess access,
+                                   const GPUTextureDesc&  desc)
 {
-    mDesc = inDesc;
+    mDesc = desc;
 
     const uint32_t subresourceCount = GetNumMipLevels() * GetArraySize();
     mSubresourceOffsets.resize(subresourceCount);
@@ -79,13 +79,13 @@ void GPUStagingTexture::Initialise(const GPUStagingAccess inAccess,
         }
     }
 
-    Allocate(inAccess, bufferSize);
+    Allocate(access, bufferSize);
 }
 
-void* GPUStagingTexture::MapWrite(const GPUSubresource inSubresource)
+void* GPUStagingTexture::MapWrite(const GPUSubresource subresource)
 {
     Assert(!IsFinalised());
 
-    const uint32_t offset = GetSubresourceOffset(inSubresource);
+    const uint32_t offset = GetSubresourceOffset(subresource);
     return reinterpret_cast<uint8_t*>(mMapping) + offset;
 }

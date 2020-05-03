@@ -16,11 +16,11 @@
 
 #include "Render/RenderContext.h"
 
-RenderContext::RenderContext(RenderGraph&       inGraph,
-                             const RenderWorld& inWorld,
-                             const RenderView&  inView) :
-    mGraph  (inGraph),
-    mWorld  (inWorld),
-    mView   (inView)
+RenderContext::RenderContext(RenderGraph&       graph,
+                             const RenderWorld& world,
+                             const RenderView&  view) :
+    mGraph  (graph),
+    mWorld  (world),
+    mView   (view)
 {
 }

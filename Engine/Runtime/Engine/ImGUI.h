@@ -37,7 +37,7 @@ public:
     void                    BeginFrame(OnlyCalledBy<Engine>);
     void                    Render(OnlyCalledBy<Engine>);
 
-    void                    SetInputEnabled(const bool inEnable);
+    void                    SetInputEnabled(const bool enable);
 
 private:
     ImGUIInputHandler*      mInputHandler;

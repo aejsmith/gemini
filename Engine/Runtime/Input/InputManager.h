@@ -39,26 +39,26 @@ public:
     InputModifier               GetModifiers();
 
     /** Get the state of a button input. */
-    bool                        GetButtonState(const InputCode inCode);
+    bool                        GetButtonState(const InputCode code);
 
     /** Get the current mouse cursor position, relative to the focused window. */
     glm::ivec2                  GetCursorPosition();
 
     /** Get/set whether the mouse is captured. */
     bool                        IsMouseCaptured() const { return mMouseCaptured; }
-    void                        SetMouseCaptured(const bool inCaptured);
+    void                        SetMouseCaptured(const bool captured);
 
     /** Interface with InputHandler. */
-    void                        RegisterHandler(InputHandler* const inHandler,
+    void                        RegisterHandler(InputHandler* const handler,
                                                 OnlyCalledBy<InputHandler>);
-    void                        UnregisterHandler(InputHandler* const inHandler,
+    void                        UnregisterHandler(InputHandler* const handler,
                                                   OnlyCalledBy<InputHandler>);
-    void                        BeginTextInput(InputHandler* const inHandler,
+    void                        BeginTextInput(InputHandler* const handler,
                                                OnlyCalledBy<InputHandler>);
-    void                        EndTextInput(InputHandler* const inHandler,
+    void                        EndTextInput(InputHandler* const handler,
                                              OnlyCalledBy<InputHandler>);
 
-    bool                        HandleEvent(const SDL_Event& inEvent,
+    bool                        HandleEvent(const SDL_Event& event,
                                             OnlyCalledBy<Engine>);
 
 private:

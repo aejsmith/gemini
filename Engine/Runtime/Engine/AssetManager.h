@@ -47,23 +47,23 @@ public:
      * Attempts to load the asset at the specified path. Returns null if the
      * asset could not be loaded.
      */
-    AssetPtr                Load(const Path& inPath);
+    AssetPtr                Load(const Path& path);
 
     /**
      * Loads the asset at the specified type, ensuring that it is the requested
      * type. Raises a fatal error if the asset could not be loaded.
      */
     template <typename T>
-    ObjPtr<T>               Load(const Path& inPath);
+    ObjPtr<T>               Load(const Path& path);
 
-    void                    UnregisterAsset(Asset* const inAsset,
+    void                    UnregisterAsset(Asset* const asset,
                                             OnlyCalledBy<Asset>);
 
     /**
      * Get a filesystem path (without extension) corresponding to an asset
      * path. Returns false if the search path (first component) is unknown.
      */
-    bool                    GetFilesystemPath(const Path& inPath,
+    bool                    GetFilesystemPath(const Path& path,
                                               Path&       outFSPath);
 
     /**
@@ -73,27 +73,27 @@ public:
      * will be updated to the new path after the call. Returns whether saving
      * was successful.
      */
-    bool                    SaveAsset(Asset* const inAsset,
-                                      const Path&  inPath);
+    bool                    SaveAsset(Asset* const asset,
+                                      const Path&  path);
 
     /**
      * To be used within a DebugWindow, implements an asset selection dialog
      * which can change the asset referred to by a given asset pointer. This
-     * should be called unconditionally, with the inActivate parameter used as
+     * should be called unconditionally, with the activate parameter used as
      * a trigger to activate the dialog (e.g. pass the return value from a
      * button press). Should be called within a unique scope in the ImGUI ID
      * stack. Returns true when a new asset has been successfully selected.
      */
     bool                    DebugUIAssetSelector(AssetPtr&        ioAsset,
-                                                 const MetaClass& inPointeeClass,
-                                                 const bool       inActivate);
+                                                 const MetaClass& pointeeClass,
+                                                 const bool       activate);
 
 private:
     using AssetMap        = std::map<std::string, Asset*>;
     using SearchPathMap   = HashMap<std::string, std::string>;
 
 private:
-    Asset*                  LookupAsset(const Path& inPath) const;
+    Asset*                  LookupAsset(const Path& path) const;
 
 private:
     /**
@@ -110,21 +110,21 @@ private:
 };
 
 template <typename T>
-inline ObjPtr<T> AssetManager::Load(const Path& inPath)
+inline ObjPtr<T> AssetManager::Load(const Path& path)
 {
     static_assert(std::is_base_of<Asset, T>::value,
                   "AssetType is not derived from Asset");
 
-    AssetPtr asset = Load(inPath);
+    AssetPtr asset = Load(path);
     if (!asset)
     {
-        Fatal("Unable to load asset '%s'", inPath.GetCString());
+        Fatal("Unable to load asset '%s'", path.GetCString());
     }
 
     ObjPtr<T> ret = object_cast<ObjPtr<T>>(asset);
     if (!ret)
     {
-        Fatal("Asset '%s' is not of expected type", inPath.GetCString());
+        Fatal("Asset '%s' is not of expected type", path.GetCString());
     }
 
     return ret;

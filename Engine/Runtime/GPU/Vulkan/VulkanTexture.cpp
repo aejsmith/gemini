@@ -20,9 +20,9 @@
 #include "VulkanFormat.h"
 #include "VulkanSwapchain.h"
 
-VulkanTexture::VulkanTexture(VulkanDevice&         inDevice,
-                             const GPUTextureDesc& inDesc) :
-    GPUTexture      (inDevice, inDesc),
+VulkanTexture::VulkanTexture(VulkanDevice&         device,
+                             const GPUTextureDesc& desc) :
+    GPUTexture      (device, desc),
     mHandle         (VK_NULL_HANDLE),
     mAllocation     (VK_NULL_HANDLE),
     mAspectMask     (0),
@@ -108,9 +108,9 @@ VulkanTexture::VulkanTexture(VulkanDevice&         inDevice,
                                                        mAllocation);
 }
 
-VulkanTexture::VulkanTexture(VulkanSwapchain& inSwapchain,
+VulkanTexture::VulkanTexture(VulkanSwapchain& swapchain,
                              OnlyCalledBy<VulkanSwapchain>) :
-    GPUTexture  (inSwapchain),
+    GPUTexture  (swapchain),
     mHandle     (VK_NULL_HANDLE),
     mAllocation (VK_NULL_HANDLE),
     mAspectMask (VK_IMAGE_ASPECT_COLOR_BIT)
@@ -122,10 +122,10 @@ VulkanTexture::~VulkanTexture()
     if (!IsSwapchain())
     {
         GetVulkanDevice().AddFrameCompleteCallback(
-            [handle = mHandle, allocation = mAllocation] (VulkanDevice& inDevice)
+            [handle = mHandle, allocation = mAllocation] (VulkanDevice& device)
             {
-                vkDestroyImage(inDevice.GetHandle(), handle, nullptr);
-                inDevice.GetMemoryManager().Free(allocation);
+                vkDestroyImage(device.GetHandle(), handle, nullptr);
+                device.GetMemoryManager().Free(allocation);
             });
     }
 }

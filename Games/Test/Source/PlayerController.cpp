@@ -41,18 +41,18 @@ void PlayerController::Deactivated()
     UnregisterInputHandler();
 }
 
-void PlayerController::Tick(const float inDelta)
+void PlayerController::Tick(const float delta)
 {
-    const glm::vec3 movement = inDelta * kMovementVelocity * mDirection;
+    const glm::vec3 movement = delta * kMovementVelocity * mDirection;
     GetEntity()->Translate(glm::vec3(0.0f, movement.y, 0.0f));
     GetEntity()->Translate(this->camera->GetWorldOrientation() * glm::vec3(movement.x, 0.0f, movement.z));
 }
 
-InputHandler::EventResult PlayerController::HandleButton(const ButtonEvent& inEvent)
+InputHandler::EventResult PlayerController::HandleButton(const ButtonEvent& event)
 {
     glm::vec3 direction(0.0f);
 
-    switch (inEvent.code)
+    switch (event.code)
     {
         case kInputCode_W:
             direction.z = -1.0f;
@@ -74,7 +74,7 @@ InputHandler::EventResult PlayerController::HandleButton(const ButtonEvent& inEv
             break;
 
         case kInputCode_MouseRight:
-            mIsRotating = inEvent.down;
+            mIsRotating = event.down;
             break;
 
         default:
@@ -82,7 +82,7 @@ InputHandler::EventResult PlayerController::HandleButton(const ButtonEvent& inEv
 
     }
 
-    if (inEvent.down)
+    if (event.down)
     {
         mDirection += direction;
     }
@@ -94,18 +94,18 @@ InputHandler::EventResult PlayerController::HandleButton(const ButtonEvent& inEv
     return kEventResult_Continue;
 }
 
-InputHandler::EventResult PlayerController::HandleAxis(const AxisEvent& inEvent)
+InputHandler::EventResult PlayerController::HandleAxis(const AxisEvent& event)
 {
     if (mIsRotating)
     {
-        switch (inEvent.code)
+        switch (event.code)
         {
             case kInputCode_MouseX:
-                GetEntity()->Rotate(-inEvent.delta / 4, glm::vec3(0.0f, 1.0f, 0.0f));
+                GetEntity()->Rotate(-event.delta / 4, glm::vec3(0.0f, 1.0f, 0.0f));
                 break;
 
             case kInputCode_MouseY:
-                this->camera->GetEntity()->Rotate(-inEvent.delta / 4, glm::vec3(1.0f, 0.0f, 0.0f));
+                this->camera->GetEntity()->Rotate(-event.delta / 4, glm::vec3(1.0f, 0.0f, 0.0f));
                 break;
 
             default:

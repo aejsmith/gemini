@@ -16,23 +16,23 @@
 
 #include "Core/Math/Sphere.h"
 
-void Sphere::CreateGeometry(const uint32_t          inRings,
-                            const uint32_t          inSectors,
+void Sphere::CreateGeometry(const uint32_t          rings,
+                            const uint32_t          sectors,
                             std::vector<glm::vec3>& outVertices,
                             std::vector<uint16_t>&  outIndices) const
 {
     outVertices.clear();
-    outVertices.reserve(inRings * inSectors);
+    outVertices.reserve(rings * sectors);
 
     outIndices.clear();
-    outIndices.reserve(inRings * inSectors * 6);
+    outIndices.reserve(rings * sectors * 6);
 
-    const float R = 1.0f / static_cast<float>(inRings - 1);
-    const float S = 1.0f / static_cast<float>(inSectors - 1);
+    const float R = 1.0f / static_cast<float>(rings - 1);
+    const float S = 1.0f / static_cast<float>(sectors - 1);
 
-    for (uint32_t r = 0; r < inRings; r++)
+    for (uint32_t r = 0; r < rings; r++)
     {
-        for (uint32_t s = 0; s < inSectors; s++)
+        for (uint32_t s = 0; s < sectors; s++)
         {
             const float x = cos(2 * glm::pi<float>() * s * S) * sin(glm::pi<float>() * r * R);
             const float y = sin(-glm::half_pi<float>() + glm::pi<float>() * r * R);
@@ -42,16 +42,16 @@ void Sphere::CreateGeometry(const uint32_t          inRings,
         }
     }
 
-    for (uint32_t r = 0; r < inRings - 1; r++)
+    for (uint32_t r = 0; r < rings - 1; r++)
     {
-        for (uint32_t s = 0; s < inSectors - 1; s++)
+        for (uint32_t s = 0; s < sectors - 1; s++)
         {
-            outIndices.emplace_back(r * inSectors + s);
-            outIndices.emplace_back((r + 1) * inSectors + s);
-            outIndices.emplace_back((r + 1) * inSectors + (s + 1));
-            outIndices.emplace_back((r + 1) * inSectors + (s + 1));
-            outIndices.emplace_back(r * inSectors + (s + 1));
-            outIndices.emplace_back(r * inSectors + s);
+            outIndices.emplace_back(r * sectors + s);
+            outIndices.emplace_back((r + 1) * sectors + s);
+            outIndices.emplace_back((r + 1) * sectors + (s + 1));
+            outIndices.emplace_back((r + 1) * sectors + (s + 1));
+            outIndices.emplace_back(r * sectors + (s + 1));
+            outIndices.emplace_back(r * sectors + s);
         }
     }
 }

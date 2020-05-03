@@ -27,8 +27,8 @@ class BoundingBox
 {
 public:
                                 BoundingBox();
-                                BoundingBox(const glm::vec3& inMinimum,
-                                            const glm::vec3& inMaximum);
+                                BoundingBox(const glm::vec3& minimum,
+                                            const glm::vec3& maximum);
 
     const glm::vec3&            GetMinimum() const  { return mMinimum; }
     const glm::vec3&            GetMaximum() const  { return mMaximum; }
@@ -37,16 +37,16 @@ public:
      * Gets the positive (P-) vertex for this box given a normal, i.e. the
      * vertex of the box which is furthest along the normal's direction.
      */
-    glm::vec3                   CalculatePVertex(const glm::vec3& inNormal) const;
+    glm::vec3                   CalculatePVertex(const glm::vec3& normal) const;
 
     /**
      * Gets the negative (N-) vertex for this box given a normal, i.e. the
      * vertex of the box which is furthest away from the normal's direction.
      */
-    glm::vec3                   CalculateNVertex(const glm::vec3& inNormal) const;
+    glm::vec3                   CalculateNVertex(const glm::vec3& normal) const;
 
-    BoundingBox                 Transform(const glm::mat4& inMatrix) const;
-    BoundingBox                 Transform(const class Transform& inTransform) const;
+    BoundingBox                 Transform(const glm::mat4& matrix) const;
+    BoundingBox                 Transform(const class Transform& transform) const;
 
 private:
     glm::vec3                   mMinimum;
@@ -60,14 +60,14 @@ inline BoundingBox::BoundingBox() :
 {
 }
 
-inline BoundingBox::BoundingBox(const glm::vec3& inMinimum,
-                                const glm::vec3& inMaximum) :
-    mMinimum    (inMinimum),
-    mMaximum    (inMaximum)
+inline BoundingBox::BoundingBox(const glm::vec3& minimum,
+                                const glm::vec3& maximum) :
+    mMinimum    (minimum),
+    mMaximum    (maximum)
 {
-    Assert(inMaximum.x >= inMinimum.x &&
-           inMaximum.y >= inMinimum.y &&
-           inMaximum.z >= inMinimum.z);
+    Assert(maximum.x >= minimum.x &&
+           maximum.y >= minimum.y &&
+           maximum.z >= minimum.z);
 }
 
 inline bool operator==(const BoundingBox& a, const BoundingBox& b)

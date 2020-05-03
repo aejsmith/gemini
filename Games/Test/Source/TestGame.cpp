@@ -44,9 +44,9 @@ TestGame::~TestGame()
 {
 }
 
-static void ImportGLTFWorld(const Path& inPath,
-                            const Path& inAssetDir,
-                            const Path& inWorldPath)
+static void ImportGLTFWorld(const Path& path,
+                            const Path& assetDir,
+                            const Path& worldPath)
 {
     Engine::Get().CreateWorld();
     World* const world = Engine::Get().GetWorld();
@@ -68,12 +68,12 @@ static void ImportGLTFWorld(const Path& inPath,
     controller->SetActive(true);
 
     GLTFImporter importer;
-    if (!importer.Import(inPath, inAssetDir, world))
+    if (!importer.Import(path, assetDir, world))
     {
-        Fatal("Failed to load '%s'", inPath.GetCString());
+        Fatal("Failed to load '%s'", path.GetCString());
     }
 
-    if (!AssetManager::Get().SaveAsset(world, inWorldPath))
+    if (!AssetManager::Get().SaveAsset(world, worldPath))
     {
         Fatal("Failed to save world");
     }

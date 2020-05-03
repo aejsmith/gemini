@@ -26,40 +26,40 @@ public:
                                 JSONSerialiser();
 
 public:
-    ByteArray                   Serialise(const Object* const inObject) override;
+    ByteArray                   Serialise(const Object* const object) override;
 
-    ObjPtr<>                    Deserialise(const ByteArray& inData,
-                                            const MetaClass& inExpectedClass) override;
+    ObjPtr<>                    Deserialise(const ByteArray& data,
+                                            const MetaClass& expectedClass) override;
 
     using Serialiser::Deserialise;
 
-    bool                        BeginGroup(const char* const inName) override;
+    bool                        BeginGroup(const char* const name) override;
     void                        EndGroup() override;
 
-    bool                        BeginArray(const char* const inName) override;
+    bool                        BeginArray(const char* const name) override;
     void                        EndArray() override;
 
-    void                        WriteBinary(const char* const inName,
-                                            const void* const inData,
-                                            const size_t      inLength) override;
+    void                        WriteBinary(const char* const name,
+                                            const void* const data,
+                                            const size_t      length) override;
 
-    bool                        ReadBinary(const char* const inName,
+    bool                        ReadBinary(const char* const name,
                                            ByteArray&        outData) override;
 
 protected:
-    void                        Write(const char* const inName,
-                                      const MetaType&   inType,
-                                      const void* const inValue) override;
+    void                        Write(const char* const name,
+                                      const MetaType&   type,
+                                      const void* const value) override;
 
-    bool                        Read(const char* const inName,
-                                     const MetaType&   inType,
+    bool                        Read(const char* const name,
+                                     const MetaType&   type,
                                      void* const       outValue) override;
 
 private:
-    uint32_t                    AddObject(const Object* const inObject);
+    uint32_t                    AddObject(const Object* const object);
 
-    ObjPtr<>                    FindObject(const uint32_t   inID,
-                                           const MetaClass& inMetaClass);
+    ObjPtr<>                    FindObject(const uint32_t   id,
+                                           const MetaClass& metaClass);
 
 private:
     /* Internal state. Stored in a separate structure to avoid pulling

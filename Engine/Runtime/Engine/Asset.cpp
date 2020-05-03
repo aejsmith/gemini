@@ -26,10 +26,10 @@ Asset::~Asset()
 {
 }
 
-void Asset::SetPath(std::string inPath,
+void Asset::SetPath(std::string path,
                     OnlyCalledBy<AssetManager>)
 {
-    mPath = std::move(inPath);
+    mPath = std::move(path);
     PathChanged();
 }
 

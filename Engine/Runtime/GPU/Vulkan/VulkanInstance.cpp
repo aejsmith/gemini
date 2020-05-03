@@ -190,11 +190,11 @@ void VulkanInstance::CreateInstance()
     std::unordered_set<std::string> availableExtensions;
 
     auto EnumerateExtensions =
-        [&] (const char* const inLayerName)
+        [&] (const char* const layerName)
         {
-            VulkanCheck(vkEnumerateInstanceExtensionProperties(inLayerName, &count, nullptr));
+            VulkanCheck(vkEnumerateInstanceExtensionProperties(layerName, &count, nullptr));
             std::vector<VkExtensionProperties> extensionProps(count);
-            VulkanCheck(vkEnumerateInstanceExtensionProperties(inLayerName, &count, extensionProps.data()));
+            VulkanCheck(vkEnumerateInstanceExtensionProperties(layerName, &count, extensionProps.data()));
 
             for (const auto& extension : extensionProps)
             {
@@ -210,18 +210,18 @@ void VulkanInstance::CreateInstance()
     EnumerateExtensions(nullptr);
 
     auto EnableLayer =
-        [&] (const char* const inName, const uint32_t inCap) -> bool
+        [&] (const char* const name, const uint32_t cap) -> bool
         {
-            const bool available = availableLayers.find(inName) != availableLayers.end();
+            const bool available = availableLayers.find(name) != availableLayers.end();
 
             if (available)
             {
-                mEnabledLayers.emplace_back(inName);
-                mCaps |= inCap;
+                mEnabledLayers.emplace_back(name);
+                mCaps |= cap;
 
                 /* Get extensions provided by the layer. */
-                LogInfo("Instance extensions (%s):", inName);
-                EnumerateExtensions(inName);
+                LogInfo("Instance extensions (%s):", name);
+                EnumerateExtensions(name);
             }
 
             return available;
@@ -232,18 +232,18 @@ void VulkanInstance::CreateInstance()
     std::vector<const char*> enabledExtensions;
 
     auto EnableExtension =
-        [&] (const char* const inName, const uint32_t inCap, const bool inRequired = false) -> bool
+        [&] (const char* const name, const uint32_t cap, const bool required = false) -> bool
         {
-            const bool available = availableExtensions.find(inName) != availableExtensions.end();
+            const bool available = availableExtensions.find(name) != availableExtensions.end();
 
             if (available)
             {
-                enabledExtensions.emplace_back(inName);
-                mCaps |= inCap;
+                enabledExtensions.emplace_back(name);
+                mCaps |= cap;
             }
-            else if (inRequired)
+            else if (required)
             {
-                Fatal("Required Vulkan instance extension '%s' not available", inName);
+                Fatal("Required Vulkan instance extension '%s' not available", name);
             }
 
             return available;

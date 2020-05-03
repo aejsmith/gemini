@@ -99,19 +99,19 @@ protected:
  */
 namespace Filesystem
 {
-    extern File*                OpenFile(const Path&    inPath,
-                                         const FileMode inMode = kFileMode_Read);
+    extern File*                OpenFile(const Path&    path,
+                                         const FileMode mode = kFileMode_Read);
 
-    extern Directory*           OpenDirectory(const Path& inPath);
+    extern Directory*           OpenDirectory(const Path& path);
 
-    extern bool                 Exists(const Path& inPath);
+    extern bool                 Exists(const Path& path);
 
-    extern bool                 IsType(const Path&    inPath,
-                                       const FileType inType);
+    extern bool                 IsType(const Path&    path,
+                                       const FileType type);
 
-    extern bool                 SetWorkingDirectory(const Path& inPath);
+    extern bool                 SetWorkingDirectory(const Path& path);
 
-    extern bool                 GetFullPath(const Path& inPath,
+    extern bool                 GetFullPath(const Path& path,
                                             Path&       outFullPath);
 
 }

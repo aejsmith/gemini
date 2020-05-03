@@ -67,13 +67,13 @@ void GPURenderPass::Validate() const
     uint32_t layers = std::numeric_limits<uint32_t>::max();
 
     auto CheckSize =
-        [&] (const GPUResourceView* const inView)
+        [&] (const GPUResourceView* const view)
         {
-            const auto& texture = static_cast<const GPUTexture&>(inView->GetResource());
+            const auto& texture = static_cast<const GPUTexture&>(view->GetResource());
 
-            const uint32_t viewWidth  = texture.GetMipWidth(inView->GetMipOffset());
-            const uint32_t viewHeight = texture.GetMipHeight(inView->GetMipOffset());
-            const uint32_t viewLayers = inView->GetElementCount();
+            const uint32_t viewWidth  = texture.GetMipWidth(view->GetMipOffset());
+            const uint32_t viewHeight = texture.GetMipHeight(view->GetMipOffset());
+            const uint32_t viewLayers = view->GetElementCount();
 
             if (width != std::numeric_limits<uint32_t>::max())
             {

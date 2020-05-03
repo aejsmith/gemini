@@ -44,7 +44,7 @@ public:
     const Desc&                 GetDesc() const     { return mDesc; }
 
     /** Get a state object representing the given descriptor. */
-    static const GPUState*      Get(const Desc& inDesc);
+    static const GPUState*      Get(const Desc& desc);
 
     /**
      * Get the default state object (i.e. using the default-initialised values
@@ -55,8 +55,8 @@ public:
     static const GPUState*      GetDefault();
 
 private:
-                                GPUState(const Desc& inDesc) :
-                                    mDesc (inDesc)
+                                GPUState(const Desc& desc) :
+                                    mDesc (desc)
                                 {}
 
 private:
@@ -103,7 +103,7 @@ struct GPUBlendStateDesc
 
 public:
                                 GPUBlendStateDesc();
-                                GPUBlendStateDesc(const GPUBlendStateDesc& inOther);
+                                GPUBlendStateDesc(const GPUBlendStateDesc& other);
 
 };
 
@@ -115,9 +115,9 @@ inline GPUBlendStateDesc::GPUBlendStateDesc()
     memset(this, 0, sizeof(*this));
 }
 
-inline GPUBlendStateDesc::GPUBlendStateDesc(const GPUBlendStateDesc& inOther)
+inline GPUBlendStateDesc::GPUBlendStateDesc(const GPUBlendStateDesc& other)
 {
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
 using GPUBlendState    = GPUState<GPUBlendStateDesc>;
@@ -156,7 +156,7 @@ struct GPUDepthStencilStateDesc
 
 public:
                                 GPUDepthStencilStateDesc();
-                                GPUDepthStencilStateDesc(const GPUDepthStencilStateDesc& inOther);
+                                GPUDepthStencilStateDesc(const GPUDepthStencilStateDesc& other);
 
 };
 
@@ -168,9 +168,9 @@ inline GPUDepthStencilStateDesc::GPUDepthStencilStateDesc()
     memset(this, 0, sizeof(*this));
 }
 
-inline GPUDepthStencilStateDesc::GPUDepthStencilStateDesc(const GPUDepthStencilStateDesc& inOther)
+inline GPUDepthStencilStateDesc::GPUDepthStencilStateDesc(const GPUDepthStencilStateDesc& other)
 {
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
 using GPUDepthStencilState    = GPUState<GPUDepthStencilStateDesc>;
@@ -192,7 +192,7 @@ struct GPURasterizerStateDesc
 
 public:
                                 GPURasterizerStateDesc();
-                                GPURasterizerStateDesc(const GPURasterizerStateDesc& inOther);
+                                GPURasterizerStateDesc(const GPURasterizerStateDesc& other);
 
 };
 
@@ -204,9 +204,9 @@ inline GPURasterizerStateDesc::GPURasterizerStateDesc()
     memset(this, 0, sizeof(*this));
 }
 
-inline GPURasterizerStateDesc::GPURasterizerStateDesc(const GPURasterizerStateDesc& inOther)
+inline GPURasterizerStateDesc::GPURasterizerStateDesc(const GPURasterizerStateDesc& other)
 {
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
 using GPURasterizerState    = GPUState<GPURasterizerStateDesc>;
@@ -229,7 +229,7 @@ struct GPURenderTargetStateDesc
 
 public:
                                 GPURenderTargetStateDesc();
-                                GPURenderTargetStateDesc(const GPURenderTargetStateDesc& inOther);
+                                GPURenderTargetStateDesc(const GPURenderTargetStateDesc& other);
 
 };
 
@@ -241,9 +241,9 @@ inline GPURenderTargetStateDesc::GPURenderTargetStateDesc()
     memset(this, 0, sizeof(*this));
 }
 
-inline GPURenderTargetStateDesc::GPURenderTargetStateDesc(const GPURenderTargetStateDesc& inOther)
+inline GPURenderTargetStateDesc::GPURenderTargetStateDesc(const GPURenderTargetStateDesc& other)
 {
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
 using GPURenderTargetState    = GPUState<GPURenderTargetStateDesc>;
@@ -291,10 +291,10 @@ struct GPUVertexInputStateDesc
 
 public:
                                 GPUVertexInputStateDesc();
-                                GPUVertexInputStateDesc(const GPUVertexInputStateDesc& inOther);
+                                GPUVertexInputStateDesc(const GPUVertexInputStateDesc& other);
 
-    const Attribute*            FindAttribute(const GPUAttributeSemantic inSemantic,
-                                              const uint8_t              inIndex = 0) const;
+    const Attribute*            FindAttribute(const GPUAttributeSemantic semantic,
+                                              const uint8_t              index = 0) const;
 
 };
 
@@ -306,20 +306,20 @@ inline GPUVertexInputStateDesc::GPUVertexInputStateDesc()
     memset(this, 0, sizeof(*this));
 }
 
-inline GPUVertexInputStateDesc::GPUVertexInputStateDesc(const GPUVertexInputStateDesc& inOther)
+inline GPUVertexInputStateDesc::GPUVertexInputStateDesc(const GPUVertexInputStateDesc& other)
 {
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
 inline const GPUVertexInputStateDesc::Attribute*
-GPUVertexInputStateDesc::FindAttribute(const GPUAttributeSemantic inSemantic,
-                                       const uint8_t              inIndex) const
+GPUVertexInputStateDesc::FindAttribute(const GPUAttributeSemantic semantic,
+                                       const uint8_t              index) const
 {
     for (size_t i = 0; i < kMaxVertexAttributes; i++)
     {
         const Attribute& attribute = attributes[i];
 
-        if (attribute.semantic == inSemantic && attribute.index == inIndex)
+        if (attribute.semantic == semantic && attribute.index == index)
         {
             return &attribute;
         }

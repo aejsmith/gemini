@@ -18,21 +18,21 @@
 
 #include "GPU/GPUUtils.h"
 
-GPUResource::GPUResource(GPUDevice&             inDevice,
-                         const GPUResourceType  inType,
-                         const GPUResourceUsage inUsage) :
-    GPUObject (inDevice),
-    mType     (inType),
-    mUsage    (inUsage)
+GPUResource::GPUResource(GPUDevice&             device,
+                         const GPUResourceType  type,
+                         const GPUResourceUsage usage) :
+    GPUObject (device),
+    mType     (type),
+    mUsage    (usage)
 {
 }
 
 #if GEMINI_BUILD_DEBUG
 
-void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
+void GPUResource::ValidateBarrier(const GPUResourceBarrier& barrier) const
 {
-    GPUUtils::ValidateResourceState(inBarrier.newState,
-                                    inBarrier.resource->IsTexture());
+    GPUUtils::ValidateResourceState(barrier.newState,
+                                    barrier.resource->IsTexture());
 
     // TODO: Could validate against the resource usage flags as well?
 }

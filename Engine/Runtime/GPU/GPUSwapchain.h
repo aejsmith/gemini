@@ -33,8 +33,8 @@ class Window;
 class GPUSwapchain : public GPUDeviceChild
 {
 protected:
-                                GPUSwapchain(GPUDevice& inDevice,
-                                             Window&    inWindow);
+                                GPUSwapchain(GPUDevice& device,
+                                             Window&    window);
 
 public:
     virtual                     ~GPUSwapchain();

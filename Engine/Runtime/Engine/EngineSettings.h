@@ -31,12 +31,12 @@ public:
     /** Size of the main window. */
     VPROPERTY(glm::uvec2, mainWindowSize);
     const glm::uvec2&       GetMainWindowSize() const       { return mMainWindowSize; }
-    void                    SetMainWindowSize(const glm::uvec2& inSize);
+    void                    SetMainWindowSize(const glm::uvec2& size);
 
     /** Whether the main window is fullscreen. */
     VPROPERTY(bool, mainWindowFullscreen);
     bool                    GetMainWindowFullscreen() const { return mMainWindowFullscreen; }
-    void                    SetMainWindowFullscreen(const bool inFullscreen);
+    void                    SetMainWindowFullscreen(const bool fullscreen);
 
 private:
                             ~EngineSettings();

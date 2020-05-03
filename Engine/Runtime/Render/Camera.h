@@ -56,7 +56,7 @@ public:
      */
 
     RenderOutput*               GetOutput() const;
-    void                        SetOutput(RenderOutput* const inOutput) const;
+    void                        SetOutput(RenderOutput* const output) const;
 
 protected:
                                 ~Camera();

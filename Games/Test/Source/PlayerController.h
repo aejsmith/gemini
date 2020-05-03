@@ -39,10 +39,10 @@ protected:
 
     void                        Activated() override;
     void                        Deactivated() override;
-    void                        Tick(const float inDelta) override;
+    void                        Tick(const float delta) override;
 
-    EventResult                 HandleButton(const ButtonEvent& inEvent) override;
-    EventResult                 HandleAxis(const AxisEvent& inEvent) override;
+    EventResult                 HandleButton(const ButtonEvent& event) override;
+    EventResult                 HandleAxis(const AxisEvent& event) override;
 
 private:
     glm::vec3                   mDirection;

@@ -27,7 +27,7 @@ struct InputInfo
 
 public:
     /** Look up information for the given input code/name. */
-    static const InputInfo* Lookup(const InputCode inCode);
-    static const InputInfo* Lookup(const char* const inName);
+    static const InputInfo* Lookup(const InputCode code);
+    static const InputInfo* Lookup(const char* const name);
 
 };

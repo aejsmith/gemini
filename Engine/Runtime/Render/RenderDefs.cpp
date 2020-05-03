@@ -20,16 +20,16 @@
 
 #if GEMINI_BUILD_DEBUG
 
-ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& inContext,
-                                     const char* const   inLabel) :
-    mContext (inContext)
+ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
+                                     const char* const   label) :
+    mContext (context)
 {
-    mContext.BeginMarker(inLabel);
+    mContext.BeginMarker(label);
 }
 
-ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& inContext,
-                                     const std::string&  inLabel) :
-    ScopedDebugMarker (inContext, inLabel.c_str())
+ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
+                                     const std::string&  label) :
+    ScopedDebugMarker (context, label.c_str())
 {
 }
 

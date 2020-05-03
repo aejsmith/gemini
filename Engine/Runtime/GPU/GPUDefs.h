@@ -153,48 +153,48 @@ struct GPUSubresourceRange
     uint32_t                    layerCount;
 
 public:
-                                GPUSubresourceRange(const uint32_t inMipOffset = 0,
-                                                    const uint32_t inMipCount = 0,
-                                                    const uint32_t inLayerOffset = 0,
-                                                    const uint32_t inLayerCount = 0);
+                                GPUSubresourceRange(const uint32_t mipOffset = 0,
+                                                    const uint32_t mipCount = 0,
+                                                    const uint32_t layerOffset = 0,
+                                                    const uint32_t layerCount = 0);
 
-                                GPUSubresourceRange(const GPUSubresource inSubresource);
+                                GPUSubresourceRange(const GPUSubresource subresource);
 
-    bool                        Overlaps(const GPUSubresourceRange& inOther) const;
+    bool                        Overlaps(const GPUSubresourceRange& other) const;
 
 };
 
-inline GPUSubresourceRange::GPUSubresourceRange(const uint32_t inMipOffset,
-                                                const uint32_t inMipCount,
-                                                const uint32_t inLayerOffset,
-                                                const uint32_t inLayerCount) :
-    mipOffset   (inMipOffset),
-    mipCount    (inMipCount),
-    layerOffset (inLayerOffset),
-    layerCount  (inLayerCount)
+inline GPUSubresourceRange::GPUSubresourceRange(const uint32_t mipOffset,
+                                                const uint32_t mipCount,
+                                                const uint32_t layerOffset,
+                                                const uint32_t layerCount) :
+    mipOffset   (mipOffset),
+    mipCount    (mipCount),
+    layerOffset (layerOffset),
+    layerCount  (layerCount)
 {
 }
 
-inline GPUSubresourceRange::GPUSubresourceRange(const GPUSubresource inSubresource) :
-    mipOffset   (inSubresource.mipLevel),
+inline GPUSubresourceRange::GPUSubresourceRange(const GPUSubresource subresource) :
+    mipOffset   (subresource.mipLevel),
     mipCount    (1),
-    layerOffset (inSubresource.layer),
+    layerOffset (subresource.layer),
     layerCount  (1)
 {
 }
 
-inline bool GPUSubresourceRange::Overlaps(const GPUSubresourceRange& inOther) const
+inline bool GPUSubresourceRange::Overlaps(const GPUSubresourceRange& other) const
 {
     const uint32_t thisMipEnd    = this->mipOffset + this->mipCount;
     const uint32_t thisLayerEnd  = this->layerOffset + this->layerCount;
 
-    const uint32_t otherMipEnd   = inOther.mipOffset + inOther.mipCount;
-    const uint32_t otherLayerEnd = inOther.layerOffset + inOther.layerCount;
+    const uint32_t otherMipEnd   = other.mipOffset + other.mipCount;
+    const uint32_t otherLayerEnd = other.layerOffset + other.layerCount;
 
-    return (this->mipOffset   >= inOther.mipOffset   && this->mipOffset   <  otherMipEnd) ||
-           (thisMipEnd        >  inOther.mipOffset   && thisMipEnd        <= otherMipEnd) ||
-           (this->layerOffset >= inOther.layerOffset && this->layerOffset <  otherLayerEnd) ||
-           (thisLayerEnd      >  inOther.layerOffset && thisLayerEnd      <= otherLayerEnd);
+    return (this->mipOffset   >= other.mipOffset   && this->mipOffset   <  otherMipEnd) ||
+           (thisMipEnd        >  other.mipOffset   && thisMipEnd        <= otherMipEnd) ||
+           (this->layerOffset >= other.layerOffset && this->layerOffset <  otherLayerEnd) ||
+           (thisLayerEnd      >  other.layerOffset && thisLayerEnd      <= otherLayerEnd);
 }
 
 inline bool operator==(const GPUSubresourceRange& a, const GPUSubresourceRange& b)

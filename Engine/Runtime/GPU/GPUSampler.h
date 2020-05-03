@@ -45,7 +45,7 @@ struct GPUSamplerDesc
 
 public:
                             GPUSamplerDesc();
-                            GPUSamplerDesc(const GPUSamplerDesc& inOther);
+                            GPUSamplerDesc(const GPUSamplerDesc& other);
 
 };
 
@@ -69,15 +69,15 @@ inline GPUSamplerDesc::GPUSamplerDesc()
     this->compareOp     = kGPUCompareOp_Always;
 }
 
-inline GPUSamplerDesc::GPUSamplerDesc(const GPUSamplerDesc& inOther)
+inline GPUSamplerDesc::GPUSamplerDesc(const GPUSamplerDesc& other)
 {
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
 class GPUSampler : public GPUDeviceChild
 {
 protected:
-                            GPUSampler(GPUDevice& inDevice) : GPUDeviceChild (inDevice) {}
+                            GPUSampler(GPUDevice& device) : GPUDeviceChild (device) {}
     virtual                 ~GPUSampler() {}
 
     /* Allows the device to destroy cached samplers upon destruction. */

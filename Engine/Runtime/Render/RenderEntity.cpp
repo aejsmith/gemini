@@ -25,10 +25,10 @@
 #include "Render/RenderContext.h"
 #include "Render/RenderManager.h"
 
-RenderEntity::RenderEntity(const EntityRenderer& inRenderer,
-                           Material&             inMaterial) :
-    mRenderer   (inRenderer),
-    mMaterial   (inMaterial),
+RenderEntity::RenderEntity(const EntityRenderer& renderer,
+                           Material&             material) :
+    mRenderer   (renderer),
+    mMaterial   (material),
     mPipelines  {}
 {
 }
@@ -69,19 +69,19 @@ void RenderEntity::CreatePipelines()
     }
 }
 
-void RenderEntity::SetTransform(const Transform& inTransform)
+void RenderEntity::SetTransform(const Transform& transform)
 {
-    mTransform        = inTransform;
-    mWorldBoundingBox = GetLocalBoundingBox().Transform(inTransform);
+    mTransform        = transform;
+    mWorldBoundingBox = GetLocalBoundingBox().Transform(transform);
 }
 
-void RenderEntity::GetDrawCall(const ShaderPassType inPassType,
-                               const RenderContext& inContext,
+void RenderEntity::GetDrawCall(const ShaderPassType passType,
+                               const RenderContext& context,
                                EntityDrawCall&      outDrawCall) const
 {
-    Assert(SupportsPassType(inPassType));
+    Assert(SupportsPassType(passType));
 
-    outDrawCall.pipeline = mPipelines[inPassType];
+    outDrawCall.pipeline = mPipelines[passType];
 
     /* Set view/entity arguments. */
     {
@@ -92,7 +92,7 @@ void RenderEntity::GetDrawCall(const ShaderPassType inPassType,
         auto& arguments = outDrawCall.arguments[kArgumentSet_ViewEntity];
         arguments.argumentSet                = RenderManager::Get().GetViewEntityArgumentSet();
         arguments.constants[0].argumentIndex = kViewEntityArguments_ViewConstants;
-        arguments.constants[0].constants     = inContext.GetView().GetConstants();
+        arguments.constants[0].constants     = context.GetView().GetConstants();
         arguments.constants[1].argumentIndex = kViewEntityArguments_EntityConstants;
         arguments.constants[1].constants     = GPUDevice::Get().GetConstantPool().Write(&entityConstants, sizeof(entityConstants));
     }

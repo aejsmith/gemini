@@ -31,27 +31,27 @@ class Material : public Asset
     CLASS();
 
 public:
-                                Material(ShaderTechnique* const inShaderTechnique);
+                                Material(ShaderTechnique* const shaderTechnique);
 
     ShaderTechnique*            GetShaderTechnique() const  { return mShaderTechnique; }
     GPUArgumentSet*             GetArgumentSet() const      { return mArgumentSet; }
     bool                        HasConstants() const        { return mConstantData.GetSize() > 0; }
 
-    void                        GetArgument(const std::string&        inName,
-                                            const ShaderParameterType inType,
+    void                        GetArgument(const std::string&        name,
+                                            const ShaderParameterType type,
                                             void* const               outData) const;
 
     template <typename T>
-    void                        GetArgument(const std::string& inName,
+    void                        GetArgument(const std::string& name,
                                             T&                 outValue) const;
 
-    void                        SetArgument(const std::string&        inName,
-                                            const ShaderParameterType inType,
-                                            const void* const         inData);
+    void                        SetArgument(const std::string&        name,
+                                            const ShaderParameterType type,
+                                            const void* const         data);
 
     template <typename T>
-    void                        SetArgument(const std::string& inName,
-                                            const T&           inValue);
+    void                        SetArgument(const std::string& name,
+                                            const T&           value);
 
     /** Get GPU constants based on current argument values. */
     GPUConstants                GetGPUConstants();
@@ -75,16 +75,16 @@ private:
                                 Material();
                                 ~Material();
 
-    void                        Serialise(Serialiser& inSerialiser) const override;
-    void                        Deserialise(Serialiser& inSerialiser) override;
+    void                        Serialise(Serialiser& serialiser) const override;
+    void                        Deserialise(Serialiser& serialiser) override;
 
-    void                        SetShaderTechnique(ShaderTechnique* const inShaderTechnique);
+    void                        SetShaderTechnique(ShaderTechnique* const shaderTechnique);
 
-    void                        GetArgument(const ShaderParameter& inParameter,
+    void                        GetArgument(const ShaderParameter& parameter,
                                             void* const            outData) const;
 
-    void                        SetArgument(const ShaderParameter& inParameter,
-                                            const void* const      inData);
+    void                        SetArgument(const ShaderParameter& parameter,
+                                            const void* const      data);
 
 private:
     ShaderTechniquePtr          mShaderTechnique;
@@ -114,19 +114,19 @@ private:
 using MaterialPtr = ObjPtr<Material>;
 
 template <typename T>
-inline void Material::GetArgument(const std::string& inName,
+inline void Material::GetArgument(const std::string& name,
                                   T&                 outValue) const
 {
-    GetArgument(inName,
+    GetArgument(name,
                 ShaderParameterTypeTraits<T>::kType,
                 std::addressof(outValue));
 }
 
 template <typename T>
-inline void Material::SetArgument(const std::string& inName,
-                                  const T&           inValue)
+inline void Material::SetArgument(const std::string& name,
+                                  const T&           value)
 {
-    SetArgument(inName,
+    SetArgument(name,
                 ShaderParameterTypeTraits<T>::kType,
-                std::addressof(inValue));
+                std::addressof(value));
 }

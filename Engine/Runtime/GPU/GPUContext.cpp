@@ -18,29 +18,29 @@
 
 #include "GPU/GPUTexture.h"
 
-void GPUTransferContext::BlitTexture(GPUTexture* const    inDestTexture,
-                                     const GPUSubresource inDestSubresource,
-                                     GPUTexture* const    inSourceTexture,
-                                     const GPUSubresource inSourceSubresource)
+void GPUTransferContext::BlitTexture(GPUTexture* const    destTexture,
+                                     const GPUSubresource destSubresource,
+                                     GPUTexture* const    sourceTexture,
+                                     const GPUSubresource sourceSubresource)
 {
     const glm::ivec3 destSize(
-        inDestTexture->GetMipWidth (inDestSubresource.mipLevel),
-        inDestTexture->GetMipHeight(inDestSubresource.mipLevel),
-        inDestTexture->GetMipDepth (inDestSubresource.mipLevel)
+        destTexture->GetMipWidth (destSubresource.mipLevel),
+        destTexture->GetMipHeight(destSubresource.mipLevel),
+        destTexture->GetMipDepth (destSubresource.mipLevel)
     );
 
     const glm::ivec3 sourceSize(
-        inSourceTexture->GetMipWidth (inSourceSubresource.mipLevel),
-        inSourceTexture->GetMipHeight(inSourceSubresource.mipLevel),
-        inSourceTexture->GetMipDepth (inSourceSubresource.mipLevel)
+        sourceTexture->GetMipWidth (sourceSubresource.mipLevel),
+        sourceTexture->GetMipHeight(sourceSubresource.mipLevel),
+        sourceTexture->GetMipDepth (sourceSubresource.mipLevel)
     );
 
-    BlitTexture(inDestTexture,
-                inDestSubresource,
+    BlitTexture(destTexture,
+                destSubresource,
                 glm::ivec3(0, 0, 0),
                 destSize,
-                inSourceTexture,
-                inSourceSubresource,
+                sourceTexture,
+                sourceSubresource,
                 glm::ivec3(0, 0, 0),
                 sourceSize);
 }

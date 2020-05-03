@@ -33,24 +33,24 @@ public:
 
     /** Mesh that will be rendered. */
     VPROPERTY(MeshPtr, mesh);
-    void                            SetMesh(Mesh* const inMesh);
+    void                            SetMesh(Mesh* const mesh);
     Mesh*                           GetMesh() const { return mMesh; }
 
     /** Materials for the mesh. */
-    Material*                       GetMaterial(const uint32_t inIndex) const;
-    Material*                       GetMaterial(const std::string& inName) const;
-    void                            SetMaterial(const uint32_t  inIndex,
-                                                Material* const inMaterial);
-    void                            SetMaterial(const std::string& inName,
-                                                Material* const    inMaterial);
+    Material*                       GetMaterial(const uint32_t index) const;
+    Material*                       GetMaterial(const std::string& name) const;
+    void                            SetMaterial(const uint32_t  index,
+                                                Material* const material);
+    void                            SetMaterial(const std::string& name,
+                                                Material* const    material);
 
 protected:
                                     ~MeshRenderer();
 
-    void                            Serialise(Serialiser& inSerialiser) const override;
-    void                            Deserialise(Serialiser& inSerialiser) override;
+    void                            Serialise(Serialiser& serialiser) const override;
+    void                            Deserialise(Serialiser& serialiser) override;
 
-    void                            CustomDebugUIEditor(const uint32_t        inFlags,
+    void                            CustomDebugUIEditor(const uint32_t        flags,
                                                         std::vector<Object*>& ioChildren) override;
 
     RenderEntityArray               CreateRenderEntities() override;
@@ -61,8 +61,8 @@ private:
 
 };
 
-inline Material* MeshRenderer::GetMaterial(const uint32_t inIndex) const
+inline Material* MeshRenderer::GetMaterial(const uint32_t index) const
 {
-    Assert(inIndex < mMaterials.size());
-    return mMaterials[inIndex];
+    Assert(index < mMaterials.size());
+    return mMaterials[index];
 }

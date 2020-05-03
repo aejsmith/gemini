@@ -26,9 +26,9 @@ class Transform
 {
 public:
                             Transform();
-                            Transform(const glm::vec3& inPosition,
-                                      const glm::quat& inOrientation,
-                                      const glm::vec3& inScale);
+                            Transform(const glm::vec3& position,
+                                      const glm::quat& orientation,
+                                      const glm::vec3& scale);
 
     /**
      * Update the whole transformation. This should be preferred when changing
@@ -36,20 +36,20 @@ public:
      * to be performed once for the multiple updates, compared to using the
      * individual setters which update the matrix each call.
      */
-    void                    Set(const glm::vec3& inPosition,
-                                const glm::quat& inOrientation,
-                                const glm::vec3& inScale);
+    void                    Set(const glm::vec3& position,
+                                const glm::quat& orientation,
+                                const glm::vec3& scale);
 
-    const glm::vec3&        GetPosition() const { return mPosition; }
-    void                    SetPosition(const glm::vec3& inPosition);
+    const glm::vec3&        GetPosition() const     { return mPosition; }
+    void                    SetPosition(const glm::vec3& position);
 
-    const glm::quat&        GetOrientation() const { return mOrientation; }
-    void                    SetOrientation(const glm::quat& inOrientation);
+    const glm::quat&        GetOrientation() const  { return mOrientation; }
+    void                    SetOrientation(const glm::quat& orientation);
 
-    const glm::vec3&        GetScale() const { return mScale; }
-    void                    SetScale(const glm::vec3& inScale);
+    const glm::vec3&        GetScale() const        { return mScale; }
+    void                    SetScale(const glm::vec3& scale);
 
-    const glm::mat4&        GetMatrix() const { return mMatrix; }
+    const glm::mat4&        GetMatrix() const       { return mMatrix; }
 
     /** Get the inverse transformation matrix. Recalculated on each call. */
     glm::mat4               CalculateInverseMatrix() const;
@@ -73,44 +73,44 @@ inline Transform::Transform() :
 {
 }
 
-inline Transform::Transform(const glm::vec3& inPosition,
-                            const glm::quat& inOrientation,
-                            const glm::vec3& inScale) :
-    mPosition       (inPosition),
-    mOrientation    (inOrientation),
-    mScale          (inScale)
+inline Transform::Transform(const glm::vec3& position,
+                            const glm::quat& orientation,
+                            const glm::vec3& scale) :
+    mPosition       (position),
+    mOrientation    (orientation),
+    mScale          (scale)
 {
     UpdateMatrix();
 }
 
-inline void Transform::Set(const glm::vec3& inPosition,
-                           const glm::quat& inOrientation,
-                           const glm::vec3& inScale)
+inline void Transform::Set(const glm::vec3& position,
+                           const glm::quat& orientation,
+                           const glm::vec3& scale)
 {
-    mPosition    = inPosition;
-    mOrientation = inOrientation;
-    mScale       = inScale;
+    mPosition    = position;
+    mOrientation = orientation;
+    mScale       = scale;
 
     UpdateMatrix();
 }
 
-inline void Transform::SetPosition(const glm::vec3& inPosition)
+inline void Transform::SetPosition(const glm::vec3& position)
 {
-    mPosition = inPosition;
+    mPosition = position;
 
     UpdateMatrix();
 }
 
-inline void Transform::SetOrientation(const glm::quat& inOrientation)
+inline void Transform::SetOrientation(const glm::quat& orientation)
 {
-    mOrientation = inOrientation;
+    mOrientation = orientation;
 
     UpdateMatrix();
 }
 
-inline void Transform::SetScale(const glm::vec3& inScale)
+inline void Transform::SetScale(const glm::vec3& scale)
 {
-    mScale = inScale;
+    mScale = scale;
 
     UpdateMatrix();
 }

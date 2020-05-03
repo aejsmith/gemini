@@ -98,10 +98,10 @@ if sys.platform.startswith('linux'):
     env['CC'] = 'clang'
     env['CXX'] = 'clang++'
     env['CCFLAGS'] += [
-        '-Wall', '-Wextra', '-Wno-variadic-macros', '-Wno-unused-parameter',
-        '-Wwrite-strings', '-Wmissing-declarations', '-Wredundant-decls',
-        '-Wno-format', '-Wno-unused-function', '-Wno-comment',
-        '-Wno-unused-private-field',
+        '-Wall', '-Wextra', '-Wshadow',
+        '-Wno-variadic-macros', '-Wno-unused-parameter', '-Wwrite-strings',
+        '-Wmissing-declarations', '-Wredundant-decls', '-Wno-format',
+        '-Wno-unused-function', '-Wno-comment', '-Wno-unused-private-field',
     ]
     env['CXXFLAGS'] += [
         '-Wsign-promo', '-Wno-undefined-var-template',

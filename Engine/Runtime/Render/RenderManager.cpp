@@ -52,12 +52,12 @@ RenderManager::RenderManager()
 
 RenderManager::~RenderManager()
 {
-    auto FreeTransientResources = [&] (auto& inTransientResources)
+    auto FreeTransientResources = [&] (auto& transientResources)
     {
-        while (!inTransientResources.empty())
+        while (!transientResources.empty())
         {
-            auto& resource = inTransientResources.front();
-            inTransientResources.pop_front();
+            auto& resource = transientResources.front();
+            transientResources.pop_front();
 
             delete resource.resource;
         }
@@ -74,14 +74,14 @@ void RenderManager::Render(OnlyCalledBy<Engine>)
     const uint64_t frameStartTime = Engine::Get().GetFrameStartTime();
 
     /* Free transient resources that have gone unused long enough. */
-    auto FreeUnusedTransientResources = [&] (auto& inTransientResources)
+    auto FreeUnusedTransientResources = [&] (auto& transientResources)
     {
-        for (auto it = inTransientResources.begin(); it != inTransientResources.end(); )
+        for (auto it = transientResources.begin(); it != transientResources.end(); )
         {
             if (frameStartTime - it->lastUsedFrameStartTime >= kTransientResourceFreePeriod)
             {
                 delete it->resource;
-                it = inTransientResources.erase(it);
+                it = transientResources.erase(it);
             }
             else
             {
@@ -104,19 +104,19 @@ void RenderManager::Render(OnlyCalledBy<Engine>)
     graph.Execute();
 }
 
-void RenderManager::RegisterOutput(RenderOutput* const inOutput,
+void RenderManager::RegisterOutput(RenderOutput* const output,
                                    OnlyCalledBy<RenderOutput>)
 {
-    mOutputs.emplace_back(inOutput);
+    mOutputs.emplace_back(output);
 }
 
-void RenderManager::UnregisterOutput(RenderOutput* const inOutput,
+void RenderManager::UnregisterOutput(RenderOutput* const output,
                                      OnlyCalledBy<RenderOutput>)
 {
-    mOutputs.remove(inOutput);
+    mOutputs.remove(output);
 }
 
-GPUResource* RenderManager::GetTransientBuffer(const GPUBufferDesc& inDesc,
+GPUResource* RenderManager::GetTransientBuffer(const GPUBufferDesc& desc,
                                                OnlyCalledBy<RenderGraph>)
 {
     const uint64_t frameStartTime = Engine::Get().GetFrameStartTime();
@@ -124,7 +124,7 @@ GPUResource* RenderManager::GetTransientBuffer(const GPUBufferDesc& inDesc,
     /* Look for an existing resource to use. */
     for (TransientBuffer& buffer : mTransientBuffers)
     {
-        if (buffer.desc == inDesc &&
+        if (buffer.desc == desc &&
             buffer.lastUsedFrameStartTime != frameStartTime)
         {
             buffer.lastUsedFrameStartTime = frameStartTime;
@@ -135,14 +135,14 @@ GPUResource* RenderManager::GetTransientBuffer(const GPUBufferDesc& inDesc,
     /* Create a new one. */
     mTransientBuffers.emplace_back();
     TransientBuffer& buffer = mTransientBuffers.back();
-    buffer.desc                   = inDesc;
+    buffer.desc                   = desc;
     buffer.lastUsedFrameStartTime = frameStartTime;
-    buffer.resource               = GPUDevice::Get().CreateBuffer(inDesc);
+    buffer.resource               = GPUDevice::Get().CreateBuffer(desc);
 
     return buffer.resource;
 }
 
-GPUResource* RenderManager::GetTransientTexture(const GPUTextureDesc& inDesc,
+GPUResource* RenderManager::GetTransientTexture(const GPUTextureDesc& desc,
                                                 OnlyCalledBy<RenderGraph>)
 {
     const uint64_t frameStartTime = Engine::Get().GetFrameStartTime();
@@ -150,7 +150,7 @@ GPUResource* RenderManager::GetTransientTexture(const GPUTextureDesc& inDesc,
     /* Look for an existing resource to use. */
     for (TransientTexture& texture : mTransientTextures)
     {
-        if (texture.desc == inDesc &&
+        if (texture.desc == desc &&
             texture.lastUsedFrameStartTime != frameStartTime)
         {
             texture.lastUsedFrameStartTime = frameStartTime;
@@ -161,9 +161,9 @@ GPUResource* RenderManager::GetTransientTexture(const GPUTextureDesc& inDesc,
     /* Create a new one. */
     mTransientTextures.emplace_back();
     TransientTexture& texture = mTransientTextures.back();
-    texture.desc                   = inDesc;
+    texture.desc                   = desc;
     texture.lastUsedFrameStartTime = frameStartTime;
-    texture.resource               = GPUDevice::Get().CreateTexture(inDesc);
+    texture.resource               = GPUDevice::Get().CreateTexture(desc);
 
     return texture.resource;
 }

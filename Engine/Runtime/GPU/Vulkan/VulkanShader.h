@@ -34,10 +34,10 @@ public:
     using VertexInputArray    = std::vector<VertexInput>;
 
 public:
-                                VulkanShader(VulkanDevice&        inDevice,
-                                             const GPUShaderStage inStage,
-                                             GPUShaderCode        inCode,
-                                             const std::string&   inFunction);
+                                VulkanShader(VulkanDevice&        device,
+                                             const GPUShaderStage stage,
+                                             GPUShaderCode        code,
+                                             const std::string&   function);
 
                                 ~VulkanShader();
 

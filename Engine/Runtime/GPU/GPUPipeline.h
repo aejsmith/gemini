@@ -40,7 +40,7 @@ struct GPUPipelineDesc
 
 public:
                                     GPUPipelineDesc();
-                                    GPUPipelineDesc(const GPUPipelineDesc& inOther);
+                                    GPUPipelineDesc(const GPUPipelineDesc& other);
 
 };
 
@@ -52,9 +52,9 @@ inline GPUPipelineDesc::GPUPipelineDesc()
     memset(this, 0, sizeof(*this));
 }
 
-inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& inOther)
+inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& other)
 {
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
 /**
@@ -80,8 +80,8 @@ inline GPUPipelineDesc::GPUPipelineDesc(const GPUPipelineDesc& inOther)
 class GPUPipeline : public GPUObject
 {
 protected:
-                                    GPUPipeline(GPUDevice&             inDevice,
-                                                const GPUPipelineDesc& inDesc);
+                                    GPUPipeline(GPUDevice&             device,
+                                                const GPUPipelineDesc& desc);
                                     ~GPUPipeline();
 
 public:
@@ -92,8 +92,8 @@ public:
      * Return the ID of the shader for a given stage. If the stage is not
      * present, returns numeric_limits<GPUShaderID>::max().
      */
-    GPUShaderID                     GetShaderID(const GPUShaderStage inStage) const
-                                        { return mShaderIDs[inStage]; }
+    GPUShaderID                     GetShaderID(const GPUShaderStage stage) const
+                                        { return mShaderIDs[stage]; }
 
     /** Implementation detail for GPUDevice::DropPipeline(). */
     void                            Destroy(OnlyCalledBy<GPUDevice>);
@@ -139,8 +139,8 @@ public:
     const GPUComputePipelineDesc&   GetDesc() const { return mDesc; }
 
 protected:
-                                    GPUComputePipeline(GPUDevice&                    inDevice,
-                                                       const GPUComputePipelineDesc& inDesc);
+                                    GPUComputePipeline(GPUDevice&                    device,
+                                                       const GPUComputePipelineDesc& desc);
 
 protected:
     const GPUComputePipelineDesc    mDesc;

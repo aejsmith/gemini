@@ -28,13 +28,13 @@
 class CameraRenderLayer final : public RenderLayer
 {
 public:
-                            CameraRenderLayer(const Camera& inCamera);
+                            CameraRenderLayer(const Camera& camera);
 
     std::string             GetName() const override;
 
 protected:
-     void                   AddPasses(RenderGraph&               inGraph,
-                                      const RenderResourceHandle inTexture,
+     void                   AddPasses(RenderGraph&               graph,
+                                      const RenderResourceHandle texture,
                                       RenderResourceHandle&      outNewTexture) override;
 
 private:
@@ -42,9 +42,9 @@ private:
 
 };
 
-CameraRenderLayer::CameraRenderLayer(const Camera& inCamera) :
+CameraRenderLayer::CameraRenderLayer(const Camera& camera) :
     RenderLayer (RenderLayer::kOrder_World),
-    mCamera     (inCamera)
+    mCamera     (camera)
 {
 }
 
@@ -53,8 +53,8 @@ std::string CameraRenderLayer::GetName() const
     return std::string("Camera '") + mCamera.GetEntity()->GetPath() + std::string("'");
 }
 
-void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,
-                                  const RenderResourceHandle inTexture,
+void CameraRenderLayer::AddPasses(RenderGraph&               graph,
+                                  const RenderResourceHandle texture,
                                   RenderResourceHandle&      outNewTexture)
 {
     Assert(mCamera.renderPipeline);
@@ -69,8 +69,8 @@ void CameraRenderLayer::AddPasses(RenderGraph&               inGraph,
 
     mCamera.renderPipeline->Render(*mCamera.GetEntity()->GetWorld()->GetRenderWorld(),
                                    view,
-                                   inGraph,
-                                   inTexture,
+                                   graph,
+                                   texture,
                                    outNewTexture);
 }
 
@@ -106,8 +106,8 @@ RenderOutput* Camera::GetOutput() const
     return mRenderLayer->GetLayerOutput();
 }
 
-void Camera::SetOutput(RenderOutput* const inOutput) const
+void Camera::SetOutput(RenderOutput* const output) const
 {
     // TODO: This needs to be serialised somehow.
-    mRenderLayer->SetLayerOutput(inOutput);
+    mRenderLayer->SetLayerOutput(output);
 }

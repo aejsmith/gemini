@@ -35,7 +35,7 @@ public:
     bool                    IsManaged() const   { return !mPath.empty(); }
     const std::string&      GetPath() const     { return mPath; }
 
-    void                    SetPath(std::string inPath,
+    void                    SetPath(std::string path,
                                     OnlyCalledBy<AssetManager>);
 
 protected:

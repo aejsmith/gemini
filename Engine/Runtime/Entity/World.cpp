@@ -43,20 +43,20 @@ World::~World()
     delete mRenderWorld;
 }
 
-void World::Serialise(Serialiser& inSerialiser) const
+void World::Serialise(Serialiser& serialiser) const
 {
-    Asset::Serialise(inSerialiser);
+    Asset::Serialise(serialiser);
 
-    inSerialiser.Write("root", mRoot);
+    serialiser.Write("root", mRoot);
 }
 
-void World::Deserialise(Serialiser& inSerialiser)
+void World::Deserialise(Serialiser& serialiser)
 {
-    Asset::Deserialise(inSerialiser);
+    Asset::Deserialise(serialiser);
 
     /* Deserialise all entities. */
     EntityPtr newRoot;
-    if (inSerialiser.Read("root", newRoot))
+    if (serialiser.Read("root", newRoot))
     {
         /* Destroy existing root. */
         mRoot->Destroy();
@@ -72,12 +72,12 @@ void World::Deserialise(Serialiser& inSerialiser)
     }
 }
 
-Entity* World::CreateEntity(std::string inName)
+Entity* World::CreateEntity(std::string name)
 {
-    return mRoot->CreateChild(std::move(inName));
+    return mRoot->CreateChild(std::move(name));
 }
 
-void World::Tick(const float inDelta)
+void World::Tick(const float delta)
 {
-    mRoot->Tick(inDelta);
+    mRoot->Tick(delta);
 }

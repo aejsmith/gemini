@@ -60,10 +60,10 @@ inline bool operator==(const GPUTextureDesc& a, const GPUTextureDesc& b)
 class GPUTexture : public GPUResource
 {
 protected:
-                            GPUTexture(GPUDevice&            inDevice,
-                                       const GPUTextureDesc& inDesc);
+                            GPUTexture(GPUDevice&            device,
+                                       const GPUTextureDesc& desc);
 
-                            GPUTexture(GPUSwapchain& inSwapchain);
+                            GPUTexture(GPUSwapchain& swapchain);
 
 public:
                             ~GPUTexture() {}
@@ -78,9 +78,9 @@ public:
     uint16_t                GetArraySize() const        { return mArraySize; }
     uint8_t                 GetNumMipLevels() const     { return mNumMipLevels; }
 
-    uint32_t                GetMipWidth(const uint8_t inMip) const;
-    uint32_t                GetMipHeight(const uint8_t inMip) const;
-    uint32_t                GetMipDepth(const uint8_t inMip) const;
+    uint32_t                GetMipWidth(const uint8_t map) const;
+    uint32_t                GetMipHeight(const uint8_t map) const;
+    uint32_t                GetMipDepth(const uint8_t map) const;
 
     GPUSubresourceRange     GetSubresourceRange() const override;
 
@@ -89,7 +89,7 @@ public:
      * whole image. This is for internal use to replace this with the exact
      * range.
      */
-    GPUSubresourceRange     GetExactSubresourceRange(const GPUSubresourceRange& inRange) const;
+    GPUSubresourceRange     GetExactSubresourceRange(const GPUSubresourceRange& range) const;
 
     /**
      * Gets the swapchain, if any, that the texture refers to. Swapchain
@@ -106,7 +106,7 @@ public:
      * GPUStagingTexture.
      */
     template <typename T>
-    bool                    SizeMatches(const T& inOther) const;
+    bool                    SizeMatches(const T& other) const;
 
 private:
     const GPUTextureFlags   mFlags;
@@ -121,26 +121,26 @@ private:
 
 };
 
-inline uint32_t GPUTexture::GetMipWidth(const uint8_t inMip) const
+inline uint32_t GPUTexture::GetMipWidth(const uint8_t mip) const
 {
-    return std::max(mWidth >> inMip, 1u);
+    return std::max(mWidth >> mip, 1u);
 }
 
-inline uint32_t GPUTexture::GetMipHeight(const uint8_t inMip) const
+inline uint32_t GPUTexture::GetMipHeight(const uint8_t mip) const
 {
-    return std::max(mHeight >> inMip, 1u);
+    return std::max(mHeight >> mip, 1u);
 }
 
-inline uint32_t GPUTexture::GetMipDepth(const uint8_t inMip) const
+inline uint32_t GPUTexture::GetMipDepth(const uint8_t mip) const
 {
-    return std::max(mDepth >> inMip, 1u);
+    return std::max(mDepth >> mip, 1u);
 }
 
-inline GPUSubresourceRange GPUTexture::GetExactSubresourceRange(const GPUSubresourceRange& inRange) const
+inline GPUSubresourceRange GPUTexture::GetExactSubresourceRange(const GPUSubresourceRange& range) const
 {
-    if (inRange.layerCount != 0 || inRange.mipCount != 0)
+    if (range.layerCount != 0 || range.mipCount != 0)
     {
-        return inRange;
+        return range;
     }
     else
     {
@@ -149,11 +149,11 @@ inline GPUSubresourceRange GPUTexture::GetExactSubresourceRange(const GPUSubreso
 }
 
 template <typename T>
-inline bool GPUTexture::SizeMatches(const T& inOther) const
+inline bool GPUTexture::SizeMatches(const T& other) const
 {
-    return mWidth        == inOther.GetWidth() &&
-           mHeight       == inOther.GetHeight() &&
-           mDepth        == inOther.GetDepth() &&
-           mArraySize    == inOther.GetArraySize() &&
-           mNumMipLevels == inOther.GetNumMipLevels();
+    return mWidth        == other.GetWidth() &&
+           mHeight       == other.GetHeight() &&
+           mDepth        == other.GetDepth() &&
+           mArraySize    == other.GetArraySize() &&
+           mNumMipLevels == other.GetNumMipLevels();
 }

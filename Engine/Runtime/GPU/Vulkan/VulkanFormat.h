@@ -22,6 +22,6 @@
 
 namespace VulkanFormat
 {
-    extern VkFormat             GetVulkanFormat(const PixelFormat inFormat);
-    extern PixelFormat          GetPixelFormat(const VkFormat inFormat);
+    extern VkFormat             GetVulkanFormat(const PixelFormat format);
+    extern PixelFormat          GetPixelFormat(const VkFormat format);
 }

@@ -69,9 +69,9 @@ using UPtr = std::unique_ptr<T>;
  * Logging functions/macros.
  */
 
-extern void FatalLogImpl(const char* const inFile,
-                         const int         inLine,
-                         const char* const inFormat,
+extern void FatalLogImpl(const char* const file,
+                         const int         line,
+                         const char* const format,
                          ...);
 
 [[noreturn]] void FatalImpl();
@@ -83,10 +83,10 @@ extern void FatalLogImpl(const char* const inFile,
  * on debug builds to allow the error to be caught in a debugger. This function
  * does not return.
  */
-#define Fatal(inFormat, ...) \
+#define Fatal(format, ...) \
     do \
     { \
-        FatalLogImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__); \
+        FatalLogImpl(__FILE__, __LINE__, format, ##__VA_ARGS__); \
         DebugBreak(); \
         FatalImpl(); \
     } \
@@ -97,19 +97,19 @@ extern void FatalLogImpl(const char* const inFile,
  * error message giving the condition that failed.
  */
 #if GEMINI_BUILD_DEBUG
-    #define Assert(inCondition) \
+    #define Assert(condition) \
         do \
         { \
-            if (Unlikely(!(inCondition))) \
+            if (Unlikely(!(condition))) \
             { \
-                FatalLogImpl(__FILE__, __LINE__, "Assertion failed: %s", #inCondition); \
+                FatalLogImpl(__FILE__, __LINE__, "Assertion failed: %s", #condition); \
                 DebugBreak(); \
                 FatalImpl(); \
             } \
         } \
         while (0)
 #else
-    #define Assert(inCondition)
+    #define Assert(condition)
 #endif
 
 /**
@@ -117,19 +117,19 @@ extern void FatalLogImpl(const char* const inFile,
  * specified error message.
  */
 #if GEMINI_BUILD_DEBUG
-    #define AssertMsg(inCondition, inFormat, ...) \
+    #define AssertMsg(condition, format, ...) \
         do \
         { \
-            if (Unlikely(!(inCondition))) \
+            if (Unlikely(!(condition))) \
             { \
-                FatalLogImpl(__FILE__, __LINE__, inFormat, ##__VA_ARGS__); \
+                FatalLogImpl(__FILE__, __LINE__, format, ##__VA_ARGS__); \
                 DebugBreak(); \
                 FatalImpl(); \
             } \
         } \
         while (0)
 #else
-    #define AssertMsg(inCondtion, inFormat, ...)
+    #define AssertMsg(inCondtion, format, ...)
 #endif
 
 /**
@@ -157,32 +157,32 @@ enum LogLevel
     kLogLevel_Error,
 };
 
-extern void LogVImpl(const LogLevel    inLevel,
-                     const char* const inFile,
-                     const int         inLine,
-                     const char* const inFormat,
-                     va_list           inArgs);
+extern void LogVImpl(const LogLevel    level,
+                     const char* const file,
+                     const int         line,
+                     const char* const format,
+                     va_list           args);
 
-extern void LogImpl(const LogLevel    inLevel,
-                    const char* const inFile,
-                    const int         inLine,
-                    const char* const inFormat,
+extern void LogImpl(const LogLevel    level,
+                    const char* const file,
+                    const int         line,
+                    const char* const format,
                     ...);
 
-#define LogDebug(inFormat, ...) \
-    LogImpl(kLogLevel_Debug, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+#define LogDebug(format, ...) \
+    LogImpl(kLogLevel_Debug, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
-#define LogInfo(inFormat, ...) \
-    LogImpl(kLogLevel_Info, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+#define LogInfo(format, ...) \
+    LogImpl(kLogLevel_Info, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
-#define LogWarning(inFormat, ...) \
-    LogImpl(kLogLevel_Warning, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+#define LogWarning(format, ...) \
+    LogImpl(kLogLevel_Warning, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
-#define LogError(inFormat, ...) \
-    LogImpl(kLogLevel_Error, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+#define LogError(format, ...) \
+    LogImpl(kLogLevel_Error, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
-#define LogMessage(inLevel, inFormat, ...) \
-    LogImpl(inLevel, __FILE__, __LINE__, inFormat, ##__VA_ARGS__)
+#define LogMessage(level, format, ...) \
+    LogImpl(level, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
 /** Type of a thread identifier. */
 using ThreadID = size_t;

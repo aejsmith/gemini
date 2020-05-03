@@ -77,8 +77,8 @@ public:
     void                    Finalise();
 
 protected:
-    void                    Allocate(const GPUStagingAccess inAccess,
-                                     const uint32_t         inSize);
+    void                    Allocate(const GPUStagingAccess access,
+                                     const uint32_t         size);
 
 protected:
     GPUStagingAccess        mAccess;
@@ -93,14 +93,14 @@ class GPUStagingBuffer : public GPUStagingResource
 public:
                             GPUStagingBuffer();
 
-                            GPUStagingBuffer(const GPUStagingAccess inAccess,
-                                             const uint32_t         inSize);
+                            GPUStagingBuffer(const GPUStagingAccess access,
+                                             const uint32_t         size);
 
-                            GPUStagingBuffer(GPUStagingBuffer&& ioOther);
+                            GPUStagingBuffer(GPUStagingBuffer&& other);
 
                             ~GPUStagingBuffer() {}
 
-    GPUStagingBuffer&       operator =(GPUStagingBuffer&& ioOther);
+    GPUStagingBuffer&       operator =(GPUStagingBuffer&& other);
 
     uint32_t                GetSize() const     { return mSize; }
 
@@ -109,8 +109,8 @@ public:
      * any previously submitted GPU transfers have completed), and the buffer
      * becomes free to use again.
      */
-    void                    Initialise(const GPUStagingAccess inAccess,
-                                       const uint32_t         inSize);
+    void                    Initialise(const GPUStagingAccess access,
+                                       const uint32_t         size);
 
     /**
      * Return a pointer to write data into. Buffer must not be finalised, and
@@ -126,9 +126,9 @@ public:
      * Copy data from elsewhere into the buffer. Same rules apply as for
      * MapWrite().
      */
-    void                    Write(const void*    inData,
-                                  const uint32_t inSize,
-                                  const uint32_t inOffset = 0);
+    void                    Write(const void*    data,
+                                  const uint32_t size,
+                                  const uint32_t offset = 0);
 
 private:
     uint32_t                mSize;
@@ -140,8 +140,8 @@ class GPUStagingTexture : public GPUStagingResource
 public:
                             GPUStagingTexture();
 
-                            GPUStagingTexture(const GPUStagingAccess inAccess,
-                                              const GPUTextureDesc&  inDesc);
+                            GPUStagingTexture(const GPUStagingAccess access,
+                                              const GPUTextureDesc&  desc);
 
                             ~GPUStagingTexture();
 
@@ -153,9 +153,9 @@ public:
     uint16_t                GetArraySize() const    { return mDesc.arraySize; }
     uint8_t                 GetNumMipLevels() const { return mDesc.numMipLevels; }
 
-    uint32_t                GetMipWidth(const uint8_t inMip) const;
-    uint32_t                GetMipHeight(const uint8_t inMip) const;
-    uint32_t                GetMipDepth(const uint8_t inMip) const;
+    uint32_t                GetMipWidth(const uint8_t mip) const;
+    uint32_t                GetMipHeight(const uint8_t mip) const;
+    uint32_t                GetMipDepth(const uint8_t mip) const;
 
     /**
      * Allocate a new staging texture. Any previous texture is discarded (once
@@ -166,8 +166,8 @@ public:
      * The type, usage and flags members are ignored, only the format,
      * dimensions and number of subresources are relevant.
      */
-    void                    Initialise(const GPUStagingAccess inAccess,
-                                       const GPUTextureDesc&  inDesc);
+    void                    Initialise(const GPUStagingAccess access,
+                                       const GPUTextureDesc&  desc);
 
     /**
      * Return a pointer to write data into for a subresource. Texture must not
@@ -176,16 +176,16 @@ public:
      * memory, and each row is contiguous. Number of bytes per pixel is as
      * reported by PixelFormatInfo::BytesPerPixel().
      */
-    void*                   MapWrite(const GPUSubresource inSubresource);
+    void*                   MapWrite(const GPUSubresource subresource);
 
     /**
      * Calculate the offset in the underlying staging buffer of a given
      * subresource.
      */
-    uint32_t                GetSubresourceOffset(const GPUSubresource inSubresource) const;
+    uint32_t                GetSubresourceOffset(const GPUSubresource subresource) const;
 
 private:
-    uint32_t                GetSubresourceIndex(const GPUSubresource inSubresource) const;
+    uint32_t                GetSubresourceIndex(const GPUSubresource subresource) const;
 
 private:
     GPUTextureDesc          mDesc;
@@ -201,7 +201,7 @@ private:
 class GPUStagingPool : public GPUDeviceChild
 {
 protected:
-                            GPUStagingPool(GPUDevice& inDevice);
+                            GPUStagingPool(GPUDevice& device);
                             ~GPUStagingPool() {}
 
 public:
@@ -209,15 +209,15 @@ public:
      * Allocates memory for a staging resource. Returns a handle referring to
      * the allocation, which gets stored in the GPUStagingResource.
      */
-    virtual void*           Allocate(const GPUStagingAccess inAccess,
-                                     const uint32_t         inSize,
+    virtual void*           Allocate(const GPUStagingAccess access,
+                                     const uint32_t         size,
                                      void*&                 outMapping) = 0;
 
     /**
      * Free a staging resource allocation. Will only free the allocation once
      * the memory is guaranteed to no longer be in use by the GPU.
      */
-    virtual void            Free(void* const inHandle) = 0;
+    virtual void            Free(void* const handle) = 0;
 
 };
 
@@ -243,41 +243,41 @@ inline GPUStagingBuffer::GPUStagingBuffer() :
 {
 }
 
-inline GPUStagingBuffer::GPUStagingBuffer(const GPUStagingAccess inAccess,
-                                          const uint32_t         inSize) :
+inline GPUStagingBuffer::GPUStagingBuffer(const GPUStagingAccess access,
+                                          const uint32_t         size) :
     GPUStagingBuffer ()
 {
-    Initialise(inAccess, inSize);
+    Initialise(access, size);
 }
 
-inline GPUStagingBuffer::GPUStagingBuffer(GPUStagingBuffer&& ioOther) :
+inline GPUStagingBuffer::GPUStagingBuffer(GPUStagingBuffer&& other) :
     GPUStagingBuffer ()
 {
-    *this = std::move(ioOther);
+    *this = std::move(other);
 }
 
-inline GPUStagingBuffer& GPUStagingBuffer::operator =(GPUStagingBuffer&& ioOther)
+inline GPUStagingBuffer& GPUStagingBuffer::operator =(GPUStagingBuffer&& other)
 {
-    mAccess    = ioOther.mAccess;
-    mHandle    = ioOther.mHandle;
-    mMapping   = ioOther.mMapping;
-    mFinalised = ioOther.mFinalised;
-    mSize      = ioOther.mSize;
+    mAccess    = other.mAccess;
+    mHandle    = other.mHandle;
+    mMapping   = other.mMapping;
+    mFinalised = other.mFinalised;
+    mSize      = other.mSize;
 
-    ioOther.mHandle    = nullptr;
-    ioOther.mMapping   = nullptr;
-    ioOther.mFinalised = false;
-    ioOther.mSize      = 0;
+    other.mHandle    = nullptr;
+    other.mMapping   = nullptr;
+    other.mFinalised = false;
+    other.mSize      = 0;
 
     return *this;
 }
 
-inline void GPUStagingBuffer::Initialise(const GPUStagingAccess inAccess,
-                                         const uint32_t         inSize)
+inline void GPUStagingBuffer::Initialise(const GPUStagingAccess access,
+                                         const uint32_t         size)
 {
-    Allocate(inAccess, inSize);
+    Allocate(access, size);
 
-    mSize = inSize;
+    mSize = size;
 }
 
 inline void* GPUStagingBuffer::MapWrite()
@@ -288,54 +288,54 @@ inline void* GPUStagingBuffer::MapWrite()
     return mMapping;
 }
 
-inline void GPUStagingBuffer::Write(const void*    inData,
-                                    const uint32_t inSize,
-                                    const uint32_t inOffset)
+inline void GPUStagingBuffer::Write(const void*    data,
+                                    const uint32_t size,
+                                    const uint32_t offset)
 {
     Assert(IsAllocated());
     Assert(!IsFinalised());
-    Assert(inOffset + inSize <= mSize);
+    Assert(offset + size <= mSize);
 
-    memcpy(reinterpret_cast<uint8_t*>(mMapping) + inOffset, inData, inSize);
+    memcpy(reinterpret_cast<uint8_t*>(mMapping) + offset, data, size);
 }
 
-inline GPUStagingTexture::GPUStagingTexture(const GPUStagingAccess inAccess,
-                                            const GPUTextureDesc&  inDesc) :
+inline GPUStagingTexture::GPUStagingTexture(const GPUStagingAccess access,
+                                            const GPUTextureDesc&  desc) :
     GPUStagingTexture   ()
 {
-    Initialise(inAccess, inDesc);
+    Initialise(access, desc);
 }
 
-inline uint32_t GPUStagingTexture::GetMipWidth(const uint8_t inMip) const
+inline uint32_t GPUStagingTexture::GetMipWidth(const uint8_t mip) const
 {
-    return std::max(mDesc.width >> inMip, 1u);
+    return std::max(mDesc.width >> mip, 1u);
 }
 
-inline uint32_t GPUStagingTexture::GetMipHeight(const uint8_t inMip) const
+inline uint32_t GPUStagingTexture::GetMipHeight(const uint8_t mip) const
 {
-    return std::max(mDesc.height >> inMip, 1u);
+    return std::max(mDesc.height >> mip, 1u);
 }
 
-inline uint32_t GPUStagingTexture::GetMipDepth(const uint8_t inMip) const
+inline uint32_t GPUStagingTexture::GetMipDepth(const uint8_t mip) const
 {
-    return std::max(mDesc.depth >> inMip, 1u);
+    return std::max(mDesc.depth >> mip, 1u);
 }
 
-inline uint32_t GPUStagingTexture::GetSubresourceOffset(const GPUSubresource inSubresource) const
+inline uint32_t GPUStagingTexture::GetSubresourceOffset(const GPUSubresource subresource) const
 {
-    return mSubresourceOffsets[GetSubresourceIndex(inSubresource)];
+    return mSubresourceOffsets[GetSubresourceIndex(subresource)];
 }
 
-inline uint32_t GPUStagingTexture::GetSubresourceIndex(const GPUSubresource inSubresource) const
+inline uint32_t GPUStagingTexture::GetSubresourceIndex(const GPUSubresource subresource) const
 {
     Assert(IsAllocated());
-    Assert(inSubresource.mipLevel < GetNumMipLevels());
-    Assert(inSubresource.layer < GetArraySize());
+    Assert(subresource.mipLevel < GetNumMipLevels());
+    Assert(subresource.layer < GetArraySize());
 
-    return (inSubresource.layer * GetNumMipLevels()) + inSubresource.mipLevel;
+    return (subresource.layer * GetNumMipLevels()) + subresource.mipLevel;
 }
 
-inline GPUStagingPool::GPUStagingPool(GPUDevice& inDevice) :
-    GPUDeviceChild  (inDevice)
+inline GPUStagingPool::GPUStagingPool(GPUDevice& device) :
+    GPUDeviceChild  (device)
 {
 }

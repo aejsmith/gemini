@@ -45,33 +45,33 @@
 #include <map>
 #include <new>
 
-MetaType::MetaType(const char* const inName,
-                   const size_t      inSize,
-                   const uint32_t    inTraits,
-                   const MetaType*   inParent) :
-    mName          (inName),
-    mSize          (inSize),
-    mTraits        (inTraits),
-    mParent        (inParent),
+MetaType::MetaType(const char* const name,
+                   const size_t      size,
+                   const uint32_t    traits,
+                   const MetaType*   parent) :
+    mName          (name),
+    mSize          (size),
+    mTraits        (traits),
+    mParent        (parent),
     mEnumConstants (nullptr)
 {
 }
 
-const MetaType* MetaType::Allocate(const char* const inSignature,
-                                   const size_t      inSize,
-                                   const uint32_t    inTraits,
-                                   const MetaType*   inParent)
+const MetaType* MetaType::Allocate(const char* const signature,
+                                   const size_t      size,
+                                   const uint32_t    traits,
+                                   const MetaType*   parent)
 {
     /* Derive the type name from the function signature (see LookupImpl). */
     #if defined(__GNUC__)
-        std::string name(inSignature);
+        std::string name(signature);
 
         const size_t start = name.rfind("LookupT = ") + 10;
         const size_t len   = name.rfind(", LookupEnable") - start;
 
         name = name.substr(start, len);
     #elif defined(_MSC_VER)
-        std::string name(inSignature);
+        std::string name(signature);
 
         const size_t start = name.rfind("LookupImpl<") + 11;
         const size_t len   = name.rfind(",void") - start;
@@ -82,18 +82,18 @@ const MetaType* MetaType::Allocate(const char* const inSignature,
     #endif
 
     return new MetaType(strdup(name.c_str()),
-                        inSize,
-                        inTraits,
-                        inParent);
+                        size,
+                        traits,
+                        parent);
 }
 
-const char* MetaType::GetEnumConstantName(const int inValue) const
+const char* MetaType::GetEnumConstantName(const int value) const
 {
     Assert(IsEnum());
 
     for (const EnumConstant& constant : *mEnumConstants)
     {
-        if (inValue == constant.second)
+        if (value == constant.second)
         {
             return constant.first;
         }
@@ -110,33 +110,33 @@ static auto& GetMetaClassMap()
     return map;
 }
 
-MetaClass::MetaClass(const char* const         inName,
-                     const size_t              inSize,
-                     const uint32_t            inTraits,
-                     const MetaClass* const    inParent,
-                     const ConstructorFunction inConstructor,
-                     const PropertyArray&      inProperties) :
-    MetaType     (inName,
-                  inSize,
-                  inTraits | MetaType::kIsObject,
-                  inParent),
-    mConstructor (inConstructor),
-    mProperties  (inProperties)
+MetaClass::MetaClass(const char* const         name,
+                     const size_t              size,
+                     const uint32_t            traits,
+                     const MetaClass* const    parent,
+                     const ConstructorFunction constructor,
+                     const PropertyArray&      properties) :
+    MetaType     (name,
+                  size,
+                  traits | MetaType::kIsObject,
+                  parent),
+    mConstructor (constructor),
+    mProperties  (properties)
 {
-    auto ret = GetMetaClassMap().insert(std::make_pair(mName, this));
-    Unused(ret);
+    auto classRet = GetMetaClassMap().insert(std::make_pair(mName, this));
+    Unused(classRet);
 
-    AssertMsg(ret.second,
+    AssertMsg(classRet.second,
               "Registering meta-class '%s' that already exists",
               mName);
 
     /* Add properties to a map for fast lookup. */
     for (const MetaProperty& property : mProperties)
     {
-        auto ret = mPropertyMap.insert(std::make_pair(property.GetName(), &property));
-        Unused(ret);
+        auto propRet = mPropertyMap.insert(std::make_pair(property.GetName(), &property));
+        Unused(propRet);
 
-        AssertMsg(ret.second,
+        AssertMsg(propRet.second,
                   "Meta-class '%s' has duplicate property '%s'",
                   mName,
                   property.GetName());
@@ -148,9 +148,9 @@ MetaClass::~MetaClass()
     GetMetaClassMap().erase(mName);
 }
 
-bool MetaClass::IsBaseOf(const MetaClass& inOther) const
+bool MetaClass::IsBaseOf(const MetaClass& other) const
 {
-    const MetaClass* current = &inOther;
+    const MetaClass* current = &other;
 
     while (current)
     {
@@ -183,13 +183,13 @@ ObjPtr<> MetaClass::ConstructPrivate() const
     return mConstructor();
 }
 
-const MetaProperty* MetaClass::LookupProperty(const char* const inName) const
+const MetaProperty* MetaClass::LookupProperty(const char* const name) const
 {
     const MetaClass* current = this;
 
     while (current)
     {
-        auto ret = current->mPropertyMap.find(inName);
+        auto ret = current->mPropertyMap.find(name);
         if (ret != current->mPropertyMap.end())
         {
             return ret->second;
@@ -201,20 +201,20 @@ const MetaProperty* MetaClass::LookupProperty(const char* const inName) const
     return nullptr;
 }
 
-std::vector<const MetaClass*> MetaClass::GetConstructableClasses(const bool inSorted) const
+std::vector<const MetaClass*> MetaClass::GetConstructableClasses(const bool sorted) const
 {
     std::vector<const MetaClass*> classList;
 
     MetaClass::Visit(
-        [&] (const MetaClass& inOtherClass)
+        [&] (const MetaClass& otherClass)
         {
-            if (IsBaseOf(inOtherClass) && inOtherClass.IsConstructable())
+            if (IsBaseOf(otherClass) && otherClass.IsConstructable())
             {
-                classList.emplace_back(&inOtherClass);
+                classList.emplace_back(&otherClass);
             }
         });
 
-    if (inSorted)
+    if (sorted)
     {
         std::sort(
             classList.begin(),
@@ -228,56 +228,56 @@ std::vector<const MetaClass*> MetaClass::GetConstructableClasses(const bool inSo
     return classList;
 }
 
-const MetaClass* MetaClass::Lookup(const std::string& inName)
+const MetaClass* MetaClass::Lookup(const std::string& name)
 {
     auto& map = GetMetaClassMap();
 
-    auto ret = map.find(inName);
+    auto ret = map.find(name);
     return (ret != map.end()) ? ret->second : nullptr;
 }
 
-void MetaClass::Visit(const std::function<void (const MetaClass&)>& inFunction)
+void MetaClass::Visit(const std::function<void (const MetaClass&)>& function)
 {
     for (auto it : GetMetaClassMap())
     {
-        inFunction(*it.second);
+        function(*it.second);
     }
 }
 
-MetaProperty::MetaProperty(const char* const inName,
-                           const MetaType&   inType,
-                           const uint32_t    inFlags,
-                           const GetFunction inGetFunction,
-                           const SetFunction inSetFunction) :
-    mName        (inName),
-    mType        (inType),
-    mFlags       (inFlags),
-    mGetFunction (inGetFunction),
-    mSetFunction (inSetFunction)
+MetaProperty::MetaProperty(const char* const name,
+                           const MetaType&   type,
+                           const uint32_t    flags,
+                           const GetFunction getFunction,
+                           const SetFunction setFunction) :
+    mName        (name),
+    mType        (type),
+    mFlags       (flags),
+    mGetFunction (getFunction),
+    mSetFunction (setFunction)
 {
 }
 
 /** Look up a property and check that it is the given type. */
-static const MetaProperty* LookupAndCheckProperty(const MetaClass&  inMetaClass,
-                                                  const char* const inName,
-                                                  const MetaType&   inType)
+static const MetaProperty* LookupAndCheckProperty(const MetaClass&  metaClass,
+                                                  const char* const name,
+                                                  const MetaType&   type)
 {
-    const MetaProperty* property = inMetaClass.LookupProperty(inName);
+    const MetaProperty* property = metaClass.LookupProperty(name);
     if (!property)
     {
         LogError("Attempt to access non-existant property '%s' on class '%s'",
-                 inName,
-                 inMetaClass.GetName());
+                 name,
+                 metaClass.GetName());
 
         return nullptr;
     }
 
-    if (&inType != &property->GetType())
+    if (&type != &property->GetType())
     {
         LogError("Type mismatch accessing property '%s' on class '%s', requested '%s', actual '%s'",
-                 inName,
-                 inMetaClass.GetName(),
-                 inType.GetName(),
+                 name,
+                 metaClass.GetName(),
+                 type.GetName(),
                  property->GetType().GetName());
 
         return nullptr;
@@ -286,13 +286,13 @@ static const MetaProperty* LookupAndCheckProperty(const MetaClass&  inMetaClass,
     return property;
 }
 
-bool Object::GetProperty(const char* const inName,
-                         const MetaType&   inType,
+bool Object::GetProperty(const char* const name,
+                         const MetaType&   type,
                          void* const       outValue) const
 {
     const MetaProperty* property = LookupAndCheckProperty(GetMetaClass(),
-                                                          inName,
-                                                          inType);
+                                                          name,
+                                                          type);
     if (!property)
     {
         return false;
@@ -302,19 +302,19 @@ bool Object::GetProperty(const char* const inName,
     return true;
 }
 
-bool Object::SetProperty(const char* const inName,
-                         const MetaType&   inType,
-                         const void* const inValue)
+bool Object::SetProperty(const char* const name,
+                         const MetaType&   type,
+                         const void* const value)
 {
     const MetaProperty *property = LookupAndCheckProperty(GetMetaClass(),
-                                                          inName,
-                                                          inType);
+                                                          name,
+                                                          type);
     if (!property)
     {
         return false;
     }
 
-    property->SetValue(this, inValue);
+    property->SetValue(this, value);
     return true;
 }
 
@@ -364,23 +364,23 @@ struct SerialisationBuffer
     }
 };
 
-void Object::Serialise(Serialiser& inSerialiser) const
+void Object::Serialise(Serialiser& serialiser) const
 {
     /* Serialise properties into a separate group. */
-    inSerialiser.BeginGroup("objectProperties");
+    serialiser.BeginGroup("objectProperties");
 
     /* We should serialise base class properties first. It may be that, for
      * example, the set method of a derived class property depends on the value
      * of a base class property. */
     std::function<void (const MetaClass*)> SerialiseProperties =
-        [&] (const MetaClass* inMetaClass)
+        [&] (const MetaClass* metaClass)
         {
-            if (inMetaClass->GetParent())
+            if (metaClass->GetParent())
             {
-                SerialiseProperties(inMetaClass->GetParent());
+                SerialiseProperties(metaClass->GetParent());
             }
 
-            for (const MetaProperty& property : inMetaClass->GetProperties())
+            for (const MetaProperty& property : metaClass->GetProperties())
             {
                 if (property.IsTransient())
                 {
@@ -390,30 +390,30 @@ void Object::Serialise(Serialiser& inSerialiser) const
                 SerialisationBuffer buffer(property.GetType());
                 property.GetValue(this, buffer.data);
 
-                inSerialiser.Write(property.GetName(),
-                                   property.GetType(),
-                                   buffer.data);
+                serialiser.Write(property.GetName(),
+                                 property.GetType(),
+                                 buffer.data);
             }
         };
 
     SerialiseProperties(&GetMetaClass());
 
-    inSerialiser.EndGroup();
+    serialiser.EndGroup();
 }
 
-void Object::Deserialise(Serialiser &inSerialiser)
+void Object::Deserialise(Serialiser &serialiser)
 {
-    if (inSerialiser.BeginGroup("objectProperties"))
+    if (serialiser.BeginGroup("objectProperties"))
     {
         std::function<void (const MetaClass*)> DeserialiseProperties =
-            [&] (const MetaClass* inMetaClass)
+            [&] (const MetaClass* metaClass)
             {
-                if (inMetaClass->GetParent())
+                if (metaClass->GetParent())
                 {
-                    DeserialiseProperties(inMetaClass->GetParent());
+                    DeserialiseProperties(metaClass->GetParent());
                 }
 
-                for (const MetaProperty& property : inMetaClass->GetProperties())
+                for (const MetaProperty& property : metaClass->GetProperties())
                 {
                     if (property.IsTransient())
                     {
@@ -422,9 +422,9 @@ void Object::Deserialise(Serialiser &inSerialiser)
 
                     SerialisationBuffer buffer(property.GetType());
 
-                    const bool result = inSerialiser.Read(property.GetName(),
-                                                          property.GetType(),
-                                                          buffer.data);
+                    const bool result = serialiser.Read(property.GetName(),
+                                                        property.GetType(),
+                                                        buffer.data);
                     if (result)
                     {
                         property.SetValue(this, buffer.data);
@@ -434,34 +434,34 @@ void Object::Deserialise(Serialiser &inSerialiser)
 
         DeserialiseProperties(&GetMetaClass());
 
-        inSerialiser.EndGroup();
+        serialiser.EndGroup();
     }
 }
 
-ObjPtr<> Object::LoadObject(const Path&      inPath,
-                            const MetaClass& inExpectedClass)
+ObjPtr<> Object::LoadObject(const Path&      path,
+                            const MetaClass& expectedClass)
 {
-    UPtr<File> file(Filesystem::OpenFile(inPath));
+    UPtr<File> file(Filesystem::OpenFile(path));
     if (!file)
     {
-        LogError("Failed to open '%s'", inPath.GetCString());
+        LogError("Failed to open '%s'", path.GetCString());
         return nullptr;
     }
 
     ByteArray serialisedData(file->GetSize());
     if (!file->Read(serialisedData.Get(), file->GetSize()))
     {
-        LogError("Failed to read '%s'", inPath.GetCString());
+        LogError("Failed to read '%s'", path.GetCString());
         return nullptr;
     }
 
     /* TODO: Assumed as JSON for now. When we have binary serialisation this
      * will need to detect the file type. */
     JSONSerialiser serialiser;
-    ObjPtr<> object = serialiser.Deserialise(serialisedData, inExpectedClass);
+    ObjPtr<> object = serialiser.Deserialise(serialisedData, expectedClass);
     if (!object)
     {
-        LogError("Failed to deserialise '%s'", inPath.GetCString());
+        LogError("Failed to deserialise '%s'", path.GetCString());
         return nullptr;
     }
 
@@ -500,34 +500,34 @@ const MetaClass* MetaClass::DebugUIClassSelector() const
     return result;
 }
 
-void Object::CustomDebugUIEditor(const uint32_t        inFlags,
+void Object::CustomDebugUIEditor(const uint32_t        flags,
                                  std::vector<Object*>& ioChildren)
 {
 }
 
 template <typename T, typename Func>
-static void DebugUIPropertyEditor(Object* const       inObject,
-                                  const MetaProperty& inProperty,
-                                  Func                inFunction)
+static void DebugUIPropertyEditor(Object* const       object,
+                                  const MetaProperty& property,
+                                  Func                function)
 {
-    if (&inProperty.GetType() != &MetaType::Lookup<T>())
+    if (&property.GetType() != &MetaType::Lookup<T>())
     {
         return;
     }
 
-    ImGui::PushID(&inProperty);
+    ImGui::PushID(&property);
 
-    ImGui::Text(inProperty.GetName());
+    ImGui::Text(property.GetName());
 
     ImGui::NextColumn();
     ImGui::PushItemWidth(-1);
 
     T value;
-    inObject->GetProperty<T>(inProperty.GetName(), value);
+    object->GetProperty<T>(property.GetName(), value);
 
-    if (inFunction(&value))
+    if (function(&value))
     {
-        inObject->SetProperty<T>(inProperty.GetName(), value);
+        object->SetProperty<T>(property.GetName(), value);
     }
 
     ImGui::PopItemWidth();
@@ -536,35 +536,35 @@ static void DebugUIPropertyEditor(Object* const       inObject,
     ImGui::PopID();
 }
 
-static bool EnumItemGetter(void* const  inData,
-                           const int    inIndex,
+static bool EnumItemGetter(void* const  data,
+                           const int    index,
                            const char** outText)
 {
-    const auto& constants = *reinterpret_cast<const MetaType::EnumConstantArray*>(inData);
+    const auto& constants = *reinterpret_cast<const MetaType::EnumConstantArray*>(data);
 
     if (outText)
     {
-        *outText = constants[inIndex].first;
+        *outText = constants[index].first;
     }
 
     return true;
 }
 
-static void DebugUIEnumPropertyEditor(Object* const       inObject,
-                                      const MetaProperty& inProperty)
+static void DebugUIEnumPropertyEditor(Object* const       object,
+                                      const MetaProperty& property)
 {
-    if (!inProperty.GetType().IsEnum())
+    if (!property.GetType().IsEnum())
     {
         return;
     }
 
-    ImGui::PushID(&inProperty);
+    ImGui::PushID(&property);
 
-    ImGui::Text(inProperty.GetName());
+    ImGui::Text(property.GetName());
     ImGui::NextColumn();
     ImGui::PushItemWidth(-1);
 
-    const MetaType& type                         = inProperty.GetType();
+    const MetaType& type                         = property.GetType();
     const MetaType::EnumConstantArray& constants = type.GetEnumConstants();
 
     /* Get current value. */
@@ -574,7 +574,7 @@ static void DebugUIEnumPropertyEditor(Object* const       inObject,
         case 1:
         {
             int8_t tmp;
-            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+            object->GetProperty(property.GetName(), property.GetType(), &tmp);
             value = static_cast<int64_t>(tmp);
             break;
         }
@@ -582,7 +582,7 @@ static void DebugUIEnumPropertyEditor(Object* const       inObject,
         case 2:
         {
             int16_t tmp;
-            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+            object->GetProperty(property.GetName(), property.GetType(), &tmp);
             value = static_cast<int64_t>(tmp);
             break;
         }
@@ -590,14 +590,14 @@ static void DebugUIEnumPropertyEditor(Object* const       inObject,
         case 4:
         {
             int32_t tmp;
-            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+            object->GetProperty(property.GetName(), property.GetType(), &tmp);
             value = static_cast<int64_t>(tmp);
             break;
         }
 
         case 8:
         {
-            inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &value);
+            object->GetProperty(property.GetName(), property.GetType(), &value);
             break;
         }
 
@@ -630,27 +630,27 @@ static void DebugUIEnumPropertyEditor(Object* const       inObject,
             case 1:
             {
                 const int8_t tmp = static_cast<int8_t>(value);
-                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+                object->SetProperty(property.GetName(), property.GetType(), &tmp);
                 break;
             }
 
             case 2:
             {
                 const int16_t tmp = static_cast<int16_t>(value);
-                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+                object->SetProperty(property.GetName(), property.GetType(), &tmp);
                 break;
             }
 
             case 4:
             {
                 const int32_t tmp = static_cast<int32_t>(value);
-                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &tmp);
+                object->SetProperty(property.GetName(), property.GetType(), &tmp);
                 break;
             }
 
             case 8:
             {
-                inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &value);
+                object->SetProperty(property.GetName(), property.GetType(), &value);
                 break;
             }
         }
@@ -661,28 +661,28 @@ static void DebugUIEnumPropertyEditor(Object* const       inObject,
     ImGui::PopID();
 }
 
-static void DebugUIAssetPropertyEditor(Object* const       inObject,
-                                       const MetaProperty& inProperty)
+static void DebugUIAssetPropertyEditor(Object* const       object,
+                                       const MetaProperty& property)
 {
-    if (!inProperty.GetType().IsPointer() || !inProperty.GetType().GetPointeeType().IsObject())
+    if (!property.GetType().IsPointer() || !property.GetType().GetPointeeType().IsObject())
     {
         return;
     }
 
-    const MetaClass& pointeeClass = static_cast<const MetaClass&>(inProperty.GetType().GetPointeeType());
+    const MetaClass& pointeeClass = static_cast<const MetaClass&>(property.GetType().GetPointeeType());
 
     if (!Asset::staticMetaClass.IsBaseOf(pointeeClass))
     {
         return;
     }
 
-    ImGui::PushID(&inProperty);
+    ImGui::PushID(&property);
 
-    ImGui::Text(inProperty.GetName());
+    ImGui::Text(property.GetName());
     ImGui::NextColumn();
 
     AssetPtr asset;
-    inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &asset);
+    object->GetProperty(property.GetName(), property.GetType(), &asset);
 
     const bool activate = ImGui::Button("Select");
 
@@ -691,7 +691,7 @@ static void DebugUIAssetPropertyEditor(Object* const       inObject,
 
     if (AssetManager::Get().DebugUIAssetSelector(asset, pointeeClass, activate))
     {
-        inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &asset);
+        object->SetProperty(property.GetName(), property.GetType(), &asset);
     }
 
     ImGui::NextColumn();
@@ -699,17 +699,17 @@ static void DebugUIAssetPropertyEditor(Object* const       inObject,
     ImGui::PopID();
 }
 
-static void DebugUIObjectPropertyEditor(Object* const         inObject,
-                                        const MetaProperty&   inProperty,
-                                        const uint32_t        inFlags,
+static void DebugUIObjectPropertyEditor(Object* const         object,
+                                        const MetaProperty&   property,
+                                        const uint32_t        flags,
                                         std::vector<Object*>& ioChildren)
 {
-    if (!inProperty.GetType().IsPointer() || !inProperty.GetType().GetPointeeType().IsObject())
+    if (!property.GetType().IsPointer() || !property.GetType().GetPointeeType().IsObject())
     {
         return;
     }
 
-    const MetaClass& pointeeClass = static_cast<const MetaClass&>(inProperty.GetType().GetPointeeType());
+    const MetaClass& pointeeClass = static_cast<const MetaClass&>(property.GetType().GetPointeeType());
 
     /* TODO: Need an editor for Entity/Component references. */
     if (Asset::staticMetaClass.IsBaseOf(pointeeClass) ||
@@ -719,13 +719,13 @@ static void DebugUIObjectPropertyEditor(Object* const         inObject,
         return;
     }
 
-    ImGui::PushID(&inProperty);
+    ImGui::PushID(&property);
 
-    ImGui::Text(inProperty.GetName());
+    ImGui::Text(property.GetName());
     ImGui::NextColumn();
 
     ObjPtr<> child;
-    inObject->GetProperty(inProperty.GetName(), inProperty.GetType(), &child);
+    object->GetProperty(property.GetName(), property.GetType(), &child);
 
     const bool newSelected   = ImGui::Button("New");
     ImGui::SameLine();
@@ -770,10 +770,10 @@ static void DebugUIObjectPropertyEditor(Object* const         inObject,
 
     if (set)
     {
-        inObject->SetProperty(inProperty.GetName(), inProperty.GetType(), &child);
+        object->SetProperty(property.GetName(), property.GetType(), &child);
     }
 
-    if (inFlags & Object::kDebugUIEditor_IncludeChildren && child)
+    if (flags & Object::kDebugUIEditor_IncludeChildren && child)
     {
         ioChildren.emplace_back(child);
     }
@@ -783,25 +783,25 @@ static void DebugUIObjectPropertyEditor(Object* const         inObject,
     ImGui::PopID();
 }
 
-static void DebugUIPropertyEditors(Object* const         inObject,
-                                   const MetaClass&      inMetaClass,
-                                   const uint32_t        inFlags,
+static void DebugUIPropertyEditors(Object* const         object,
+                                   const MetaClass&      metaClass,
+                                   const uint32_t        flags,
                                    std::vector<Object*>& ioChildren)
 {
     /* Display base class properties first. */
-    if (inMetaClass.GetParent())
+    if (metaClass.GetParent())
     {
-        DebugUIPropertyEditors(inObject, *inMetaClass.GetParent(), inFlags, ioChildren);
+        DebugUIPropertyEditors(object, *metaClass.GetParent(), flags, ioChildren);
     }
 
-    for (const MetaProperty& property : inMetaClass.GetProperties())
+    for (const MetaProperty& property : metaClass.GetProperties())
     {
         /* These all do nothing if the type does not match. */
 
         ImGui::AlignTextToFramePadding();
 
         DebugUIPropertyEditor<bool>(
-            inObject,
+            object,
             property,
             [&] (bool* ioValue)
             {
@@ -810,7 +810,7 @@ static void DebugUIPropertyEditors(Object* const         inObject,
 
         #define INT_EDITOR(type, imType) \
             DebugUIPropertyEditor<type>( \
-                inObject, \
+                object, \
                 property, \
                 [&] (type* ioValue) \
                 { \
@@ -829,7 +829,7 @@ static void DebugUIPropertyEditors(Object* const         inObject,
         #undef INT_EDITOR
 
         DebugUIPropertyEditor<float>(
-            inObject,
+            object,
             property,
             [&] (float* ioValue)
             {
@@ -837,7 +837,7 @@ static void DebugUIPropertyEditors(Object* const         inObject,
             });
 
         DebugUIPropertyEditor<glm::vec2>(
-            inObject,
+            object,
             property,
             [&] (glm::vec2* ioValue)
             {
@@ -845,7 +845,7 @@ static void DebugUIPropertyEditors(Object* const         inObject,
             });
 
         DebugUIPropertyEditor<glm::vec3>(
-            inObject,
+            object,
             property,
             [&] (glm::vec3* ioValue)
             {
@@ -853,7 +853,7 @@ static void DebugUIPropertyEditors(Object* const         inObject,
             });
 
         DebugUIPropertyEditor<glm::vec4>(
-            inObject,
+            object,
             property,
             [&] (glm::vec4* ioValue)
             {
@@ -861,7 +861,7 @@ static void DebugUIPropertyEditors(Object* const         inObject,
             });
 
         DebugUIPropertyEditor<glm::quat>(
-            inObject,
+            object,
             property,
             [&] (glm::quat* ioValue)
             {
@@ -887,7 +887,7 @@ static void DebugUIPropertyEditors(Object* const         inObject,
             });
 
         DebugUIPropertyEditor<std::string>(
-            inObject,
+            object,
             property,
             [&] (std::string* ioValue)
             {
@@ -906,29 +906,29 @@ static void DebugUIPropertyEditors(Object* const         inObject,
                 }
             });
 
-        DebugUIEnumPropertyEditor(inObject, property);
-        DebugUIAssetPropertyEditor(inObject, property);
-        DebugUIObjectPropertyEditor(inObject, property, inFlags, ioChildren);
+        DebugUIEnumPropertyEditor(object, property);
+        DebugUIAssetPropertyEditor(object, property);
+        DebugUIObjectPropertyEditor(object, property, flags, ioChildren);
     }
 }
 
-void Object::DebugUIEditor(const uint32_t inFlags,
+void Object::DebugUIEditor(const uint32_t flags,
                            bool*          outDestroyObject)
 {
     bool open = true;
 
     if (outDestroyObject)
     {
-        Assert(inFlags & kDebugUIEditor_AllowDestruction);
+        Assert(flags & kDebugUIEditor_AllowDestruction);
         *outDestroyObject = false;
     }
     else
     {
-        Assert(!(inFlags & kDebugUIEditor_AllowDestruction));
+        Assert(!(flags & kDebugUIEditor_AllowDestruction));
     }
 
     if (!ImGui::CollapsingHeader(GetMetaClass().GetName(),
-                                 (inFlags & kDebugUIEditor_AllowDestruction) ? &open : nullptr,
+                                 (flags & kDebugUIEditor_AllowDestruction) ? &open : nullptr,
                                  ImGuiTreeNodeFlags_DefaultOpen))
     {
         return;
@@ -947,20 +947,20 @@ void Object::DebugUIEditor(const uint32_t inFlags,
     std::vector<Object*> children;
 
     /* Generic editors based on class properties. */
-    DebugUIPropertyEditors(this, GetMetaClass(), inFlags, children);
+    DebugUIPropertyEditors(this, GetMetaClass(), flags, children);
 
     /* Custom editors for things that cannot be handled by the property system. */
-    CustomDebugUIEditor(inFlags, children);
+    CustomDebugUIEditor(flags, children);
 
     ImGui::Columns(1);
 
-    if (!children.empty() && inFlags & kDebugUIEditor_IncludeChildren)
+    if (!children.empty() && flags & kDebugUIEditor_IncludeChildren)
     {
         for (Object* child : children)
         {
             ImGui::Indent();
             ImGui::BeginChild(child->GetMetaClass().GetName());
-            child->DebugUIEditor(inFlags & ~kDebugUIEditor_AllowDestruction);
+            child->DebugUIEditor(flags & ~kDebugUIEditor_AllowDestruction);
             ImGui::EndChild();
         }
     }

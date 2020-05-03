@@ -42,12 +42,12 @@ public:
     using LayerList           = std::list<RenderLayer*>;
 
 public:
-    void                        AddPasses(RenderGraph& inGraph,
+    void                        AddPasses(RenderGraph& graph,
                                           OnlyCalledBy<RenderManager>);
 
-    void                        RegisterLayer(RenderLayer* const inLayer,
+    void                        RegisterLayer(RenderLayer* const layer,
                                               OnlyCalledBy<RenderLayer>);
-    void                        UnregisterLayer(RenderLayer* const inLayer,
+    void                        UnregisterLayer(RenderLayer* const layer,
                                                 OnlyCalledBy<RenderLayer>);
 
     /** Get the size of the output. */
@@ -63,7 +63,7 @@ public:
     virtual std::string         GetName() const = 0;
 
 protected:
-                                RenderOutput(const glm::uvec2& inSize);
+                                RenderOutput(const glm::uvec2& size);
                                 ~RenderOutput();
 
     void                        RegisterOutput();

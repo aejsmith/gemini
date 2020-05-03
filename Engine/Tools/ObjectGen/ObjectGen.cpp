@@ -55,73 +55,71 @@ public:
     using VisitFunction           = std::function<void (CXCursor, CXCursorKind)>;
 
 public:
-                                    ParsedDecl(CXCursor inCursor,
-                                               ParsedDecl* const inParent        = nullptr,
-                                               const bool        inNameFromType  = false);
+                                    ParsedDecl(CXCursor          cursor,
+                                               ParsedDecl* const parent       = nullptr,
+                                               const bool        nameFromType = false);
 
     virtual                         ~ParsedDecl() {}
 
-public:
     bool                            IsFromMainFile() const;
     ParsedTranslationUnit*          GetTranslationUnit();
 
     virtual mustache::data          Generate() const
                                         { return mustache::data(); }
 
-    virtual void                    Dump(const unsigned inDepth) const = 0;
+    virtual void                    Dump(const unsigned depth) const = 0;
 
-    static void                     VisitChildren(CXCursor          inCursor,
-                                                  ParsedDecl* const inDecl);
+    static void                     VisitChildren(CXCursor          cursor,
+                                                  ParsedDecl* const decl);
 
-    static void                     VisitChildren(CXCursor             inCursor,
-                                                  const VisitFunction& inFunction);
+    static void                     VisitChildren(CXCursor             cursor,
+                                                  const VisitFunction& function);
 
 public:
-    CXCursor                        cursor;
-    ParsedDecl*                     parent;
-    std::string                     name;
-    bool                            isAnnotated;
+    CXCursor                        mCursor;
+    ParsedDecl*                     mParent;
+    std::string                     mName;
+    bool                            mIsAnnotated;
 
 protected:
-    virtual bool                    HandleAnnotation(const std::string&         inType,
-                                                     const rapidjson::Document& inAttributes)
+    virtual bool                    HandleAnnotation(const std::string&         type,
+                                                     const rapidjson::Document& attributes)
                                         { return false; }
 
-    virtual void                    HandleChild(CXCursor     inCursor,
-                                                CXCursorKind inKind) {}
+    virtual void                    HandleChild(CXCursor     cursor,
+                                                CXCursorKind kind) {}
 
 private:
-    static CXChildVisitResult       VisitDeclCallback(CXCursor     inCursor,
-                                                      CXCursor     inParent,
-                                                      CXClientData inData);
+    static CXChildVisitResult       VisitDeclCallback(CXCursor     cursor,
+                                                      CXCursor     parent,
+                                                      CXClientData data);
 
-    static CXChildVisitResult       VisitFunctionCallback(CXCursor     inCursor,
-                                                          CXCursor     inParent,
-                                                          CXClientData inData);
+    static CXChildVisitResult       VisitFunctionCallback(CXCursor     cursor,
+                                                          CXCursor     parent,
+                                                          CXClientData data);
 
 };
 
 class ParsedProperty : public ParsedDecl
 {
 public:
-                                    ParsedProperty(CXCursor          inCursor,
-                                                   ParsedDecl* const inParent);
+                                    ParsedProperty(CXCursor          cursor,
+                                                   ParsedDecl* const parent);
 
-public:
     mustache::data                  Generate() const override;
-    void                            Dump(const unsigned inDepth) const override;
-
-public:
-    std::string                     type;
-    std::string                     getFunction;
-    std::string                     setFunction;
-
-    /** Behaviour flags. */
-    bool                            transient;
+    void                            Dump(const unsigned depth) const override;
 
 protected:
-    bool                            HandleAnnotation(const std::string&         inType,
-                                                     const rapidjson::Document& inAttributes) override;
+    bool                            HandleAnnotation(const std::string&         type,
+                                                     const rapidjson::Document& attributes) override;
+
+private:
+    std::string                     mType;
+    std::string                     mGetFunction;
+    std::string                     mSetFunction;
+
+    /** Behaviour flags. */
+    bool                            mTransient;
 
 };
 
@@ -130,30 +128,26 @@ using ParsedPropertyList = std::list<std::unique_ptr<ParsedProperty>>;
 class ParsedClass : public ParsedDecl
 {
 public:
-                                    ParsedClass(CXCursor          inCursor,
-                                                ParsedDecl* const inParent);
+                                    ParsedClass(CXCursor          cursor,
+                                                ParsedDecl* const parent);
 
-public:
     bool                            IsObject() const;
     bool                            IsConstructable() const;
     bool                            IsPublicConstructable() const;
 
     mustache::data                  Generate() const override;
-    void                            Dump(const unsigned inDepth) const override;
+    void                            Dump(const unsigned depth) const override;
 
 public:
-    bool                            isObjectDerived;
-    CX_CXXAccessSpecifier           destructorAccess;
-    ParsedClass*                    parentClass;
-
-    ParsedPropertyList              properties;
+    bool                            mIsObjectDerived;
+    CX_CXXAccessSpecifier           mDestructorAccess;
 
 protected:
-    bool                            HandleAnnotation(const std::string&         inType,
-                                                     const rapidjson::Document& inAttributes) override;
+    bool                            HandleAnnotation(const std::string&         type,
+                                                     const rapidjson::Document& attributes) override;
 
-    void                            HandleChild(CXCursor     inCursor,
-                                                CXCursorKind inKind) override;
+    void                            HandleChild(CXCursor     cursor,
+                                                CXCursorKind kind) override;
 
 private:
     /** Whether the class is constructable. */
@@ -167,6 +161,8 @@ private:
     };
 
 private:
+    ParsedClass*                    mParentClass;
+    ParsedPropertyList              mProperties;
     Constructability                mConstructable;
 
     /** Temporary state used while parsing. */
@@ -180,31 +176,28 @@ class ParsedEnum : public ParsedDecl
 {
 public:
     mustache::data                  Generate() const override;
-    void                            Dump(const unsigned inDepth) const override;
+    void                            Dump(const unsigned depth) const override;
 
-    static void                     Create(CXCursor          inCursor,
-                                           ParsedDecl* const inParent);
-
-public:
-    /** Whether this enum is used and should have code generated. */
-    bool                            shouldGenerate;
+    static void                     Create(CXCursor          cursor,
+                                           ParsedDecl* const parent);
 
 protected:
-    bool                            HandleAnnotation(const std::string&         inType,
-                                                     const rapidjson::Document& inAttributes) override;
+    bool                            HandleAnnotation(const std::string&         type,
+                                                     const rapidjson::Document& attributes) override;
 
-    void                            HandleChild(CXCursor     inCursor,
-                                                CXCursorKind inKind) override;
+    void                            HandleChild(CXCursor     cursor,
+                                                CXCursorKind kind) override;
 
 private:
     using EnumConstant            = std::pair<std::string, long long>;
     using EnumConstantList        = std::list<EnumConstant>;
 
 private:
-                                    ParsedEnum(CXCursor    inCursor,
-                                               ParsedDecl* inParent);
+                                    ParsedEnum(CXCursor    cursor,
+                                               ParsedDecl* parent);
 
 private:
+    bool                            mShouldGenerate;
     EnumConstantList                mConstants;
 
 };
@@ -214,32 +207,31 @@ using ParsedEnumMap = std::map<std::string, std::unique_ptr<ParsedEnum>>;
 class ParsedTranslationUnit : public ParsedDecl
 {
 public:
-    explicit                        ParsedTranslationUnit(CXCursor inCursor);
+    explicit                        ParsedTranslationUnit(CXCursor cursor);
 
-public:
     mustache::data                  Generate() const override;
-    void                            Dump(const unsigned inDepth) const override;
+    void                            Dump(const unsigned depth) const override;
 
 public:
     /** List of child classes. */
-    ParsedClassMap                  classes;
+    ParsedClassMap                  mClasses;
 
     /** List of child enumerations (including ones nested within classes). */
-    ParsedEnumMap                   enums;
+    ParsedEnumMap                   mEnums;
 
 protected:
-    void                            HandleChild(CXCursor     inCursor,
-                                                CXCursorKind inKind) override;
+    void                            HandleChild(CXCursor     cursor,
+                                                CXCursorKind kind) override;
 
 };
 
 static bool gParseErrorOccurred = false;
 
-static void ParseError(CXCursor          inCursor,
-                       const char* const inFormat,
+static void ParseError(CXCursor          cursor,
+                       const char* const format,
                        ...)
 {
-    CXSourceLocation location = clang_getCursorLocation(inCursor);
+    CXSourceLocation location = clang_getCursorLocation(cursor);
     CXFile file;
     unsigned line, column;
     clang_getSpellingLocation(location, &file, &line, &column, nullptr);
@@ -248,8 +240,8 @@ static void ParseError(CXCursor          inCursor,
     fprintf(stderr, "%s:%u:%u: error: ", clang_getCString(fileName), line, column);
 
     va_list args;
-    va_start(args, inFormat);
-    vfprintf(stderr, inFormat, args);
+    va_start(args, format);
+    vfprintf(stderr, format, args);
     va_end(args);
 
     fprintf(stderr, "\n");
@@ -257,11 +249,11 @@ static void ParseError(CXCursor          inCursor,
     gParseErrorOccurred = true;
 }
 
-static void ParseWarning(CXCursor          inCursor,
-                         const char* const inFormat,
+static void ParseWarning(CXCursor          cursor,
+                         const char* const format,
                          ...)
 {
-    CXSourceLocation location = clang_getCursorLocation(inCursor);
+    CXSourceLocation location = clang_getCursorLocation(cursor);
     CXFile file;
     unsigned line, column;
     clang_getSpellingLocation(location, &file, &line, &column, nullptr);
@@ -270,8 +262,8 @@ static void ParseWarning(CXCursor          inCursor,
     fprintf(stderr, "%s:%u:%u: warning: ", clang_getCString(fileName), line, column);
 
     va_list args;
-    va_start(args, inFormat);
-    vfprintf(stderr, inFormat, args);
+    va_start(args, format);
+    vfprintf(stderr, format, args);
     va_end(args);
 
     fprintf(stderr, "\n");
@@ -285,9 +277,9 @@ static void ParseWarning(CXCursor          inCursor,
  * function solves this by replacing "::" in the name string with "_" to give
  * a name suitable for naming our generated variables.
  */
-static std::string MangleName(const std::string& inName)
+static std::string MangleName(const std::string& name)
 {
-    std::string mangled(inName);
+    std::string mangled(name);
 
     size_t pos;
     while ((pos = mangled.find("::")) != std::string::npos)
@@ -298,51 +290,51 @@ static std::string MangleName(const std::string& inName)
     return mangled;
 }
 
-ParsedDecl::ParsedDecl(CXCursor          inCursor,
-                       ParsedDecl* const inParent,
-                       const bool        inNameFromType) :
-    cursor      (inCursor),
-    parent      (inParent),
-    isAnnotated (false)
+ParsedDecl::ParsedDecl(CXCursor          cursor,
+                       ParsedDecl* const parent,
+                       const bool        nameFromType) :
+    mCursor      (cursor),
+    mParent      (parent),
+    mIsAnnotated (false)
 {
     CXString name;
 
-    if (inNameFromType)
+    if (nameFromType)
     {
-        CXType type = clang_getCursorType(this->cursor);
+        CXType type = clang_getCursorType(mCursor);
         name = clang_getTypeSpelling(type);
     }
     else
     {
-        name = clang_getCursorSpelling(cursor);
+        name = clang_getCursorSpelling(mCursor);
     }
 
-    this->name = clang_getCString(name);
+    mName = clang_getCString(name);
     clang_disposeString(name);
 }
 
 bool ParsedDecl::IsFromMainFile() const
 {
-    return clang_Location_isFromMainFile(clang_getCursorLocation(this->cursor));
+    return clang_Location_isFromMainFile(clang_getCursorLocation(mCursor));
 }
 
 ParsedTranslationUnit* ParsedDecl::GetTranslationUnit()
 {
     ParsedDecl* decl = this;
 
-    while (decl->parent)
+    while (decl->mParent)
     {
-        decl = decl->parent;
+        decl = decl->mParent;
     }
 
     return static_cast<ParsedTranslationUnit*>(decl);
 }
 
-static bool ParseAnnotation(CXCursor             inCursor,
+static bool ParseAnnotation(CXCursor             cursor,
                             std::string&         outType,
                             rapidjson::Document& outAttributes)
 {
-    CXString str = clang_getCursorSpelling(inCursor);
+    CXString str = clang_getCursorSpelling(cursor);
     std::string annotation(clang_getCString(str));
     clang_disposeString(str);
 
@@ -357,7 +349,7 @@ static bool ParseAnnotation(CXCursor             inCursor,
     }
     else if (tokens.size() != 3)
     {
-        ParseError(inCursor, "malformed annotation");
+        ParseError(cursor, "malformed annotation");
         return false;
     }
 
@@ -369,7 +361,7 @@ static bool ParseAnnotation(CXCursor             inCursor,
 
     if (outAttributes.HasParseError())
     {
-        ParseError(inCursor,
+        ParseError(cursor,
                    "parse error in attributes (at %zu): %s",
                    outAttributes.GetErrorOffset() - 1,
                    rapidjson::GetParseError_En(outAttributes.GetParseError()));
@@ -380,120 +372,120 @@ static bool ParseAnnotation(CXCursor             inCursor,
     return true;
 }
 
-CXChildVisitResult ParsedDecl::VisitDeclCallback(CXCursor     inCursor,
-                                                 CXCursor     inParent,
-                                                 CXClientData inData)
+CXChildVisitResult ParsedDecl::VisitDeclCallback(CXCursor     cursor,
+                                                 CXCursor     parent,
+                                                 CXClientData data)
 {
-    auto currentDecl = reinterpret_cast<ParsedDecl*>(inData);
+    auto currentDecl = reinterpret_cast<ParsedDecl*>(data);
 
-    CXCursorKind kind = clang_getCursorKind(inCursor);
+    CXCursorKind kind = clang_getCursorKind(cursor);
     if (kind == CXCursor_AnnotateAttr)
     {
         std::string type;
         rapidjson::Document attributes;
-        if (!ParseAnnotation(inCursor, type, attributes))
+        if (!ParseAnnotation(cursor, type, attributes))
         {
             return CXChildVisit_Continue;
         }
 
         if (currentDecl->HandleAnnotation(type, attributes))
         {
-            currentDecl->isAnnotated = true;
+            currentDecl->mIsAnnotated = true;
         }
         else
         {
-            ParseError(inCursor, "unexpected '%s' annotation", type.c_str());
+            ParseError(cursor, "unexpected '%s' annotation", type.c_str());
         }
     }
     else
     {
-        currentDecl->HandleChild(inCursor, kind);
+        currentDecl->HandleChild(cursor, kind);
     }
 
     return CXChildVisit_Continue;
 }
 
-void ParsedDecl::VisitChildren(CXCursor    inCursor,
-                               ParsedDecl* inDecl)
+void ParsedDecl::VisitChildren(CXCursor    cursor,
+                               ParsedDecl* decl)
 {
-    clang_visitChildren(inCursor, VisitDeclCallback, inDecl);
+    clang_visitChildren(cursor, VisitDeclCallback, decl);
 }
 
-CXChildVisitResult ParsedDecl::VisitFunctionCallback(CXCursor     inCursor,
-                                                     CXCursor     inParent,
-                                                     CXClientData inData)
+CXChildVisitResult ParsedDecl::VisitFunctionCallback(CXCursor     cursor,
+                                                     CXCursor     parent,
+                                                     CXClientData data)
 {
-    auto& function = *reinterpret_cast<const VisitFunction*>(inData);
+    auto& function = *reinterpret_cast<const VisitFunction*>(data);
 
-    CXCursorKind kind = clang_getCursorKind(inCursor);
-    function(inCursor, kind);
+    CXCursorKind kind = clang_getCursorKind(cursor);
+    function(cursor, kind);
 
     return CXChildVisit_Continue;
 }
 
-void ParsedDecl::VisitChildren(CXCursor             inCursor,
-                               const VisitFunction& inFunction)
+void ParsedDecl::VisitChildren(CXCursor             cursor,
+                               const VisitFunction& function)
 {
-    clang_visitChildren(inCursor,
+    clang_visitChildren(cursor,
                         VisitFunctionCallback,
-                        const_cast<VisitFunction*>(&inFunction));
+                        const_cast<VisitFunction*>(&function));
 }
 
-ParsedProperty::ParsedProperty(CXCursor          inCursor,
-                               ParsedDecl* const inParent) :
-    ParsedDecl (inCursor, inParent),
-    transient  (false)
+ParsedProperty::ParsedProperty(CXCursor          cursor,
+                               ParsedDecl* const parent) :
+    ParsedDecl (cursor, parent),
+    mTransient (false)
 {
     /* Remove prefixes from virtual property names. */
-    if (this->name.substr(0, 6) == "vprop_")
+    if (mName.substr(0, 6) == "vprop_")
     {
-        this->name = this->name.substr(6);
+        mName = mName.substr(6);
     }
 
     /* Get the property type. */
-    CXType type  = clang_getCursorType(inCursor);
+    CXType type  = clang_getCursorType(cursor);
     CXString str = clang_getTypeSpelling(type);
-    this->type   = clang_getCString(str);
+    mType        = clang_getCString(str);
     clang_disposeString(str);
 }
 
-bool ParsedProperty::HandleAnnotation(const std::string&         inType,
-                                      const rapidjson::Document& inAttributes)
+bool ParsedProperty::HandleAnnotation(const std::string&         type,
+                                      const rapidjson::Document& attributes)
 {
-    if (inType.compare("property") != 0)
+    if (type.compare("property") != 0)
     {
         return false;
     }
 
     /* Now that we know that we are really a property, if our type is an enum,
      * mark that enum for code generation. */
-    CXType propertyType       = clang_getCursorType(this->cursor);
+    CXType propertyType       = clang_getCursorType(mCursor);
     CXCursor propertyTypeDecl = clang_getTypeDeclaration(propertyType);
 
     if (clang_getCursorKind(propertyTypeDecl) == CXCursor_EnumDecl)
     {
         const ParsedTranslationUnit* translationUnit = GetTranslationUnit();
 
-        auto it = translationUnit->enums.find(this->type);
-        if (it == translationUnit->enums.end())
+        auto it = translationUnit->mEnums.find(mType);
+        if (it == translationUnit->mEnums.end())
         {
-            ParseError(this->cursor,
+            ParseError(mCursor,
                        "enum '%s' for property '%s' must be marked with ENUM()",
-                       this->type.c_str(),
-                       this->name.c_str());
+                       mType.c_str(),
+                       mName.c_str());
 
             return true;
         }
     }
 
-    auto parent = static_cast<ParsedClass*>(this->parent);
+    auto parent = static_cast<ParsedClass*>(mParent);
 
-    if (!parent->isObjectDerived)
+    if (!parent->mIsObjectDerived)
     {
-        ParseError(this->cursor,
+        ParseError(mCursor,
                    "'property' annotation on field '%s' in non-Object class '%s'",
-                   this->name.c_str(),
-                   this->parent->name.c_str());
+                   mName.c_str(),
+                   mParent->mName.c_str());
 
         return true;
     }
@@ -502,76 +494,76 @@ bool ParsedProperty::HandleAnnotation(const std::string&         inType,
     static const char* kSetAttribute       = "set";
     static const char* kTransientAttribute = "transient";
 
-    if (inAttributes.HasMember(kGetAttribute))
+    if (attributes.HasMember(kGetAttribute))
     {
-        const rapidjson::Value& value = inAttributes[kGetAttribute];
+        const rapidjson::Value& value = attributes[kGetAttribute];
 
         if (!value.IsString())
         {
-            ParseError(this->cursor, "'%s' attribute must be a string", kGetAttribute);
+            ParseError(mCursor, "'%s' attribute must be a string", kGetAttribute);
             return true;
         }
 
-        this->getFunction = value.GetString();
+        mGetFunction = value.GetString();
     }
 
-    if (inAttributes.HasMember(kSetAttribute))
+    if (attributes.HasMember(kSetAttribute))
     {
-        const rapidjson::Value& value = inAttributes[kSetAttribute];
+        const rapidjson::Value& value = attributes[kSetAttribute];
 
         if (!value.IsString())
         {
-            ParseError(this->cursor, "'%s' attribute must be a string", kSetAttribute);
+            ParseError(mCursor, "'%s' attribute must be a string", kSetAttribute);
             return true;
         }
 
-        this->setFunction = value.GetString();
+        mSetFunction = value.GetString();
     }
 
-    if (this->getFunction.empty() != this->setFunction.empty())
+    if (mGetFunction.empty() != mSetFunction.empty())
     {
-        ParseError(this->cursor, "both 'get' and 'set' or neither of them must be specified");
+        ParseError(mCursor, "both 'get' and 'set' or neither of them must be specified");
         return true;
     }
 
-    if (inAttributes.HasMember(kTransientAttribute))
+    if (attributes.HasMember(kTransientAttribute))
     {
-        const rapidjson::Value& value = inAttributes[kTransientAttribute];
+        const rapidjson::Value& value = attributes[kTransientAttribute];
 
         if (!value.IsBool())
         {
-            ParseError(this->cursor, "'%s' attribute must be a boolean", kTransientAttribute);
+            ParseError(mCursor, "'%s' attribute must be a boolean", kTransientAttribute);
             return true;
         }
 
-        this->transient = value.GetBool();
+        mTransient = value.GetBool();
     }
 
-    if (clang_getCXXAccessSpecifier(this->cursor) != CX_CXXPublic)
+    if (clang_getCXXAccessSpecifier(mCursor) != CX_CXXPublic)
     {
-        ParseError(this->cursor, "property '%s' must be public", this->name.c_str());
+        ParseError(mCursor, "property '%s' must be public", mName.c_str());
         return true;
     }
 
-    const bool isVirtual = clang_getCursorKind(this->cursor) == CXCursor_VarDecl;
+    const bool isVirtual = clang_getCursorKind(mCursor) == CXCursor_VarDecl;
 
     if (isVirtual)
     {
-        if (this->getFunction.empty())
+        if (mGetFunction.empty())
         {
             /* These require getters and setters. If they are omitted, default
              * names are used based on the property name (see Object.h). */
-            std::string name = static_cast<char>(toupper(this->name[0])) + this->name.substr(1);
+            std::string name = static_cast<char>(toupper(mName[0])) + mName.substr(1);
 
-            this->getFunction = std::string("Get") + name;
-            this->setFunction = std::string("Set") + name;
+            mGetFunction = std::string("Get") + name;
+            mSetFunction = std::string("Set") + name;
         }
     }
-    else if (!this->getFunction.empty())
+    else if (!mGetFunction.empty())
     {
         /* This makes no sense - code can directly access/modify the property
          * so usage of getter/setter methods should not be required. */
-        ParseError(this->cursor, "public properties cannot have getter/setter methods");
+        ParseError(mCursor, "public properties cannot have getter/setter methods");
         return true;
     }
 
@@ -585,7 +577,7 @@ mustache::data ParsedProperty::Generate() const
     /* Generate a flags string. */
     std::string flags;
     auto AddFlag =
-        [&] (const char* inFlag)
+        [&] (const char* flag)
         {
             if (!flags.empty())
             {
@@ -593,60 +585,64 @@ mustache::data ParsedProperty::Generate() const
             }
 
             flags += "MetaProperty::";
-            flags += inFlag;
+            flags += flag;
         };
 
-    if (this->transient)
+    if (mTransient)
+    {
         AddFlag("kTransient");
+    }
 
     if (flags.empty())
+    {
         flags = "0";
+    }
 
-    data.set("propertyName", this->name);
-    data.set("propertyType", this->type);
+    data.set("propertyName", mName);
+    data.set("propertyType", mType);
     data.set("propertyFlags", flags);
 
-    if (!this->getFunction.empty())
+    if (!mGetFunction.empty())
     {
-        data.set("propertyGet", this->getFunction);
-        data.set("propertySet", this->setFunction);
+        data.set("propertyGet", mGetFunction);
+        data.set("propertySet", mSetFunction);
     }
 
     return data;
 }
 
-void ParsedProperty::Dump(const unsigned inDepth) const
+void ParsedProperty::Dump(const unsigned depth) const
 {
     printf("%-*sProperty '%s' (type '%s', get '%s', set '%s')\n",
-           inDepth * 2, "",
-           this->name.c_str(),
-           this->type.c_str(),
-           this->getFunction.c_str(),
-           this->setFunction.c_str());
+           depth * 2, "",
+           mName.c_str(),
+           mType.c_str(),
+           mGetFunction.c_str(),
+           mSetFunction.c_str());
 }
 
-ParsedClass::ParsedClass(CXCursor          inCursor,
-                         ParsedDecl* const inParent) :
-    ParsedDecl          (inCursor, inParent, true),
-    isObjectDerived     (name.compare("Object") == 0),
-    destructorAccess    (CX_CXXPublic),
-    parentClass         (nullptr),
-    mConstructable      (kConstructability_Default),
-    mOnMetaClass        (false)
+ParsedClass::ParsedClass(CXCursor          cursor,
+                         ParsedDecl* const parent) :
+    ParsedDecl        (cursor, parent, true),
+    mIsObjectDerived  (mName.compare("Object") == 0),
+    mDestructorAccess (CX_CXXPublic),
+    mParentClass      (nullptr),
+    mConstructable    (kConstructability_Default),
+    mOnMetaClass      (false)
 {
 }
 
 bool ParsedClass::IsObject() const
 {
-    if (this->isAnnotated && this->isObjectDerived)
+    if (mIsAnnotated && mIsObjectDerived)
     {
         return true;
     }
-    else if (this->isObjectDerived)
+    else if (mIsObjectDerived)
     {
-        ParseError(this->cursor,
+        ParseError(mCursor,
                    "Object-derived class '%s' missing 'class' annotation; CLASS() macro missing?",
-                   this->name.c_str());
+                   mName.c_str());
     }
 
     return false;
@@ -680,35 +676,35 @@ bool ParsedClass::IsPublicConstructable() const
     }
 }
 
-bool ParsedClass::HandleAnnotation(const std::string&         inType,
-                                   const rapidjson::Document& inAttributes)
+bool ParsedClass::HandleAnnotation(const std::string&         type,
+                                   const rapidjson::Document& attributes)
 {
-    if (!mOnMetaClass || inType.compare("class") != 0)
+    if (!mOnMetaClass || type.compare("class") != 0)
     {
         return false;
     }
 
-    if (!this->isObjectDerived)
+    if (!mIsObjectDerived)
     {
-        ParseError(cursor,
+        ParseError(mCursor,
                    "'class' annotation on non-Object class '%s'",
-                   this->name.c_str());
+                   mName.c_str());
     }
 
-    if (inAttributes.HasMember("constructable"))
+    if (attributes.HasMember("constructable"))
     {
-        const rapidjson::Value& value = inAttributes["constructable"];
+        const rapidjson::Value& value = attributes["constructable"];
 
         if (!value.IsBool())
         {
-            ParseError(this->cursor, "'constructable' attribute must be a boolean");
+            ParseError(mCursor, "'constructable' attribute must be a boolean");
             return true;
         }
 
         const bool constructable = value.GetBool();
         if (constructable)
         {
-            ParseError(this->cursor, "constructability cannot be forced on, only off");
+            ParseError(mCursor, "constructability cannot be forced on, only off");
             return true;
         }
 
@@ -718,22 +714,22 @@ bool ParsedClass::HandleAnnotation(const std::string&         inType,
     return true;
 }
 
-void ParsedClass::HandleChild(CXCursor     inCursor,
-                              CXCursorKind inKind)
+void ParsedClass::HandleChild(CXCursor     cursor,
+                              CXCursorKind kind)
 {
     if (mOnMetaClass)
     {
         return;
     }
 
-    switch (inKind)
+    switch (kind)
     {
         case CXCursor_CXXBaseSpecifier:
         {
             /* Check if this class is derived from Object. This gives us the
              * fully-qualified name (with all namespaces) regardless of whether
              * it was specified that way in the source. */
-            CXType type  = clang_getCursorType(inCursor);
+            CXType type  = clang_getCursorType(cursor);
             CXString str = clang_getTypeSpelling(type);
             std::string typeName(clang_getCString(str));
             clang_disposeString(str);
@@ -744,20 +740,20 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
              * we are an Object-derived class as well. */
             const ParsedTranslationUnit* translationUnit = GetTranslationUnit();
 
-            auto it = translationUnit->classes.find(typeName);
-            if (it != translationUnit->classes.end())
+            auto it = translationUnit->mClasses.find(typeName);
+            if (it != translationUnit->mClasses.end())
             {
-                /* If isObjectDerived is already set to true, then we have
+                /* If mIsObjectDerived is already set to true, then we have
                  * multiple inheritance, which is unsupported. */
-                if (this->isObjectDerived)
+                if (mIsObjectDerived)
                 {
-                    ParseError(inCursor,
+                    ParseError(cursor,
                                "Inheritance from multiple Object-derived classes is unsupported (on class '%s')",
-                               this->name.c_str());
+                               mName.c_str());
                 }
 
-                this->isObjectDerived = true;
-                this->parentClass     = it->second.get();
+                mIsObjectDerived = true;
+                mParentClass     = it->second.get();
             }
 
             break;
@@ -774,10 +770,10 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
             /* Determine the number of parameters to this constructor. */
             unsigned numParams = 0;
             VisitChildren(
-                inCursor,
-                [&numParams] (CXCursor, CXCursorKind inKind)
+                cursor,
+                [&numParams] (CXCursor, CXCursorKind kind)
                 {
-                    if (inKind == CXCursor_ParmDecl)
+                    if (kind == CXCursor_ParmDecl)
                     {
                         numParams++;
                     }
@@ -786,7 +782,7 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
             /* Only constructors with no parameters are suitable. */
             if (numParams == 0)
             {
-                if (clang_getCXXAccessSpecifier(inCursor) == CX_CXXPublic)
+                if (clang_getCXXAccessSpecifier(cursor) == CX_CXXPublic)
                 {
                     mConstructable = kConstructability_Public;
                 }
@@ -810,7 +806,7 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
 
         case CXCursor_Destructor:
         {
-            this->destructorAccess = clang_getCXXAccessSpecifier(inCursor);
+            mDestructorAccess = clang_getCXXAccessSpecifier(cursor);
             break;
         }
 
@@ -820,14 +816,14 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
              * is applied to the staticMetaClass member, so if we have that
              * variable, then descend onto children keeping the same current
              * declaration so we see the annotation below. */
-            CXString str = clang_getCursorSpelling(inCursor);
+            CXString str = clang_getCursorSpelling(cursor);
             std::string typeName(clang_getCString(str));
             clang_disposeString(str);
 
             if (!typeName.compare("staticMetaClass"))
             {
                 mOnMetaClass = true;
-                VisitChildren(inCursor, this);
+                VisitChildren(cursor, this);
                 mOnMetaClass = false;
                 break;
             }
@@ -838,12 +834,12 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
         case CXCursor_FieldDecl:
         {
             /* FieldDecl is an instance variable. Look for properties. */
-            std::unique_ptr<ParsedProperty> parsedProperty(new ParsedProperty(inCursor, this));
-            VisitChildren(inCursor, parsedProperty.get());
+            std::unique_ptr<ParsedProperty> parsedProperty(new ParsedProperty(cursor, this));
+            VisitChildren(cursor, parsedProperty.get());
 
-            if (parsedProperty->isAnnotated)
+            if (parsedProperty->mIsAnnotated)
             {
-                this->properties.emplace_back(std::move(parsedProperty));
+                mProperties.emplace_back(std::move(parsedProperty));
             }
 
             break;
@@ -857,7 +853,7 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
              * libclang doesn't appear to have an easy way to identify this, so
              * for now don't handle it. If it does become a problem it can be
              * worked around using the constructable attribute. */
-            if (clang_CXXMethod_isPureVirtual(inCursor))
+            if (clang_CXXMethod_isPureVirtual(cursor))
             {
                 mConstructable = kConstructability_ForcedNone;
             }
@@ -867,7 +863,7 @@ void ParsedClass::HandleChild(CXCursor     inCursor,
 
         case CXCursor_EnumDecl:
         {
-            ParsedEnum::Create(inCursor, this);
+            ParsedEnum::Create(cursor, this);
             break;
         }
 
@@ -882,12 +878,12 @@ mustache::data ParsedClass::Generate() const
 {
     mustache::data data;
 
-    data.set("name", this->name);
-    data.set("mangledName", MangleName(this->name));
+    data.set("name", mName);
+    data.set("mangledName", MangleName(mName));
 
-    if (this->parentClass)
+    if (mParentClass)
     {
-        data.set("parent", this->parentClass->name);
+        data.set("parent", mParentClass->mName);
     }
 
     if (IsConstructable())
@@ -901,7 +897,7 @@ mustache::data ParsedClass::Generate() const
     }
 
     mustache::data properties(mustache::data::type::list);
-    for (const std::unique_ptr<ParsedProperty> &parsedProperty : this->properties)
+    for (const std::unique_ptr<ParsedProperty> &parsedProperty : mProperties)
     {
         properties.push_back(parsedProperty->Generate());
     }
@@ -911,34 +907,34 @@ mustache::data ParsedClass::Generate() const
     return data;
 }
 
-void ParsedClass::Dump(const unsigned inDepth) const
+void ParsedClass::Dump(const unsigned depth) const
 {
-    printf("%-*sClass '%s' (", inDepth * 2, "", this->name.c_str());
+    printf("%-*sClass '%s' (", depth * 2, "", mName.c_str());
 
-    if (this->parentClass)
+    if (mParentClass)
     {
-        printf("parent '%s', ", this->parentClass->name.c_str());
+        printf("parent '%s', ", mParentClass->mName.c_str());
     }
 
     printf("constructable %d %d)\n", IsConstructable(), IsPublicConstructable());
 
-    for (const std::unique_ptr<ParsedProperty> &parsedProperty : this->properties)
+    for (const std::unique_ptr<ParsedProperty> &parsedProperty : mProperties)
     {
-        parsedProperty->Dump(inDepth + 1);
+        parsedProperty->Dump(depth + 1);
     }
 }
 
-ParsedEnum::ParsedEnum(CXCursor          inCursor,
-                       ParsedDecl* const inParent) :
-    ParsedDecl     (inCursor, inParent, true),
-    shouldGenerate (false)
+ParsedEnum::ParsedEnum(CXCursor          cursor,
+                       ParsedDecl* const parent) :
+    ParsedDecl      (cursor, parent, true),
+    mShouldGenerate (false)
 {
 }
 
-void ParsedEnum::Create(CXCursor          inCursor,
-                        ParsedDecl* const inParent)
+void ParsedEnum::Create(CXCursor          cursor,
+                        ParsedDecl* const parent)
 {
-    if (!clang_isCursorDefinition(inCursor))
+    if (!clang_isCursorDefinition(cursor))
     {
         return;
     }
@@ -948,7 +944,7 @@ void ParsedEnum::Create(CXCursor          inCursor,
      * spelling is empty. Have to do this separately rather than checking the
      * name obtained by the constructor because that gets the type spelling
      * which is not empty for an anonymous enum. */
-    CXString name        = clang_getCursorSpelling(inCursor);
+    CXString name        = clang_getCursorSpelling(cursor);
     const bool anonymous = std::strlen(clang_getCString(name)) == 0;
     clang_disposeString(name);
     if (anonymous)
@@ -956,42 +952,42 @@ void ParsedEnum::Create(CXCursor          inCursor,
         return;
     }
 
-    std::unique_ptr<ParsedEnum> parsedEnum(new ParsedEnum(inCursor, inParent));
+    std::unique_ptr<ParsedEnum> parsedEnum(new ParsedEnum(cursor, parent));
 
-    VisitChildren(inCursor, parsedEnum.get());
+    VisitChildren(cursor, parsedEnum.get());
 
-    if (parsedEnum->shouldGenerate)
+    if (parsedEnum->mShouldGenerate)
     {
-        inParent->GetTranslationUnit()->enums.insert(std::make_pair(parsedEnum->name, std::move(parsedEnum)));
+        parent->GetTranslationUnit()->mEnums.insert(std::make_pair(parsedEnum->mName, std::move(parsedEnum)));
     }
 }
 
-bool ParsedEnum::HandleAnnotation(const std::string&         inType,
-                                  const rapidjson::Document& inAttributes)
+bool ParsedEnum::HandleAnnotation(const std::string&         type,
+                                  const rapidjson::Document& attributes)
 {
-    if (inType.compare("enum") != 0)
+    if (type.compare("enum") != 0)
     {
         return false;
     }
 
-    this->shouldGenerate = true;
+    mShouldGenerate = true;
     return true;
 }
 
-void ParsedEnum::HandleChild(CXCursor     inCursor,
-                             CXCursorKind inKind)
+void ParsedEnum::HandleChild(CXCursor     cursor,
+                             CXCursorKind kind)
 {
-    if (inKind == CXCursor_EnumConstantDecl)
+    if (kind == CXCursor_EnumConstantDecl)
     {
-        long long value = clang_getEnumConstantDeclValue(inCursor);
+        long long value = clang_getEnumConstantDeclValue(cursor);
 
-        CXString str = clang_getCursorSpelling(inCursor);
+        CXString str = clang_getCursorSpelling(cursor);
         std::string name(clang_getCString(str));
         clang_disposeString(str);
 
         /* Shorten names based on our naming convention,
          * e.g. kEnumName_Foo -> Foo. */
-        std::string prefix("k" + this->name + "_");
+        std::string prefix("k" + mName + "_");
         if (name.rfind(prefix, 0) == 0)
         {
             name = name.substr(prefix.length());
@@ -1005,8 +1001,8 @@ mustache::data ParsedEnum::Generate() const
 {
     mustache::data data;
 
-    data.set("name", this->name);
-    data.set("mangledName", MangleName(this->name));
+    data.set("name", mName);
+    data.set("mangledName", MangleName(mName));
 
     mustache::data constants(mustache::data::type::list);
     for (const EnumConstant& constant : mConstants)
@@ -1025,55 +1021,55 @@ mustache::data ParsedEnum::Generate() const
     return data;
 }
 
-void ParsedEnum::Dump(const unsigned inDepth) const
+void ParsedEnum::Dump(const unsigned depth) const
 {
-    printf("%-*sEnum '%s'\n", inDepth * 2, "", this->name.c_str());
+    printf("%-*sEnum '%s'\n", depth * 2, "", mName.c_str());
 
     for (auto& pair : mConstants)
     {
-        printf("%-*s'%s' = %lld\n", (inDepth + 1) * 2, "", pair.first.c_str(), pair.second);
+        printf("%-*s'%s' = %lld\n", (depth + 1) * 2, "", pair.first.c_str(), pair.second);
     }
 }
 
-ParsedTranslationUnit::ParsedTranslationUnit(CXCursor inCursor) :
-    ParsedDecl (inCursor)
+ParsedTranslationUnit::ParsedTranslationUnit(CXCursor cursor) :
+    ParsedDecl (cursor)
 {
 }
 
-void ParsedTranslationUnit::HandleChild(CXCursor     inCursor,
-                                        CXCursorKind inKind)
+void ParsedTranslationUnit::HandleChild(CXCursor     cursor,
+                                        CXCursorKind kind)
 {
-    switch (inKind)
+    switch (kind)
     {
         case CXCursor_Namespace:
             /* Descend into namespaces. */
-            VisitChildren(inCursor, this);
+            VisitChildren(cursor, this);
             break;
 
         case CXCursor_ClassDecl:
         case CXCursor_StructDecl:
             /* Ignore forward declarations. */
-            if (clang_isCursorDefinition(inCursor))
+            if (clang_isCursorDefinition(cursor))
             {
-                std::unique_ptr<ParsedClass> parsedClass(new ParsedClass(inCursor, this));
-                VisitChildren(inCursor, parsedClass.get());
+                std::unique_ptr<ParsedClass> parsedClass(new ParsedClass(cursor, this));
+                VisitChildren(cursor, parsedClass.get());
 
                 if (parsedClass->IsObject())
                 {
-                    if (parsedClass->destructorAccess == CX_CXXPublic)
+                    if (parsedClass->mDestructorAccess == CX_CXXPublic)
                     {
-                        ParseWarning(parsedClass->cursor,
+                        ParseWarning(parsedClass->mCursor,
                                      "Object-derived class has public destructor; this should be hidden with reference counting used instead");
                     }
 
-                    this->classes.insert(std::make_pair(parsedClass->name, std::move(parsedClass)));
+                    mClasses.insert(std::make_pair(parsedClass->mName, std::move(parsedClass)));
                 }
             }
 
             break;
 
         case CXCursor_EnumDecl:
-            ParsedEnum::Create(inCursor, this);
+            ParsedEnum::Create(cursor, this);
             break;
 
         default:
@@ -1085,7 +1081,7 @@ void ParsedTranslationUnit::HandleChild(CXCursor     inCursor,
 mustache::data ParsedTranslationUnit::Generate() const
 {
     mustache::data classes(mustache::data::type::list);
-    for (auto& it : this->classes)
+    for (auto& it : mClasses)
     {
         const std::unique_ptr<ParsedClass>& parsedClass = it.second;
 
@@ -1096,7 +1092,7 @@ mustache::data ParsedTranslationUnit::Generate() const
     }
 
     mustache::data enums(mustache::data::type::list);
-    for (auto& it : this->enums)
+    for (auto& it : mEnums)
     {
         const std::unique_ptr<ParsedEnum>& parsedEnum = it.second;
 
@@ -1112,34 +1108,34 @@ mustache::data ParsedTranslationUnit::Generate() const
     return data;
 }
 
-void ParsedTranslationUnit::Dump(const unsigned inDepth) const
+void ParsedTranslationUnit::Dump(const unsigned depth) const
 {
-    printf("%-*sTranslationUnit '%s'\n", inDepth * 2, "", this->name.c_str());
+    printf("%-*sTranslationUnit '%s'\n", depth * 2, "", mName.c_str());
 
-    for (auto& it : this->classes)
+    for (auto& it : mClasses)
     {
         const std::unique_ptr<ParsedClass>& parsedClass = it.second;
 
         if (parsedClass->IsFromMainFile())
         {
-            parsedClass->Dump(inDepth + 1);
+            parsedClass->Dump(depth + 1);
         }
     }
 
-    for (auto& it : this->enums)
+    for (auto& it : mEnums)
     {
         const std::unique_ptr<ParsedEnum>& parsedEnum = it.second;
 
         if (parsedEnum->IsFromMainFile())
         {
-            parsedEnum->Dump(inDepth + 1);
+            parsedEnum->Dump(depth + 1);
         }
     }
 }
 
-static void Usage(const char* inProgramName)
+static void Usage(const char* programName)
 {
-    printf("Usage: %s [options...] <source> <output>\n", inProgramName);
+    printf("Usage: %s [options...] <source> <output>\n", programName);
     printf("\n");
     printf("Options:\n");
     printf("  -h            Display this help\n");
@@ -1211,9 +1207,9 @@ int main(const int          argc,
      * ensures that it is deleted if we fail. */
     struct OutputStream : std::ofstream
     {
-        explicit OutputStream(const char* inFile) :
-            std::ofstream (inFile, std::ofstream::out | std::ofstream::trunc),
-            file          (inFile)
+        explicit OutputStream(const char* path) :
+            std::ofstream (path, std::ofstream::out | std::ofstream::trunc),
+            file          (path)
         {}
 
         ~OutputStream()

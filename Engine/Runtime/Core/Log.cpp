@@ -23,20 +23,20 @@
 #include <cstdio>
 #include <cstdlib>
 
-void FatalLogImpl(const char* const inFile,
-                  const int         inLine,
-                  const char* const inFormat,
+void FatalLogImpl(const char* const file,
+                  const int         line,
+                  const char* const format,
                   ...)
 {
     va_list args;
 
-    va_start(args, inFormat);
-    std::string message = std::string("Fatal Error: ") + StringUtils::VFormat(inFormat, args);
+    va_start(args, format);
+    std::string message = std::string("Fatal Error: ") + StringUtils::VFormat(format, args);
     va_end(args);
 
     LogImpl(kLogLevel_Error,
-            inFile,
-            inLine,
+            file,
+            line,
             "%s",
             message.c_str());
 }
@@ -46,13 +46,13 @@ void FatalImpl()
     abort();
 }
 
-void LogVImpl(const LogLevel    inLevel,
-              const char* const inFile,
-              const int         inLine,
-              const char* const inFormat,
-              va_list           inArgs)
+void LogVImpl(const LogLevel    level,
+              const char* const file,
+              const int         line,
+              const char* const format,
+              va_list           args)
 {
-    std::string message = StringUtils::VFormat(inFormat, inArgs);
+    std::string message = StringUtils::VFormat(format, args);
 
     time_t t = time(nullptr);
     struct tm local;
@@ -65,17 +65,17 @@ void LogVImpl(const LogLevel    inLevel,
             &local);
 
     std::string fileDetails;
-    if (inFile)
+    if (file)
     {
-        Path path(inFile, Path::kUnnormalizedPlatform);
+        Path path(file, Path::kUnnormalizedPlatform);
         fileDetails = StringUtils::Format("%s:%d",
                                           path.GetFileName().GetCString(),
-                                          inLine);
+                                          line);
     }
 
     const char* levelString = "";
 
-    switch (inLevel)
+    switch (level)
     {
         case kLogLevel_Debug:
             levelString = "\033[1;30m";
@@ -95,7 +95,7 @@ void LogVImpl(const LogLevel    inLevel,
 
     }
 
-    FILE* stream = (inLevel < kLogLevel_Error) ? stdout : stderr;
+    FILE* stream = (level < kLogLevel_Error) ? stdout : stderr;
 
     fprintf(stream,
             "%s%s \033[0m%s",
@@ -103,7 +103,7 @@ void LogVImpl(const LogLevel    inLevel,
             timeString,
             message.c_str());
 
-    if (inFile)
+    if (file)
     {
         struct winsize w;
         ioctl(0, TIOCGWINSZ, &w);
@@ -119,15 +119,15 @@ void LogVImpl(const LogLevel    inLevel,
     }
 }
 
-void LogImpl(const LogLevel    inLevel,
-             const char* const inFile,
-             const int         inLine,
-             const char* const inFormat,
+void LogImpl(const LogLevel    level,
+             const char* const file,
+             const int         line,
+             const char* const format,
              ...)
 {
     va_list args;
 
-    va_start(args, inFormat);
-    LogVImpl(inLevel, inFile, inLine, inFormat, args);
+    va_start(args, format);
+    LogVImpl(level, file, line, format, args);
     va_end(args);
 }

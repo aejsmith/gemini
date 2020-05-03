@@ -22,9 +22,9 @@
 
 namespace VulkanUtils
 {
-    inline VkAttachmentLoadOp ConvertLoadOp(const GPULoadOp inOp)
+    inline VkAttachmentLoadOp ConvertLoadOp(const GPULoadOp op)
     {
-        switch (inOp)
+        switch (op)
         {
             case kGPULoadOp_Load:   return VK_ATTACHMENT_LOAD_OP_LOAD;
             case kGPULoadOp_Clear:  return VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -35,9 +35,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkAttachmentStoreOp ConvertStoreOp(const GPUStoreOp inOp)
+    inline VkAttachmentStoreOp ConvertStoreOp(const GPUStoreOp op)
     {
-        switch (inOp)
+        switch (op)
         {
             case kGPUStoreOp_Store:     return VK_ATTACHMENT_STORE_OP_STORE;
             case kGPUStoreOp_Discard:   return VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -48,9 +48,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkShaderStageFlagBits ConvertShaderStage(const GPUShaderStage inStage)
+    inline VkShaderStageFlagBits ConvertShaderStage(const GPUShaderStage stage)
     {
-        switch (inStage)
+        switch (stage)
         {
             case kGPUShaderStage_Vertex:    return VK_SHADER_STAGE_VERTEX_BIT;
             case kGPUShaderStage_Pixel:     return VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -62,9 +62,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkPrimitiveTopology ConvertPrimitiveTopology(const GPUPrimitiveTopology inTopology)
+    inline VkPrimitiveTopology ConvertPrimitiveTopology(const GPUPrimitiveTopology topology)
     {
-        switch (inTopology)
+        switch (topology)
         {
             case kGPUPrimitiveTopology_PointList:       return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
             case kGPUPrimitiveTopology_LineList:        return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
@@ -79,9 +79,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkPolygonMode ConvertPolygonMode(const GPUPolygonMode inPolygonMode)
+    inline VkPolygonMode ConvertPolygonMode(const GPUPolygonMode polygonMode)
     {
-        switch (inPolygonMode)
+        switch (polygonMode)
         {
             case kGPUPolygonMode_Fill:  return VK_POLYGON_MODE_FILL;
             case kGPUPolygonMode_Line:  return VK_POLYGON_MODE_LINE;
@@ -93,9 +93,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkCullModeFlags ConvertCullMode(const GPUCullMode inCullMode)
+    inline VkCullModeFlags ConvertCullMode(const GPUCullMode cullMode)
     {
-        switch (inCullMode)
+        switch (cullMode)
         {
             case kGPUCullMode_Back:     return VK_CULL_MODE_BACK_BIT;
             case kGPUCullMode_Front:    return VK_CULL_MODE_FRONT_BIT;
@@ -108,9 +108,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkFrontFace ConvertFrontFace(const GPUFrontFace inFrontFace)
+    inline VkFrontFace ConvertFrontFace(const GPUFrontFace frontFace)
     {
-        switch (inFrontFace)
+        switch (frontFace)
         {
             case kGPUFrontFace_CounterClockwise:    return VK_FRONT_FACE_COUNTER_CLOCKWISE;
             case kGPUFrontFace_Clockwise:           return VK_FRONT_FACE_CLOCKWISE;
@@ -121,9 +121,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkCompareOp ConvertCompareOp(const GPUCompareOp inCompareOp)
+    inline VkCompareOp ConvertCompareOp(const GPUCompareOp compareOp)
     {
-        switch (inCompareOp)
+        switch (compareOp)
         {
             case kGPUCompareOp_Never:           return VK_COMPARE_OP_NEVER;
             case kGPUCompareOp_Less:            return VK_COMPARE_OP_LESS;
@@ -139,9 +139,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkStencilOp ConvertStencilOp(const GPUStencilOp inStencilOp)
+    inline VkStencilOp ConvertStencilOp(const GPUStencilOp stencilOp)
     {
-        switch (inStencilOp)
+        switch (stencilOp)
         {
             case kGPUStencilOp_Keep:                return VK_STENCIL_OP_KEEP;
             case kGPUStencilOp_Zero:                return VK_STENCIL_OP_ZERO;
@@ -157,9 +157,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkBlendFactor ConvertBlendFactor(const GPUBlendFactor inBlendFactor)
+    inline VkBlendFactor ConvertBlendFactor(const GPUBlendFactor blendFactor)
     {
-        switch (inBlendFactor)
+        switch (blendFactor)
         {
             case kGPUBlendFactor_Zero:                      return VK_BLEND_FACTOR_ZERO;
             case kGPUBlendFactor_One:                       return VK_BLEND_FACTOR_ONE;
@@ -183,9 +183,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkBlendOp ConvertBlendOp(const GPUBlendOp inBlendOp)
+    inline VkBlendOp ConvertBlendOp(const GPUBlendOp blendOp)
     {
-        switch (inBlendOp)
+        switch (blendOp)
         {
             case kGPUBlendOp_Add:               return VK_BLEND_OP_ADD;
             case kGPUBlendOp_Subtract:          return VK_BLEND_OP_SUBTRACT;
@@ -199,9 +199,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkFormat ConvertAttributeFormat(const GPUAttributeFormat inFormat)
+    inline VkFormat ConvertAttributeFormat(const GPUAttributeFormat format)
     {
-        switch (inFormat)
+        switch (format)
         {
             case kGPUAttributeFormat_R8_UNorm:              return VK_FORMAT_R8_UNORM;
             case kGPUAttributeFormat_R8G8_UNorm:            return VK_FORMAT_R8G8_UNORM;
@@ -234,9 +234,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkFilter ConvertFilter(const GPUFilter inFilter)
+    inline VkFilter ConvertFilter(const GPUFilter filter)
     {
-        switch (inFilter)
+        switch (filter)
         {
             case kGPUFilter_Nearest:    return VK_FILTER_NEAREST;
             case kGPUFilter_Linear:     return VK_FILTER_LINEAR;
@@ -247,9 +247,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkSamplerMipmapMode ConvertMipmapMode(const GPUFilter inFilter)
+    inline VkSamplerMipmapMode ConvertMipmapMode(const GPUFilter filter)
     {
-        switch (inFilter)
+        switch (filter)
         {
             case kGPUFilter_Nearest:    return VK_SAMPLER_MIPMAP_MODE_NEAREST;
             case kGPUFilter_Linear:     return VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -260,9 +260,9 @@ namespace VulkanUtils
         }
     }
 
-    inline VkSamplerAddressMode ConvertAddressMode(const GPUAddressMode inAddressMode)
+    inline VkSamplerAddressMode ConvertAddressMode(const GPUAddressMode addressMode)
     {
-        switch (inAddressMode)
+        switch (addressMode)
         {
             case kGPUAddressMode_Repeat:            return VK_SAMPLER_ADDRESS_MODE_REPEAT;
             case kGPUAddressMode_MirroredRepeat:    return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;

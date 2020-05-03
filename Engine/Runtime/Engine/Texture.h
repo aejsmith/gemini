@@ -53,9 +53,9 @@ protected:
                                 TextureBase();
                                 ~TextureBase();
 
-    void                        CreateTexture(const GPUTextureDesc&     inTextureDesc,
-                                              const GPUSamplerDesc&     inSamplerDesc,
-                                              const GPUResourceViewType inViewType);
+    void                        CreateTexture(const GPUTextureDesc&     textureDesc,
+                                              const GPUSamplerDesc&     samplerDesc,
+                                              const GPUResourceViewType viewType);
 
     void                        PathChanged() override;
 
@@ -78,18 +78,18 @@ class Texture2D final : public TextureBase
 
 public:
     /**
-     * Constructs a new texture with the given parameters. inNumMipLevels == 0
-     * will create a full mip chain. inData supplies the data for each mip
-     * level. At least one mip level's data must be supplied. If the number of
-     * mip levels in inData is less than the number of mip levels the texture
-     * has, then remaining levels will be generated.
+     * Constructs a new texture with the given parameters. numMipLevels == 0
+     * will create a full mip chain. data supplies the data for each mip level.
+     * At least one mip level's data must be supplied. If the number of mip
+     * levels in data is less than the number of mip levels the texture has,
+     * then remaining levels will be generated.
      */
-                                Texture2D(const uint32_t                inWidth,
-                                          const uint32_t                inHeight,
-                                          const uint8_t                 inNumMipLevels,
-                                          const PixelFormat             inFormat,
-                                          const GPUSamplerDesc&         inSamplerDesc,
-                                          const std::vector<ByteArray>& inData);
+                                Texture2D(const uint32_t                width,
+                                          const uint32_t                height,
+                                          const uint8_t                 numMipLevels,
+                                          const PixelFormat             format,
+                                          const GPUSamplerDesc&         samplerDesc,
+                                          const std::vector<ByteArray>& data);
 
     uint32_t                    GetWidth() const    { return mWidth; }
     uint32_t                    GetHeight() const   { return mHeight; }

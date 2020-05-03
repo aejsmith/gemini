@@ -212,16 +212,16 @@ public:
                                         { Assert(IsEnum()); Assert(mEnumConstants); return *mEnumConstants; }
 
     /** Get the string name of an enum constant (null for unknown constants). */
-    const char*                     GetEnumConstantName(const int inValue) const;
+    const char*                     GetEnumConstantName(const int value) const;
 
     template <typename T>
     static const MetaType&          Lookup() { return LookupImpl<T>::Get(); }
 
 protected:
-                                    MetaType(const char* const     inName,
-                                             const size_t          inSize,
-                                             const uint32_t        inTraits,
-                                             const MetaType* const inParent);
+                                    MetaType(const char* const     name,
+                                             const size_t          size,
+                                             const uint32_t        traits,
+                                             const MetaType* const parent);
 
 protected:
     const char*                     mName;
@@ -243,10 +243,10 @@ protected:
     const EnumConstantArray*        mEnumConstants;
 
 private:
-    static const MetaType*          Allocate(const char* const     inSignature,
-                                             const size_t          inSize,
-                                             const uint32_t        inTraits = 0,
-                                             const MetaType* const inParent = nullptr);
+    static const MetaType*          Allocate(const char* const     signature,
+                                             const size_t          size,
+                                             const uint32_t        traits = 0,
+                                             const MetaType* const parent = nullptr);
 
     /**
      * Lookup implementation.
@@ -349,8 +349,8 @@ public:
     template <typename T>
     struct EnumData
     {
-        EnumData(std::initializer_list<EnumConstant> inInit) :
-            constants (inInit)
+        EnumData(std::initializer_list<EnumConstant> init) :
+            constants (init)
         {
             /* This is nasty, however there's no particularly nice way of doing
              * this. Since we don't want to require all enums to have code
@@ -380,11 +380,11 @@ public:
     using SetFunction             = void (*)(Object*, const void*);
 
 public:
-                                    MetaProperty(const char* const inName,
-                                                 const MetaType&   inType,
-                                                 const uint32_t    inFlags,
-                                                 const GetFunction inGetFunction,
-                                                 const SetFunction inSetFunction);
+                                    MetaProperty(const char* const name,
+                                                 const MetaType&   type,
+                                                 const uint32_t    flags,
+                                                 const GetFunction getFunction,
+                                                 const SetFunction setFunction);
 
 public:
     const char*                     GetName() const     { return mName; }
@@ -393,13 +393,13 @@ public:
     bool                            IsTransient() const { return mFlags & kTransient; }
 
 private:
-    void                            GetValue(const Object* const inObject,
-                                             void* const         inValue) const
-                                        { mGetFunction(inObject, inValue); }
+    void                            GetValue(const Object* const object,
+                                             void* const         value) const
+                                        { mGetFunction(object, value); }
 
-    void                            SetValue(Object* const       inObject,
+    void                            SetValue(Object* const       object,
                                              const void* const   outValue) const
-                                        { mSetFunction(inObject, outValue); }
+                                        { mSetFunction(object, outValue); }
 
 private:
     const char*                     mName;
@@ -422,12 +422,12 @@ public:
     using ConstructorFunction     = ObjPtr<> (*)();
 
 public:
-                                    MetaClass(const char*               inName,
-                                              const size_t              inSize,
-                                              const uint32_t            inTraits,
-                                              const MetaClass* const    inParent,
-                                              const ConstructorFunction inConstructor,
-                                              const PropertyArray&      inProperties);
+                                    MetaClass(const char*               name,
+                                              const size_t              size,
+                                              const uint32_t            traits,
+                                              const MetaClass* const    parent,
+                                              const ConstructorFunction constructor,
+                                              const PropertyArray&      properties);
                                     ~MetaClass();
 
 public:
@@ -435,7 +435,7 @@ public:
     const PropertyArray&            GetProperties() const   { return mProperties; }
 
     bool                            IsConstructable() const;
-    bool                            IsBaseOf(const MetaClass& inOther) const;
+    bool                            IsBaseOf(const MetaClass& other) const;
 
     /**
      * Constructs an instance of this class using its default constructor. The
@@ -446,13 +446,13 @@ public:
     template <typename T>
     ObjPtr<T>                       Construct() const;
 
-    const MetaProperty*             LookupProperty(const char* const inName) const;
+    const MetaProperty*             LookupProperty(const char* const name) const;
 
     /**
      * Get a list of constructable classes derived from this one (including
      * this class itself).
      */
-    std::vector<const MetaClass*>   GetConstructableClasses(const bool inSorted = false) const;
+    std::vector<const MetaClass*>   GetConstructableClasses(const bool sorted = false) const;
 
     /**
      * To be used within a DebugWindow, implements a class selector UI for
@@ -461,14 +461,14 @@ public:
      */
     const MetaClass*                DebugUIClassSelector() const;
 
-    static const MetaClass*         Lookup(const std::string &name);
+    static const MetaClass*         Lookup(const std::string& name);
 
     /**
      * For every known meta-class, executes the specified function on it. This
      * can be used, for example, to build up a list of meta-classes fulfilling
      * certain criteria.
      */
-    static void                     Visit(const std::function<void (const MetaClass&)>& inFunction);
+    static void                     Visit(const std::function<void (const MetaClass&)>& function);
 
 private:
     using PropertyMap             = HashMap<std::string, const MetaProperty*>;
@@ -555,37 +555,37 @@ public:
     virtual const MetaClass&        GetMetaClass() const;
 
     template <typename T>
-    bool                            GetProperty(const char* inName,
+    bool                            GetProperty(const char* name,
                                                 T&          outValue) const;
 
-    bool                            GetProperty(const char* const inName,
-                                                const MetaType&   inType,
+    bool                            GetProperty(const char* const name,
+                                                const MetaType&   type,
                                                 void* const       outValue) const;
 
     template <typename T>
-    bool                            SetProperty(const char* inName,
-                                                const T&    inValue);
+    bool                            SetProperty(const char* name,
+                                                const T&    value);
 
-    bool                            SetProperty(const char* const inName,
-                                                const MetaType&   inType,
-                                                const void* const inValue);
+    bool                            SetProperty(const char* const name,
+                                                const MetaType&   type,
+                                                const void* const value);
 
     /**
      * To be used within a DebugWindow's Render() function, draws a UI to edit
-     * the object. inFlags is a combination of DebugUIEditorFlags.
+     * the object. flags is a combination of DebugUIEditorFlags.
      */
-    void                            DebugUIEditor(const uint32_t inFlags,
+    void                            DebugUIEditor(const uint32_t flags,
                                                   bool*          outDestroyObject = nullptr);
 
     /**
      * Load an object from a file. The object is expected to be an instance of
      * the specified class (or a derived class). Returns null on failure.
      */
-    static ObjPtr<>                 LoadObject(const Path&      inPath,
-                                               const MetaClass& inExpectedClass);
+    static ObjPtr<>                 LoadObject(const Path&      path,
+                                               const MetaClass& expectedClass);
 
     template <typename T>
-    static ObjPtr<T>                LoadObject(const Path& inPath);
+    static ObjPtr<T>                LoadObject(const Path& path);
 
 protected:
                                     Object() {}
@@ -599,7 +599,7 @@ protected:
      * Deserialise() to restore it. Overridden implementations *must* call their
      * parent class' implementation.
      */
-    virtual void                    Serialise(Serialiser& inSerialiser) const;
+    virtual void                    Serialise(Serialiser& serialiser) const;
 
     /**
      * Deserialises the object. For a class to be deserialisable, it must be
@@ -617,47 +617,47 @@ protected:
      * Serialise() can be restored by overriding this method. Overridden
      * implementations *must* call their parent class' implementation.
      */
-    virtual void                    Deserialise(Serialiser& inSerialiser);
+    virtual void                    Deserialise(Serialiser& serialiser);
 
     /**
      * Function to implement additional editor UI for DebugUIEditor() on top of
      * the basic class properties.
      *
-     * If kDebugUIEditor_IncludeChildren is in inFlags and there are any extra
+     * If kDebugUIEditor_IncludeChildren is in flags and there are any extra
      * child objects that should have editors, then they can be added to the
      * ioChildren array.
      *
      * When this is called, the GUI is in a 2-column layout, expecting name in
      * the left column and value in the right.
      */
-    virtual void                    CustomDebugUIEditor(const uint32_t        inFlags,
+    virtual void                    CustomDebugUIEditor(const uint32_t        flags,
                                                         std::vector<Object*>& ioChildren);
 
     friend class Serialiser;
 };
 
 template <typename T>
-inline bool Object::GetProperty(const char* inName,
+inline bool Object::GetProperty(const char* name,
                                 T&          outValue) const
 {
-    return GetProperty(inName,
+    return GetProperty(name,
                        MetaType::Lookup<T>(),
                        std::addressof(outValue));
 }
 
 template <typename T>
-inline bool Object::SetProperty(const char* inName,
-                                const T&    inValue)
+inline bool Object::SetProperty(const char* name,
+                                const T&    value)
 {
-    return SetProperty(inName,
+    return SetProperty(name,
                        MetaType::Lookup<T>(),
-                       std::addressof(inValue));
+                       std::addressof(value));
 }
 
 template <typename T>
-inline ObjPtr<T> Object::LoadObject(const Path& inPath)
+inline ObjPtr<T> Object::LoadObject(const Path& path)
 {
-    ObjPtr<> object = LoadObject(inPath, T::staticMetaClass);
+    ObjPtr<> object = LoadObject(path, T::staticMetaClass);
     return object.StaticCast<T>();
 }
 
@@ -668,7 +668,7 @@ inline ObjPtr<T> Object::LoadObject(const Path& inPath)
  * Returns null if the cast is successful.
  */
 template <typename TargetPtr, typename Source>
-inline TargetPtr object_cast(Source* const inObject)
+inline TargetPtr object_cast(Source* const object)
 {
     static_assert(std::is_pointer<TargetPtr>::value,
                   "Target type must be a pointer");
@@ -683,16 +683,16 @@ inline TargetPtr object_cast(Source* const inObject)
                       std::is_volatile<Target>::value == std::is_volatile<Source>::value,
                   "Target and source cv-qualifiers must be the same");
 
-    return (Target::staticMetaClass.IsBaseOf(inObject->GetMetaClass()))
-               ? static_cast<TargetPtr>(inObject)
+    return (Target::staticMetaClass.IsBaseOf(object->GetMetaClass()))
+               ? static_cast<TargetPtr>(object)
                : nullptr;
 }
 
 /** Specialisation of object_cast for reference-counted pointers. */
 template <typename TargetPtr, typename Source>
-inline TargetPtr object_cast(const ObjPtr<Source>& inObject)
+inline TargetPtr object_cast(const ObjPtr<Source>& object)
 {
-    return object_cast<typename TargetPtr::ReferencedType*>(inObject.Get());
+    return object_cast<typename TargetPtr::ReferencedType*>(object.Get());
 }
 
 template <typename T>

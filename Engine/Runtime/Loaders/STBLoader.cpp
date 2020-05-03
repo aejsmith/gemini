@@ -21,17 +21,17 @@
 #define STBI_NO_STDIO
 #include "stb_image.h"
 
-static int STBImageRead(void* const inUser,
+static int STBImageRead(void* const user,
                         char*       outData,
-                        const int   inSize)
+                        const int   size)
 {
-    STBLoader* const loader = reinterpret_cast<STBLoader*>(inUser);
+    STBLoader* const loader = reinterpret_cast<STBLoader*>(user);
     DataStream* const data  = loader->GetData();
 
-    const uint64_t size          = data->GetSize();
-    const uint64_t offset        = std::min(size, data->GetOffset());
-    const uint64_t remainingSize = size - offset;
-    const uint64_t readSize      = std::min(remainingSize, static_cast<uint64_t>(inSize));
+    const uint64_t dataSize      = data->GetSize();
+    const uint64_t offset        = std::min(dataSize, data->GetOffset());
+    const uint64_t remainingSize = dataSize - offset;
+    const uint64_t readSize      = std::min(remainingSize, static_cast<uint64_t>(size));
 
     if (data->Read(outData, readSize))
     {
@@ -43,18 +43,18 @@ static int STBImageRead(void* const inUser,
     }
 }
 
-static void STBImageSkip(void* const inUser,
-                         const int   inNumBytes)
+static void STBImageSkip(void* const user,
+                         const int   numBytes)
 {
-    STBLoader* const loader = reinterpret_cast<STBLoader*>(inUser);
+    STBLoader* const loader = reinterpret_cast<STBLoader*>(user);
     DataStream* const data  = loader->GetData();
 
-    data->Seek(kSeekMode_Current, static_cast<int64_t>(inNumBytes));
+    data->Seek(kSeekMode_Current, static_cast<int64_t>(numBytes));
 }
 
-static int STBImageEOF(void* const inUser)
+static int STBImageEOF(void* const user)
 {
-    STBLoader* const loader = reinterpret_cast<STBLoader*>(inUser);
+    STBLoader* const loader = reinterpret_cast<STBLoader*>(user);
     DataStream* const data  = loader->GetData();
 
     return (data->GetOffset() >= data->GetSize()) ? 1 : 0;

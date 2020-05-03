@@ -32,21 +32,21 @@ TextureBase::TextureBase() :
 {
 }
 
-void TextureBase::CreateTexture(const GPUTextureDesc&     inTextureDesc,
-                                const GPUSamplerDesc&     inSamplerDesc,
-                                const GPUResourceViewType inViewType)
+void TextureBase::CreateTexture(const GPUTextureDesc&     textureDesc,
+                                const GPUSamplerDesc&     samplerDesc,
+                                const GPUResourceViewType viewType)
 {
     // TODO: Async texture creation/upload/mipgen.
     Assert(Thread::IsMain());
 
-    mTexture = GPUDevice::Get().CreateTexture(inTextureDesc);
-    mSampler = GPUDevice::Get().GetSampler(inSamplerDesc);
+    mTexture = GPUDevice::Get().CreateTexture(textureDesc);
+    mSampler = GPUDevice::Get().GetSampler(samplerDesc);
 
     mNumMipLevels = mTexture->GetNumMipLevels();
     mFormat       = mTexture->GetFormat();
 
     GPUResourceViewDesc viewDesc;
-    viewDesc.type          = inViewType;
+    viewDesc.type          = viewType;
     viewDesc.usage         = kGPUResourceUsage_ShaderRead;
     viewDesc.format        = mFormat;
     viewDesc.mipOffset     = 0;
@@ -71,30 +71,30 @@ void TextureBase::PathChanged()
     }
 }
 
-Texture2D::Texture2D(const uint32_t                inWidth,
-                     const uint32_t                inHeight,
-                     const uint8_t                 inNumMipLevels,
-                     const PixelFormat             inFormat,
-                     const GPUSamplerDesc&         inSamplerDesc,
-                     const std::vector<ByteArray>& inData) :
-    mWidth  (inWidth),
-    mHeight (inHeight)
+Texture2D::Texture2D(const uint32_t                width,
+                     const uint32_t                height,
+                     const uint8_t                 numMipLevels,
+                     const PixelFormat             format,
+                     const GPUSamplerDesc&         samplerDesc,
+                     const std::vector<ByteArray>& data) :
+    mWidth  (width),
+    mHeight (height)
 {
     GPUTextureDesc textureDesc;
     textureDesc.type         = kGPUResourceType_Texture2D;
     textureDesc.usage        = kGPUResourceUsage_ShaderRead;
     textureDesc.flags        = kGPUTexture_None;
-    textureDesc.format       = inFormat;
-    textureDesc.width        = inWidth;
-    textureDesc.height       = inHeight;
+    textureDesc.format       = format;
+    textureDesc.width        = width;
+    textureDesc.height       = height;
     textureDesc.depth        = 1;
     textureDesc.arraySize    = 1;
-    textureDesc.numMipLevels = inNumMipLevels;
+    textureDesc.numMipLevels = numMipLevels;
 
-    CreateTexture(textureDesc, inSamplerDesc, kGPUResourceViewType_Texture2D);
+    CreateTexture(textureDesc, samplerDesc, kGPUResourceViewType_Texture2D);
 
-    Assert(inData.size() >= 1);
-    Assert(inData.size() <= mNumMipLevels);
+    Assert(data.size() >= 1);
+    Assert(data.size() <= mNumMipLevels);
 
     /* Upload what we have data for. */
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
@@ -103,7 +103,7 @@ Texture2D::Texture2D(const uint32_t                inWidth,
                                     kGPUResourceState_None,
                                     kGPUResourceState_TransferWrite);
 
-    for (uint8_t mipLevel = 0; mipLevel < inData.size(); mipLevel++)
+    for (uint8_t mipLevel = 0; mipLevel < data.size(); mipLevel++)
     {
         textureDesc.width        = mTexture->GetMipWidth(mipLevel);
         textureDesc.height       = mTexture->GetMipHeight(mipLevel);
@@ -115,10 +115,10 @@ Texture2D::Texture2D(const uint32_t                inWidth,
                                      textureDesc.height *
                                      PixelFormatInfo::BytesPerPixel(GetFormat());
 
-        Assert(inData[mipLevel].GetSize() == mipDataSize);
+        Assert(data[mipLevel].GetSize() == mipDataSize);
 
         memcpy(stagingTexture.MapWrite(GPUSubresource{0, 0}),
-               inData[mipLevel].Get(),
+               data[mipLevel].Get(),
                mipDataSize);
 
         stagingTexture.Finalise();
@@ -133,7 +133,7 @@ Texture2D::Texture2D(const uint32_t                inWidth,
     }
 
     /* Generate mips for the rest. */
-    for (uint8_t mipLevel = inData.size(); mipLevel < mNumMipLevels; mipLevel++)
+    for (uint8_t mipLevel = data.size(); mipLevel < mNumMipLevels; mipLevel++)
     {
         const uint8_t sourceMipLevel = mipLevel - 1;
 

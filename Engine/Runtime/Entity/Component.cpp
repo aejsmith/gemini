@@ -34,16 +34,16 @@ void Component::Destroy()
     mEntity->RemoveComponent(this, {});
 }
 
-void Component::Serialise(Serialiser& inSerialiser) const
+void Component::Serialise(Serialiser& serialiser) const
 {
     /* Serialise a reference to our entity (see Deserialise()). */
-    inSerialiser.Write("entity", mEntity);
+    serialiser.Write("entity", mEntity);
 
     /* Serialise properties. */
-    Object::Serialise(inSerialiser);
+    Object::Serialise(serialiser);
 }
 
-void Component::Deserialise(Serialiser& inSerialiser)
+void Component::Deserialise(Serialiser& serialiser)
 {
     /* At this point we are not associated with our entity. Similarly to
      * Entity::Deserialise(), the first thing we must do *before* we deserialise
@@ -51,17 +51,17 @@ void Component::Deserialise(Serialiser& inSerialiser)
      * instantiated. We are added to the entity's component list by
      * Entity::Deserialise(), which ensures that order of components is
      * maintained. */
-    inSerialiser.Read("entity", mEntity);
+    serialiser.Read("entity", mEntity);
 
     /* Deserialise properties. */
-    Object::Deserialise(inSerialiser);
+    Object::Deserialise(serialiser);
 }
 
-void Component::SetActive(const bool inActive)
+void Component::SetActive(const bool active)
 {
     const bool wasActive = GetActiveInWorld();
 
-    mActive = inActive;
+    mActive = active;
 
     if (mActive)
     {

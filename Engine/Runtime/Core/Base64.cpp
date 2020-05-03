@@ -21,21 +21,21 @@
 static constexpr char kBase64Chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static constexpr char kBase64Pad     = '=';
 
-static inline bool IsBase64(const char inChar)
+static inline bool IsBase64(const char ch)
 {
-    return isalnum(inChar) || inChar == '+' || inChar == '/';
+    return isalnum(ch) || ch == '+' || ch == '/';
 }
 
-static inline uint8_t GetIndex(const char inChar)
+static inline uint8_t GetIndex(const char ch)
 {
-    if (inChar == kBase64Pad)
+    if (ch == kBase64Pad)
     {
         return 0;
     }
 
     for (uint8_t i = 0; i < ArraySize(kBase64Chars); i++)
     {
-        if (kBase64Chars[i] == inChar)
+        if (kBase64Chars[i] == ch)
         {
             return i;
         }
@@ -44,37 +44,37 @@ static inline uint8_t GetIndex(const char inChar)
     Unreachable();
 }
 
-bool Base64::Decode(const char* const inString,
-                    const size_t      inLength,
+bool Base64::Decode(const char* const string,
+                    const size_t      length,
                     ByteArray&        outData)
 {
-    if (inLength % 4)
+    if (length % 4)
     {
         return false;
     }
 
     /* Actual size may be smaller due to padding, we'll shrink at the end. */
-    const size_t maximumLength = (inLength / 4) * 3;
+    const size_t maximumLength = (length / 4) * 3;
     size_t actualLength        = 0;
 
     ByteArray result(maximumLength);
 
-    const char* string = inString;
+    const char* pos = string;
 
-    size_t remaining = inLength;
+    size_t remaining = length;
     size_t charCount = 0;
     size_t padCount  = 0;
 
     while (remaining > 0)
     {
-        if (string[charCount] == kBase64Pad)
+        if (pos[charCount] == kBase64Pad)
         {
             if (++padCount > 2)
             {
                 return false;
             }
         }
-        else if (padCount || !IsBase64(string[charCount]))
+        else if (padCount || !IsBase64(pos[charCount]))
         {
             return false;
         }
@@ -83,10 +83,10 @@ bool Base64::Decode(const char* const inString,
         {
             const uint8_t chars[4] =
             {
-                GetIndex(string[0]),
-                GetIndex(string[1]),
-                GetIndex(string[2]),
-                GetIndex(string[3]),
+                GetIndex(pos[0]),
+                GetIndex(pos[1]),
+                GetIndex(pos[2]),
+                GetIndex(pos[3]),
             };
 
             result[actualLength    ] =  (chars[0]        << 2) | ((chars[1] & 0x30) >> 4);
@@ -95,7 +95,7 @@ bool Base64::Decode(const char* const inString,
 
             actualLength += 3 - padCount;
 
-            string += charCount;
+            pos += charCount;
             charCount = 0;
         }
 
@@ -108,35 +108,35 @@ bool Base64::Decode(const char* const inString,
     return true;
 }
 
-bool Base64::Decode(const std::string& inString,
+bool Base64::Decode(const std::string& string,
                     ByteArray&         outData)
 {
-    return Decode(inString.c_str(), inString.length(), outData);
+    return Decode(string.c_str(), string.length(), outData);
 }
 
-std::string Base64::Encode(const void* const inData,
-                           const size_t      inLength)
+std::string Base64::Encode(const void* const data,
+                           const size_t      length)
 {
-    const size_t outputLength = 4 * ((RoundUp(inLength, size_t(3))) / 3);
+    const size_t outputLength = 4 * ((RoundUp(length, size_t(3))) / 3);
 
     std::string result;
     result.reserve(outputLength);
 
-    auto data = reinterpret_cast<const uint8_t*>(inData);
+    auto pos = reinterpret_cast<const uint8_t*>(data);
 
-    size_t remaining = inLength;
+    size_t remaining = length;
     size_t byteCount = 0;
 
     while (remaining > 0)
     {
         if (++byteCount == 3)
         {
-            result += kBase64Chars[ (data[0] & 0xfc) >> 2];
-            result += kBase64Chars[((data[0] & 0x03) << 4) | ((data[1] & 0xf0) >> 4)];
-            result += kBase64Chars[((data[1] & 0x0f) << 2) | ((data[2] & 0xc0) >> 6)];
-            result += kBase64Chars[  data[2] & 0x3f];
+            result += kBase64Chars[ (pos[0] & 0xfc) >> 2];
+            result += kBase64Chars[((pos[0] & 0x03) << 4) | ((pos[1] & 0xf0) >> 4)];
+            result += kBase64Chars[((pos[1] & 0x0f) << 2) | ((pos[2] & 0xc0) >> 6)];
+            result += kBase64Chars[  pos[2] & 0x3f];
 
-            data += byteCount;
+            pos += byteCount;
             byteCount = 0;
         }
 
@@ -148,8 +148,8 @@ std::string Base64::Encode(const void* const inData,
     {
         const uint8_t bytes[3] =
         {
-            data[0],
-            (byteCount == 2) ? data[1] : uint8_t(0),
+            pos[0],
+            (byteCount == 2) ? pos[1] : uint8_t(0),
             uint8_t(0),
         };
 
@@ -162,7 +162,7 @@ std::string Base64::Encode(const void* const inData,
     return result;
 }
 
-std::string Base64::Encode(const ByteArray& inData)
+std::string Base64::Encode(const ByteArray& data)
 {
-    return Encode(inData.Get(), inData.GetSize());
+    return Encode(data.Get(), data.GetSize());
 }

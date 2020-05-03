@@ -47,7 +47,7 @@ public:
     const BoundingBox&          GetBoundingBox() const  { return mBoundingBox; }
 
 private:
-                                SubMesh(Mesh& inParent) : mParent (inParent) {}
+                                SubMesh(Mesh& parent) : mParent (parent) {}
                                 ~SubMesh() {}
 
 private:
@@ -99,69 +99,69 @@ public:
 
     size_t                      GetSubMeshCount() const
                                     { return mSubMeshes.size(); }
-    const SubMesh&              GetSubMesh(const size_t inIndex) const
-                                    { Assert(inIndex < GetSubMeshCount()); return *mSubMeshes[inIndex]; }
+    const SubMesh&              GetSubMesh(const size_t index) const
+                                    { Assert(index < GetSubMeshCount()); return *mSubMeshes[index]; }
 
     GPUVertexInputStateRef      GetVertexInputState() const
                                     { Assert(mIsBuilt); return mVertexInputState; }
     GPUVertexBufferBitset       GetUsedVertexBuffers() const
                                     { Assert(mIsBuilt); return mUsedVertexBuffers; }
-    GPUBuffer*                  GetVertexBuffer(const size_t inIndex) const
-                                    { Assert(mIsBuilt); return mVertexBuffers[inIndex]; }
+    GPUBuffer*                  GetVertexBuffer(const size_t index) const
+                                    { Assert(mIsBuilt); return mVertexBuffers[index]; }
 
     size_t                      GetMaterialCount() const
                                     { return mMaterials.size(); }
-    bool                        GetMaterial(const std::string& inName,
+    bool                        GetMaterial(const std::string& name,
                                             size_t&            outIndex) const;
-    const std::string&          GetMaterialName(const size_t inIndex) const;
+    const std::string&          GetMaterialName(const size_t index) const;
 
     /**
      * Mesh build methods.
      */
 
-    void                        SetVertexLayout(const GPUVertexInputStateDesc& inDesc,
-                                                const uint32_t                 inCount);
+    void                        SetVertexLayout(const GPUVertexInputStateDesc& desc,
+                                                const uint32_t                 count);
 
     /**
      * Set data for a buffer. Expected data size is the stride of the buffer
      * defined in the layout multiplied by the vertex count. The void* version
      * copies the given data.
      */
-    void                        SetVertexData(const uint32_t inIndex,
-                                              ByteArray      inData);
-    void                        SetVertexData(const uint32_t    inIndex,
-                                              const void* const inData);
+    void                        SetVertexData(const uint32_t index,
+                                              ByteArray      data);
+    void                        SetVertexData(const uint32_t    index,
+                                              const void* const data);
 
     /**
      * Add a material slot to the mesh. Material slots are given a name, which
      * allows materials to be set by name on the mesh renderer. The name maps
      * to an index, which is returned by this.
      */
-    uint32_t                    AddMaterial(std::string inName);
+    uint32_t                    AddMaterial(std::string name);
 
     /**
      * Add a non-indexed submesh which just uses a contiguous range of the
      * mesh's vertex data.
      */
-    void                        AddSubMesh(const uint32_t             inMaterialIndex,
-                                           const GPUPrimitiveTopology inTopology,
-                                           const uint32_t             inVertexOffset,
-                                           const uint32_t             inVertexCount);
+    void                        AddSubMesh(const uint32_t             materialIndex,
+                                           const GPUPrimitiveTopology topology,
+                                           const uint32_t             vertexOffset,
+                                           const uint32_t             vertexCount);
 
     /**
      * Add a submesh which is rendered using indices into the mesh's vertex
      * data. The void* version copies the given data.
      */
-    void                        AddIndexedSubMesh(const uint32_t             inMaterialIndex,
-                                                  const GPUPrimitiveTopology inTopology,
-                                                  const uint32_t             inIndexCount,
-                                                  const GPUIndexType         inIndexType,
-                                                  ByteArray                  inIndexData);
-    void                        AddIndexedSubMesh(const uint32_t             inMaterialIndex,
-                                                  const GPUPrimitiveTopology inTopology,
-                                                  const uint32_t             inIndexCount,
-                                                  const GPUIndexType         inIndexType,
-                                                  const void* const          inIndexData);
+    void                        AddIndexedSubMesh(const uint32_t             materialIndex,
+                                                  const GPUPrimitiveTopology topology,
+                                                  const uint32_t             indexCount,
+                                                  const GPUIndexType         indexType,
+                                                  ByteArray                  indexData);
+    void                        AddIndexedSubMesh(const uint32_t             materialIndex,
+                                                  const GPUPrimitiveTopology topology,
+                                                  const uint32_t             indexCount,
+                                                  const GPUIndexType         indexType,
+                                                  const void* const          indexData);
 
     /**
      * Build the mesh. After this is called, the mesh cannot be changed.
@@ -180,20 +180,20 @@ private:
 private:
                                 ~Mesh();
 
-    void                        Serialise(Serialiser& inSerialiser) const override;
-    void                        Deserialise(Serialiser& inSerialiser) override;
+    void                        Serialise(Serialiser& serialiser) const override;
+    void                        Deserialise(Serialiser& serialiser) override;
 
     void                        PathChanged() override;
 
-    void                        CalculateBoundingBox(SubMesh* const inSubMesh);
+    void                        CalculateBoundingBox(SubMesh* const subMesh);
 
-    glm::vec4                   LoadAttribute(const GPUAttributeSemantic inSemantic,
-                                              const uint8_t              inSemanticIndex,
-                                              const SubMesh* const       inSubMesh,
-                                              const uint32_t             inIndex);
-    glm::vec4                   LoadAttribute(const GPUAttributeSemantic inSemantic,
-                                              const uint8_t              inSemanticIndex,
-                                              const uint32_t             inVertexIndex);
+    glm::vec4                   LoadAttribute(const GPUAttributeSemantic semantic,
+                                              const uint8_t              semanticIndex,
+                                              const SubMesh* const       subMesh,
+                                              const uint32_t             index);
+    glm::vec4                   LoadAttribute(const GPUAttributeSemantic semantic,
+                                              const uint8_t              semanticIndex,
+                                              const uint32_t             vertexIndex);
 
 private:
     bool                        mIsBuilt;
@@ -211,8 +211,8 @@ private:
 
 using MeshPtr = ObjPtr<Mesh>;
 
-inline const std::string& Mesh::GetMaterialName(const size_t inIndex) const
+inline const std::string& Mesh::GetMaterialName(const size_t index) const
 {
-    Assert(inIndex < mMaterials.size());
-    return mMaterials[inIndex];
+    Assert(index < mMaterials.size());
+    return mMaterials[index];
 }

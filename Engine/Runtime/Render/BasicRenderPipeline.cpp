@@ -41,16 +41,16 @@ BasicRenderPipeline::~BasicRenderPipeline()
 {
 }
 
-void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
-                                 const RenderView&          inView,
-                                 RenderGraph&               inGraph,
-                                 const RenderResourceHandle inTexture,
+void BasicRenderPipeline::Render(const RenderWorld&         world,
+                                 const RenderView&          view,
+                                 RenderGraph&               graph,
+                                 const RenderResourceHandle texture,
                                  RenderResourceHandle&      outNewTexture)
 {
-    BasicRenderContext* const context = inGraph.NewTransient<BasicRenderContext>(inGraph, inWorld, inView);
+    BasicRenderContext* const context = graph.NewTransient<BasicRenderContext>(graph, world, view);
 
     /* Get the visible entities. */
-    inWorld.Cull(inView, context->cullResults);
+    world.Cull(view, context->cullResults);
 
     /* Build a draw list for the entities. */
     context->drawList.Reserve(context->cullResults.entities.size());
@@ -73,16 +73,16 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     /* Add the main pass. Done to a temporary render target with a fixed format,
      * since the output texture may not match the format that all PSOs have
      * been created with. */
-    RenderGraphPass& mainPass = inGraph.AddPass("BasicMain", kRenderGraphPassType_Render);
+    RenderGraphPass& mainPass = graph.AddPass("BasicMain", kRenderGraphPassType_Render);
 
-    RenderTextureDesc colourTextureDesc(inGraph.GetTextureDesc(inTexture));
+    RenderTextureDesc colourTextureDesc(graph.GetTextureDesc(texture));
     colourTextureDesc.format = kColourFormat;
 
-    RenderTextureDesc depthTextureDesc(inGraph.GetTextureDesc(inTexture));
+    RenderTextureDesc depthTextureDesc(graph.GetTextureDesc(texture));
     depthTextureDesc.format = kDepthFormat;
 
-    RenderResourceHandle colourTexture = inGraph.CreateTexture(colourTextureDesc);
-    RenderResourceHandle depthTexture  = inGraph.CreateTexture(depthTextureDesc);
+    RenderResourceHandle colourTexture = graph.CreateTexture(colourTextureDesc);
+    RenderResourceHandle depthTexture  = graph.CreateTexture(depthTextureDesc);
 
     mainPass.SetColour(0, colourTexture, &colourTexture);
     mainPass.SetDepthStencil(depthTexture, kGPUResourceState_DepthStencilWrite);
@@ -93,16 +93,16 @@ void BasicRenderPipeline::Render(const RenderWorld&         inWorld,
     context->drawList.Draw(mainPass);
 
     /* Blit to the final output. */
-    inGraph.AddBlitPass("BasicBlit",
-                        inTexture,
-                        GPUSubresource{0, 0},
-                        colourTexture,
-                        GPUSubresource{0, 0},
-                        &outNewTexture);
+    graph.AddBlitPass("BasicBlit",
+                      texture,
+                      GPUSubresource{0, 0},
+                      colourTexture,
+                      GPUSubresource{0, 0},
+                      &outNewTexture);
 
     /* Render debug primitives for the view. */
-    DebugManager::Get().RenderPrimitives(inView,
-                                         inGraph,
+    DebugManager::Get().RenderPrimitives(view,
+                                         graph,
                                          outNewTexture,
                                          outNewTexture);
 }

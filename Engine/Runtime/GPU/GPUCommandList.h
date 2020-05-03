@@ -86,8 +86,8 @@ struct GPUPipelineDesc;
 class GPUCommandList : public GPUDeviceChild
 {
 protected:
-                                    GPUCommandList(GPUContext&                 inContext,
-                                                   const GPUCommandList* const inParent);
+                                    GPUCommandList(GPUContext&                 context,
+                                                   const GPUCommandList* const parent);
                                     ~GPUCommandList() {}
 
 public:
@@ -137,8 +137,8 @@ public:
      * within the children will be performed in the order in which they are
      * found in the array.
      */
-    void                            SubmitChildren(GPUCommandList** const inChildren,
-                                                   const size_t           inCount);
+    void                            SubmitChildren(GPUCommandList** const children,
+                                                   const size_t           count);
 
     /**
      * Set shader arguments to be used for subsequent draw/dispatch commands.
@@ -163,28 +163,28 @@ public:
      * See GPUGraphicsCommandList::SetPipeline() for details of how changing
      * pipeline affects bound argument state.
      */
-    void                            SetArguments(const uint8_t         inIndex,
-                                                 GPUArgumentSet* const inSet);
-    void                            SetArguments(const uint8_t            inIndex,
-                                                 const GPUArgument* const inArguments);
+    void                            SetArguments(const uint8_t         index,
+                                                 GPUArgumentSet* const set);
+    void                            SetArguments(const uint8_t            index,
+                                                 const GPUArgument* const arguments);
 
     /**
      * Set data for a kGPUArgumentType_Constants shader argument. This remains
      * valid until the argument set layout at the given set index changes (i.e.
      * due to a pipeline change).
      */
-    void                            SetConstants(const uint8_t      inSetIndex,
-                                                 const uint8_t      inArgumentIndex,
-                                                 const GPUConstants inConstants);
+    void                            SetConstants(const uint8_t      setIndex,
+                                                 const uint8_t      argumentIndex,
+                                                 const GPUConstants constants);
 
     /**
      * Convenience function which writes new data to the constant pool and then
      * sets it with SetConstants().
      */
-    void                            WriteConstants(const uint8_t     inSetIndex,
-                                                   const uint8_t     inArgumentIndex,
-                                                   const void* const inData,
-                                                   const size_t      inSize);
+    void                            WriteConstants(const uint8_t     setIndex,
+                                                   const uint8_t     argumentIndex,
+                                                   const void* const data,
+                                                   const size_t      size);
 
 protected:
     struct ArgumentState
@@ -207,7 +207,7 @@ protected:
     };
 
 protected:
-    void                            ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&inLayouts)[kMaxArgumentSets]);
+    void                            ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&layouts)[kMaxArgumentSets]);
 
     /**
      * Validate that the command list is in the correct state and that it is
@@ -222,8 +222,8 @@ protected:
 
     virtual GPUCommandList*         CreateChildImpl() = 0;
 
-    virtual void                    SubmitChildrenImpl(GPUCommandList** const inChildren,
-                                                       const size_t           inCount) = 0;
+    virtual void                    SubmitChildrenImpl(GPUCommandList** const children,
+                                                       const size_t           count) = 0;
 
     /**
      * Set shader arguments. Responsible for setting backend-specific state on
@@ -231,10 +231,10 @@ protected:
      * flagging argument state as dirty if the backend determines it is
      * necessary.
      */
-    virtual void                    SetArgumentsImpl(const uint8_t         inIndex,
-                                                     GPUArgumentSet* const inSet) = 0;
-    virtual void                    SetArgumentsImpl(const uint8_t            inIndex,
-                                                     const GPUArgument* const inArguments) = 0;
+    virtual void                    SetArgumentsImpl(const uint8_t         index,
+                                                     GPUArgumentSet* const set) = 0;
+    virtual void                    SetArgumentsImpl(const uint8_t            index,
+                                                     const GPUArgument* const arguments) = 0;
 
 protected:
     GPUContext&                     mContext;
@@ -257,8 +257,8 @@ protected:
 class GPUComputeCommandList : public GPUCommandList
 {
 protected:
-                                    GPUComputeCommandList(GPUComputeContext&                 inContext,
-                                                          const GPUComputeCommandList* const inParent);
+                                    GPUComputeCommandList(GPUComputeContext&                 context,
+                                                          const GPUComputeCommandList* const parent);
                                     ~GPUComputeCommandList();
 
 public:
@@ -276,11 +276,11 @@ public:
      * differs from the old pipeline's, then any bound arguments at that index
      * will be unbound. Otherwise, bound arguments will remain bound.
      */
-    void                            SetPipeline(GPUComputePipeline* const inPipeline);
+    void                            SetPipeline(GPUComputePipeline* const pipeline);
 
-    virtual void                    Dispatch(const uint32_t inGroupCountX,
-                                             const uint32_t inGroupCountY,
-                                             const uint32_t inGroupCountZ) = 0;
+    virtual void                    Dispatch(const uint32_t groupCountX,
+                                             const uint32_t groupCountY,
+                                             const uint32_t groupCountZ) = 0;
 
 protected:
     GPUComputePipeline*             mPipeline;
@@ -292,17 +292,17 @@ protected:
 class GPUGraphicsCommandList : public GPUCommandList
 {
 protected:
-                                    GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
-                                                           const GPUGraphicsCommandList* const inParent,
-                                                           const GPURenderPass&                inRenderPass);
+                                    GPUGraphicsCommandList(GPUGraphicsContext&                 context,
+                                                           const GPUGraphicsCommandList* const parent,
+                                                           const GPURenderPass&                renderPass);
                                     ~GPUGraphicsCommandList();
 
 public:
     const GPURenderPass&            GetRenderPass() const           { return mRenderPass; }
     GPURenderTargetStateRef         GetRenderTargetState() const    { return mRenderTargetState; }
 
-    GPUResourceView*                GetColourView(const uint32_t inIndex) const
-                                        { return mRenderPass.colour[inIndex].view; }
+    GPUResourceView*                GetColourView(const uint32_t index) const
+                                        { return mRenderPass.colour[index].view; }
     GPUResourceView*                GetDepthStencilView() const
                                         { return mRenderPass.depthStencil.view; }
 
@@ -322,19 +322,19 @@ public:
      * differs from the old pipeline's, then any bound arguments at that index
      * will be unbound. Otherwise, bound arguments will remain bound.
      */
-    void                            SetPipeline(GPUPipeline* const inPipeline);
-    void                            SetPipeline(const GPUPipelineDesc& inDesc);
+    void                            SetPipeline(GPUPipeline* const pipeline);
+    void                            SetPipeline(const GPUPipelineDesc& desc);
 
-    void                            SetViewport(const GPUViewport& inViewport);
-    void                            SetScissor(const IntRect& inScissor);
+    void                            SetViewport(const GPUViewport& viewport);
+    void                            SetScissor(const IntRect& scissor);
 
-    void                            SetVertexBuffer(const uint32_t   inIndex,
-                                                    GPUBuffer* const inBuffer,
-                                                    const uint32_t   inOffset = 0);
+    void                            SetVertexBuffer(const uint32_t   index,
+                                                    GPUBuffer* const buffer,
+                                                    const uint32_t   offset = 0);
 
-    void                            SetIndexBuffer(const GPUIndexType inType,
-                                                   GPUBuffer* const   inBuffer,
-                                                   const uint32_t     inOffset = 0);
+    void                            SetIndexBuffer(const GPUIndexType type,
+                                                   GPUBuffer* const   buffer,
+                                                   const uint32_t     offset = 0);
 
     /**
      * Transient vertex/index data interface. Set{Vertex,Index}Buffer() use
@@ -342,20 +342,20 @@ public:
      * temporary GPU-accessible memory (which is recycled once a frame is
      * completed), and bind that.
      */
-    void                            WriteVertexBuffer(const uint32_t    inIndex,
-                                                      const void* const inData,
-                                                      const size_t      inSize);
+    void                            WriteVertexBuffer(const uint32_t    index,
+                                                      const void* const data,
+                                                      const size_t      size);
 
-    void                            WriteIndexBuffer(const GPUIndexType inType,
-                                                     const void* const  inData,
-                                                     const size_t       inSize);
+    void                            WriteIndexBuffer(const GPUIndexType type,
+                                                     const void* const  data,
+                                                     const size_t       size);
 
-    virtual void                    Draw(const uint32_t inVertexCount,
-                                         const uint32_t inFirstVertex = 0) = 0;
+    virtual void                    Draw(const uint32_t vertexCount,
+                                         const uint32_t firstVertex = 0) = 0;
 
-    virtual void                    DrawIndexed(const uint32_t inIndexCount,
-                                                const uint32_t inFirstIndex  = 0,
-                                                const int32_t  inVertexOffset = 0) = 0;
+    virtual void                    DrawIndexed(const uint32_t indexCount,
+                                                const uint32_t firstIndex  = 0,
+                                                const int32_t  vertexOffset = 0) = 0;
 
 protected:
     /**
@@ -363,7 +363,7 @@ protected:
      * the data in the implementation's transient buffer, is set in the buffer
      * state (and the GPUBuffer pointer is set to null).
      */
-    virtual uint32_t                AllocateTransientBuffer(const size_t inSize,
+    virtual uint32_t                AllocateTransientBuffer(const size_t size,
                                                             void*&       outMapping) = 0;
 
 protected:
@@ -455,19 +455,19 @@ inline GPUCommandList* GPUCommandList::CreateChild()
     return CreateChildImpl();
 }
 
-inline void GPUCommandList::SubmitChildren(GPUCommandList** const inChildren,
-                                           const size_t           inCount)
+inline void GPUCommandList::SubmitChildren(GPUCommandList** const children,
+                                           const size_t           count)
 {
     ValidateCommand();
 
     #if GEMINI_BUILD_DEBUG
-        for (size_t i = 0; i < inCount; i++)
+        for (size_t i = 0; i < count; i++)
         {
-            Assert(inChildren[i]->GetState() == GPUCommandList::kState_Ended);
+            Assert(children[i]->GetState() == GPUCommandList::kState_Ended);
         }
 
-        mActiveChildCount.fetch_sub(inCount, std::memory_order_relaxed);
+        mActiveChildCount.fetch_sub(count, std::memory_order_relaxed);
     #endif
 
-    SubmitChildrenImpl(inChildren, inCount);
+    SubmitChildrenImpl(children, count);
 }

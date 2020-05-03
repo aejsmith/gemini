@@ -27,22 +27,22 @@ class ByteArray
 {
 public:
                             ByteArray();
-                            ByteArray(const size_t inSize);
-                            ByteArray(const ByteArray& inOther);
-                            ByteArray(ByteArray&& inOther);
+                            ByteArray(const size_t size);
+                            ByteArray(const ByteArray& other);
+                            ByteArray(ByteArray&& other);
 
                             ~ByteArray();
 
-    ByteArray&              operator=(const ByteArray& inOther);
-    ByteArray&              operator=(ByteArray&& inOther);
+    ByteArray&              operator=(const ByteArray& other);
+    ByteArray&              operator=(ByteArray&& other);
 
                             operator bool() const
                                 { return mSize != 0; }
 
-    uint8_t&                operator[](const size_t inIndex)
-                                { return mData[inIndex]; }
-    const uint8_t&          operator[](const size_t inIndex) const
-                                { return mData[inIndex]; }
+    uint8_t&                operator[](const size_t index)
+                                { return mData[index]; }
+    const uint8_t&          operator[](const size_t index) const
+                                { return mData[index]; }
 
     size_t                  GetSize() const { return mSize; }
 
@@ -51,14 +51,14 @@ public:
 
     /**
      * Resizes the array, optionally reallocating it (and copying content). If
-     * the size is being increased, then inReallocate must be true. Otherwise,
-     * if shrinking and inReallocate is false, just the size field will be
+     * the size is being increased, then reallocate must be true. Otherwise,
+     * if shrinking and reallocate is false, just the size field will be
      * changed, and the remainder of the allocation will be wasted. This may be
      * useful if only shrinking by a small amount or when the array is only
      * temporary anyway so wastage doesn't matter.
      */
-    void                    Resize(const size_t inSize,
-                                   const bool   inReallocate = true);
+    void                    Resize(const size_t size,
+                                   const bool   reallocate = true);
 
     void                    Clear();
 
@@ -73,24 +73,24 @@ inline ByteArray::ByteArray() :
 {
 }
 
-inline ByteArray::ByteArray(const size_t inSize) :
-    mSize   (inSize),
-    mData   ((inSize > 0) ? new uint8_t[inSize] : nullptr)
+inline ByteArray::ByteArray(const size_t size) :
+    mSize   (size),
+    mData   ((size > 0) ? new uint8_t[size] : nullptr)
 {
 }
 
-inline ByteArray::ByteArray(const ByteArray& inOther) :
-    ByteArray   (inOther.mSize)
+inline ByteArray::ByteArray(const ByteArray& other) :
+    ByteArray   (other.mSize)
 {
-    memcpy(mData, inOther.mData, mSize);
+    memcpy(mData, other.mData, mSize);
 }
 
-inline ByteArray::ByteArray(ByteArray&& inOther) :
-    mSize   (inOther.mSize),
-    mData   (inOther.mData)
+inline ByteArray::ByteArray(ByteArray&& other) :
+    mSize   (other.mSize),
+    mData   (other.mData)
 {
-    inOther.mSize = 0;
-    inOther.mData = nullptr;
+    other.mSize = 0;
+    other.mData = nullptr;
 }
 
 inline ByteArray::~ByteArray()
@@ -98,61 +98,61 @@ inline ByteArray::~ByteArray()
     delete[] mData;
 }
 
-inline ByteArray& ByteArray::operator=(const ByteArray& inOther)
+inline ByteArray& ByteArray::operator=(const ByteArray& other)
 {
-    if (this != &inOther)
+    if (this != &other)
     {
-        if (mSize != inOther.mSize)
+        if (mSize != other.mSize)
         {
             delete[] mData;
 
-            mData = new uint8_t[inOther.mSize];
-            mSize = inOther.mSize;
+            mData = new uint8_t[other.mSize];
+            mSize = other.mSize;
         }
 
-        memcpy(mData, inOther.mData, mSize);
+        memcpy(mData, other.mData, mSize);
     }
 
     return *this;
 }
 
-inline ByteArray& ByteArray::operator=(ByteArray&& inOther)
+inline ByteArray& ByteArray::operator=(ByteArray&& other)
 {
-    if (this != &inOther)
+    if (this != &other)
     {
         delete[] mData;
 
-        mSize = inOther.mSize;
-        mData = inOther.mData;
+        mSize = other.mSize;
+        mData = other.mData;
 
-        inOther.mSize = 0;
-        inOther.mData = nullptr;
+        other.mSize = 0;
+        other.mData = nullptr;
     }
 
     return *this;
 }
 
-inline void ByteArray::Resize(const size_t inSize,
-                              const bool   inReallocate)
+inline void ByteArray::Resize(const size_t size,
+                              const bool   reallocate)
 {
-    if (inSize != mSize)
+    if (size != mSize)
     {
-        Assert(inReallocate || inSize < mSize);
+        Assert(reallocate || size < mSize);
 
-        if (inReallocate)
+        if (reallocate)
         {
-            uint8_t* const newData = (inSize != 0) ? new uint8_t[inSize] : 0;
+            uint8_t* const newData = (size != 0) ? new uint8_t[size] : 0;
 
-            if (mSize != 0 && inSize != 0)
+            if (mSize != 0 && size != 0)
             {
-                memcpy(newData, mData, std::min(inSize, mSize));
+                memcpy(newData, mData, std::min(size, mSize));
             }
 
             delete[] mData;
             mData = newData;
         }
 
-        mSize = inSize;
+        mSize = size;
     }
 }
 

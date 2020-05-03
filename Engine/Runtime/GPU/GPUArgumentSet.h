@@ -34,28 +34,28 @@ struct GPUArgumentSetLayoutDesc
     GPUArgumentTypeArray            arguments;
 
 public:
-                                    GPUArgumentSetLayoutDesc(const size_t inNumArguments = 0);
+                                    GPUArgumentSetLayoutDesc(const size_t numArguments = 0);
 
 };
 
-inline GPUArgumentSetLayoutDesc::GPUArgumentSetLayoutDesc(const size_t inNumArguments) :
-    arguments   (inNumArguments)
+inline GPUArgumentSetLayoutDesc::GPUArgumentSetLayoutDesc(const size_t numArguments) :
+    arguments   (numArguments)
 {
 }
 
-inline size_t HashValue(const GPUArgumentSetLayoutDesc& inValue)
+inline size_t HashValue(const GPUArgumentSetLayoutDesc& value)
 {
-    return HashData(inValue.arguments.data(),
-                    sizeof(inValue.arguments[0]) * inValue.arguments.size(),
-                    inValue.arguments.size());
+    return HashData(value.arguments.data(),
+                    sizeof(value.arguments[0]) * value.arguments.size(),
+                    value.arguments.size());
 }
 
-inline bool operator==(const GPUArgumentSetLayoutDesc& inA, const GPUArgumentSetLayoutDesc& inB)
+inline bool operator==(const GPUArgumentSetLayoutDesc& a, const GPUArgumentSetLayoutDesc& b)
 {
-    return inA.arguments.size() == inB.arguments.size() &&
-           memcmp(inA.arguments.data(),
-                  inB.arguments.data(),
-                  sizeof(inA.arguments[0]) * inA.arguments.size()) == 0;
+    return a.arguments.size() == b.arguments.size() &&
+           memcmp(a.arguments.data(),
+                  b.arguments.data(),
+                  sizeof(a.arguments[0]) * a.arguments.size()) == 0;
 }
 
 /**
@@ -78,8 +78,8 @@ inline bool operator==(const GPUArgumentSetLayoutDesc& inA, const GPUArgumentSet
 class GPUArgumentSetLayout : public GPUDeviceChild
 {
 protected:
-                                    GPUArgumentSetLayout(GPUDevice&                 inDevice,
-                                                         GPUArgumentSetLayoutDesc&& inDesc);
+                                    GPUArgumentSetLayout(GPUDevice&                 device,
+                                                         GPUArgumentSetLayoutDesc&& desc);
 
     virtual                         ~GPUArgumentSetLayout();
 
@@ -124,17 +124,17 @@ struct GPUArgument
 class GPUArgumentSet : public GPUObject
 {
 protected:
-                                    GPUArgumentSet(GPUDevice&                    inDevice,
-                                                   const GPUArgumentSetLayoutRef inLayout,
-                                                   const GPUArgument* const      inArguments);
+                                    GPUArgumentSet(GPUDevice&                    device,
+                                                   const GPUArgumentSetLayoutRef layout,
+                                                   const GPUArgument* const      arguments);
 
 public:
                                     ~GPUArgumentSet();
 
     GPUArgumentSetLayoutRef         GetLayout() const { return mLayout; }
 
-    static void                     ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
-                                                      const GPUArgument* const      inArguments);
+    static void                     ValidateArguments(const GPUArgumentSetLayoutRef layout,
+                                                      const GPUArgument* const      arguments);
 
 private:
     const GPUArgumentSetLayoutRef   mLayout;
@@ -143,8 +143,8 @@ private:
 
 #if !GEMINI_BUILD_DEBUG
 
-inline void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef inLayout,
-                                              const GPUArgument* const      inArguments)
+inline void GPUArgumentSet::ValidateArguments(const GPUArgumentSetLayoutRef layout,
+                                              const GPUArgument* const      arguments)
 {
     /* On non-debug builds this does nothing. */
 }

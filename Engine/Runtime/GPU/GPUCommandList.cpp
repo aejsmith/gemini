@@ -20,11 +20,11 @@
 #include "GPU/GPUConstantPool.h"
 #include "GPU/GPUContext.h"
 
-GPUCommandList::GPUCommandList(GPUContext&                 inContext,
-                               const GPUCommandList* const inParent) :
-    GPUDeviceChild  (inContext.GetDevice()),
-    mContext        (inContext),
-    mParent         (inParent),
+GPUCommandList::GPUCommandList(GPUContext&                 context,
+                               const GPUCommandList* const parent) :
+    GPUDeviceChild  (context.GetDevice()),
+    mContext        (context),
+    mParent         (parent),
     mState          (kState_Created)
 {
     memset(mArgumentState, 0, sizeof(mArgumentState));
@@ -47,62 +47,62 @@ GPUCommandList::GPUCommandList(GPUContext&                 inContext,
     #endif
 }
 
-void GPUCommandList::SetArguments(const uint8_t         inIndex,
-                                  GPUArgumentSet* const inSet)
+void GPUCommandList::SetArguments(const uint8_t         index,
+                                  GPUArgumentSet* const set)
 {
-    Assert(inIndex < kMaxArgumentSets);
-    Assert(inSet);
-    Assert(inSet->GetLayout() == mArgumentState[inIndex].layout);
+    Assert(index < kMaxArgumentSets);
+    Assert(set);
+    Assert(set->GetLayout() == mArgumentState[index].layout);
 
-    SetArgumentsImpl(inIndex, inSet);
+    SetArgumentsImpl(index, set);
 
     #if GEMINI_BUILD_DEBUG
-        mArgumentState[inIndex].valid = true;
+        mArgumentState[index].valid = true;
     #endif
 }
 
-void GPUCommandList::SetArguments(const uint8_t            inIndex,
-                                  const GPUArgument* const inArguments)
+void GPUCommandList::SetArguments(const uint8_t            index,
+                                  const GPUArgument* const arguments)
 {
-    auto& argumentState = mArgumentState[inIndex];
+    auto& argumentState = mArgumentState[index];
 
-    Assert(inIndex < kMaxArgumentSets);
+    Assert(index < kMaxArgumentSets);
     Assert(argumentState.layout);
 
-    GPUArgumentSet::ValidateArguments(argumentState.layout, inArguments);
+    GPUArgumentSet::ValidateArguments(argumentState.layout, arguments);
 
-    SetArgumentsImpl(inIndex, inArguments);
+    SetArgumentsImpl(index, arguments);
 
     #if GEMINI_BUILD_DEBUG
-        mArgumentState[inIndex].valid = true;
+        mArgumentState[index].valid = true;
     #endif
 }
 
-void GPUCommandList::SetConstants(const uint8_t      inSetIndex,
-                                  const uint8_t      inArgumentIndex,
-                                  const GPUConstants inConstants)
+void GPUCommandList::SetConstants(const uint8_t      setIndex,
+                                  const uint8_t      argumentIndex,
+                                  const GPUConstants constants)
 {
-    auto& argumentState = mArgumentState[inSetIndex];
+    auto& argumentState = mArgumentState[setIndex];
 
-    Assert(inSetIndex < kMaxArgumentSets);
+    Assert(setIndex < kMaxArgumentSets);
     Assert(argumentState.layout);
-    Assert(inArgumentIndex < argumentState.layout->GetArgumentCount());
-    Assert(argumentState.layout->GetArguments()[inArgumentIndex] == kGPUArgumentType_Constants);
+    Assert(argumentIndex < argumentState.layout->GetArgumentCount());
+    Assert(argumentState.layout->GetArguments()[argumentIndex] == kGPUArgumentType_Constants);
 
-    if (argumentState.constants[inArgumentIndex] != inConstants)
+    if (argumentState.constants[argumentIndex] != constants)
     {
-        argumentState.constants[inArgumentIndex] = inConstants;
-        argumentState.dirty                      = true;
+        argumentState.constants[argumentIndex] = constants;
+        argumentState.dirty                    = true;
     }
 }
 
-void GPUCommandList::ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&inLayouts)[kMaxArgumentSets])
+void GPUCommandList::ChangeArgumentLayout(const GPUArgumentSetLayoutRef (&layouts)[kMaxArgumentSets])
 {
     for (size_t setIndex = 0; setIndex < kMaxArgumentSets; setIndex++)
     {
         auto& argumentState = mArgumentState[setIndex];
 
-        const GPUArgumentSetLayoutRef layout = inLayouts[setIndex];
+        const GPUArgumentSetLayoutRef layout = layouts[setIndex];
 
         if (layout != argumentState.layout)
         {
@@ -151,25 +151,25 @@ void GPUCommandList::ValidateArguments() const
 
 #endif
 
-void GPUCommandList::WriteConstants(const uint8_t     inSetIndex,
-                                    const uint8_t     inArgumentIndex,
-                                    const void* const inData,
-                                    const size_t      inSize)
+void GPUCommandList::WriteConstants(const uint8_t     setIndex,
+                                    const uint8_t     argumentIndex,
+                                    const void* const data,
+                                    const size_t      size)
 {
-    auto& argumentState = mArgumentState[inSetIndex];
+    auto& argumentState = mArgumentState[setIndex];
 
-    Assert(inSetIndex < kMaxArgumentSets);
+    Assert(setIndex < kMaxArgumentSets);
     Assert(argumentState.layout);
-    Assert(inArgumentIndex < argumentState.layout->GetArgumentCount());
-    Assert(argumentState.layout->GetArguments()[inArgumentIndex] == kGPUArgumentType_Constants);
+    Assert(argumentIndex < argumentState.layout->GetArgumentCount());
+    Assert(argumentState.layout->GetArguments()[argumentIndex] == kGPUArgumentType_Constants);
 
-    argumentState.constants[inArgumentIndex] = GetDevice().GetConstantPool().Write(inData, inSize);
-    argumentState.dirty                      = true;
+    argumentState.constants[argumentIndex] = GetDevice().GetConstantPool().Write(data, size);
+    argumentState.dirty                    = true;
 }
 
-GPUComputeCommandList::GPUComputeCommandList(GPUComputeContext&                 inContext,
-                                             const GPUComputeCommandList* const inParent) :
-    GPUCommandList  (inContext, inParent),
+GPUComputeCommandList::GPUComputeCommandList(GPUComputeContext&                 context,
+                                             const GPUComputeCommandList* const parent) :
+    GPUCommandList  (context, parent),
     mPipeline       (nullptr),
     mPipelineDirty  (false)
 {
@@ -179,34 +179,34 @@ GPUComputeCommandList::~GPUComputeCommandList()
 {
 }
 
-void GPUComputeCommandList::SetPipeline(GPUComputePipeline* const inPipeline)
+void GPUComputeCommandList::SetPipeline(GPUComputePipeline* const pipeline)
 {
-    Assert(inPipeline);
+    Assert(pipeline);
 
-    if (inPipeline != mPipeline)
+    if (pipeline != mPipeline)
     {
-        mPipeline = inPipeline;
+        mPipeline = pipeline;
 
-        ChangeArgumentLayout(inPipeline->GetDesc().argumentSetLayouts);
+        ChangeArgumentLayout(pipeline->GetDesc().argumentSetLayouts);
 
         mPipelineDirty = true;
     }
 }
 
-GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&                 inContext,
-                                               const GPUGraphicsCommandList* const inParent,
-                                               const GPURenderPass&                inRenderPass) :
-    GPUCommandList      (inContext, inParent),
-    mRenderPass         (inRenderPass),
-    mRenderTargetState  ((inParent)
-                             ? inParent->GetRenderTargetState()
+GPUGraphicsCommandList::GPUGraphicsCommandList(GPUGraphicsContext&                 context,
+                                               const GPUGraphicsCommandList* const parent,
+                                               const GPURenderPass&                renderPass) :
+    GPUCommandList      (context, parent),
+    mRenderPass         (renderPass),
+    mRenderTargetState  ((parent)
+                             ? parent->GetRenderTargetState()
                              : mRenderPass.GetRenderTargetState()),
     mDirtyState         (0),
     mPipeline           (nullptr)
 {
     /* Initialise the viewport and scissor to the size of the render target. */
     uint32_t width, height, layers;
-    inRenderPass.GetDimensions(width, height, layers);
+    renderPass.GetDimensions(width, height, layers);
 
     mViewport.rect.x      = mScissor.x      = 0;
     mViewport.rect.y      = mScissor.y      = 0;
@@ -222,105 +222,105 @@ GPUGraphicsCommandList::~GPUGraphicsCommandList()
 {
 }
 
-void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const inPipeline)
+void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const pipeline)
 {
-    Assert(inPipeline);
+    Assert(pipeline);
 
-    if (inPipeline != mPipeline)
+    if (pipeline != mPipeline)
     {
-        mPipeline = inPipeline;
+        mPipeline = pipeline;
 
-        ChangeArgumentLayout(inPipeline->GetDesc().argumentSetLayouts);
+        ChangeArgumentLayout(pipeline->GetDesc().argumentSetLayouts);
 
         mDirtyState |= kDirtyState_Pipeline;
     }
 }
 
-void GPUGraphicsCommandList::SetPipeline(const GPUPipelineDesc& inDesc)
+void GPUGraphicsCommandList::SetPipeline(const GPUPipelineDesc& desc)
 {
-    SetPipeline(GetDevice().GetPipeline(inDesc));
+    SetPipeline(GetDevice().GetPipeline(desc));
 }
 
-void GPUGraphicsCommandList::SetViewport(const GPUViewport& inViewport)
+void GPUGraphicsCommandList::SetViewport(const GPUViewport& viewport)
 {
-    if (memcmp(&mViewport, &inViewport, sizeof(mViewport)) != 0)
+    if (memcmp(&mViewport, &viewport, sizeof(mViewport)) != 0)
     {
-        mViewport = inViewport;
+        mViewport = viewport;
 
         mDirtyState |= kDirtyState_Viewport;
     }
 }
 
-void GPUGraphicsCommandList::SetScissor(const IntRect& inScissor)
+void GPUGraphicsCommandList::SetScissor(const IntRect& scissor)
 {
-    if (memcmp(&mScissor, &inScissor, sizeof(mScissor)) != 0)
+    if (memcmp(&mScissor, &scissor, sizeof(mScissor)) != 0)
     {
-        mScissor = inScissor;
+        mScissor = scissor;
 
         mDirtyState |= kDirtyState_Scissor;
     }
 }
 
-void GPUGraphicsCommandList::SetVertexBuffer(const uint32_t   inIndex,
-                                             GPUBuffer* const inBuffer,
-                                             const uint32_t   inOffset)
+void GPUGraphicsCommandList::SetVertexBuffer(const uint32_t   index,
+                                             GPUBuffer* const buffer,
+                                             const uint32_t   offset)
 {
-    Assert(inIndex < kMaxVertexAttributes);
+    Assert(index < kMaxVertexAttributes);
 
-    auto& vertexBuffer = mVertexBuffers[inIndex];
+    auto& vertexBuffer = mVertexBuffers[index];
 
-    if (inBuffer != vertexBuffer.buffer || inOffset != vertexBuffer.offset)
+    if (buffer != vertexBuffer.buffer || offset != vertexBuffer.offset)
     {
-        vertexBuffer.buffer = inBuffer;
-        vertexBuffer.offset = inOffset;
+        vertexBuffer.buffer = buffer;
+        vertexBuffer.offset = offset;
 
-        mDirtyVertexBuffers.Set(inIndex);
+        mDirtyVertexBuffers.Set(index);
     }
 }
 
-void GPUGraphicsCommandList::SetIndexBuffer(const GPUIndexType inType,
-                                            GPUBuffer* const   inBuffer,
-                                            const uint32_t     inOffset)
+void GPUGraphicsCommandList::SetIndexBuffer(const GPUIndexType type,
+                                            GPUBuffer* const   buffer,
+                                            const uint32_t     offset)
 {
-    if (inType != mIndexBuffer.type || inBuffer != mIndexBuffer.buffer || inOffset != mIndexBuffer.offset)
+    if (type != mIndexBuffer.type || buffer != mIndexBuffer.buffer || offset != mIndexBuffer.offset)
     {
-        mIndexBuffer.type   = inType;
-        mIndexBuffer.buffer = inBuffer;
-        mIndexBuffer.offset = inOffset;
+        mIndexBuffer.type   = type;
+        mIndexBuffer.buffer = buffer;
+        mIndexBuffer.offset = offset;
 
         mDirtyState |= kDirtyState_IndexBuffer;
     }
 }
 
-void GPUGraphicsCommandList::WriteVertexBuffer(const uint32_t    inIndex,
-                                               const void* const inData,
-                                               const size_t      inSize)
+void GPUGraphicsCommandList::WriteVertexBuffer(const uint32_t    index,
+                                               const void* const data,
+                                               const size_t      size)
 {
-    Assert(inIndex < kMaxVertexAttributes);
+    Assert(index < kMaxVertexAttributes);
 
-    auto& vertexBuffer = mVertexBuffers[inIndex];
+    auto& vertexBuffer = mVertexBuffers[index];
 
     void* mapping;
 
     vertexBuffer.buffer = nullptr;
-    vertexBuffer.offset = AllocateTransientBuffer(inSize, mapping);
+    vertexBuffer.offset = AllocateTransientBuffer(size, mapping);
 
-    memcpy(mapping, inData, inSize);
+    memcpy(mapping, data, size);
 
-    mDirtyVertexBuffers.Set(inIndex);
+    mDirtyVertexBuffers.Set(index);
 }
 
-void GPUGraphicsCommandList::WriteIndexBuffer(const GPUIndexType inType,
-                                              const void* const  inData,
-                                              const size_t       inSize)
+void GPUGraphicsCommandList::WriteIndexBuffer(const GPUIndexType type,
+                                              const void* const  data,
+                                              const size_t       size)
 {
     void* mapping;
 
-    mIndexBuffer.type   = inType;
+    mIndexBuffer.type   = type;
     mIndexBuffer.buffer = nullptr;
-    mIndexBuffer.offset = AllocateTransientBuffer(inSize, mapping);
+    mIndexBuffer.offset = AllocateTransientBuffer(size, mapping);
 
-    memcpy(mapping, inData, inSize);
+    memcpy(mapping, data, size);
 
     mDirtyState |= kDirtyState_IndexBuffer;
 }

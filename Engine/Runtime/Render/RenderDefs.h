@@ -78,11 +78,11 @@ enum ENUM() LightType
 class ScopedDebugMarker
 {
 public:
-                            ScopedDebugMarker(GPUTransferContext& inContext,
-                                              const char* const   inLabel);
+                            ScopedDebugMarker(GPUTransferContext& context,
+                                              const char* const   label);
 
-                            ScopedDebugMarker(GPUTransferContext& inContext,
-                                              const std::string&  inLabel);
+                            ScopedDebugMarker(GPUTransferContext& context,
+                                              const std::string&  label);
 
                             ~ScopedDebugMarker();
 
@@ -94,13 +94,13 @@ private:
 
 #if !GEMINI_BUILD_DEBUG
 
-inline ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& inContext,
-                                            const char* const   inLabel)
+inline ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
+                                            const char* const   label)
 {
 }
 
-inline ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& inContext,
-                                            const std::string&  inLabel)
+inline ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
+                                            const std::string&  label)
 {
 }
 
@@ -110,5 +110,5 @@ inline ScopedDebugMarker::~ScopedDebugMarker()
 
 #endif
 
-#define SCOPED_DEBUG_MARKER(inContext, inLabel) \
-    ScopedDebugMarker label_ ## __LINE__ (inContext, inLabel)
+#define SCOPED_DEBUG_MARKER(context, label) \
+    ScopedDebugMarker label_ ## __LINE__ (context, label)

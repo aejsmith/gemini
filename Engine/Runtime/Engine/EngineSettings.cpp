@@ -26,15 +26,15 @@ EngineSettings::~EngineSettings()
 {
 }
 
-void EngineSettings::SetMainWindowSize(const glm::uvec2& inSize)
+void EngineSettings::SetMainWindowSize(const glm::uvec2& size)
 {
     // TODO: Support changing at runtime, this is only used for deserialisation
     // so far.
-    mMainWindowSize = inSize;
+    mMainWindowSize = size;
 }
 
-void EngineSettings::SetMainWindowFullscreen(const bool inFullscreen)
+void EngineSettings::SetMainWindowFullscreen(const bool fullscreen)
 {
     // TODO: Support changing at runtime.
-    mMainWindowFullscreen = inFullscreen;
+    mMainWindowFullscreen = fullscreen;
 }

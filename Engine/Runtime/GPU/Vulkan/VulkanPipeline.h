@@ -24,8 +24,8 @@ class VulkanPipeline final : public GPUPipeline,
                              public VulkanDeviceChild<VulkanPipeline>
 {
 public:
-                            VulkanPipeline(VulkanDevice&          inDevice,
-                                           const GPUPipelineDesc& inDesc);
+                            VulkanPipeline(VulkanDevice&          device,
+                                           const GPUPipelineDesc& desc);
 
                             ~VulkanPipeline();
 
@@ -42,8 +42,8 @@ class VulkanComputePipeline final : public GPUComputePipeline,
                                     public VulkanDeviceChild<VulkanComputePipeline>
 {
 public:
-                            VulkanComputePipeline(VulkanDevice&                 inDevice,
-                                                  const GPUComputePipelineDesc& inDesc);
+                            VulkanComputePipeline(VulkanDevice&                 device,
+                                                  const GPUComputePipelineDesc& desc);
 
                             ~VulkanComputePipeline();
 

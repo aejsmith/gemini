@@ -35,15 +35,15 @@ static const VkDescriptorPoolSize kDynamicDescriptorPoolSizes[] =
 
 static constexpr uint32_t kDynamicDescriptorPoolMaxSets = 1024;
 
-VulkanCommandPool::VulkanCommandPool(VulkanDevice&  inDevice,
-                                     const uint32_t inQueueFamily) :
-    GPUDeviceChild (inDevice)
+VulkanCommandPool::VulkanCommandPool(VulkanDevice&  device,
+                                     const uint32_t queueFamily) :
+    GPUDeviceChild (device)
 {
     /* Our command buffers are all dynamically created and reset per-frame, so
      * set the transient flag. */
     VkCommandPoolCreateInfo commandCreateInfo = {};
     commandCreateInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandCreateInfo.queueFamilyIndex = inQueueFamily;
+    commandCreateInfo.queueFamilyIndex = queueFamily;
     commandCreateInfo.flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
     VulkanCheck(vkCreateCommandPool(GetVulkanDevice().GetHandle(),
@@ -124,13 +124,13 @@ VkCommandBuffer VulkanCommandPool::AllocateSecondary()
     return commandBuffer;
 }
 
-VkDescriptorSet VulkanCommandPool::AllocateDescriptorSet(const VkDescriptorSetLayout inLayout)
+VkDescriptorSet VulkanCommandPool::AllocateDescriptorSet(const VkDescriptorSetLayout layout)
 {
     VkDescriptorSetAllocateInfo allocateInfo = {};
     allocateInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocateInfo.descriptorPool     = mDescriptorPool;
     allocateInfo.descriptorSetCount = 1;
-    allocateInfo.pSetLayouts        = &inLayout;
+    allocateInfo.pSetLayouts        = &layout;
 
     VkDescriptorSet descriptorSet;
 

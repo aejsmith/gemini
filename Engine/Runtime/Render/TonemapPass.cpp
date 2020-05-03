@@ -39,24 +39,24 @@ TonemapPass::~TonemapPass()
 {
 }
 
-void TonemapPass::AddPass(RenderGraph&               inGraph,
-                          const RenderResourceHandle inSourceTexture,
-                          const RenderResourceHandle inDestTexture,
+void TonemapPass::AddPass(RenderGraph&               graph,
+                          const RenderResourceHandle sourceTexture,
+                          const RenderResourceHandle destTexture,
                           RenderResourceHandle&      outNewDestTexture) const
 {
-    RenderGraphPass& pass = inGraph.AddPass("Tonemap", kRenderGraphPassType_Render);
+    RenderGraphPass& pass = graph.AddPass("Tonemap", kRenderGraphPassType_Render);
 
     RenderViewDesc viewDesc;
     viewDesc.type  = kGPUResourceViewType_Texture2D;
     viewDesc.state = kGPUResourceState_PixelShaderRead;
 
-    const RenderViewHandle viewHandle = pass.CreateView(inSourceTexture, viewDesc);
+    const RenderViewHandle viewHandle = pass.CreateView(sourceTexture, viewDesc);
 
-    pass.SetColour(0, inDestTexture, &outNewDestTexture);
+    pass.SetColour(0, destTexture, &outNewDestTexture);
 
-    pass.SetFunction([this, viewHandle] (const RenderGraph&      inGraph,
-                                         const RenderGraphPass&  inPass,
-                                         GPUGraphicsCommandList& inCmdList)
+    pass.SetFunction([this, viewHandle] (const RenderGraph&      graph,
+                                         const RenderGraphPass&  pass,
+                                         GPUGraphicsCommandList& cmdList)
     {
         GPUPipelineDesc pipelineDesc;
         pipelineDesc.shaders[kGPUShaderStage_Vertex]          = mVertexShader;
@@ -65,17 +65,17 @@ void TonemapPass::AddPass(RenderGraph&               inGraph,
         pipelineDesc.blendState                               = GPUBlendState::GetDefault();;
         pipelineDesc.depthStencilState                        = GPUDepthStencilState::GetDefault();
         pipelineDesc.rasterizerState                          = GPURasterizerState::GetDefault();
-        pipelineDesc.renderTargetState                        = inCmdList.GetRenderTargetState();
+        pipelineDesc.renderTargetState                        = cmdList.GetRenderTargetState();
         pipelineDesc.vertexInputState                         = GPUVertexInputState::GetDefault();
         pipelineDesc.topology                                 = kGPUPrimitiveTopology_TriangleList;
 
-        inCmdList.SetPipeline(pipelineDesc);
+        cmdList.SetPipeline(pipelineDesc);
 
         GPUArgument arguments[kTonemapArgumentsCount];
-        arguments[kTonemapArguments_SourceTexture].view = inPass.GetView(viewHandle);
+        arguments[kTonemapArguments_SourceTexture].view = pass.GetView(viewHandle);
 
-        inCmdList.SetArguments(kArgumentSet_Tonemap, arguments);
+        cmdList.SetArguments(kArgumentSet_Tonemap, arguments);
 
-        inCmdList.Draw(3);
+        cmdList.Draw(3);
     });
 }

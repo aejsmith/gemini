@@ -19,30 +19,30 @@
 #include "GPU/GPUConstantPool.h"
 #include "GPU/GPUDevice.h"
 
-RenderView RenderView::CreatePerspective(const glm::vec3&  inPosition,
-                                         const glm::quat&  inOrientation,
-                                         const Radians     inVerticalFOV,
-                                         const float       inZNear,
-                                         const float       inZFar,
-                                         const glm::uvec2& inTargetSize)
+RenderView RenderView::CreatePerspective(const glm::vec3&  position,
+                                         const glm::quat&  orientation,
+                                         const Radians     verticalFOV,
+                                         const float       zNear,
+                                         const float       zFar,
+                                         const glm::uvec2& targetSize)
 {
     RenderView view;
 
-    view.mPosition    = inPosition;
-    view.mOrientation = inOrientation;
-    view.mTargetSize  = inTargetSize;
+    view.mPosition    = position;
+    view.mOrientation = orientation;
+    view.mTargetSize  = targetSize;
 
     /* Calculate the view matrix. This is a world-to-view transformation, so we
      * want the inverse of the given position and orientation. */
-    const glm::mat4 positionMatrix    = glm::translate(glm::mat4(), -inPosition);
-    const glm::mat4 orientationMatrix = glm::mat4_cast(glm::inverse(inOrientation));
+    const glm::mat4 positionMatrix    = glm::translate(glm::mat4(), -position);
+    const glm::mat4 orientationMatrix = glm::mat4_cast(glm::inverse(orientation));
     view.mViewMatrix                  = orientationMatrix * positionMatrix;
 
-    const float aspect = static_cast<float>(inTargetSize.x) / static_cast<float>(inTargetSize.y);
-    view.mProjectionMatrix = glm::perspective(inVerticalFOV,
+    const float aspect = static_cast<float>(targetSize.x) / static_cast<float>(targetSize.y);
+    view.mProjectionMatrix = glm::perspective(verticalFOV,
                                               aspect,
-                                              inZNear,
-                                              inZFar);
+                                              zNear,
+                                              zFar);
 
     view.mViewProjectionMatrix        = view.mProjectionMatrix * view.mViewMatrix;
     view.mInverseViewProjectionMatrix = glm::inverse(view.mViewProjectionMatrix);

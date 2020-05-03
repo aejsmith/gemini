@@ -55,13 +55,13 @@ public:
                                     ~GLTFImporter();
 
     /**
-     * Imports the glTF file at filesystem path inPath into inWorld. Assets
+     * Imports the glTF file at the given filesystem path into world. Assets
      * generated during the process will be saved in the directory given by
-     * asset manager path inAssetDir.
+     * asset manager path assetDir.
      */
-    bool                            Import(const Path&  inPath,
-                                           const Path&  inAssetDir,
-                                           World* const inWorld);
+    bool                            Import(const Path&  path,
+                                           const Path&  assetDir,
+                                           World* const world);
 
 private:
     struct Accessor
@@ -158,13 +158,13 @@ private:
     bool                            LoadScene();
     bool                            LoadTextures();
 
-    bool                            GenerateMaterial(const uint32_t inMaterialIndex);
-    bool                            GenerateMesh(const uint32_t inMeshIndex);
+    bool                            GenerateMaterial(const uint32_t materialIndex);
+    bool                            GenerateMesh(const uint32_t meshIndex);
     bool                            GenerateScene();
-    bool                            GenerateTexture(const uint32_t inTextureIndex,
-                                                    const bool     inSRGB);
+    bool                            GenerateTexture(const uint32_t textureIndex,
+                                                    const bool     sRGB);
 
-    bool                            LoadURI(const rapidjson::Value& inURI,
+    bool                            LoadURI(const rapidjson::Value& uriValue,
                                             ByteArray&              outData,
                                             std::string&            outMediaType);
 

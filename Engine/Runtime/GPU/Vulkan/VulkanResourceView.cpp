@@ -20,9 +20,9 @@
 #include "VulkanFormat.h"
 #include "VulkanTexture.h"
 
-VulkanResourceView::VulkanResourceView(GPUResource&               inResource,
-                                       const GPUResourceViewDesc& inDesc) :
-    GPUResourceView (inResource, inDesc)
+VulkanResourceView::VulkanResourceView(GPUResource&               resource,
+                                       const GPUResourceViewDesc& desc) :
+    GPUResourceView (resource, desc)
 {
     mImageView  = VK_NULL_HANDLE;
     mBufferView = VK_NULL_HANDLE;
@@ -42,9 +42,9 @@ VulkanResourceView::~VulkanResourceView()
     if (GetType() == kGPUResourceViewType_TextureBuffer)
     {
         GetVulkanDevice().AddFrameCompleteCallback(
-            [bufferView = mBufferView] (VulkanDevice& inDevice)
+            [bufferView = mBufferView] (VulkanDevice& device)
             {
-                vkDestroyBufferView(inDevice.GetHandle(), bufferView, nullptr);
+                vkDestroyBufferView(device.GetHandle(), bufferView, nullptr);
             });
     }
     else if (GetType() != kGPUResourceViewType_Buffer)
@@ -55,9 +55,9 @@ VulkanResourceView::~VulkanResourceView()
         }
 
         GetVulkanDevice().AddFrameCompleteCallback(
-            [imageView = mImageView] (VulkanDevice& inDevice)
+            [imageView = mImageView] (VulkanDevice& device)
             {
-                vkDestroyImageView(inDevice.GetHandle(), imageView, nullptr);
+                vkDestroyImageView(device.GetHandle(), imageView, nullptr);
             });
     }
 }

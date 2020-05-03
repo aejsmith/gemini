@@ -40,30 +40,30 @@ public:
                                 ~RenderLight();
 
     LightType                   GetType() const { return mType; }
-    void                        SetType(const LightType inType);
+    void                        SetType(const LightType type);
 
     const glm::vec3&            GetColour() const { return mColour; }
-    void                        SetColour(const glm::vec3& inColour);
+    void                        SetColour(const glm::vec3& colour);
 
     float                       GetIntensity() const { return mIntensity; }
-    void                        SetIntensity(const float inIntensity);
+    void                        SetIntensity(const float intensity);
 
     float                       GetRange() const { return mRange; }
-    void                        SetRange(const float inRange);
+    void                        SetRange(const float range);
 
     float                       GetConeAngleScale() const  { return mConeAngleScale; }
     float                       GetConeAngleOffset() const { return mConeAngleOffset; }
-    void                        SetConeAngles(const Radians inInnerConeAngle,
-                                              const Radians inOuterConeAngle);
+    void                        SetConeAngles(const Radians innerConeAngle,
+                                              const Radians outerConeAngle);
 
     const glm::vec3&            GetPosition() const { return mPosition; }
-    void                        SetPosition(const glm::vec3& inPosition);
+    void                        SetPosition(const glm::vec3& position);
 
     const glm::vec3&            GetDirection() const { return mDirection; }
-    void                        SetDirection(const glm::vec3& inDirection);
+    void                        SetDirection(const glm::vec3& direction);
 
     /** Returns whether the light's area of effect intersects with a frustum. */
-    bool                        Cull(const Frustum& inFrustum) const;
+    bool                        Cull(const Frustum& frustum) const;
 
     /** Fill in a shader LightParams structure for the light. */
     void                        GetLightParams(LightParams& outParams) const;

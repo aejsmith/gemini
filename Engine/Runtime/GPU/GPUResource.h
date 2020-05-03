@@ -22,9 +22,9 @@
 class GPUResource : public GPUObject
 {
 protected:
-                                GPUResource(GPUDevice&             inDevice,
-                                            const GPUResourceType  inType,
-                                            const GPUResourceUsage inUsage);
+                                GPUResource(GPUDevice&             device,
+                                            const GPUResourceType  type,
+                                            const GPUResourceUsage usage);
 
 public:
                                 ~GPUResource() {}
@@ -42,7 +42,7 @@ public:
      * Function called from GPUContext implementations to check that a barrier
      * is valid for this resource. A no-op on non-debug builds.
      */
-    void                        ValidateBarrier(const GPUResourceBarrier& inBarrier) const;
+    void                        ValidateBarrier(const GPUResourceBarrier& barrier) const;
 
 private:
     const GPUResourceType       mType;
@@ -52,7 +52,7 @@ private:
 
 #if !GEMINI_BUILD_DEBUG
 
-inline void GPUResource::ValidateBarrier(const GPUResourceBarrier& inBarrier) const
+inline void GPUResource::ValidateBarrier(const GPUResourceBarrier& barrier) const
 {
 }
 

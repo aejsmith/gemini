@@ -18,21 +18,21 @@
 
 #include "Core/Math/Transform.h"
 
-glm::vec3 BoundingBox::CalculatePVertex(const glm::vec3& inNormal) const
+glm::vec3 BoundingBox::CalculatePVertex(const glm::vec3& normal) const
 {
     glm::vec3 p = mMinimum;
 
-    if (inNormal.x >= 0.0f)
+    if (normal.x >= 0.0f)
     {
         p.x = mMaximum.x;
     }
 
-    if (inNormal.y >= 0.0f)
+    if (normal.y >= 0.0f)
     {
         p.y = mMaximum.y;
     }
 
-    if (inNormal.z >= 0.0f)
+    if (normal.z >= 0.0f)
     {
         p.z = mMaximum.z;
     }
@@ -40,21 +40,21 @@ glm::vec3 BoundingBox::CalculatePVertex(const glm::vec3& inNormal) const
     return p;
 }
 
-glm::vec3 BoundingBox::CalculateNVertex(const glm::vec3& inNormal) const
+glm::vec3 BoundingBox::CalculateNVertex(const glm::vec3& normal) const
 {
     glm::vec3 n = mMaximum;
 
-    if (inNormal.x >= 0.0f)
+    if (normal.x >= 0.0f)
     {
         n.x = mMinimum.x;
     }
 
-    if (inNormal.y >= 0.0f)
+    if (normal.y >= 0.0f)
     {
         n.y = mMinimum.y;
     }
 
-    if (inNormal.z >= 0.0f)
+    if (normal.z >= 0.0f)
     {
         n.z = mMinimum.z;
     }
@@ -62,24 +62,24 @@ glm::vec3 BoundingBox::CalculateNVertex(const glm::vec3& inNormal) const
     return n;
 }
 
-BoundingBox BoundingBox::Transform(const glm::mat4& inMatrix) const
+BoundingBox BoundingBox::Transform(const glm::mat4& matrix) const
 {
-    glm::vec3 xa = glm::vec3(inMatrix[0]) * mMinimum.x;
-    glm::vec3 xb = glm::vec3(inMatrix[0]) * mMaximum.x;
+    glm::vec3 xa = glm::vec3(matrix[0]) * mMinimum.x;
+    glm::vec3 xb = glm::vec3(matrix[0]) * mMaximum.x;
 
-    glm::vec3 ya = glm::vec3(inMatrix[1]) * mMinimum.y;
-    glm::vec3 yb = glm::vec3(inMatrix[1]) * mMaximum.y;
+    glm::vec3 ya = glm::vec3(matrix[1]) * mMinimum.y;
+    glm::vec3 yb = glm::vec3(matrix[1]) * mMaximum.y;
 
-    glm::vec3 za = glm::vec3(inMatrix[2]) * mMinimum.z;
-    glm::vec3 zb = glm::vec3(inMatrix[2]) * mMaximum.z;
+    glm::vec3 za = glm::vec3(matrix[2]) * mMinimum.z;
+    glm::vec3 zb = glm::vec3(matrix[2]) * mMaximum.z;
 
-    glm::vec3 minimum(glm::min(xa, xb) + glm::min(ya, yb) + glm::min(za, zb) + glm::vec3(inMatrix[3]));
-    glm::vec3 maximum(glm::max(xa, xb) + glm::max(ya, yb) + glm::max(za, zb) + glm::vec3(inMatrix[3]));
+    glm::vec3 minimum(glm::min(xa, xb) + glm::min(ya, yb) + glm::min(za, zb) + glm::vec3(matrix[3]));
+    glm::vec3 maximum(glm::max(xa, xb) + glm::max(ya, yb) + glm::max(za, zb) + glm::vec3(matrix[3]));
 
     return BoundingBox(minimum, maximum);
 }
 
-BoundingBox BoundingBox::Transform(const class Transform& inTransform) const
+BoundingBox BoundingBox::Transform(const class Transform& transform) const
 {
-    return Transform(inTransform.GetMatrix());
+    return Transform(transform.GetMatrix());
 }

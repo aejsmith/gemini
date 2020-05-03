@@ -50,7 +50,7 @@ public:
     using SourceList          = std::list<Path>;
 
 public:
-                                ShaderCompiler(Options inOptions);
+                                ShaderCompiler(Options options);
                                 ~ShaderCompiler() {}
 
 public:
@@ -66,21 +66,21 @@ public:
     /** After compilation, gets a list of source files referenced by the shader. */
     const SourceList&           GetSourceFiles() const  { return mSourceFiles; }
 
-    static bool                 CompileFile(Path                 inPath,
-                                            std::string          inFunction,
-                                            const GPUShaderStage inStage,
+    static bool                 CompileFile(Path                 path,
+                                            std::string          function,
+                                            const GPUShaderStage stage,
                                             GPUShaderCode&       outCode);
 
 private:
-    bool                        LoadSource(const Path&  inPath,
-                                           const Path&  inFrom,
-                                           const size_t inLineIndex,
-                                           const size_t inDepth,
+    bool                        LoadSource(const Path&  path,
+                                           const Path&  from,
+                                           const size_t lineIndex,
+                                           const size_t depth,
                                            std::string& outSource);
 
     bool                        Preprocess(std::string& ioSource,
-                                           const Path&  inPath,
-                                           const size_t inDepth);
+                                           const Path&  path,
+                                           const size_t depth);
 
     bool                        GenerateSource();
 

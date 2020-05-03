@@ -26,10 +26,10 @@ class VulkanTexture final : public GPUTexture,
                             public VulkanDeviceChild<VulkanTexture>
 {
 public:
-                            VulkanTexture(VulkanDevice&         inDevice,
-                                          const GPUTextureDesc& inDesc);
+                            VulkanTexture(VulkanDevice&         device,
+                                          const GPUTextureDesc& desc);
 
-                            VulkanTexture(VulkanSwapchain& inSwapchain,
+                            VulkanTexture(VulkanSwapchain& swapchain,
                                           OnlyCalledBy<VulkanSwapchain>);
 
                             ~VulkanTexture();
@@ -42,7 +42,7 @@ public:
      * Interface with VulkanSwapchain for swapchain textures to set the current
      * swapchain image that this refers to.
      */
-    void                    SetImage(const VkImage inImage,
+    void                    SetImage(const VkImage image,
                                      OnlyCalledBy<VulkanSwapchain>);
 
     /**
@@ -64,12 +64,12 @@ private:
 
 };
 
-inline void VulkanTexture::SetImage(const VkImage inImage,
+inline void VulkanTexture::SetImage(const VkImage image,
                                     OnlyCalledBy<VulkanSwapchain>)
 {
     Assert(IsSwapchain());
     
-    mHandle      = inImage;
+    mHandle      = image;
     mNeedDiscard = true;
 }
 

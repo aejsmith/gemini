@@ -27,13 +27,13 @@
 #include "Render/DeferredRenderPipeline.h"
 #include "Render/ShaderManager.h"
 
-static void GetDefaultStates(const ShaderPassType      inPassType,
+static void GetDefaultStates(const ShaderPassType      passType,
                              GPUBlendStateDesc&        outBlendDesc,
                              GPUDepthStencilStateDesc& outDepthStencilDesc,
                              GPURasterizerStateDesc&   outRasterizerDesc,
                              GPURenderTargetStateDesc& outRenderTargetDesc)
 {
-    switch (inPassType)
+    switch (passType)
     {
         case kShaderPassType_Basic:
         {
@@ -64,7 +64,7 @@ static void GetDefaultStates(const ShaderPassType      inPassType,
 
         default:
         {
-            UnreachableMsg("Unknown pass type %d", inPassType);
+            UnreachableMsg("Unknown pass type %d", passType);
             break;
         }
     }
@@ -99,29 +99,29 @@ ShaderTechnique::~ShaderTechnique()
     }
 }
 
-void ShaderTechnique::Serialise(Serialiser& inSerialiser) const
+void ShaderTechnique::Serialise(Serialiser& serialiser) const
 {
     LogError("TODO");
 }
 
-void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
+void ShaderTechnique::DeserialiseParameters(Serialiser& serialiser)
 {
     bool found;
 
     GPUArgumentSetLayoutDesc layoutDesc;
 
-    found = inSerialiser.BeginArray("parameters");
+    found = serialiser.BeginArray("parameters");
     if (found)
     {
-        while (inSerialiser.BeginGroup())
+        while (serialiser.BeginGroup())
         {
             mParameters.emplace_back();
             ShaderParameter& parameter = mParameters.back();
 
-            found = inSerialiser.Read("name", parameter.name);
+            found = serialiser.Read("name", parameter.name);
             Assert(found);
 
-            found = inSerialiser.Read("type", parameter.type);
+            found = serialiser.Read("type", parameter.type);
             Assert(found);
             Assert(parameter.type < kShaderParameterTypeCount);
 
@@ -142,7 +142,7 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
                     case kShaderParameterType_Texture2D:
                     {
                         Texture2DPtr texture;
-                        if (!inSerialiser.Read("default", texture))
+                        if (!serialiser.Read("default", texture))
                         {
                             texture = AssetManager::Get().Load<Texture2D>("Engine/Textures/DummyBlack2D");
                         }
@@ -186,7 +186,7 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
                     case typeEnum: \
                     { \
                         typeName value{}; \
-                        inSerialiser.Read("default", value); \
+                        serialiser.Read("default", value); \
                         memcpy(mDefaultConstantData.Get() + parameter.constantOffset, &value, size); \
                         break; \
                     }
@@ -215,10 +215,10 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
                 #undef READ_TYPE
             }
 
-            inSerialiser.EndGroup();
+            serialiser.EndGroup();
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
     }
 
     if (mConstantsSize)
@@ -233,47 +233,47 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& inSerialiser)
     }
 }
 
-void ShaderTechnique::DeserialisePasses(Serialiser& inSerialiser)
+void ShaderTechnique::DeserialisePasses(Serialiser& serialiser)
 {
     bool found;
 
-    found = inSerialiser.BeginArray("passes");
+    found = serialiser.BeginArray("passes");
     Assert(found);
 
-    while (inSerialiser.BeginGroup())
+    while (serialiser.BeginGroup())
     {
         ShaderPassType passType;
-        found = inSerialiser.Read("type", passType);
+        found = serialiser.Read("type", passType);
         Assert(found);
         Assert(passType < kShaderPassTypeCount);
 
         auto pass = new ShaderPass();
         mPasses[passType] = pass;
 
-        found = inSerialiser.BeginArray("shaders");
+        found = serialiser.BeginArray("shaders");
         Assert(found);
 
-        while (inSerialiser.BeginGroup())
+        while (serialiser.BeginGroup())
         {
             GPUShaderStage stage;
-            found = inSerialiser.Read("stage", stage);
+            found = serialiser.Read("stage", stage);
             Assert(found);
             Assert(stage < kGPUShaderStage_NumGraphics);
 
             std::string source;
-            found = inSerialiser.Read("source", source);
+            found = serialiser.Read("source", source);
             Assert(found);
 
             std::string function;
-            found = inSerialiser.Read("function", function);
+            found = serialiser.Read("function", function);
             Assert(found);
 
             pass->mShaders[stage] = ShaderManager::Get().GetShader(source, function, stage, this);
 
-            inSerialiser.EndGroup();
+            serialiser.EndGroup();
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
 
         GPUBlendStateDesc blendDesc;
         GPUDepthStencilStateDesc depthStencilDesc;
@@ -293,26 +293,26 @@ void ShaderTechnique::DeserialisePasses(Serialiser& inSerialiser)
         pass->mRasterizerState   = GPURasterizerState::Get(rasterizerDesc);
         pass->mRenderTargetState = GPURenderTargetState::Get(renderTargetDesc);
 
-        inSerialiser.EndGroup();
+        serialiser.EndGroup();
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 }
 
-void ShaderTechnique::Deserialise(Serialiser& inSerialiser)
+void ShaderTechnique::Deserialise(Serialiser& serialiser)
 {
-    DeserialiseParameters(inSerialiser);
-    DeserialisePasses(inSerialiser);
+    DeserialiseParameters(serialiser);
+    DeserialisePasses(serialiser);
 }
 
-const ShaderParameter* ShaderTechnique::FindParameter(const std::string& inName) const
+const ShaderParameter* ShaderTechnique::FindParameter(const std::string& name) const
 {
     /* If this ever becomes a bottleneck try a map? The number of parameters
      * for a technique will typically be small though so I don't think it's
      * worth it for now. */
     for (const ShaderParameter& parameter : mParameters)
     {
-        if (parameter.name == inName)
+        if (parameter.name == name)
         {
             return &parameter;
         }

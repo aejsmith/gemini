@@ -30,13 +30,13 @@ class VulkanStagingPool final : public GPUStagingPool,
                                 public VulkanDeviceChild<VulkanStagingPool>
 {
 public:
-                            VulkanStagingPool(VulkanDevice& inDevice);
+                            VulkanStagingPool(VulkanDevice& device);
                             ~VulkanStagingPool();
 
-    void*                   Allocate(const GPUStagingAccess inAccess,
-                                     const uint32_t         inSize,
+    void*                   Allocate(const GPUStagingAccess access,
+                                     const uint32_t         size,
                                      void*&                 outMapping) override;
 
-    void                    Free(void* const inHandle) override;
+    void                    Free(void* const handle) override;
 
 };

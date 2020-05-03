@@ -68,37 +68,37 @@ void Entity::Destroy()
     }
 }
 
-void Entity::Serialise(Serialiser& inSerialiser) const
+void Entity::Serialise(Serialiser& serialiser) const
 {
     /* Serialise a reference to our world and our parent (see Deserialise()). */
-    inSerialiser.Write("world",  mWorld);
-    inSerialiser.Write("parent", mParent);
+    serialiser.Write("world",  mWorld);
+    serialiser.Write("parent", mParent);
 
     if (mParent)
     {
-        Object::Serialise(inSerialiser);
+        Object::Serialise(serialiser);
     }
 
-    inSerialiser.BeginArray("components");
+    serialiser.BeginArray("components");
 
     for (Component* component : mComponents)
     {
-        inSerialiser.Push(component);
+        serialiser.Push(component);
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 
-    inSerialiser.BeginArray("children");
+    serialiser.BeginArray("children");
 
     for (const Entity* child : mChildren)
     {
-        inSerialiser.Push(child);
+        serialiser.Push(child);
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 }
 
-void Entity::Deserialise(Serialiser& inSerialiser)
+void Entity::Deserialise(Serialiser& serialiser)
 {
     /* At this point we are not associated with our parent or a world. The
      * first thing we must do *before* we deserialise any properties is to set
@@ -109,8 +109,8 @@ void Entity::Deserialise(Serialiser& inSerialiser)
      * any of our properties. Note that we don't get added to the parent's
      * child list until its Deserialise() call reaches us, to ensure that the
      * correct child order is maintained. */
-    inSerialiser.Read("world", mWorld);
-    inSerialiser.Read("parent", mParent);
+    serialiser.Read("world", mWorld);
+    serialiser.Read("parent", mParent);
 
     /* If this is the root entity, we don't deserialise properties. Two reasons:
      * firstly, the root entity's transformation cannot be changed anyway. Due
@@ -121,40 +121,40 @@ void Entity::Deserialise(Serialiser& inSerialiser)
      * to the end of deserialisation (in World::Deserialise()). */
     if (mParent)
     {
-        Object::Deserialise(inSerialiser);
+        Object::Deserialise(serialiser);
     }
 
     /* Deserialise components. We want these all available before our children. */
-    if (inSerialiser.BeginArray("components"))
+    if (serialiser.BeginArray("components"))
     {
         ComponentPtr component;
-        while (inSerialiser.Pop(component))
+        while (serialiser.Pop(component))
         {
             AddComponent(std::move(component));
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
     }
 
     /* Deserialise children. */
-    if (inSerialiser.BeginArray("children"))
+    if (serialiser.BeginArray("children"))
     {
         EntityPtr entity;
-        while (inSerialiser.Pop(entity))
+        while (serialiser.Pop(entity))
         {
             AddChild(entity);
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
     }
 }
 
-void Entity::SetName(std::string inName)
+void Entity::SetName(std::string name)
 {
-    Assert(!inName.empty());
-    Assert(inName.find('/') == std::string::npos);
+    Assert(!name.empty());
+    Assert(name.find('/') == std::string::npos);
 
-    mName = std::move(inName);
+    mName = std::move(name);
 }
 
 std::string Entity::GetPath()
@@ -178,9 +178,9 @@ std::string Entity::GetPath()
     }
 }
 
-void Entity::SetActive(const bool inActive)
+void Entity::SetActive(const bool active)
 {
-    mActive = inActive;
+    mActive = active;
 
     if (mActive)
     {
@@ -247,53 +247,53 @@ void Entity::Deactivate()
     mActiveInWorld = false;
 }
 
-Entity* Entity::CreateChild(std::string inName)
+Entity* Entity::CreateChild(std::string name)
 {
     Entity* const entity = new Entity();
-    entity->SetName(std::move(inName));
+    entity->SetName(std::move(name));
     AddChild(entity);
     return entity;
 }
 
-void Entity::AddChild(Entity* const inEntity)
+void Entity::AddChild(Entity* const entity)
 {
-    inEntity->mWorld  = mWorld;
-    inEntity->mParent = this;
+    entity->mWorld  = mWorld;
+    entity->mParent = this;
 
-    inEntity->Retain();
+    entity->Retain();
 
-    mChildren.Append(inEntity);
+    mChildren.Append(entity);
 
     /* Update the cached world transform to incorporate our transformation. */
-    inEntity->UpdateTransform();
+    entity->UpdateTransform();
 }
 
-Component* Entity::CreateComponent(const MetaClass& inMetaClass)
+Component* Entity::CreateComponent(const MetaClass& metaClass)
 {
-    AssertMsg(Component::staticMetaClass.IsBaseOf(inMetaClass),
+    AssertMsg(Component::staticMetaClass.IsBaseOf(metaClass),
               "Specified class must be derived from Component");
 
-    ComponentPtr component = inMetaClass.Construct().StaticCast<Component>();
+    ComponentPtr component = metaClass.Construct().StaticCast<Component>();
     Component* ret = component.Get();
     AddComponent(std::move(component));
     return ret;
 }
 
-Component* Entity::FindComponent(const MetaClass& inMetaClass,
-                                 const bool       inExactClass) const
+Component* Entity::FindComponent(const MetaClass& metaClass,
+                                 const bool       exactClass) const
 {
     for (Component* component : mComponents)
     {
-        if (inExactClass)
+        if (exactClass)
         {
-            if (&inMetaClass == &component->GetMetaClass())
+            if (&metaClass == &component->GetMetaClass())
             {
                 return component;
             }
         }
         else
         {
-            if (inMetaClass.IsBaseOf(component->GetMetaClass()))
+            if (metaClass.IsBaseOf(component->GetMetaClass()))
             {
                 return component;
             }
@@ -303,16 +303,16 @@ Component* Entity::FindComponent(const MetaClass& inMetaClass,
     return nullptr;
 }
 
-void Entity::AddComponent(ComponentPtr inComponent)
+void Entity::AddComponent(ComponentPtr component)
 {
     /* This only checks for an exact match on class type, so for instance we
      * don't forbid multiple Behaviour-derived classes on the same object. */
-    AssertMsg(!FindComponent(inComponent->GetMetaClass(), true),
+    AssertMsg(!FindComponent(component->GetMetaClass(), true),
              "Component of type '%s' already exists on entity '%s'",
-             inComponent->GetMetaClass().GetName(), mName.c_str());
+             component->GetMetaClass().GetName(), mName.c_str());
 
-    inComponent->mEntity = this;
-    mComponents.emplace_back(std::move(inComponent));
+    component->mEntity = this;
+    mComponents.emplace_back(std::move(component));
 
     /* We do not need to activate the component at this point as the component
      * is initially inactive. We do however need to let it do anything it needs
@@ -320,7 +320,7 @@ void Entity::AddComponent(ComponentPtr inComponent)
     mComponents.back()->Transformed();
 }
 
-void Entity::RemoveComponent(Component* const inComponent,
+void Entity::RemoveComponent(Component* const component,
                              OnlyCalledBy<Component>)
 {
     /* This avoids an unnecessary reference to the component compared to calling
@@ -328,7 +328,7 @@ void Entity::RemoveComponent(Component* const inComponent,
      * reference. */
     for (auto it = mComponents.begin(); it != mComponents.end(); ++it)
     {
-        if (inComponent == *it)
+        if (component == *it)
         {
             mComponents.erase(it);
             return;
@@ -336,7 +336,7 @@ void Entity::RemoveComponent(Component* const inComponent,
     }
 
     UnreachableMsg("Removing component '%s' which is not registered on entity '%s'",
-                   inComponent->GetMetaClass().GetName(), mName.c_str());
+                   component->GetMetaClass().GetName(), mName.c_str());
 }
 
 void Entity::UpdateTransform()
@@ -378,66 +378,66 @@ void Entity::UpdateTransform()
     }
 }
 
-void Entity::SetTransform(const Transform& inTransform)
+void Entity::SetTransform(const Transform& transform)
 {
-    mTransform = inTransform;
+    mTransform = transform;
 
     UpdateTransform();
 }
 
-void Entity::SetTransform(const glm::vec3& inPosition,
-                          const glm::quat& inOrientation,
-                          const glm::vec3& inScale)
+void Entity::SetTransform(const glm::vec3& position,
+                          const glm::quat& orientation,
+                          const glm::vec3& scale)
 {
-    mTransform.Set(inPosition, inOrientation, inScale);
+    mTransform.Set(position, orientation, scale);
 
     UpdateTransform();
 }
 
-void Entity::SetPosition(const glm::vec3& inPosition)
+void Entity::SetPosition(const glm::vec3& position)
 {
-    mTransform.SetPosition(inPosition);
+    mTransform.SetPosition(position);
 
     UpdateTransform();
 }
 
-void Entity::SetOrientation(const glm::quat& inOrientation)
+void Entity::SetOrientation(const glm::quat& orientation)
 {
-    mTransform.SetOrientation(inOrientation);
+    mTransform.SetOrientation(orientation);
 
     UpdateTransform();
 }
 
-void Entity::SetScale(const glm::vec3& inScale)
+void Entity::SetScale(const glm::vec3& scale)
 {
-    mTransform.SetScale(inScale);
+    mTransform.SetScale(scale);
 
     UpdateTransform();
 }
 
-void Entity::Translate(const glm::vec3& inVector)
+void Entity::Translate(const glm::vec3& vector)
 {
-    mTransform.SetPosition(mTransform.GetPosition() + inVector);
+    mTransform.SetPosition(mTransform.GetPosition() + vector);
 
     UpdateTransform();
 }
 
-void Entity::Rotate(const glm::quat& inRotation)
+void Entity::Rotate(const glm::quat& rotation)
 {
     /* The order of this is important, quaternion multiplication is not
      * commutative. */
-    mTransform.SetOrientation(inRotation * mTransform.GetOrientation());
+    mTransform.SetOrientation(rotation * mTransform.GetOrientation());
 
     UpdateTransform();
 }
 
-void Entity::Rotate(const Degrees    inAngle,
-                    const glm::vec3& inAxis)
+void Entity::Rotate(const Degrees    angle,
+                    const glm::vec3& axis)
 {
-    Rotate(glm::angleAxis(glm::radians(inAngle), glm::normalize(inAxis)));
+    Rotate(glm::angleAxis(glm::radians(angle), glm::normalize(axis)));
 }
 
-void Entity::Tick(const float inDelta)
+void Entity::Tick(const float delta)
 {
     // FIXME: This does not handle activation/deactivation quite well. When
     // an entity becomes active in a frame, it should *not* have it's tick
@@ -449,7 +449,7 @@ void Entity::Tick(const float inDelta)
     {
         if (component->GetActive())
         {
-            component->Tick(inDelta);
+            component->Tick(delta);
         }
     }
 
@@ -457,7 +457,7 @@ void Entity::Tick(const float inDelta)
     {
         if (entity->GetActive())
         {
-            entity->Tick(inDelta);
+            entity->Tick(delta);
         }
     }
 }

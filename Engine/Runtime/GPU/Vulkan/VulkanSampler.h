@@ -24,8 +24,8 @@ class VulkanSampler final : public GPUSampler,
                             public VulkanDeviceChild<VulkanSampler>
 {
 public:
-                            VulkanSampler(VulkanDevice&         inDevice,
-                                          const GPUSamplerDesc& inDesc);
+                            VulkanSampler(VulkanDevice&         device,
+                                          const GPUSamplerDesc& desc);
 
                             ~VulkanSampler();
 

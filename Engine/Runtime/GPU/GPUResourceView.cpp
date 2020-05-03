@@ -23,11 +23,11 @@
 
 #include "Core/Utility.h"
 
-GPUResourceView::GPUResourceView(GPUResource&               inResource,
-                                 const GPUResourceViewDesc& inDesc) :
-    GPUObject   (inResource.GetDevice()),
-    mResource   (&inResource),
-    mDesc       (inDesc)
+GPUResourceView::GPUResourceView(GPUResource&               resource,
+                                 const GPUResourceViewDesc& desc) :
+    GPUObject   (resource.GetDevice()),
+    mResource   (&resource),
+    mDesc       (desc)
 {
     #if GEMINI_BUILD_DEBUG
         /* Only one usage flag should be set. */

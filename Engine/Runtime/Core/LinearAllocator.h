@@ -39,23 +39,23 @@
 class LinearAllocator
 {
 public:
-                                LinearAllocator(const size_t inMaxSize);
+                                LinearAllocator(const size_t maxSize);
                                 ~LinearAllocator();
 
-    void*                       Allocate(const size_t inSize,
-                                         const size_t inAlignment = 0);
+    void*                       Allocate(const size_t size,
+                                         const size_t alignment = 0);
 
     template <typename T, typename... Args>
-    T*                          Allocate(Args&&... inArgs);
+    T*                          Allocate(Args&&... args);
 
     template <typename T>
-    T*                          AllocateArray(const uint32_t inCount);
+    T*                          AllocateArray(const uint32_t count);
 
     template <typename T, typename... Args>
-    T*                          New(Args&&... inArgs);
+    T*                          New(Args&&... args);
 
     template <typename T>
-    void                        Delete(T* const inObject);
+    void                        Delete(T* const object);
 
     void                        Reset();
 
@@ -70,7 +70,7 @@ private:
 };
 
 template <typename T, typename... Args>
-inline T* LinearAllocator::Allocate(Args&&... inArgs)
+inline T* LinearAllocator::Allocate(Args&&... args)
 {
     static_assert(!std::is_array<T>::value,
                   "T must not be an array type");
@@ -79,20 +79,20 @@ inline T* LinearAllocator::Allocate(Args&&... inArgs)
 
     void* const allocation = Allocate(sizeof(T), alignof(T));
 
-    return new (allocation) T(std::forward<Args>(inArgs)...);
+    return new (allocation) T(std::forward<Args>(args)...);
 }
 
 template <typename T>
-inline T* LinearAllocator::AllocateArray(const uint32_t inCount)
+inline T* LinearAllocator::AllocateArray(const uint32_t count)
 {
     static_assert(!std::is_array<T>::value,
                   "T must not be an array type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "T must be trivially destructible - use New()/Delete() instead");
 
-    void* const allocation = Allocate(sizeof(T) * inCount, alignof(T));
+    void* const allocation = Allocate(sizeof(T) * count, alignof(T));
 
-    for (uint32_t i = 0; i < inCount; i++)
+    for (uint32_t i = 0; i < count; i++)
     {
         new (reinterpret_cast<uint8_t*>(allocation) + (i * sizeof(T))) T;
     }
@@ -101,7 +101,7 @@ inline T* LinearAllocator::AllocateArray(const uint32_t inCount)
 }
 
 template <typename T, typename... Args>
-inline T* LinearAllocator::New(Args&&... inArgs)
+inline T* LinearAllocator::New(Args&&... args)
 {
     static_assert(!std::is_array<T>::value,
                   "T must not be an array type");
@@ -114,13 +114,13 @@ inline T* LinearAllocator::New(Args&&... inArgs)
 
     void* const allocation = Allocate(sizeof(T), alignof(T));
 
-    return new (allocation) T(std::forward<Args>(inArgs)...);
+    return new (allocation) T(std::forward<Args>(args)...);
 }
 
 template <typename T>
-inline void LinearAllocator::Delete(T* const inObject)
+inline void LinearAllocator::Delete(T* const object)
 {
-    inObject->~T();
+    object->~T();
 
     #if GEMINI_BUILD_DEBUG
         mOutstandingDeletions.fetch_sub(1, std::memory_order_relaxed);

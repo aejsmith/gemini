@@ -32,10 +32,10 @@ namespace VulkanFuncs
     ENUMERATE_VULKAN_DEVICE_EXTENSION_FUNCS(DEFINE_VULKAN_FUNC);
 }
 
-void VulkanCheckFailed(const char*    inCall,
-                       const VkResult inResult)
+void VulkanCheckFailed(const char*    call,
+                       const VkResult result)
 {
-    std::string string(inCall);
+    std::string string(call);
     string.erase(string.find('('));
-    Fatal("%s failed: %d", string.c_str(), inResult);
+    Fatal("%s failed: %d", string.c_str(), result);
 }

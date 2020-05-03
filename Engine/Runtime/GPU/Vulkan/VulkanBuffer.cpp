@@ -18,9 +18,9 @@
 
 #include "VulkanDevice.h"
 
-VulkanBuffer::VulkanBuffer(VulkanDevice&        inDevice,
-                           const GPUBufferDesc& inDesc) :
-    GPUBuffer   (inDevice, inDesc),
+VulkanBuffer::VulkanBuffer(VulkanDevice&        device,
+                           const GPUBufferDesc& desc) :
+    GPUBuffer   (device, desc),
     mHandle     (VK_NULL_HANDLE),
     mAllocation (VK_NULL_HANDLE)
 {
@@ -62,10 +62,10 @@ VulkanBuffer::VulkanBuffer(VulkanDevice&        inDevice,
 VulkanBuffer::~VulkanBuffer()
 {
     GetVulkanDevice().AddFrameCompleteCallback(
-        [handle = mHandle, allocation = mAllocation] (VulkanDevice& inDevice)
+        [handle = mHandle, allocation = mAllocation] (VulkanDevice& device)
         {
-            vkDestroyBuffer(inDevice.GetHandle(), handle, nullptr);
-            inDevice.GetMemoryManager().Free(allocation);
+            vkDestroyBuffer(device.GetHandle(), handle, nullptr);
+            device.GetMemoryManager().Free(allocation);
         });
 }
 

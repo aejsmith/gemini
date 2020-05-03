@@ -24,24 +24,24 @@ static constexpr uint32_t kPerFrameConstantPoolSize = 8 * 1024 * 1024;
 /** Size of the geometry pool per-frame. */
 static constexpr uint32_t kPerFrameGeometryPoolSize = 8 * 1024 * 1024;
 
-VulkanTransientPool::VulkanTransientPool(VulkanDevice&            inDevice,
-                                         const VkBufferUsageFlags inUsageFlags,
-                                         const uint32_t           inPerFramePoolSize,
-                                         const uint32_t           inAlignment,
-                                         const char* const        inName) :
-    mDevice             (inDevice),
-    mPerFramePoolSize   (inPerFramePoolSize),
-    mAlignment          (inAlignment),
+VulkanTransientPool::VulkanTransientPool(VulkanDevice&            device,
+                                         const VkBufferUsageFlags usageFlags,
+                                         const uint32_t           perFramePoolSize,
+                                         const uint32_t           alignment,
+                                         const char* const        name) :
+    mDevice             (device),
+    mPerFramePoolSize   (perFramePoolSize),
+    mAlignment          (alignment),
     mHandle             (VK_NULL_HANDLE),
     mAllocation         (VK_NULL_HANDLE),
     mMapping            (nullptr),
-    mCurrentOffset      (inDevice.GetCurrentFrame() * inPerFramePoolSize)
+    mCurrentOffset      (device.GetCurrentFrame() * perFramePoolSize)
 {
     VkBufferCreateInfo createInfo = {};
     createInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     createInfo.size        = mPerFramePoolSize * kVulkanInFlightFrameCount;
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.usage       = inUsageFlags;
+    createInfo.usage       = usageFlags;
 
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.pUserData = this;
@@ -61,7 +61,7 @@ VulkanTransientPool::VulkanTransientPool(VulkanDevice&            inDevice,
 
     mDevice.UpdateName(mHandle,
                        VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT,
-                       inName);
+                       name);
 }
 
 VulkanTransientPool::~VulkanTransientPool()
@@ -70,12 +70,12 @@ VulkanTransientPool::~VulkanTransientPool()
     mDevice.GetMemoryManager().Free(mAllocation);
 }
 
-uint32_t VulkanTransientPool::Allocate(const size_t inSize,
+uint32_t VulkanTransientPool::Allocate(const size_t size,
                                        void*&       outMapping)
 {
     /* Align up to the minimum offset alignment. This means that mCurrentOffset
      * is always suitably aligned for subsequent calls. */
-    const uint32_t alignedSize = RoundUpPow2(static_cast<uint32_t>(inSize), mAlignment);
+    const uint32_t alignedSize = RoundUpPow2(static_cast<uint32_t>(size), mAlignment);
 
     const uint32_t offset = mCurrentOffset.fetch_add(alignedSize, std::memory_order_relaxed);
 
@@ -94,12 +94,12 @@ void VulkanTransientPool::BeginFrame()
     mCurrentOffset.store(mDevice.GetCurrentFrame() * mPerFramePoolSize, std::memory_order_relaxed);
 }
 
-VulkanConstantPool::VulkanConstantPool(VulkanDevice& inDevice) :
-    GPUConstantPool     (inDevice),
-    VulkanTransientPool (inDevice,
+VulkanConstantPool::VulkanConstantPool(VulkanDevice& device) :
+    GPUConstantPool     (device),
+    VulkanTransientPool (device,
                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                          kPerFrameConstantPoolSize,
-                         inDevice.GetLimits().minUniformBufferOffsetAlignment,
+                         device.GetLimits().minUniformBufferOffsetAlignment,
                          "VulkanConstantPool")
 {
 }
@@ -108,8 +108,8 @@ VulkanConstantPool::~VulkanConstantPool()
 {
 }
 
-VulkanGeometryPool::VulkanGeometryPool(VulkanDevice& inDevice) :
-    VulkanTransientPool (inDevice,
+VulkanGeometryPool::VulkanGeometryPool(VulkanDevice& device) :
+    VulkanTransientPool (device,
                          VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                          kPerFrameGeometryPoolSize,
                          16,

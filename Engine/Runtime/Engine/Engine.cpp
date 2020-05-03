@@ -63,14 +63,14 @@ Engine::Engine() :
     /* Find the game class and get the engine configuration from it. */
     const MetaClass* gameClass = nullptr;
     MetaClass::Visit(
-        [&] (const MetaClass& inMetaClass)
+        [&] (const MetaClass& metaClass)
         {
-            if (&inMetaClass != &Game::staticMetaClass &&
-                Game::staticMetaClass.IsBaseOf(inMetaClass) &&
-                inMetaClass.IsConstructable())
+            if (&metaClass != &Game::staticMetaClass &&
+                Game::staticMetaClass.IsBaseOf(metaClass) &&
+                metaClass.IsConstructable())
             {
                 AssertMsg(!gameClass, "Multiple Game classes found");
-                gameClass = &inMetaClass;
+                gameClass = &metaClass;
             }
         });
 
@@ -239,8 +239,8 @@ void Engine::CreateWorld()
     mWorld = new World;
 }
 
-void Engine::LoadWorld(const Path& inPath)
+void Engine::LoadWorld(const Path& path)
 {
     mWorld.Reset();
-    mWorld = AssetManager::Get().Load<World>(inPath);
+    mWorld = AssetManager::Get().Load<World>(path);
 }

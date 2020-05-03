@@ -67,12 +67,12 @@ struct ShaderParameter
     };
 
 public:
-    static bool                     IsConstant(const ShaderParameterType inType);
-    static bool                     IsResource(const ShaderParameterType inType);
-    static bool                     HasSampler(const ShaderParameterType inType);
-    static uint32_t                 GetSize(const ShaderParameterType inType);
-    static const char*              GetHLSLType(const ShaderParameterType inType);
-    static GPUArgumentType          GetGPUArgumentType(const ShaderParameterType inType);
+    static bool                     IsConstant(const ShaderParameterType type);
+    static bool                     IsResource(const ShaderParameterType type);
+    static bool                     HasSampler(const ShaderParameterType type);
+    static uint32_t                 GetSize(const ShaderParameterType type);
+    static const char*              GetHLSLType(const ShaderParameterType type);
+    static GPUArgumentType          GetGPUArgumentType(const ShaderParameterType type);
 
 };
 

@@ -71,7 +71,7 @@ public:
     void                            EndFrame();
 
     /** Callback from GPUShader destructor to drop pipelines using the shader. */
-    void                            DropPipeline(GPUPipeline* const inPipeline,
+    void                            DropPipeline(GPUPipeline* const pipeline,
                                                  OnlyCalledBy<GPUShader>);
 
     /**
@@ -92,30 +92,30 @@ public:
      * The owner of the set must ensure that the arguments (views etc.) remain
      * alive while the set is still being used.
      */
-    virtual GPUArgumentSet*         CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
-                                                      const GPUArgument* const      inArguments) = 0;
+    virtual GPUArgumentSet*         CreateArgumentSet(const GPUArgumentSetLayoutRef layout,
+                                                      const GPUArgument* const      arguments) = 0;
 
-    virtual GPUBuffer*              CreateBuffer(const GPUBufferDesc& inDesc) = 0;
+    virtual GPUBuffer*              CreateBuffer(const GPUBufferDesc& desc) = 0;
 
-    virtual GPUComputePipeline*     CreateComputePipeline(const GPUComputePipelineDesc& inDesc) = 0;
+    virtual GPUComputePipeline*     CreateComputePipeline(const GPUComputePipelineDesc& desc) = 0;
 
-    virtual GPUResourceView*        CreateResourceView(GPUResource* const         inResource,
-                                                       const GPUResourceViewDesc& inDesc) = 0;
+    virtual GPUResourceView*        CreateResourceView(GPUResource* const         resource,
+                                                       const GPUResourceViewDesc& desc) = 0;
 
-    virtual GPUShaderPtr            CreateShader(const GPUShaderStage inStage,
-                                                 GPUShaderCode        inCode,
-                                                 const std::string&   inFunction) = 0;
+    virtual GPUShaderPtr            CreateShader(const GPUShaderStage stage,
+                                                 GPUShaderCode        code,
+                                                 const std::string&   function) = 0;
 
     /**
      * Create and attach a swapchain to the specified window so that it can be
      * rendered to. The swapchain will be permanently associated with the
      * window.
      */
-    virtual void                    CreateSwapchain(Window& inWindow) = 0;
+    virtual void                    CreateSwapchain(Window& window) = 0;
 
-    virtual GPUTexture*             CreateTexture(const GPUTextureDesc& inDesc) = 0;
+    virtual GPUTexture*             CreateTexture(const GPUTextureDesc& desc) = 0;
 
-    GPUArgumentSetLayoutRef         GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc);
+    GPUArgumentSetLayoutRef         GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& desc);
 
     /**
      * Get a pipeline matching the given descriptor, creating it if it doesn't
@@ -126,16 +126,16 @@ public:
      * destroyed, the pipeline will be destroyed. Therefore, users of this must
      * keep a reference to their shaders to ensure the pipeline remains alive.
      */
-    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& inDesc);
+    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& desc);
 
-    GPUSamplerRef                   GetSampler(const GPUSamplerDesc& inDesc);
+    GPUSamplerRef                   GetSampler(const GPUSamplerDesc& desc);
 
 protected:
     void                            DestroyResources();
 
-    virtual GPUArgumentSetLayout*   CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) = 0;
-    virtual GPUPipeline*            CreatePipelineImpl(const GPUPipelineDesc& inDesc) = 0;
-    virtual GPUSampler*             CreateSamplerImpl(const GPUSamplerDesc& inDesc) = 0;
+    virtual GPUArgumentSetLayout*   CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& desc) = 0;
+    virtual GPUPipeline*            CreatePipelineImpl(const GPUPipelineDesc& desc) = 0;
+    virtual GPUSampler*             CreateSamplerImpl(const GPUSamplerDesc& desc) = 0;
 
     virtual void                    EndFrameImpl() = 0;
 

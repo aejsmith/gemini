@@ -103,30 +103,30 @@ public:
 public:
                                     RefPtr();
                                     RefPtr(std::nullptr_t);
-                                    RefPtr(RefPtr&& inOther);
-                                    RefPtr(const RefPtr& inOther);
+                                    RefPtr(RefPtr&& other);
+                                    RefPtr(const RefPtr& other);
 
                                     template <typename U, typename = EnableIfConvertible<U>>
-                                    RefPtr(U* const inObject);
+                                    RefPtr(U* const object);
 
                                     template <typename U, typename = EnableIfConvertible<U>>
-                                    RefPtr(const RefPtr<U>& inOther);
+                                    RefPtr(const RefPtr<U>& other);
 
                                     template <typename U, typename = EnableIfConvertible<U>>
-                                    RefPtr(RefPtr<U>&& inOther);
+                                    RefPtr(RefPtr<U>&& other);
 
                                     ~RefPtr();
 
 public:
-    RefPtr&                         operator =(RefPtr&& inOther);
-    RefPtr&                         operator =(const RefPtr& inOther);
-    RefPtr&                         operator =(ReferencedType* const inObject);
+    RefPtr&                         operator =(RefPtr&& other);
+    RefPtr&                         operator =(const RefPtr& other);
+    RefPtr&                         operator =(ReferencedType* const object);
 
     template <typename U>
-    EnableIfConvertible<U>          operator =(const RefPtr<U>& inOther);
+    EnableIfConvertible<U>          operator =(const RefPtr<U>& other);
 
     template <typename U>
-    EnableIfConvertible<U>          operator =(RefPtr<U>&& inOther);
+    EnableIfConvertible<U>          operator =(RefPtr<U>&& other);
 
     explicit                        operator bool() const               { return mObject != nullptr; }
 
@@ -138,13 +138,13 @@ public:
     ReferencedType*                 Get() const                         { return mObject; }
 
     /**
-     * Change the object that the pointer refers to. inRetain indicates whether
+     * Change the object that the pointer refers to. retain indicates whether
      * to retain the object, defaults to true. If false, the caller should have
      * already added a reference to the object, which will be taken over by
      * this RefPtr.
      */
-    void                            Reset(ReferencedType* const inObject = nullptr,
-                                          const bool            inRetain = true);
+    void                            Reset(ReferencedType* const object = nullptr,
+                                          const bool            retain = true);
 
     /**
      * Detach the referenced object, if any. A raw pointer to it will be
@@ -154,7 +154,7 @@ public:
      */
     ReferencedType*                 Detach();
 
-    void                            Swap(RefPtr& inOther);
+    void                            Swap(RefPtr& other);
 
     template <typename U>
     RefPtr<U>                       StaticCast() const;
@@ -177,8 +177,8 @@ inline RefPtr<T>::RefPtr(std::nullptr_t) :
 }
 
 template <typename T> template <typename U, typename>
-inline RefPtr<T>::RefPtr(U* const inObject) :
-    mObject (inObject)
+inline RefPtr<T>::RefPtr(U* const object) :
+    mObject (object)
 {
     if (mObject)
     {
@@ -187,8 +187,8 @@ inline RefPtr<T>::RefPtr(U* const inObject) :
 }
 
 template <typename T>
-inline RefPtr<T>::RefPtr(const RefPtr& inOther) :
-    mObject (inOther.mObject)
+inline RefPtr<T>::RefPtr(const RefPtr& other) :
+    mObject (other.mObject)
 {
     if (mObject)
     {
@@ -197,8 +197,8 @@ inline RefPtr<T>::RefPtr(const RefPtr& inOther) :
 }
 
 template <typename T> template <typename U, typename>
-inline RefPtr<T>::RefPtr(const RefPtr<U>& inOther) :
-    mObject (inOther.Get())
+inline RefPtr<T>::RefPtr(const RefPtr<U>& other) :
+    mObject (other.Get())
 {
     if (mObject)
     {
@@ -207,14 +207,14 @@ inline RefPtr<T>::RefPtr(const RefPtr<U>& inOther) :
 }
 
 template <typename T> template <typename U, typename>
-inline RefPtr<T>::RefPtr(RefPtr<U>&& inOther) :
-    mObject (inOther.Detach())
+inline RefPtr<T>::RefPtr(RefPtr<U>&& other) :
+    mObject (other.Detach())
 {
 }
 
 template <typename T>
-inline RefPtr<T>::RefPtr(RefPtr&& inOther) :
-    mObject (inOther.Detach())
+inline RefPtr<T>::RefPtr(RefPtr&& other) :
+    mObject (other.Detach())
 {
 }
 
@@ -225,61 +225,61 @@ inline RefPtr<T>::~RefPtr()
 }
 
 template <typename T>
-inline RefPtr<T>& RefPtr<T>::operator =(ReferencedType* const inObject)
+inline RefPtr<T>& RefPtr<T>::operator =(ReferencedType* const object)
 {
-    Reset(inObject);
+    Reset(object);
     return *this;
 }
 
 template <typename T>
-inline RefPtr<T>& RefPtr<T>::operator =(const RefPtr& inOther)
+inline RefPtr<T>& RefPtr<T>::operator =(const RefPtr& other)
 {
-    Reset(inOther.mObject);
+    Reset(other.mObject);
     return *this;
 }
 
 template <typename T> template <typename U>
 inline typename RefPtr<T>::template EnableIfConvertible<U>
-RefPtr<T>::operator =(const RefPtr<U>& inOther)
+RefPtr<T>::operator =(const RefPtr<U>& other)
 {
-    Reset(inOther.Get());
+    Reset(other.Get());
     return *this;
 }
 
 template <typename T> template <typename U>
 inline typename RefPtr<T>::template EnableIfConvertible<U>
-RefPtr<T>::operator =(RefPtr<U>&& inOther)
+RefPtr<T>::operator =(RefPtr<U>&& other)
 {
     if (mObject)
     {
         mObject->Release();
     }
 
-    mObject = inOther.Detach();
+    mObject = other.Detach();
 
     return *this;
 }
 
 template <typename T>
-RefPtr<T>& RefPtr<T>::operator =(RefPtr&& inOther)
+RefPtr<T>& RefPtr<T>::operator =(RefPtr&& other)
 {
     if (mObject)
     {
         mObject->Release();
     }
 
-    mObject = inOther.Detach();
+    mObject = other.Detach();
 
     return *this;
 }
 
 template <typename T>
-void RefPtr<T>::Reset(ReferencedType* const inObject,
-                            const bool            inRetain)
+void RefPtr<T>::Reset(ReferencedType* const object,
+                            const bool            retain)
 {
-    if (inObject && inRetain)
+    if (object && retain)
     {
-        inObject->Retain();
+        object->Retain();
     }
 
     if (mObject)
@@ -287,7 +287,7 @@ void RefPtr<T>::Reset(ReferencedType* const inObject,
         mObject->Release();
     }
 
-    mObject = inObject;
+    mObject = object;
 }
 
 template <typename T>
@@ -299,9 +299,9 @@ T* RefPtr<T>::Detach()
 }
 
 template <typename T>
-void RefPtr<T>::Swap(RefPtr& inOther)
+void RefPtr<T>::Swap(RefPtr& other)
 {
-    std::swap(mObject, inOther.mObject);
+    std::swap(mObject, other.mObject);
 }
 
 template <typename T> template <typename U>

@@ -47,30 +47,30 @@ public:
 
     void                            CreatePipelines();
 
-    void                            SetTransform(const Transform& inTransform);
+    void                            SetTransform(const Transform& transform);
     const Transform&                GetTransform() const        { return mTransform; }
 
     const BoundingBox&              GetWorldBoundingBox() const { return mWorldBoundingBox; }
 
     /** Return whether this entity supports the specified pass type. */
-    bool                            SupportsPassType(const ShaderPassType inPassType) const
-                                        { return mPipelines[inPassType] != nullptr; }
+    bool                            SupportsPassType(const ShaderPassType passType) const
+                                        { return mPipelines[passType] != nullptr; }
 
     /** Get the pipeline for a pass type. */
-    GPUPipeline*                    GetPipeline(const ShaderPassType inPassType) const
-                                        { return mPipelines[inPassType]; }
+    GPUPipeline*                    GetPipeline(const ShaderPassType passType) const
+                                        { return mPipelines[passType]; }
 
     /**
      * Populate a draw call structure for the entity in the given pass type.
      * Pass type must be supported (SupportsPassType()).
      */
-    void                            GetDrawCall(const ShaderPassType inPassType,
-                                                const RenderContext& inContext,
+    void                            GetDrawCall(const ShaderPassType passType,
+                                                const RenderContext& context,
                                                 EntityDrawCall&      outDrawCall) const;
 
 protected:
-                                    RenderEntity(const EntityRenderer& inRenderer,
-                                                 Material&             inMaterial);
+                                    RenderEntity(const EntityRenderer& renderer,
+                                                 Material&             material);
 
     /**
      * Get the entity-local bounding box, will be transformed by the entity

@@ -45,9 +45,9 @@ Mesh::~Mesh()
     }
 }
 
-void Mesh::Serialise(Serialiser& inSerialiser) const
+void Mesh::Serialise(Serialiser& serialiser) const
 {
-    Asset::Serialise(inSerialiser);
+    Asset::Serialise(serialiser);
 
     /* Currently we have a limitation that meshes can only be serialised before
      * building them, because we discard the CPU-side copy of the vertex/index
@@ -55,16 +55,16 @@ void Mesh::Serialise(Serialiser& inSerialiser) const
      * GPU readback. */
     Assert(!mIsBuilt);
 
-    inSerialiser.Write("vertexCount", mVertexCount);
+    serialiser.Write("vertexCount", mVertexCount);
 
-    inSerialiser.BeginGroup("vertexInputState");
+    serialiser.BeginGroup("vertexInputState");
 
     Assert(mVertexInputState);
 
     {
         const GPUVertexInputStateDesc& inputDesc = mVertexInputState->GetDesc();
 
-        inSerialiser.BeginArray("attributes");
+        serialiser.BeginArray("attributes");
 
         for (const auto& attribute : inputDesc.attributes)
         {
@@ -73,20 +73,20 @@ void Mesh::Serialise(Serialiser& inSerialiser) const
                 break;
             }
 
-            inSerialiser.BeginGroup();
+            serialiser.BeginGroup();
 
-            inSerialiser.Write("semantic", attribute.semantic);
-            inSerialiser.Write("index",    attribute.index);
-            inSerialiser.Write("format",   attribute.format);
-            inSerialiser.Write("buffer",   attribute.buffer);
-            inSerialiser.Write("offset",   attribute.offset);
+            serialiser.Write("semantic", attribute.semantic);
+            serialiser.Write("index",    attribute.index);
+            serialiser.Write("format",   attribute.format);
+            serialiser.Write("buffer",   attribute.buffer);
+            serialiser.Write("offset",   attribute.offset);
 
-            inSerialiser.EndGroup();
+            serialiser.EndGroup();
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
 
-        inSerialiser.BeginArray("buffers");
+        serialiser.BeginArray("buffers");
 
         for (uint32_t bufferIndex = 0; bufferIndex < kMaxVertexAttributes; bufferIndex++)
         {
@@ -94,194 +94,194 @@ void Mesh::Serialise(Serialiser& inSerialiser) const
             {
                 const auto& buffer = inputDesc.buffers[bufferIndex];
 
-                inSerialiser.BeginGroup();
+                serialiser.BeginGroup();
 
-                inSerialiser.Write("index",       bufferIndex);
-                inSerialiser.Write("stride",      buffer.stride);
-                inSerialiser.Write("perInstance", buffer.perInstance);
+                serialiser.Write("index",       bufferIndex);
+                serialiser.Write("stride",      buffer.stride);
+                serialiser.Write("perInstance", buffer.perInstance);
 
-                inSerialiser.EndGroup();
+                serialiser.EndGroup();
             }
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
     }
 
-    inSerialiser.EndGroup();
+    serialiser.EndGroup();
 
-    inSerialiser.BeginArray("materials");
+    serialiser.BeginArray("materials");
 
     for (const std::string& material : mMaterials)
     {
-        inSerialiser.Push(material);
+        serialiser.Push(material);
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 
-    inSerialiser.BeginArray("vertexData");
+    serialiser.BeginArray("vertexData");
 
     for (uint32_t bufferIndex = 0; bufferIndex < kMaxVertexAttributes; bufferIndex++)
     {
         if (mUsedVertexBuffers.Test(bufferIndex))
         {
-            inSerialiser.BeginGroup();
+            serialiser.BeginGroup();
 
-            inSerialiser.Write("index", bufferIndex);
-            inSerialiser.WriteBinary("data", mVertexData[bufferIndex]);
+            serialiser.Write("index", bufferIndex);
+            serialiser.WriteBinary("data", mVertexData[bufferIndex]);
 
-            inSerialiser.EndGroup();
+            serialiser.EndGroup();
         }
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 
-    inSerialiser.BeginArray("subMeshes");
+    serialiser.BeginArray("subMeshes");
 
     for (const SubMesh* const subMesh : mSubMeshes)
     {
-        inSerialiser.BeginGroup();
+        serialiser.BeginGroup();
 
-        inSerialiser.Write("material", subMesh->mMaterial);
-        inSerialiser.Write("topology", subMesh->mTopology);
-        inSerialiser.Write("indexed",  subMesh->mIndexed);
-        inSerialiser.Write("count",    subMesh->mCount);
+        serialiser.Write("material", subMesh->mMaterial);
+        serialiser.Write("topology", subMesh->mTopology);
+        serialiser.Write("indexed",  subMesh->mIndexed);
+        serialiser.Write("count",    subMesh->mCount);
 
         if (subMesh->mIndexed)
         {
-            inSerialiser.Write("indexType", subMesh->mIndexType);
-            inSerialiser.WriteBinary("indexData", subMesh->mIndexData);
+            serialiser.Write("indexType", subMesh->mIndexType);
+            serialiser.WriteBinary("indexData", subMesh->mIndexData);
         }
         else
         {
-            inSerialiser.Write("vertexOffset", subMesh->mVertexOffset);
+            serialiser.Write("vertexOffset", subMesh->mVertexOffset);
         }
 
-        inSerialiser.EndGroup();
+        serialiser.EndGroup();
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 }
 
-void Mesh::Deserialise(Serialiser& inSerialiser)
+void Mesh::Deserialise(Serialiser& serialiser)
 {
-    Asset::Deserialise(inSerialiser);
+    Asset::Deserialise(serialiser);
 
     bool success = true;
     Unused(success);
 
     GPUVertexInputStateDesc inputDesc;
     uint32_t vertexCount;
-    inSerialiser.Read("vertexCount", vertexCount);
+    serialiser.Read("vertexCount", vertexCount);
 
-    success &= inSerialiser.BeginGroup("vertexInputState");
+    success &= serialiser.BeginGroup("vertexInputState");
     Assert(success);
 
     {
-        success &= inSerialiser.BeginArray("attributes");
+        success &= serialiser.BeginArray("attributes");
         Assert(success);
 
         uint32_t attributeIndex = 0;
 
-        while (inSerialiser.BeginGroup())
+        while (serialiser.BeginGroup())
         {
             auto& attribute = inputDesc.attributes[attributeIndex++];
 
-            success &= inSerialiser.Read("semantic", attribute.semantic);
-            success &= inSerialiser.Read("index",    attribute.index);
-            success &= inSerialiser.Read("format",   attribute.format);
-            success &= inSerialiser.Read("buffer",   attribute.buffer);
-            success &= inSerialiser.Read("offset",   attribute.offset);
+            success &= serialiser.Read("semantic", attribute.semantic);
+            success &= serialiser.Read("index",    attribute.index);
+            success &= serialiser.Read("format",   attribute.format);
+            success &= serialiser.Read("buffer",   attribute.buffer);
+            success &= serialiser.Read("offset",   attribute.offset);
             Assert(success);
 
-            inSerialiser.EndGroup();
+            serialiser.EndGroup();
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
 
-        success &= inSerialiser.BeginArray("buffers");
+        success &= serialiser.BeginArray("buffers");
         Assert(success);
 
-        while (inSerialiser.BeginGroup())
+        while (serialiser.BeginGroup())
         {
             uint32_t bufferIndex;
-            success &= inSerialiser.Read("index", bufferIndex);
+            success &= serialiser.Read("index", bufferIndex);
             Assert(success);
 
             auto& buffer = inputDesc.buffers[bufferIndex];
 
-            inSerialiser.Read("stride",      buffer.stride);
-            inSerialiser.Read("perInstance", buffer.perInstance);
+            serialiser.Read("stride",      buffer.stride);
+            serialiser.Read("perInstance", buffer.perInstance);
 
-            inSerialiser.EndGroup();
+            serialiser.EndGroup();
         }
 
-        inSerialiser.EndArray();
+        serialiser.EndArray();
     }
 
-    inSerialiser.EndGroup();
+    serialiser.EndGroup();
 
     SetVertexLayout(inputDesc, vertexCount);
 
-    success &= inSerialiser.BeginArray("materials");
+    success &= serialiser.BeginArray("materials");
     Assert(success);
 
     std::string material;
-    while (inSerialiser.Pop(material))
+    while (serialiser.Pop(material))
     {
         mMaterials.emplace_back(std::move(material));
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 
-    success &= inSerialiser.BeginArray("vertexData");
+    success &= serialiser.BeginArray("vertexData");
     Assert(success);
 
-    while (inSerialiser.BeginGroup())
+    while (serialiser.BeginGroup())
     {
         uint32_t bufferIndex;
-        success &= inSerialiser.Read("index", bufferIndex);
+        success &= serialiser.Read("index", bufferIndex);
         Assert(success);
         Assert(mUsedVertexBuffers.Test(bufferIndex));
 
-        success &= inSerialiser.ReadBinary("data", mVertexData[bufferIndex]);
+        success &= serialiser.ReadBinary("data", mVertexData[bufferIndex]);
         Assert(success);
 
-        inSerialiser.EndGroup();
+        serialiser.EndGroup();
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 
-    success &= inSerialiser.BeginArray("subMeshes");
+    success &= serialiser.BeginArray("subMeshes");
     Assert(success);
 
-    while (inSerialiser.BeginGroup())
+    while (serialiser.BeginGroup())
     {
         auto subMesh = new SubMesh(*this);
         subMesh->mIndexBuffer = nullptr;
 
-        success &= inSerialiser.Read("material", subMesh->mMaterial);
-        success &= inSerialiser.Read("topology", subMesh->mTopology);
-        success &= inSerialiser.Read("indexed",  subMesh->mIndexed);
-        success &= inSerialiser.Read("count",    subMesh->mCount);
+        success &= serialiser.Read("material", subMesh->mMaterial);
+        success &= serialiser.Read("topology", subMesh->mTopology);
+        success &= serialiser.Read("indexed",  subMesh->mIndexed);
+        success &= serialiser.Read("count",    subMesh->mCount);
 
         if (subMesh->mIndexed)
         {
-            success &= inSerialiser.Read("indexType", subMesh->mIndexType);
-            success &= inSerialiser.ReadBinary("indexData", subMesh->mIndexData);
+            success &= serialiser.Read("indexType", subMesh->mIndexType);
+            success &= serialiser.ReadBinary("indexData", subMesh->mIndexData);
         }
         else
         {
-            success &= inSerialiser.Read("vertexOffset", subMesh->mVertexOffset);
+            success &= serialiser.Read("vertexOffset", subMesh->mVertexOffset);
         }
 
         Assert(success);
 
         mSubMeshes.emplace_back(subMesh);
 
-        inSerialiser.EndGroup();
+        serialiser.EndGroup();
     }
 
-    inSerialiser.EndArray();
+    serialiser.EndArray();
 
     Build();
 }
@@ -312,12 +312,12 @@ void Mesh::PathChanged()
     }
 }
 
-bool Mesh::GetMaterial(const std::string& inName,
+bool Mesh::GetMaterial(const std::string& name,
                        size_t&            outIndex) const
 {
     for (size_t i = 0; i < mMaterials.size(); i++)
     {
-        if (mMaterials[i] == inName)
+        if (mMaterials[i] == name)
         {
             outIndex = i;
             return true;
@@ -327,21 +327,21 @@ bool Mesh::GetMaterial(const std::string& inName,
     return false;
 }
 
-void Mesh::SetVertexLayout(const GPUVertexInputStateDesc& inDesc,
-                           const uint32_t                 inCount)
+void Mesh::SetVertexLayout(const GPUVertexInputStateDesc& desc,
+                           const uint32_t                 count)
 {
     Assert(!mIsBuilt);
     Assert(!mVertexInputState);
-    Assert(inCount > 0);
+    Assert(count > 0);
 
-    mVertexInputState = GPUVertexInputState::Get(inDesc);
-    mVertexCount      = inCount;
+    mVertexInputState = GPUVertexInputState::Get(desc);
+    mVertexCount      = count;
 
     bool hasPosition = false;
 
     for (size_t i = 0; i < kMaxVertexAttributes; i++)
     {
-        const auto& attribute = inDesc.attributes[i];
+        const auto& attribute = desc.attributes[i];
 
         if (attribute.semantic != kGPUAttributeSemantic_Unknown)
         {
@@ -360,102 +360,102 @@ void Mesh::SetVertexLayout(const GPUVertexInputStateDesc& inDesc,
     AssertMsg(hasPosition, "Vertex layout must have a position");
 }
 
-void Mesh::SetVertexData(const uint32_t inIndex,
-                         ByteArray      inData)
+void Mesh::SetVertexData(const uint32_t index,
+                         ByteArray      data)
 {
     Assert(!mIsBuilt);
-    Assert(mUsedVertexBuffers.Test(inIndex));
-    Assert(inData.GetSize() == mVertexInputState->GetDesc().buffers[inIndex].stride * mVertexCount);
+    Assert(mUsedVertexBuffers.Test(index));
+    Assert(data.GetSize() == mVertexInputState->GetDesc().buffers[index].stride * mVertexCount);
 
-    mVertexData[inIndex] = std::move(inData);
+    mVertexData[index] = std::move(data);
 }
 
-void Mesh::SetVertexData(const uint32_t    inIndex,
-                         const void* const inData)
+void Mesh::SetVertexData(const uint32_t    index,
+                         const void* const data)
 {
     Assert(mVertexInputState);
 
-    const size_t size = mVertexInputState->GetDesc().buffers[inIndex].stride * mVertexCount;
+    const size_t size = mVertexInputState->GetDesc().buffers[index].stride * mVertexCount;
 
-    ByteArray data(size);
-    memcpy(data.Get(), inData, size);
+    ByteArray bytes(size);
+    memcpy(bytes.Get(), data, size);
 
-    SetVertexData(inIndex, std::move(data));
+    SetVertexData(index, std::move(bytes));
 }
 
-uint32_t Mesh::AddMaterial(std::string inName)
+uint32_t Mesh::AddMaterial(std::string name)
 {
     Assert(!mIsBuilt);
 
     size_t index;
-    Assert(!GetMaterial(inName, index));
+    Assert(!GetMaterial(name, index));
 
     index = mMaterials.size();
-    mMaterials.emplace_back(std::move(inName));
+    mMaterials.emplace_back(std::move(name));
 
     return index;
 }
 
-void Mesh::AddSubMesh(const uint32_t             inMaterialIndex,
-                      const GPUPrimitiveTopology inTopology,
-                      const uint32_t             inVertexOffset,
-                      const uint32_t             inVertexCount)
+void Mesh::AddSubMesh(const uint32_t             materialIndex,
+                      const GPUPrimitiveTopology topology,
+                      const uint32_t             vertexOffset,
+                      const uint32_t             vertexCount)
 {
     Assert(!mIsBuilt);
-    Assert(inMaterialIndex < mMaterials.size());
-    Assert(inVertexCount > 0);
-    Assert(inVertexOffset + inVertexCount <= mVertexCount);
+    Assert(materialIndex < mMaterials.size());
+    Assert(vertexCount > 0);
+    Assert(vertexOffset + vertexCount <= mVertexCount);
 
     auto subMesh = new SubMesh(*this);
 
-    subMesh->mMaterial     = inMaterialIndex;
-    subMesh->mTopology     = inTopology;
+    subMesh->mMaterial     = materialIndex;
+    subMesh->mTopology     = topology;
     subMesh->mIndexed      = false;
-    subMesh->mCount        = inVertexCount;
-    subMesh->mVertexOffset = inVertexOffset;
+    subMesh->mCount        = vertexCount;
+    subMesh->mVertexOffset = vertexOffset;
     subMesh->mIndexBuffer  = nullptr;
 
     mSubMeshes.emplace_back(subMesh);
 }
 
-void Mesh::AddIndexedSubMesh(const uint32_t             inMaterialIndex,
-                             const GPUPrimitiveTopology inTopology,
-                             const uint32_t             inIndexCount,
-                             const GPUIndexType         inIndexType,
-                             ByteArray                  inIndexData)
+void Mesh::AddIndexedSubMesh(const uint32_t             materialIndex,
+                             const GPUPrimitiveTopology topology,
+                             const uint32_t             indexCount,
+                             const GPUIndexType         indexType,
+                             ByteArray                  indexData)
 {
     Assert(!mIsBuilt);
-    Assert(inMaterialIndex < mMaterials.size());
-    Assert(inIndexData.GetSize() == GPUUtils::GetIndexSize(inIndexType) * inIndexCount);
+    Assert(materialIndex < mMaterials.size());
+    Assert(indexData.GetSize() == GPUUtils::GetIndexSize(indexType) * indexCount);
 
     auto subMesh = new SubMesh(*this);
 
-    subMesh->mMaterial    = inMaterialIndex;
-    subMesh->mTopology    = inTopology;
+    subMesh->mMaterial    = materialIndex;
+    subMesh->mTopology    = topology;
     subMesh->mIndexed     = true;
-    subMesh->mCount       = inIndexCount;
-    subMesh->mIndexType   = inIndexType;
+    subMesh->mCount       = indexCount;
+    subMesh->mIndexType   = indexType;
     subMesh->mIndexBuffer = nullptr;
-    subMesh->mIndexData   = std::move(inIndexData);
+    subMesh->mIndexData   = std::move(indexData);
 
     mSubMeshes.emplace_back(subMesh);
 }
 
-void Mesh::AddIndexedSubMesh(const uint32_t             inMaterialIndex,
-                             const GPUPrimitiveTopology inTopology,
-                             const uint32_t             inIndexCount,
-                             const GPUIndexType         inIndexType,
-                             const void* const          inIndexData)
+void Mesh::AddIndexedSubMesh(const uint32_t             materialIndex,
+                             const GPUPrimitiveTopology topology,
+                             const uint32_t             indexCount,
+                             const GPUIndexType         indexType,
+                             const void* const          indexData)
 {
-    const size_t size = GPUUtils::GetIndexSize(inIndexType) * inIndexCount;
+    const size_t size = GPUUtils::GetIndexSize(indexType) * indexCount;
 
     ByteArray data(size);
-    memcpy(data.Get(), inIndexData, size);
+    memcpy(data.Get(), indexData, size);
 
-    AddIndexedSubMesh(inMaterialIndex,
-                      inTopology,
-                      inIndexCount,
-                      inIndexType,
+    AddIndexedSubMesh(materialIndex,
+                      topology,
+                      indexCount,
+                      indexType,
                       std::move(data));
 }
 
@@ -533,46 +533,46 @@ void Mesh::Build()
     PathChanged();
 }
 
-void Mesh::CalculateBoundingBox(SubMesh* const inSubMesh)
+void Mesh::CalculateBoundingBox(SubMesh* const subMesh)
 {
-    Assert(inSubMesh->mCount != 0);
+    Assert(subMesh->mCount != 0);
 
     glm::vec3 minimum( std::numeric_limits<float>::max());
     glm::vec3 maximum(-std::numeric_limits<float>::max());
 
-    for (uint32_t i = 0; i < inSubMesh->mCount; i++)
+    for (uint32_t i = 0; i < subMesh->mCount; i++)
     {
-        const glm::vec3 position = glm::vec3(LoadAttribute(kGPUAttributeSemantic_Position, 0, inSubMesh, i));
+        const glm::vec3 position = glm::vec3(LoadAttribute(kGPUAttributeSemantic_Position, 0, subMesh, i));
 
         minimum = glm::min(minimum, position);
         maximum = glm::max(maximum, position);
     }
 
-    inSubMesh->mBoundingBox = BoundingBox(minimum, maximum);
+    subMesh->mBoundingBox = BoundingBox(minimum, maximum);
 }
 
-glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic inSemantic,
-                              const uint8_t              inSemanticIndex,
-                              const SubMesh* const       inSubMesh,
-                              const uint32_t             inIndex)
+glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic semantic,
+                              const uint8_t              semanticIndex,
+                              const SubMesh* const       subMesh,
+                              const uint32_t             index)
 {
-    Assert(inIndex < inSubMesh->mCount);
+    Assert(index < subMesh->mCount);
 
     uint32_t vertexIndex;
 
-    if (inSubMesh->mIndexed)
+    if (subMesh->mIndexed)
     {
-        switch (inSubMesh->mIndexType)
+        switch (subMesh->mIndexType)
         {
             case kGPUIndexType_16:
             {
-                vertexIndex = reinterpret_cast<const uint16_t*>(inSubMesh->mIndexData.Get())[inIndex];
+                vertexIndex = reinterpret_cast<const uint16_t*>(subMesh->mIndexData.Get())[index];
                 break;
             }
 
             case kGPUIndexType_32:
             {
-                vertexIndex = reinterpret_cast<const uint32_t*>(inSubMesh->mIndexData.Get())[inIndex];
+                vertexIndex = reinterpret_cast<const uint32_t*>(subMesh->mIndexData.Get())[index];
                 break;
             }
 
@@ -584,20 +584,20 @@ glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic inSemantic,
     }
     else
     {
-        vertexIndex = inSubMesh->mVertexOffset + inIndex;
+        vertexIndex = subMesh->mVertexOffset + index;
     }
 
-    return LoadAttribute(inSemantic, inSemanticIndex, vertexIndex);
+    return LoadAttribute(semantic, semanticIndex, vertexIndex);
 }
 
-glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic inSemantic,
-                              const uint8_t              inSemanticIndex,
-                              const uint32_t             inVertexIndex)
+glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic semantic,
+                              const uint8_t              semanticIndex,
+                              const uint32_t             vertexIndex)
 {
-    Assert(inVertexIndex < mVertexCount);
+    Assert(vertexIndex < mVertexCount);
 
     const GPUVertexInputStateDesc::Attribute* attributeDesc =
-        mVertexInputState->GetDesc().FindAttribute(inSemantic, inSemanticIndex);
+        mVertexInputState->GetDesc().FindAttribute(semantic, semanticIndex);
 
     Assert(attributeDesc);
 
@@ -609,7 +609,7 @@ glm::vec4 Mesh::LoadAttribute(const GPUAttributeSemantic inSemantic,
 
     const auto data =
         reinterpret_cast<const float*>(mVertexData[attributeDesc->buffer].Get() +
-                                       (inVertexIndex * bufferDesc->stride) +
+                                       (vertexIndex * bufferDesc->stride) +
                                        attributeDesc->offset);
 
     /* Zero components which aren't present. */

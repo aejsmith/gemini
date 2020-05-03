@@ -28,9 +28,9 @@ class GPUShader : public GPUObject,
                   public RefCounted
 {
 protected:
-                                GPUShader(GPUDevice&           inDevice,
-                                          const GPUShaderStage inStage,
-                                          GPUShaderCode        inCode);
+                                GPUShader(GPUDevice&           device,
+                                          const GPUShaderStage stage,
+                                          GPUShaderCode        code);
 
                                 ~GPUShader();
 
@@ -40,9 +40,9 @@ public:
     const GPUShaderCode&        GetCode() const     { return mCode; }
 
     /** Interface with GPUDevice/GPUPipeline to register pipelines to shaders. */
-    void                        AddPipeline(GPUPipeline* const inPipeline,
+    void                        AddPipeline(GPUPipeline* const pipeline,
                                             OnlyCalledBy<GPUDevice>);
-    void                        RemovePipeline(GPUPipeline* const inPipeline,
+    void                        RemovePipeline(GPUPipeline* const pipeline,
                                                OnlyCalledBy<GPUPipeline>);
 
 private:

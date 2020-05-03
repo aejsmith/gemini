@@ -26,22 +26,22 @@
 class POSIXFile final : public File
 {
 public:
-                                POSIXFile(const int inFD);
+                                POSIXFile(const int fd);
                                 ~POSIXFile();
 
     uint64_t                    GetSize() const override;
-    bool                        Read(void* const outBuffer, const size_t inSize) override;
-    bool                        Write(const void* const inBuffer, const size_t inSize) override;
-    bool                        Seek(const SeekMode inMode, const int64_t inOffset) override;
+    bool                        Read(void* const outBuffer, const size_t size) override;
+    bool                        Write(const void* const buffer, const size_t size) override;
+    bool                        Seek(const SeekMode mode, const int64_t offset) override;
     uint64_t                    GetOffset() const override;
 
     bool                        Read(void* const    outBuffer,
-                                     const size_t   inSize,
-                                     const uint64_t inOffset) override;
+                                     const size_t   size,
+                                     const uint64_t offset) override;
 
-    bool                        Write(const void* const inBuffer,
-                                      const size_t      inSize,
-                                      const uint64_t    inOffset) override;
+    bool                        Write(const void* const buffer,
+                                      const size_t      size,
+                                      const uint64_t    offset) override;
 
 private:
     int                         mFD;
@@ -51,7 +51,7 @@ private:
 class POSIXDirectory final : public Directory
 {
 public:
-                                POSIXDirectory(DIR* const inDirectory);
+                                POSIXDirectory(DIR* const directory);
                                 ~POSIXDirectory();
 
     void                        Reset() override;
@@ -62,8 +62,8 @@ private:
 
 };
 
-POSIXFile::POSIXFile(const int inFD) :
-    mFD (inFD)
+POSIXFile::POSIXFile(const int fd) :
+    mFD (fd)
 {
 }
 
@@ -85,21 +85,21 @@ uint64_t POSIXFile::GetSize() const
     return st.st_size;
 }
 
-bool POSIXFile::Read(void* const outBuffer, const size_t inSize)
+bool POSIXFile::Read(void* const outBuffer, const size_t size)
 {
-    return read(mFD, outBuffer, inSize) == static_cast<ssize_t>(inSize);
+    return read(mFD, outBuffer, size) == static_cast<ssize_t>(size);
 }
 
-bool POSIXFile::Write(const void* const inBuffer, const size_t inSize)
+bool POSIXFile::Write(const void* const buffer, const size_t size)
 {
-    return write(mFD, inBuffer, inSize) == static_cast<ssize_t>(inSize);
+    return write(mFD, buffer, size) == static_cast<ssize_t>(size);
 }
 
-bool POSIXFile::Seek(const SeekMode inMode, const int64_t inOffset)
+bool POSIXFile::Seek(const SeekMode mode, const int64_t offset)
 {
     int whence;
 
-    switch (inMode)
+    switch (mode)
     {
         case kSeekMode_Set:
             whence = SEEK_SET;
@@ -118,7 +118,7 @@ bool POSIXFile::Seek(const SeekMode inMode, const int64_t inOffset)
 
     }
 
-    return lseek(mFD, inOffset, whence) == 0;
+    return lseek(mFD, offset, whence) == 0;
 }
 
 uint64_t POSIXFile::GetOffset() const
@@ -127,26 +127,21 @@ uint64_t POSIXFile::GetOffset() const
 }
 
 bool POSIXFile::Read(void* const    outBuffer,
-                     const size_t   inSize,
-                     const uint64_t inOffset)
+                     const size_t   size,
+                     const uint64_t offset)
 {
-    return pread(mFD, outBuffer, inSize, inOffset) == static_cast<ssize_t>(inSize);
+    return pread(mFD, outBuffer, size, offset) == static_cast<ssize_t>(size);
 }
 
-/** Write to the file at the specified offset.
- * @param buf           Buffer containing data to write.
- * @param size          Number of bytes to write.
- * @param offset        Offset to write to.
- * @return              Whether the write was successful. */
-bool POSIXFile::Write(const void* const inBuffer,
-                      const size_t      inSize,
-                      const uint64_t    inOffset)
+bool POSIXFile::Write(const void* const buffer,
+                      const size_t      size,
+                      const uint64_t    offset)
 {
-    return pwrite(mFD, inBuffer, inSize, inOffset) == static_cast<ssize_t>(inSize);
+    return pwrite(mFD, buffer, size, offset) == static_cast<ssize_t>(size);
 }
 
-POSIXDirectory::POSIXDirectory(DIR* const inDirectory) :
-    mDirectory (inDirectory)
+POSIXDirectory::POSIXDirectory(DIR* const directory) :
+    mDirectory (directory)
 {
 }
 
@@ -199,33 +194,33 @@ bool POSIXDirectory::Next(Entry& outEntry)
     return true;
 }
 
-File* Filesystem::OpenFile(const Path&    inPath,
-                           const FileMode inMode) {
+File* Filesystem::OpenFile(const Path&    path,
+                           const FileMode mode) {
     int flags = 0;
 
-    if (inMode & kFileMode_Read)
+    if (mode & kFileMode_Read)
     {
         flags |= O_RDONLY;
     }
 
-    if (inMode & kFileMode_Write)
+    if (mode & kFileMode_Write)
     {
         flags |= O_WRONLY;
     }
 
-    if (inMode & kFileMode_Create)
+    if (mode & kFileMode_Create)
     {
-        Assert(inMode & kFileMode_Write);
+        Assert(mode & kFileMode_Write);
 
         flags |= O_CREAT;
     }
 
-    if (inMode & kFileMode_Truncate)
+    if (mode & kFileMode_Truncate)
     {
         flags |= O_TRUNC;
     }
 
-    const int fd = open(inPath.GetCString(), flags, 0644);
+    const int fd = open(path.GetCString(), flags, 0644);
     if (fd < 0)
     {
         return nullptr;
@@ -234,9 +229,9 @@ File* Filesystem::OpenFile(const Path&    inPath,
     return new POSIXFile(fd);
 }
 
-Directory* Filesystem::OpenDirectory(const Path& inPath)
+Directory* Filesystem::OpenDirectory(const Path& path)
 {
-    DIR* directory = opendir(inPath.GetCString());
+    DIR* directory = opendir(path.GetCString());
     if (!directory)
     {
         return nullptr;
@@ -245,20 +240,20 @@ Directory* Filesystem::OpenDirectory(const Path& inPath)
     return new POSIXDirectory(directory);
 }
 
-bool Filesystem::Exists(const Path& inPath)
+bool Filesystem::Exists(const Path& path)
 {
     struct stat st;
-    return stat(inPath.GetCString(), &st) == 0;
+    return stat(path.GetCString(), &st) == 0;
 }
 
-bool Filesystem::IsType(const Path&    inPath,
-                        const FileType inType)
+bool Filesystem::IsType(const Path&    path,
+                        const FileType type)
 {
     struct stat st;
-    if (stat(inPath.GetCString(), &st) != 0)
+    if (stat(path.GetCString(), &st) != 0)
         return false;
 
-    switch (inType)
+    switch (type)
     {
         case kFileType_File:
             return S_ISREG(st.st_mode);
@@ -272,15 +267,15 @@ bool Filesystem::IsType(const Path&    inPath,
     }
 }
 
-bool Filesystem::SetWorkingDirectory(const Path& inPath)
+bool Filesystem::SetWorkingDirectory(const Path& path)
 {
-    return chdir(inPath.GetCString()) == 0;
+    return chdir(path.GetCString()) == 0;
 }
 
-bool Filesystem::GetFullPath(const Path& inPath,
+bool Filesystem::GetFullPath(const Path& path,
                              Path&       outFullPath)
 {
-    char* str = realpath(inPath.GetCString(), nullptr);
+    char* str = realpath(path.GetCString(), nullptr);
     if (!str)
     {
         return false;

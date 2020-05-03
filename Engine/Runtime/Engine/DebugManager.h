@@ -56,15 +56,15 @@ public:
     void                        RenderOverlay(OnlyCalledBy<Engine>);
 
     /** Display a line of debug text in the overlay. */
-    void                        AddText(const char* const inText,
-                                        const glm::vec4&  inColour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    void                        AddText(const std::string& inText,
-                                        const glm::vec4&   inColour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
-                                    { AddText(inText.c_str(), inColour); }
+    void                        AddText(const char* const text,
+                                        const glm::vec4&  colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    void                        AddText(const std::string& text,
+                                        const glm::vec4&   colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
+                                    { AddText(text.c_str(), colour); }
 
-    void                        RegisterWindow(DebugWindow* const inWindow,
+    void                        RegisterWindow(DebugWindow* const window,
                                                OnlyCalledBy<DebugWindow>);
-    void                        UnregisterWindow(DebugWindow* const inWindow,
+    void                        UnregisterWindow(DebugWindow* const window,
                                                  OnlyCalledBy<DebugWindow>);
 
     bool                        IsOverlayVisible() const
@@ -74,21 +74,21 @@ public:
      * World-space debug drawing API.
      */
 
-    void                        RenderPrimitives(const RenderView&          inView,
-                                                 RenderGraph&               inGraph,
-                                                 const RenderResourceHandle inTexture,
+    void                        RenderPrimitives(const RenderView&          view,
+                                                 RenderGraph&               graph,
+                                                 const RenderResourceHandle texture,
                                                  RenderResourceHandle&      outNewTexture);
 
-    void                        DrawPrimitive(const BoundingBox& inBox,
-                                              const glm::vec3&   inColour);
-    void                        DrawPrimitive(const Cone&        inCone,
-                                              const glm::vec3&   inColour,
-                                              const bool         inFill = false);
-    void                        DrawPrimitive(const Line&        inLine,
-                                              const glm::vec3&   inColour);
-    void                        DrawPrimitive(const Sphere&      inSphere,
-                                              const glm::vec3&   inColour,
-                                              const bool         inFill = false);
+    void                        DrawPrimitive(const BoundingBox& box,
+                                              const glm::vec3&   colour);
+    void                        DrawPrimitive(const Cone&        cone,
+                                              const glm::vec3&   colour,
+                                              const bool         fll = false);
+    void                        DrawPrimitive(const Line&        line,
+                                              const glm::vec3&   colour);
+    void                        DrawPrimitive(const Sphere&      sphere,
+                                              const glm::vec3&   colour,
+                                              const bool         fill = false);
 
 private:
     enum OverlayState
@@ -122,7 +122,7 @@ private:
 
     public:
                                 Primitive()  {}
-                                Primitive(const Primitive& inOther);
+                                Primitive(const Primitive& other);
                                 ~Primitive() {}
 
     };

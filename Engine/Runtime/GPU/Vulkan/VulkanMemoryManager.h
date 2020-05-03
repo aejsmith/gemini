@@ -24,22 +24,22 @@ class VulkanMemoryManager : public GPUDeviceChild,
                             public VulkanDeviceChild<VulkanMemoryManager>
 {
 public:
-                                VulkanMemoryManager(VulkanDevice& inDevice);
+                                VulkanMemoryManager(VulkanDevice& device);
                                 ~VulkanMemoryManager();
 
-    void                        AllocateImage(const VkImageCreateInfo&       inCreateInfo,
-                                              const VmaAllocationCreateInfo& inAllocationInfo,
+    void                        AllocateImage(const VkImageCreateInfo&       createInfo,
+                                              const VmaAllocationCreateInfo& allocationInfo,
                                               VkImage&                       outImage,
                                               VmaAllocation&                 outAllocation);
 
-    void                        AllocateBuffer(const VkBufferCreateInfo&      inCreateInfo,
-                                               const VmaAllocationCreateInfo& inAllocationInfo,
+    void                        AllocateBuffer(const VkBufferCreateInfo&      createInfo,
+                                               const VmaAllocationCreateInfo& allocationInfo,
                                                VkBuffer&                      outBuffer,
                                                VmaAllocation&                 outAllocation);
 
-    void                        Free(const VmaAllocation inAllocation);
+    void                        Free(const VmaAllocation allocation);
 
-    void                        GetInfo(const VmaAllocation inAllocation,
+    void                        GetInfo(const VmaAllocation allocation,
                                         VmaAllocationInfo&  outInfo);
 
 private:

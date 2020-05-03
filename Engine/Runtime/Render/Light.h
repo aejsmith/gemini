@@ -31,12 +31,12 @@ public:
     /** Type of the light. */
     VPROPERTY(LightType, type);
     LightType                   GetType() const { return mType; }
-    void                        SetType(const LightType inType);
+    void                        SetType(const LightType type);
 
     /** RGB colour of the light (in linear space). */
     VPROPERTY(glm::vec3, colour);
     const glm::vec3&            GetColour() const { return mColour; }
-    void                        SetColour(const glm::vec3& inColour);
+    void                        SetColour(const glm::vec3& colour);
 
     /**
      * Intensity of the light. Units depend on the type of light:
@@ -46,7 +46,7 @@ public:
      */
     VPROPERTY(float, intensity);
     float                       GetIntensity() const { return mIntensity; }
-    void                        SetIntensity(const float inIntensity);
+    void                        SetIntensity(const float intensity);
 
     /**
      * Range of the light. Only relevant for point and spot lights. Light will
@@ -55,7 +55,7 @@ public:
      */
     VPROPERTY(float, range);
     float                       GetRange() const { return mRange; }
-    void                        SetRange(const float inRange);
+    void                        SetRange(const float range);
 
     /**
      * Inner cone angle for a spot light. Specifies the angle (in degrees) from
@@ -64,7 +64,7 @@ public:
      */
     VPROPERTY(Degrees, innerConeAngle);
     Degrees                     GetInnerConeAngle() const { return mInnerConeAngle; }
-    void                        SetInnerConeAngle(const Degrees inInnerConeAngle);
+    void                        SetInnerConeAngle(const Degrees innerConeAngle);
 
     /**
      * Outer cone angle for a spot light. Specifies the angle (in degrees) from
@@ -73,7 +73,7 @@ public:
      */
     VPROPERTY(Degrees, outerConeAngle);
     Degrees                     GetOuterConeAngle() const { return mOuterConeAngle; }
-    void                        SetOuterConeAngle(const Degrees inOuterConeAngle);
+    void                        SetOuterConeAngle(const Degrees outerConeAngle);
 
 protected:
     void                        Activated() override;

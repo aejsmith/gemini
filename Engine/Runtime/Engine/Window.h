@@ -40,9 +40,9 @@ public:
 
 public:
 
-                            Window(std::string       inTitle,
-                                   const glm::uvec2& inSize,
-                                   const uint32_t    inFlags);
+                            Window(std::string       title,
+                                   const glm::uvec2& size,
+                                   const uint32_t    flags);
     virtual                 ~Window();
 
 public:
@@ -52,7 +52,7 @@ public:
     bool                    IsFullscreen() const    { return mFlags & kWindow_Fullscreen; }
     bool                    IsHidden() const        { return mFlags & kWindow_Hidden; }
 
-    void                    SetSwapchain(GPUSwapchain* const inSwapchain,
+    void                    SetSwapchain(GPUSwapchain* const swapchain,
                                          OnlyCalledBy<GPUSwapchain>);
 
     GPUTexture*             GetTexture() const final override;
@@ -77,8 +77,8 @@ class MainWindow final : public Window,
                          public Singleton<MainWindow>
 {
 public:
-                            MainWindow(const glm::uvec2& inSize,
-                                       const uint32_t    inFlags);
+                            MainWindow(const glm::uvec2& size,
+                                       const uint32_t    flags);
 
     void                    Present(OnlyCalledBy<Engine>);
 

@@ -40,9 +40,9 @@ public:
      * Stored offset I/O.
      */
 
-    virtual bool                Read(void* const outBuffer, const size_t inSize) = 0;
-    virtual bool                Write(const void* const inBuffer, const size_t inSize) = 0;
-    virtual bool                Seek(const SeekMode inMode, const int64_t inOffset) = 0;
+    virtual bool                Read(void* const outBuffer, const size_t size) = 0;
+    virtual bool                Write(const void* const buffer, const size_t size) = 0;
+    virtual bool                Seek(const SeekMode mode, const int64_t offset) = 0;
     virtual uint64_t            GetOffset() const = 0;
 
     /**
@@ -56,12 +56,12 @@ public:
      */
 
     virtual bool                Read(void* const    outBuffer,
-                                     const size_t   inSize,
-                                     const uint64_t inOffset) = 0;
+                                     const size_t   size,
+                                     const uint64_t offset) = 0;
 
-    virtual bool                Write(const void* const inBuffer,
-                                      const size_t      inSize,
-                                      const uint64_t    inOffset) = 0;
+    virtual bool                Write(const void* const buffer,
+                                      const size_t      size,
+                                      const uint64_t    offset) = 0;
 
 protected:
                                 DataStream() {}

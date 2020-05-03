@@ -30,31 +30,31 @@
 static constexpr char kBuiltInFileName[]     = "<built-in>";
 static constexpr size_t kMaximumIncludeDepth = 16;
 
-ShaderCompiler::ShaderCompiler(Options inOptions) :
-    mOptions (std::move(inOptions))
+ShaderCompiler::ShaderCompiler(Options options) :
+    mOptions (std::move(options))
 {
 }
 
-bool ShaderCompiler::LoadSource(const Path&  inPath,
-                                const Path&  inFrom,
-                                const size_t inLineIndex,
-                                const size_t inDepth,
+bool ShaderCompiler::LoadSource(const Path&  path,
+                                const Path&  from,
+                                const size_t lineIndex,
+                                const size_t depth,
                                 std::string& outSource)
 {
-    if (inDepth >= kMaximumIncludeDepth)
+    if (depth >= kMaximumIncludeDepth)
     {
-        LogError("%s: Exceeded maximum include depth", inFrom.GetCString());
+        LogError("%s: Exceeded maximum include depth", from.GetCString());
         return false;
     }
 
     /* First try the same directory as the current source file. */
     Path directoryName;
-    if (inFrom.GetString() != kBuiltInFileName)
+    if (from.GetString() != kBuiltInFileName)
     {
-        directoryName = inFrom.GetDirectoryName();
+        directoryName = from.GetDirectoryName();
     }
 
-    Path filePath = directoryName / inPath;
+    Path filePath = directoryName / path;
     bool found    = Filesystem::Exists(filePath);
 
     if (!found)
@@ -62,10 +62,10 @@ bool ShaderCompiler::LoadSource(const Path&  inPath,
         /* Try the search paths. */
         const auto& searchPaths = ShaderManager::Get().GetSearchPaths();
 
-        const auto searchPath = searchPaths.find(inPath.Subset(0, 1).GetString());
+        const auto searchPath = searchPaths.find(path.Subset(0, 1).GetString());
         if (searchPath != searchPaths.end())
         {
-            filePath = Path(searchPath->second) / inPath.Subset(1);
+            filePath = Path(searchPath->second) / path.Subset(1);
             found    = Filesystem::Exists(filePath);
         }
     }
@@ -73,9 +73,9 @@ bool ShaderCompiler::LoadSource(const Path&  inPath,
     if (!found)
     {
         LogError("%s:%zu: Source file '%s' could not be found",
-                 inFrom.GetCString(),
-                 inLineIndex,
-                 inPath.GetCString());
+                 from.GetCString(),
+                 lineIndex,
+                 path.GetCString());
 
         return false;
     }
@@ -84,8 +84,8 @@ bool ShaderCompiler::LoadSource(const Path&  inPath,
     if (!file)
     {
         LogError("%s:%zu: Failed to open source file '%s'",
-                 inFrom.GetCString(),
-                 inLineIndex,
+                 from.GetCString(),
+                 lineIndex,
                  filePath.GetCString());
 
         return false;
@@ -100,23 +100,23 @@ bool ShaderCompiler::LoadSource(const Path&  inPath,
     if (!file->Read(outSource.data() + headerLength, sourceLength))
     {
         LogError("%s:%zu: Failed to read source file '%s'",
-                 inFrom.GetCString(),
-                 inLineIndex,
+                 from.GetCString(),
+                 lineIndex,
                  filePath.GetCString());
 
         return false;
     }
 
-    outSource += StringUtils::Format("#line %zu \"%s\"", inLineIndex, inFrom.GetCString());
+    outSource += StringUtils::Format("#line %zu \"%s\"", lineIndex, from.GetCString());
 
     mSourceFiles.emplace_back(filePath);
 
-    return Preprocess(outSource, filePath, inDepth + 1);
+    return Preprocess(outSource, filePath, depth + 1);
 }
 
 bool ShaderCompiler::Preprocess(std::string& ioSource,
-                                const Path&  inPath,
-                                const size_t inDepth)
+                                const Path&  path,
+                                const size_t depth)
 {
     /*
      * We have our own limited preprocessor in front of shaderc, which handles
@@ -154,7 +154,7 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
                     tokens[1][tokens[1].length() - 1] != '"')
                 {
                     LogError("%s:%zu: Malformed #include directive",
-                             inPath.GetCString(),
+                             path.GetCString(),
                              lineIndex);
 
                     return false;
@@ -164,9 +164,9 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
 
                 std::string includeSource;
                 if (!LoadSource(includePath,
-                                inPath,
+                                path,
                                 lineIndex,
-                                inDepth,
+                                depth,
                                 includeSource))
                 {
                     return false;

@@ -28,8 +28,8 @@
 
 #pragma clang diagnostic pop
 
-VulkanMemoryManager::VulkanMemoryManager(VulkanDevice& inDevice) :
-    GPUDeviceChild (inDevice)
+VulkanMemoryManager::VulkanMemoryManager(VulkanDevice& device) :
+    GPUDeviceChild (device)
 {
     VmaVulkanFunctions functions = {};
     functions.vkGetPhysicalDeviceProperties       = vkGetPhysicalDeviceProperties;
@@ -66,42 +66,42 @@ VulkanMemoryManager::~VulkanMemoryManager()
     vmaDestroyAllocator(mAllocator);
 }
 
-void VulkanMemoryManager::AllocateImage(const VkImageCreateInfo&       inCreateInfo,
-                                        const VmaAllocationCreateInfo& inAllocationInfo,
+void VulkanMemoryManager::AllocateImage(const VkImageCreateInfo&       createInfo,
+                                        const VmaAllocationCreateInfo& allocationInfo,
                                         VkImage&                       outImage,
                                         VmaAllocation&                 outAllocation)
 {
     /* VMA is synchronized internally where needed so this is thread-safe. */
     VulkanCheck(vmaCreateImage(mAllocator,
-                               &inCreateInfo,
-                               &inAllocationInfo,
+                               &createInfo,
+                               &allocationInfo,
                                &outImage,
                                &outAllocation,
                                nullptr));
 }
 
-void VulkanMemoryManager::AllocateBuffer(const VkBufferCreateInfo&      inCreateInfo,
-                                         const VmaAllocationCreateInfo& inAllocationInfo,
+void VulkanMemoryManager::AllocateBuffer(const VkBufferCreateInfo&      createInfo,
+                                         const VmaAllocationCreateInfo& allocationInfo,
                                          VkBuffer&                      outBuffer,
                                          VmaAllocation&                 outAllocation)
 {
     /* VMA is synchronized internally where needed so this is thread-safe. */
     VulkanCheck(vmaCreateBuffer(mAllocator,
-                                &inCreateInfo,
-                                &inAllocationInfo,
+                                &createInfo,
+                                &allocationInfo,
                                 &outBuffer,
                                 &outAllocation,
                                 nullptr));
 }
 
-void VulkanMemoryManager::Free(const VmaAllocation inAllocation)
+void VulkanMemoryManager::Free(const VmaAllocation allocation)
 {
     /* VMA is synchronized internally where needed so this is thread-safe. */
-    vmaFreeMemory(mAllocator, inAllocation);
+    vmaFreeMemory(mAllocator, allocation);
 }
 
-void VulkanMemoryManager::GetInfo(const VmaAllocation inAllocation,
+void VulkanMemoryManager::GetInfo(const VmaAllocation allocation,
                                   VmaAllocationInfo&  outInfo)
 {
-    vmaGetAllocationInfo(mAllocator, inAllocation, &outInfo);
+    vmaGetAllocationInfo(mAllocator, allocation, &outInfo);
 }

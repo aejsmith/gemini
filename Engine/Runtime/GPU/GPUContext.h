@@ -44,7 +44,7 @@ class GPUTexture;
 class GPUContext : public GPUDeviceChild
 {
 protected:
-                                    GPUContext(GPUDevice& inDevice);
+                                    GPUContext(GPUDevice& device);
 
 public:
                                     ~GPUContext() {}
@@ -56,7 +56,7 @@ public:
      * execution on the GPU until all work submitted to the other context prior
      * to this call has completed.
      */
-    virtual void                    Wait(GPUContext& inOtherContext) = 0;
+    virtual void                    Wait(GPUContext& otherContext) = 0;
 
 protected:
     /**
@@ -70,7 +70,7 @@ protected:
 class GPUTransferContext : public GPUContext
 {
 protected:
-                                    GPUTransferContext(GPUDevice& inDevice);
+                                    GPUTransferContext(GPUDevice& device);
 
 public:
                                     ~GPUTransferContext() {}
@@ -81,16 +81,16 @@ public:
      * GPUResourceState for more details. Barriers should be batched together
      * into a single call to this wherever possible.
      */
-    virtual void                    ResourceBarrier(const GPUResourceBarrier* const inBarriers,
-                                                    const size_t                    inCount) = 0;
-    void                            ResourceBarrier(GPUResource* const     inResource,
-                                                    const GPUResourceState inCurrentState,
-                                                    const GPUResourceState inNewState,
-                                                    const bool             inDiscard = false);
-    void                            ResourceBarrier(GPUResourceView* const inView,
-                                                    const GPUResourceState inCurrentState,
-                                                    const GPUResourceState inNewState,
-                                                    const bool             inDiscard = false);
+    virtual void                    ResourceBarrier(const GPUResourceBarrier* const barriers,
+                                                    const size_t                    count) = 0;
+    void                            ResourceBarrier(GPUResource* const     resource,
+                                                    const GPUResourceState currentState,
+                                                    const GPUResourceState newState,
+                                                    const bool             discard = false);
+    void                            ResourceBarrier(GPUResourceView* const view,
+                                                    const GPUResourceState currentState,
+                                                    const GPUResourceState newState,
+                                                    const bool             discard = false);
 
     /**
      * Blit a texture subresource, with potential format conversion and scaling.
@@ -100,18 +100,18 @@ public:
      * kGPUResourceState_TransferRead state, and destination must be in the
      * kGPUResourceState_TransferWrite state.
      */
-    void                            BlitTexture(GPUTexture* const    inDestTexture,
-                                                const GPUSubresource inDestSubresource,
-                                                GPUTexture* const    inSourceTexture,
-                                                const GPUSubresource inSourceSubresource);
-    virtual void                    BlitTexture(GPUTexture* const    inDestTexture,
-                                                const GPUSubresource inDestSubresource,
-                                                const glm::ivec3&    inDestOffset,
-                                                const glm::ivec3&    inDestSize,
-                                                GPUTexture* const    inSourceTexture,
-                                                const GPUSubresource inSourceSubresource,
-                                                const glm::ivec3&    inSourceOffset,
-                                                const glm::ivec3&    inSourceSize) = 0;
+    void                            BlitTexture(GPUTexture* const    destTexture,
+                                                const GPUSubresource destSubresource,
+                                                GPUTexture* const    sourceTexture,
+                                                const GPUSubresource sourceSubresource);
+    virtual void                    BlitTexture(GPUTexture* const    destTexture,
+                                                const GPUSubresource destSubresource,
+                                                const glm::ivec3&    destOffset,
+                                                const glm::ivec3&    destSize,
+                                                GPUTexture* const    sourceTexture,
+                                                const GPUSubresource sourceSubresource,
+                                                const glm::ivec3&    sourceOffset,
+                                                const glm::ivec3&    sourceSize) = 0;
 
     /**
      * Clear a texture. This is a standalone clear, which requires the cleared
@@ -120,9 +120,9 @@ public:
      * render pass to them, as this is likely more efficient than doing an
      * explicit clear outside the pass.
      */
-    virtual void                    ClearTexture(GPUTexture* const          inTexture,
-                                                 const GPUTextureClearData& inData,
-                                                 const GPUSubresourceRange& inRange = GPUSubresourceRange()) = 0;
+    virtual void                    ClearTexture(GPUTexture* const          texture,
+                                                 const GPUTextureClearData& data,
+                                                 const GPUSubresourceRange& range = GPUSubresourceRange()) = 0;
 
     /**
      * Upload data to a buffer from a staging buffer. Requires the destination
@@ -131,11 +131,11 @@ public:
      * TODO: Have an upload command list that allows resource uploads to be
      * done outside the main thread (for async resource loading).
      */
-    virtual void                    UploadBuffer(GPUBuffer* const        inDestBuffer,
-                                                 const GPUStagingBuffer& inSourceBuffer,
-                                                 const uint32_t          inSize,
-                                                 const uint32_t          inDestOffset   = 0,
-                                                 const uint32_t          inSourceOffset = 0) = 0;
+    virtual void                    UploadBuffer(GPUBuffer* const        destBuffer,
+                                                 const GPUStagingBuffer& sourceBuffer,
+                                                 const uint32_t          size,
+                                                 const uint32_t          destOffset   = 0,
+                                                 const uint32_t          sourceOffset = 0) = 0;
 
     /**
      * Upload data to a texture from a staging texture. Requires the destination
@@ -152,20 +152,20 @@ public:
      * TODO: Have an upload command list that allows resource uploads to be
      * done outside the main thread (for async resource loading).
      */
-    virtual void                    UploadTexture(GPUTexture* const        inDestTexture,
-                                                  const GPUStagingTexture& inSourceTexture) = 0;
-    virtual void                    UploadTexture(GPUTexture* const        inDestTexture,
-                                                  const GPUSubresource     inDestSubresource,
-                                                  const glm::ivec3&        inDestOffset,
-                                                  const GPUStagingTexture& inSourceTexture,
-                                                  const GPUSubresource     inSourceSubresource,
-                                                  const glm::ivec3&        inSourceOffset,
-                                                  const glm::ivec3&        inSize) = 0;
+    virtual void                    UploadTexture(GPUTexture* const        destTexture,
+                                                  const GPUStagingTexture& sourceTexture) = 0;
+    virtual void                    UploadTexture(GPUTexture* const        destTexture,
+                                                  const GPUSubresource     destSubresource,
+                                                  const glm::ivec3&        destOffset,
+                                                  const GPUStagingTexture& sourceTexture,
+                                                  const GPUSubresource     sourceSubresource,
+                                                  const glm::ivec3&        sourceOffset,
+                                                  const glm::ivec3&        size) = 0;
 
     #if GEMINI_BUILD_DEBUG
 
     /** Begin/end a named debug marker which will show up in debug tools. */
-    virtual void                    BeginMarker(const char* const inLabel) {}
+    virtual void                    BeginMarker(const char* const label) {}
     virtual void                    EndMarker() {}
 
     #endif
@@ -174,7 +174,7 @@ public:
 class GPUComputeContext : public GPUTransferContext
 {
 protected:
-                                    GPUComputeContext(GPUDevice& inDevice);
+                                    GPUComputeContext(GPUDevice& device);
 
 public:
                                     ~GPUComputeContext() {}
@@ -191,8 +191,8 @@ public:
      * the kGPUResourceState_Present state. It must be returned to this state
      * before EndPresent() is called.
      */
-    virtual void                    BeginPresent(GPUSwapchain& inSwapchain) = 0;
-    virtual void                    EndPresent(GPUSwapchain& inSwapchain) = 0;
+    virtual void                    BeginPresent(GPUSwapchain& swapchain) = 0;
+    virtual void                    EndPresent(GPUSwapchain& swapchain) = 0;
 
     /**
      * Create a compute pass. This does not perform any work on the context,
@@ -207,11 +207,11 @@ public:
      * they were created in, however they must be submitted within the same
      * frame as they were created.
      */
-    void                            SubmitComputePass(GPUComputeCommandList* const inCmdList);
+    void                            SubmitComputePass(GPUComputeCommandList* const cmdList);
 
 protected:
     virtual GPUComputeCommandList*  CreateComputePassImpl() = 0;
-    virtual void                    SubmitComputePassImpl(GPUComputeCommandList* const inCmdList) = 0;
+    virtual void                    SubmitComputePassImpl(GPUComputeCommandList* const cmdList) = 0;
 
 protected:
     #if GEMINI_BUILD_DEBUG
@@ -227,7 +227,7 @@ protected:
 class GPUGraphicsContext : public GPUComputeContext
 {
 protected:
-                                    GPUGraphicsContext(GPUDevice& inDevice);
+                                    GPUGraphicsContext(GPUDevice& device);
 
 public:
                                     ~GPUGraphicsContext() {}
@@ -241,23 +241,23 @@ public:
      * the pass on. Pass the command list to SubmitRenderPass() once all
      * commands have been recorded.
      */
-    GPUGraphicsCommandList*         CreateRenderPass(const GPURenderPass& inRenderPass);
+    GPUGraphicsCommandList*         CreateRenderPass(const GPURenderPass& renderPass);
 
     /**
      * Submit a render pass. Passes need not be submitted in the same order
      * they were created in, however they must be submitted within the same
      * frame as they were created.
      */
-    void                            SubmitRenderPass(GPUGraphicsCommandList* const inCmdList);
+    void                            SubmitRenderPass(GPUGraphicsCommandList* const cmdList);
 
 protected:
-    virtual GPUGraphicsCommandList* CreateRenderPassImpl(const GPURenderPass& inRenderPass) = 0;
-    virtual void                    SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList) = 0;
+    virtual GPUGraphicsCommandList* CreateRenderPassImpl(const GPURenderPass& renderPass) = 0;
+    virtual void                    SubmitRenderPassImpl(GPUGraphicsCommandList* const cmdList) = 0;
 
 };
 
-inline GPUContext::GPUContext(GPUDevice& inDevice) :
-    GPUDeviceChild      (inDevice)
+inline GPUContext::GPUContext(GPUDevice& device) :
+    GPUDeviceChild      (device)
 {
 }
 
@@ -266,42 +266,42 @@ inline void GPUContext::ValidateContext() const
     Assert(Thread::IsMain());
 }
 
-inline GPUTransferContext::GPUTransferContext(GPUDevice& inDevice) :
-    GPUContext          (inDevice)
+inline GPUTransferContext::GPUTransferContext(GPUDevice& device) :
+    GPUContext          (device)
 {
 }
 
-inline void GPUTransferContext::ResourceBarrier(GPUResource* const     inResource,
-                                                const GPUResourceState inCurrentState,
-                                                const GPUResourceState inNewState,
-                                                const bool             inDiscard)
+inline void GPUTransferContext::ResourceBarrier(GPUResource* const     resource,
+                                                const GPUResourceState currentState,
+                                                const GPUResourceState newState,
+                                                const bool             discard)
 {
     GPUResourceBarrier barrier = {};
-    barrier.resource     = inResource;
-    barrier.currentState = inCurrentState;
-    barrier.newState     = inNewState;
-    barrier.discard      = inDiscard;
+    barrier.resource     = resource;
+    barrier.currentState = currentState;
+    barrier.newState     = newState;
+    barrier.discard      = discard;
 
     ResourceBarrier(&barrier, 1);
 }
 
-inline void GPUTransferContext::ResourceBarrier(GPUResourceView* const inView,
-                                                const GPUResourceState inCurrentState,
-                                                const GPUResourceState inNewState,
-                                                const bool             inDiscard)
+inline void GPUTransferContext::ResourceBarrier(GPUResourceView* const view,
+                                                const GPUResourceState currentState,
+                                                const GPUResourceState newState,
+                                                const bool             discard)
 {
     GPUResourceBarrier barrier = {};
-    barrier.resource     = &inView->GetResource();
-    barrier.range        = inView->GetSubresourceRange();
-    barrier.currentState = inCurrentState;
-    barrier.newState     = inNewState;
-    barrier.discard      = inDiscard;
+    barrier.resource     = &view->GetResource();
+    barrier.range        = view->GetSubresourceRange();
+    barrier.currentState = currentState;
+    barrier.newState     = newState;
+    barrier.discard      = discard;
 
     ResourceBarrier(&barrier, 1);
 }
 
-inline GPUComputeContext::GPUComputeContext(GPUDevice& inDevice) :
-    GPUTransferContext  (inDevice)
+inline GPUComputeContext::GPUComputeContext(GPUDevice& device) :
+    GPUTransferContext  (device)
 {
     #if GEMINI_BUILD_DEBUG
         mActivePassCount = 0;
@@ -319,45 +319,45 @@ inline GPUComputeCommandList* GPUComputeContext::CreateComputePass()
     return CreateComputePassImpl();
 }
 
-inline void GPUComputeContext::SubmitComputePass(GPUComputeCommandList* const inCmdList)
+inline void GPUComputeContext::SubmitComputePass(GPUComputeCommandList* const cmdList)
 {
     ValidateContext();
 
-    Assert(!inCmdList->GetParent());
-    Assert(inCmdList->GetState() == GPUCommandList::kState_Ended);
+    Assert(!cmdList->GetParent());
+    Assert(cmdList->GetState() == GPUCommandList::kState_Ended);
 
-    SubmitComputePassImpl(inCmdList);
+    SubmitComputePassImpl(cmdList);
 
     #if GEMINI_BUILD_DEBUG
         mActivePassCount--;
     #endif
 }
 
-inline GPUGraphicsContext::GPUGraphicsContext(GPUDevice& inDevice) :
-    GPUComputeContext  (inDevice)
+inline GPUGraphicsContext::GPUGraphicsContext(GPUDevice& device) :
+    GPUComputeContext  (device)
 {
 }
 
-inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURenderPass& inRenderPass)
+inline GPUGraphicsCommandList* GPUGraphicsContext::CreateRenderPass(const GPURenderPass& renderPass)
 {
     ValidateContext();
 
     #if GEMINI_BUILD_DEBUG
         mActivePassCount++;
-        inRenderPass.Validate();
+        renderPass.Validate();
     #endif
 
-    return CreateRenderPassImpl(inRenderPass);
+    return CreateRenderPassImpl(renderPass);
 }
 
-inline void GPUGraphicsContext::SubmitRenderPass(GPUGraphicsCommandList* const inCmdList)
+inline void GPUGraphicsContext::SubmitRenderPass(GPUGraphicsCommandList* const cmdList)
 {
     ValidateContext();
 
-    Assert(!inCmdList->GetParent());
-    Assert(inCmdList->GetState() == GPUCommandList::kState_Ended);
+    Assert(!cmdList->GetParent());
+    Assert(cmdList->GetState() == GPUCommandList::kState_Ended);
 
-    SubmitRenderPassImpl(inCmdList);
+    SubmitRenderPassImpl(cmdList);
 
     #if GEMINI_BUILD_DEBUG
         mActivePassCount--;

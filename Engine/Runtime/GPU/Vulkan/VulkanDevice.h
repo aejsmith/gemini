@@ -51,28 +51,28 @@ public:
      * GPUDevice methods.
      */
 public:
-    GPUArgumentSet*                     CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
-                                                          const GPUArgument* const      inArguments) override;
+    GPUArgumentSet*                     CreateArgumentSet(const GPUArgumentSetLayoutRef layout,
+                                                          const GPUArgument* const      arguments) override;
 
-    GPUBuffer*                          CreateBuffer(const GPUBufferDesc& inDesc) override;
+    GPUBuffer*                          CreateBuffer(const GPUBufferDesc& desc) override;
 
-    GPUComputePipeline*                 CreateComputePipeline(const GPUComputePipelineDesc& inDesc) override;
+    GPUComputePipeline*                 CreateComputePipeline(const GPUComputePipelineDesc& desc) override;
 
-    GPUResourceView*                    CreateResourceView(GPUResource* const         inResource,
-                                                           const GPUResourceViewDesc& inDesc) override;
+    GPUResourceView*                    CreateResourceView(GPUResource* const         resource,
+                                                           const GPUResourceViewDesc& desc) override;
 
-    GPUShaderPtr                        CreateShader(const GPUShaderStage inStage,
-                                                     GPUShaderCode        inCode,
-                                                     const std::string&   inFunction) override;
+    GPUShaderPtr                        CreateShader(const GPUShaderStage stage,
+                                                     GPUShaderCode        code,
+                                                     const std::string&   function) override;
 
-    void                                CreateSwapchain(Window& inWindow) override;
+    void                                CreateSwapchain(Window& window) override;
 
-    GPUTexture*                         CreateTexture(const GPUTextureDesc& inDesc) override;
+    GPUTexture*                         CreateTexture(const GPUTextureDesc& desc) override;
 
 protected:
-    GPUArgumentSetLayout*               CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc) override;
-    GPUPipeline*                        CreatePipelineImpl(const GPUPipelineDesc& inDesc) override;
-    GPUSampler*                         CreateSamplerImpl(const GPUSamplerDesc& inDesc) override;
+    GPUArgumentSetLayout*               CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& desc) override;
+    GPUPipeline*                        CreatePipelineImpl(const GPUPipelineDesc& desc) override;
+    GPUSampler*                         CreateSamplerImpl(const GPUSamplerDesc& desc) override;
 
     void                                EndFrameImpl() override;
 
@@ -98,8 +98,8 @@ public:
     VulkanDescriptorPool&               GetDescriptorPool() const       { return *mDescriptorPool; }
     VulkanGeometryPool&                 GetGeometryPool() const         { return *mGeometryPool; }
 
-    bool                                HasCap(const Caps inCap) const
-                                            { return (mCaps & inCap) == inCap; }
+    bool                                HasCap(const Caps cap) const
+                                            { return (mCaps & cap) == cap; }
 
     /**
      * Get the current frame index (between 0 and kVulkanInFlightFrameCount),
@@ -111,13 +111,13 @@ public:
      * Add a function to be called when the current frame has completed on the
      * GPU. This can be used for deferred deletion.
      */
-    void                                AddFrameCompleteCallback(FrameCompleteCallback inCallback);
+    void                                AddFrameCompleteCallback(FrameCompleteCallback callback);
 
     /** Apply a debug name to an object if we have VK_EXT_debug_marker. */
     template <typename T>
-    void                                UpdateName(const T                          inHandle,
-                                                   const VkDebugReportObjectTypeEXT inType,
-                                                   const std::string&               inName);
+    void                                UpdateName(const T                          handle,
+                                                   const VkDebugReportObjectTypeEXT type,
+                                                   const std::string&               name);
 
     /**
      * Get a semaphore. This should be used within the current frame - once it
@@ -135,14 +135,14 @@ public:
      */
     VkFence                             AllocateFence();
 
-    VkPipelineLayout                    GetPipelineLayout(const VulkanPipelineLayoutKey& inKey);
+    VkPipelineLayout                    GetPipelineLayout(const VulkanPipelineLayoutKey& key);
 
     /**
      * Get a Vulkan render pass and framebuffer object matching the given
      * render pass description from a cache. If no matching objects are found,
      * new ones will be created. Must be called from the main thread.
      */
-    void                                GetRenderPass(const GPURenderPass& inRenderPass,
+    void                                GetRenderPass(const GPURenderPass& renderPass,
                                                       VkRenderPass&        outVulkanRenderPass,
                                                       VkFramebuffer&       outFramebuffer);
 
@@ -150,13 +150,13 @@ public:
      * Get a Vulkan render pass matching the given render target state, which
      * should be compatible with any real render pass matching the state.
      */
-    VkRenderPass                        GetRenderPass(const GPURenderTargetStateDesc& inState);
+    VkRenderPass                        GetRenderPass(const GPURenderTargetStateDesc& state);
 
     /**
      * Callback from VulkanResourceView and VulkanSwapchain to invalidate any
      * framebuffers referring to a view.
      */
-    void                                InvalidateFramebuffers(const VkImageView inView);
+    void                                InvalidateFramebuffers(const VkImageView view);
 
 private:
     struct Frame
@@ -183,7 +183,7 @@ private:
 private:
     void                                CreateDevice();
 
-    VkRenderPass                        GetRenderPass(const VulkanRenderPassKey& inKey);
+    VkRenderPass                        GetRenderPass(const VulkanRenderPassKey& key);
 
 private:
     VulkanInstance*                     mInstance;
@@ -224,17 +224,17 @@ private:
 };
 
 template <typename T>
-inline void VulkanDevice::UpdateName(const T                          inHandle,
-                                     const VkDebugReportObjectTypeEXT inType,
-                                     const std::string&               inName)
+inline void VulkanDevice::UpdateName(const T                          handle,
+                                     const VkDebugReportObjectTypeEXT type,
+                                     const std::string&               name)
 {
     if (HasCap(kCap_DebugMarker))
     {
         VkDebugMarkerObjectNameInfoEXT nameInfo = {};
         nameInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
-        nameInfo.objectType  = inType;
-        nameInfo.object      = reinterpret_cast<uint64_t>(inHandle);
-        nameInfo.pObjectName = inName.c_str();
+        nameInfo.objectType  = type;
+        nameInfo.object      = reinterpret_cast<uint64_t>(handle);
+        nameInfo.pObjectName = name.c_str();
 
         vkDebugMarkerSetObjectNameEXT(GetHandle(), &nameInfo);
     }

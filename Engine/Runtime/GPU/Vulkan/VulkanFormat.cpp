@@ -40,17 +40,17 @@ static VkFormat sFormatTable[kPixelFormatCount] =
     /* kPixelFormat_Depth32Stencil8 */      VK_FORMAT_D32_SFLOAT_S8_UINT,
 };
 
-VkFormat VulkanFormat::GetVulkanFormat(const PixelFormat inFormat)
+VkFormat VulkanFormat::GetVulkanFormat(const PixelFormat format)
 {
-    Assert(inFormat < kPixelFormatCount);
-    return sFormatTable[inFormat];
+    Assert(format < kPixelFormatCount);
+    return sFormatTable[format];
 }
 
-PixelFormat VulkanFormat::GetPixelFormat(const VkFormat inFormat)
+PixelFormat VulkanFormat::GetPixelFormat(const VkFormat format)
 {
     for (int i = 0; i < kPixelFormatCount; i++)
     {
-        if (sFormatTable[i] == inFormat)
+        if (sFormatTable[i] == format)
         {
             return static_cast<PixelFormat>(i);
         }

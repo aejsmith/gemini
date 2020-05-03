@@ -64,7 +64,7 @@ public:
      */
     VPROPERTY(std::string, name);
     const std::string&      GetName() const { return mName; }
-    void                    SetName(std::string inName);
+    void                    SetName(std::string name);
 
     /**
      * Get the entity's path in the entity hierarchy. This is formed from the
@@ -80,7 +80,7 @@ public:
      */
     VPROPERTY(bool, active);
     bool                    GetActive() const { return mActive; }
-    void                    SetActive(const bool inActive);
+    void                    SetActive(const bool active);
 
     /**
      * Whether the entity is really active, based on the active property of this
@@ -88,7 +88,7 @@ public:
      */
     bool                    GetActiveInWorld() const { return mActiveInWorld; }
 
-    Entity*                 CreateChild(std::string inName);
+    Entity*                 CreateChild(std::string name);
 
     /**
      * Components.
@@ -98,19 +98,19 @@ public:
 
     template <typename T, typename ...Args>
     T*                      CreateComponent(Args&&... args);
-    Component*              CreateComponent(const MetaClass& inMetaClass);
+    Component*              CreateComponent(const MetaClass& metaClass);
 
     /**
-     * Find a component of a given class. If inExactClass is true, then the
+     * Find a component of a given class. If exactClass is true, then the
      * component must be an instance of the exact class specified, otherwise
      * it can be an instance of that class or any derived from it.
      */
     template <typename T>
-    T*                      FindComponent(const bool inExactClass = false) const;
-    Component*              FindComponent(const MetaClass& inMetaClass,
-                                          const bool       inExactClass = false) const;
+    T*                      FindComponent(const bool exactClass = false) const;
+    Component*              FindComponent(const MetaClass& metaClass,
+                                          const bool       exactClass = false) const;
 
-    void                    RemoveComponent(Component* const inComponent,
+    void                    RemoveComponent(Component* const component,
                                             OnlyCalledBy<Component>);
 
     /**
@@ -119,27 +119,27 @@ public:
 
     const Transform&        GetTransform() const { return mTransform; }
 
-    void                    SetTransform(const Transform& inTransform);
-    void                    SetTransform(const glm::vec3& inPosition,
-                                         const glm::quat& inOrientation,
-                                         const glm::vec3& inScale);
+    void                    SetTransform(const Transform& transform);
+    void                    SetTransform(const glm::vec3& position,
+                                         const glm::quat& orientation,
+                                         const glm::vec3& scale);
 
     VPROPERTY(glm::vec3, position);
     const glm::vec3&        GetPosition() const { return mTransform.GetPosition(); }
-    void                    SetPosition(const glm::vec3& inPosition);
+    void                    SetPosition(const glm::vec3& position);
 
     VPROPERTY(glm::quat, orientation);
     const glm::quat&        GetOrientation() const { return mTransform.GetOrientation(); }
-    void                    SetOrientation(const glm::quat& inOrientation);
+    void                    SetOrientation(const glm::quat& orientation);
 
     VPROPERTY(glm::vec3, scale);
     const glm::vec3&        GetScale() const { return mTransform.GetScale(); }
-    void                    SetScale(const glm::vec3& inScale);
+    void                    SetScale(const glm::vec3& scale);
 
-    void                    Translate(const glm::vec3& inVector);
-    void                    Rotate(const glm::quat& inRotation);
-    void                    Rotate(const Degrees    inAngle,
-                                   const glm::vec3& inAxis);
+    void                    Translate(const glm::vec3& vector);
+    void                    Rotate(const glm::quat& rotation);
+    void                    Rotate(const Degrees    angle,
+                                   const glm::vec3& axis);
 
     /**
      * World transformation is the effective transformation in the world based
@@ -154,19 +154,19 @@ private:
                             Entity();
                             ~Entity();
 
-    void                    Serialise(Serialiser& inSerialiser) const override;
-    void                    Deserialise(Serialiser& inSerialiser) override;
+    void                    Serialise(Serialiser& serialiser) const override;
+    void                    Deserialise(Serialiser& serialiser) override;
 
     void                    Activate();
     void                    Deactivate();
 
-    void                    AddChild(Entity* const inEntity);
+    void                    AddChild(Entity* const entity);
 
-    void                    AddComponent(ObjPtr<Component> inComponent);
+    void                    AddComponent(ObjPtr<Component> component);
 
     void                    UpdateTransform();
 
-    void                    Tick(const float inDelta);
+    void                    Tick(const float delta);
 
 private:
     World*                  mWorld;
@@ -212,10 +212,10 @@ inline T* Entity::CreateComponent(Args&&... args)
 }
 
 template <typename T>
-inline T* Entity::FindComponent(const bool inExactClass) const
+inline T* Entity::FindComponent(const bool exactClass) const
 {
     static_assert(std::is_base_of<Component, T>::value,
                   "Type must be derived from Component");
 
-    return static_cast<T*>(FindComponent(T::staticMetaClass));
+    return static_cast<T*>(FindComponent(T::staticMetaClass), exactClass);
 }

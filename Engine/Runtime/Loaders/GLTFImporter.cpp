@@ -49,29 +49,29 @@ static constexpr uint32_t GL_FLOAT          = 5126;
 
 static constexpr uint32_t kInvalidIndex     = std::numeric_limits<uint32_t>::max();
 
-static float GetFloat(const rapidjson::Value& inEntry,
-                      const char* const       inName,
-                      const float             inDefault)
+static float GetFloat(const rapidjson::Value& entry,
+                      const char* const       name,
+                      const float             defaultValue)
 {
-    float result = inDefault;
+    float result = defaultValue;
 
-    if (inEntry.HasMember(inName))
+    if (entry.HasMember(name))
     {
-        result = inEntry[inName].GetFloat();
+        result = entry[name].GetFloat();
     }
 
     return result;
 }
 
-static glm::vec3 GetVec3(const rapidjson::Value& inEntry,
-                         const char* const       inName,
-                         const glm::vec3&        inDefault)
+static glm::vec3 GetVec3(const rapidjson::Value& entry,
+                         const char* const       name,
+                         const glm::vec3&        defaultValue)
 {
-    glm::vec3 result = inDefault;
+    glm::vec3 result = defaultValue;
 
-    if (inEntry.HasMember(inName))
+    if (entry.HasMember(name))
     {
-        const rapidjson::Value& value = inEntry[inName];
+        const rapidjson::Value& value = entry[name];
 
         result.x = value[0u].GetFloat();
         result.y = value[1u].GetFloat();
@@ -81,15 +81,15 @@ static glm::vec3 GetVec3(const rapidjson::Value& inEntry,
     return result;
 }
 
-static glm::vec4 GetVec4(const rapidjson::Value& inEntry,
-                         const char* const       inName,
-                         const glm::vec4&        inDefault)
+static glm::vec4 GetVec4(const rapidjson::Value& entry,
+                         const char* const       name,
+                         const glm::vec4&        defaultValue)
 {
-    glm::vec4 result = inDefault;
+    glm::vec4 result = defaultValue;
 
-    if (inEntry.HasMember(inName))
+    if (entry.HasMember(name))
     {
-        const rapidjson::Value& value = inEntry[inName];
+        const rapidjson::Value& value = entry[name];
 
         result.x = value[0u].GetFloat();
         result.y = value[1u].GetFloat();
@@ -100,15 +100,15 @@ static glm::vec4 GetVec4(const rapidjson::Value& inEntry,
     return result;
 }
 
-static glm::quat GetQuat(const rapidjson::Value& inEntry,
-                         const char* const       inName,
-                         const glm::quat&        inDefault)
+static glm::quat GetQuat(const rapidjson::Value& entry,
+                         const char* const       name,
+                         const glm::quat&        defaultValue)
 {
-    glm::quat result = inDefault;
+    glm::quat result = defaultValue;
 
-    if (inEntry.HasMember(inName))
+    if (entry.HasMember(name))
     {
-        const rapidjson::Value& value = inEntry[inName];
+        const rapidjson::Value& value = entry[name];
 
         result.x = value[0u].GetFloat();
         result.y = value[1u].GetFloat();
@@ -127,13 +127,13 @@ GLTFImporter::~GLTFImporter()
 {
 }
 
-bool GLTFImporter::Import(const Path&  inPath,
-                          const Path&  inAssetDir,
-                          World* const inWorld)
+bool GLTFImporter::Import(const Path&  path,
+                          const Path&  assetDir,
+                          World* const world)
 {
-    mPath     = inPath;
-    mAssetDir = inAssetDir;
-    mWorld    = inWorld;
+    mPath     = path;
+    mAssetDir = assetDir;
+    mWorld    = world;
 
     /* Parse the file content. */
     {
@@ -541,17 +541,17 @@ bool GLTFImporter::LoadMaterials()
 
         MaterialDef& material = mMaterials.emplace_back();
 
-        auto GetTexture = [&] (const rapidjson::Value& inParentValue,
-                               const char* const       inName,
+        auto GetTexture = [&] (const rapidjson::Value& parentValue,
+                               const char* const       name,
                                uint32_t&               outIndex) -> bool
         {
-            if (!inParentValue.HasMember(inName))
+            if (!parentValue.HasMember(name))
             {
                 outIndex = kInvalidIndex;
                 return true;
             }
 
-            const rapidjson::Value& texture = inParentValue[inName];
+            const rapidjson::Value& texture = parentValue[name];
 
             if (!texture.IsObject() ||
                 !texture.HasMember("index") || !texture["index"].IsUint())
@@ -924,17 +924,17 @@ bool GLTFImporter::LoadTextures()
     return true;
 }
 
-bool GLTFImporter::LoadURI(const rapidjson::Value& inURI,
+bool GLTFImporter::LoadURI(const rapidjson::Value& uriValue,
                            ByteArray&              outData,
                            std::string&            outMediaType)
 {
-    if (!inURI.IsString())
+    if (!uriValue.IsString())
     {
         LogError("%s: 'uri' is invalid", mPath.GetCString());
         return false;
     }
 
-    const char* uri = inURI.GetString();
+    const char* uri = uriValue.GetString();
 
     static constexpr char kDataURIPrefix[]   = "data:";
     static constexpr char kBase64Specifier[] = ";base64,";
@@ -1007,9 +1007,9 @@ bool GLTFImporter::LoadURI(const rapidjson::Value& inURI,
     return true;
 }
 
-bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
+bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
 {
-    MaterialDef& material = mMaterials[inMaterialIndex];
+    MaterialDef& material = mMaterials[materialIndex];
 
     if (material.asset)
     {
@@ -1025,22 +1025,22 @@ bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
     MaterialPtr asset(new Material(shaderTechnique));
     material.asset = asset;
 
-    auto SetTexture = [&] (const char* const inName,
-                           const uint32_t    inIndex,
-                           const bool        inSRGB)
+    auto SetTexture = [&] (const char* const name,
+                           const uint32_t    index,
+                           const bool        sRGB)
     {
-        if (inIndex == kInvalidIndex)
+        if (index == kInvalidIndex)
         {
             /* Leave as the material default. */
             return true;
         }
 
-        if (!GenerateTexture(inIndex, inSRGB))
+        if (!GenerateTexture(index, sRGB))
         {
             return false;
         }
 
-        asset->SetArgument(inName, mTextures[inIndex].asset);
+        asset->SetArgument(name, mTextures[index].asset);
         return true;
     };
 
@@ -1058,7 +1058,7 @@ bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
 
     asset->UpdateArgumentSet();
 
-    const Path assetPath = mAssetDir / StringUtils::Format("Material_%u", inMaterialIndex);
+    const Path assetPath = mAssetDir / StringUtils::Format("Material_%u", materialIndex);
     if (!AssetManager::Get().SaveAsset(asset, assetPath))
     {
         LogError("%s: Failed to save Material asset", mPath.GetCString());
@@ -1068,9 +1068,9 @@ bool GLTFImporter::GenerateMaterial(const uint32_t inMaterialIndex)
     return true;
 }
 
-bool GLTFImporter::GenerateMesh(const uint32_t inMeshIndex)
+bool GLTFImporter::GenerateMesh(const uint32_t meshIndex)
 {
-    MeshDef& mesh = mMeshes[inMeshIndex];
+    MeshDef& mesh = mMeshes[meshIndex];
 
     /* We create each primitive as a separate mesh asset. This is because each
      * primitive has a separate set of vertex data in glTF, whereas the Mesh
@@ -1219,7 +1219,7 @@ bool GLTFImporter::GenerateMesh(const uint32_t inMeshIndex)
         }
 
         /* Save the mesh asset. */
-        const Path assetPath = mAssetDir / StringUtils::Format("Mesh_%u_Primitive_%u", inMeshIndex, primitiveIndex);
+        const Path assetPath = mAssetDir / StringUtils::Format("Mesh_%u_Primitive_%u", meshIndex, primitiveIndex);
         if (!AssetManager::Get().SaveAsset(asset, assetPath))
         {
             LogError("%s: Failed to save Mesh asset", mPath.GetCString());
@@ -1292,14 +1292,14 @@ bool GLTFImporter::GenerateScene()
     return true;
 }
 
-bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex,
-                                   const bool     inSRGB)
+bool GLTFImporter::GenerateTexture(const uint32_t textureIndex,
+                                   const bool     sRGB)
 {
-    TextureDef& texture = mTextures[inTextureIndex];
+    TextureDef& texture = mTextures[textureIndex];
 
     if (texture.asset)
     {
-        Assert(inSRGB == texture.sRGB);
+        Assert(sRGB == texture.sRGB);
         return true;
     }
 
@@ -1307,7 +1307,7 @@ bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex,
 
     /* We'll just save out the image data into the asset filesystem, since it's
      * either JPEG or PNG and we can load those directly. */
-    const Path assetPath = mAssetDir / StringUtils::Format("Texture_%u", inTextureIndex);
+    const Path assetPath = mAssetDir / StringUtils::Format("Texture_%u", textureIndex);
 
     Path baseFSPath;
     if (!AssetManager::Get().GetFilesystemPath(assetPath, baseFSPath))
@@ -1361,7 +1361,7 @@ bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex,
             "   }\n"
             "]\n",
             loaderClass,
-            (inSRGB) ? "true" : "false");
+            (sRGB) ? "true" : "false");
 
         Path fsPath = baseFSPath + ".loader";
 
@@ -1381,7 +1381,7 @@ bool GLTFImporter::GenerateTexture(const uint32_t inTextureIndex,
 
     /* Now load it back in as a proper texture asset. */
     texture.asset = AssetManager::Get().Load<Texture2D>(assetPath);
-    texture.sRGB  = inSRGB;
+    texture.sRGB  = sRGB;
 
     return texture.asset != nullptr;
 }

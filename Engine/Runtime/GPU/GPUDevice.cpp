@@ -71,9 +71,9 @@ void GPUDevice::EndFrame()
     EndFrameImpl();
 }
 
-GPUArgumentSetLayoutRef GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& inDesc)
+GPUArgumentSetLayoutRef GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc&& desc)
 {
-    const size_t hash = HashValue(inDesc);
+    const size_t hash = HashValue(desc);
 
     GPUArgumentSetLayout* layout = nullptr;
 
@@ -89,7 +89,7 @@ GPUArgumentSetLayoutRef GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc
 
     if (!layout)
     {
-        layout = CreateArgumentSetLayoutImpl(std::move(inDesc));
+        layout = CreateArgumentSetLayoutImpl(std::move(desc));
 
         std::unique_lock lock(mResourceCacheLock);
 
@@ -105,9 +105,9 @@ GPUArgumentSetLayoutRef GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc
     return layout;
 }
 
-GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& inDesc)
+GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& desc)
 {
-    const size_t hash = HashValue(inDesc);
+    const size_t hash = HashValue(desc);
 
     /* Check whether we have a copy of the descriptor stored. Lock for reading
      * to begin with. */
@@ -122,7 +122,7 @@ GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& inDesc)
             pipeline = it->second;
 
             /* Sanity check that we aren't getting any hash collisions. */
-            Assert(inDesc == pipeline->GetDesc());
+            Assert(desc == pipeline->GetDesc());
         }
     }
 
@@ -130,7 +130,7 @@ GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& inDesc)
     {
         /* Pipeline creation may take a long time, do it outside the lock to
          * allow parallel creation of pipelines on other threads. */
-        pipeline = CreatePipelineImpl(inDesc);
+        pipeline = CreatePipelineImpl(desc);
 
         std::unique_lock lock(mResourceCacheLock);
 
@@ -140,7 +140,7 @@ GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& inDesc)
         {
             /* Register with the shaders. mResourceCacheLock guards the shader
              * pipeline sets. */
-            for (auto shader : inDesc.shaders)
+            for (auto shader : desc.shaders)
             {
                 if (shader)
                 {
@@ -155,34 +155,34 @@ GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& inDesc)
             pipeline->Destroy({});
             pipeline = ret.first->second;
 
-            Assert(inDesc == pipeline->GetDesc());
+            Assert(desc == pipeline->GetDesc());
         }
     }
 
     return pipeline;
 }
 
-void GPUDevice::DropPipeline(GPUPipeline* const inPipeline,
+void GPUDevice::DropPipeline(GPUPipeline* const pipeline,
                              OnlyCalledBy<GPUShader>)
 {
-    const size_t hash = HashValue(inPipeline->GetDesc());
+    const size_t hash = HashValue(pipeline->GetDesc());
 
     std::unique_lock lock(mResourceCacheLock);
 
     auto ret = mPipelineCache.find(hash);
     Assert(ret != mPipelineCache.end());
-    Assert(ret->second == inPipeline);
+    Assert(ret->second == pipeline);
 
     mPipelineCache.erase(ret);
 
     /* Destroy the pipeline. We must do this with the lock held, since the lock
      * guards access to all shaders' mPipelines set. */
-    inPipeline->Destroy({});
+    pipeline->Destroy({});
 }
 
-GPUSamplerRef GPUDevice::GetSampler(const GPUSamplerDesc& inDesc)
+GPUSamplerRef GPUDevice::GetSampler(const GPUSamplerDesc& desc)
 {
-    const size_t hash = HashValue(inDesc);
+    const size_t hash = HashValue(desc);
 
     GPUSampler* layout = nullptr;
 
@@ -198,7 +198,7 @@ GPUSamplerRef GPUDevice::GetSampler(const GPUSamplerDesc& inDesc)
 
     if (!layout)
     {
-        layout = CreateSamplerImpl(inDesc);
+        layout = CreateSamplerImpl(desc);
 
         std::unique_lock lock(mResourceCacheLock);
 

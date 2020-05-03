@@ -44,13 +44,13 @@ public:
                                         RenderWorld();
                                         ~RenderWorld();
 
-    void                                AddEntity(RenderEntity* const inEntity);
-    void                                RemoveEntity(RenderEntity* const inEntity);
+    void                                AddEntity(RenderEntity* const entity);
+    void                                RemoveEntity(RenderEntity* const entity);
 
-    void                                AddLight(RenderLight* const inLight);
-    void                                RemoveLight(RenderLight* const inLight);
+    void                                AddLight(RenderLight* const light);
+    void                                RemoveLight(RenderLight* const light);
 
-    void                                Cull(const RenderView& inView,
+    void                                Cull(const RenderView& view,
                                              CullResults&      outResults) const;
 
 private:

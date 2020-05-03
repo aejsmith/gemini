@@ -39,8 +39,8 @@
 class ShaderPass
 {
 public:
-    GPUShader*                      GetShader(const GPUShaderStage inStage) const
-                                        { return mShaders[inStage]; }
+    GPUShader*                      GetShader(const GPUShaderStage stage) const
+                                        { return mShaders[stage]; }
 
     GPUBlendStateRef                GetBlendState() const           { return mBlendState; }
     GPUDepthStencilStateRef         GetDepthStencilState() const    { return mDepthStencilState; }
@@ -80,8 +80,8 @@ public:
      * Get a pass of a given type. Returns null if the technique doesn't
      * support the pass type.
      */
-    const ShaderPass*               GetPass(const ShaderPassType inType) const
-                                        { return mPasses[inType]; }
+    const ShaderPass*               GetPass(const ShaderPassType type) const
+                                        { return mPasses[type]; }
 
     /**
      * Return an array of parameters for the technique. Constant parameters
@@ -93,7 +93,7 @@ public:
     size_t                          GetParameterCount() const       { return mParameters.size(); }
 
     /** Get a named parameter. Returns null if doesn't exist. */
-    const ShaderParameter*          FindParameter(const std::string& inName) const;
+    const ShaderParameter*          FindParameter(const std::string& name) const;
 
     GPUArgumentSetLayoutRef         GetArgumentSetLayout() const    { return mArgumentSetLayout; }
     uint32_t                        GetConstantsSize() const        { return mConstantsSize; }
@@ -106,11 +106,11 @@ private:
                                     ShaderTechnique();
                                     ~ShaderTechnique();
 
-    void                            Serialise(Serialiser& inSerialiser) const override;
-    void                            Deserialise(Serialiser& inSerialiser) override;
+    void                            Serialise(Serialiser& serialiser) const override;
+    void                            Deserialise(Serialiser& serialiser) override;
 
-    void                            DeserialiseParameters(Serialiser& inSerialiser);
-    void                            DeserialisePasses(Serialiser& inSerialiser);
+    void                            DeserialiseParameters(Serialiser& serialiser);
+    void                            DeserialisePasses(Serialiser& serialiser);
 
 private:
     ShaderPass*                     mPasses[kShaderPassTypeCount];

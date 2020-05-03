@@ -47,16 +47,16 @@ public:
      * should be rendered to. A new resource handle should be returned
      * referring to the rendered output.
      */
-    virtual void                Render(const RenderWorld&         inWorld,
-                                       const RenderView&          inView,
-                                       RenderGraph&               inGraph,
-                                       const RenderResourceHandle inTexture,
+    virtual void                Render(const RenderWorld&         world,
+                                       const RenderView&          view,
+                                       RenderGraph&               graph,
+                                       const RenderResourceHandle texture,
                                        RenderResourceHandle&      outNewTexture) = 0;
 
     /** Get/set the name of the pipeline (used for debug purposes). */
     const std::string&          GetName() const { return mName; }
-    virtual void                SetName(std::string inName)
-                                    { mName = std::move(inName); }
+    virtual void                SetName(std::string name)
+                                    { mName = std::move(name); }
 
 protected:
                                 RenderPipeline();

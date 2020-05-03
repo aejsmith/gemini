@@ -60,11 +60,11 @@ public:
     Priority                GetInputPriority() const    { return mPriority; }
 
 protected:
-                            explicit InputHandler(const Priority inPriority);
+                            explicit InputHandler(const Priority priority);
                             ~InputHandler();
 
 protected:
-    void                    SetInputPriority(const Priority inPriority);
+    void                    SetInputPriority(const Priority priority);
 
     /** (Un)register with the input manager. */
     void                    RegisterInputHandler();
@@ -82,13 +82,13 @@ protected:
      * Event handlers.
      */
 
-    virtual EventResult     HandleButton(const ButtonEvent& inEvent)
+    virtual EventResult     HandleButton(const ButtonEvent& event)
                                 { return kEventResult_Continue; }
 
-    virtual EventResult     HandleAxis(const AxisEvent& inEvent)
+    virtual EventResult     HandleAxis(const AxisEvent& event)
                                 { return kEventResult_Continue; }
 
-    virtual void            HandleTextInput(const TextInputEvent& inEvent)
+    virtual void            HandleTextInput(const TextInputEvent& event)
                                 {}
 
 private:

@@ -22,8 +22,8 @@ class Line
 {
 public:
                                 Line();
-                                Line(const glm::vec3& inStart,
-                                     const glm::vec3& inEnd);
+                                Line(const glm::vec3& start,
+                                     const glm::vec3& end);
 
     const glm::vec3&            GetStart() const    { return mStart; }
     const glm::vec3&            GetEnd() const      { return mEnd; }
@@ -40,9 +40,9 @@ inline Line::Line() :
 {
 }
 
-inline Line::Line(const glm::vec3& inStart,
-                  const glm::vec3& inEnd) :
-    mStart  (inStart),
-    mEnd    (inEnd)
+inline Line::Line(const glm::vec3& start,
+                  const glm::vec3& end) :
+    mStart  (start),
+    mEnd    (end)
 {
 }

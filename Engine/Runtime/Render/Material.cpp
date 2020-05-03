@@ -31,10 +31,10 @@ Material::Material() :
 {
 }
 
-Material::Material(ShaderTechnique* const inShaderTechnique) :
+Material::Material(ShaderTechnique* const shaderTechnique) :
     Material ()
 {
-    SetShaderTechnique(inShaderTechnique);
+    SetShaderTechnique(shaderTechnique);
 }
 
 Material::~Material()
@@ -42,13 +42,13 @@ Material::~Material()
     delete mArgumentSet;
 }
 
-void Material::Serialise(Serialiser& inSerialiser) const
+void Material::Serialise(Serialiser& serialiser) const
 {
-    Asset::Serialise(inSerialiser);
+    Asset::Serialise(serialiser);
 
-    inSerialiser.Write("shaderTechnique", mShaderTechnique);
+    serialiser.Write("shaderTechnique", mShaderTechnique);
 
-    inSerialiser.BeginGroup("arguments");
+    serialiser.BeginGroup("arguments");
 
     for (const ShaderParameter& parameter : mShaderTechnique->GetParameters())
     {
@@ -57,7 +57,7 @@ void Material::Serialise(Serialiser& inSerialiser) const
             { \
                 typeName value; \
                 GetArgument(parameter, &value); \
-                inSerialiser.Write(parameter.name.c_str(), value); \
+                serialiser.Write(parameter.name.c_str(), value); \
                 break; \
             }
 
@@ -86,22 +86,22 @@ void Material::Serialise(Serialiser& inSerialiser) const
         #undef WRITE_TYPE
     }
 
-    inSerialiser.EndGroup();
+    serialiser.EndGroup();
 }
 
-void Material::Deserialise(Serialiser& inSerialiser)
+void Material::Deserialise(Serialiser& serialiser)
 {
-    Asset::Deserialise(inSerialiser);
+    Asset::Deserialise(serialiser);
 
     bool found;
 
     ShaderTechniquePtr shaderTechnique;
-    found = inSerialiser.Read("shaderTechnique", shaderTechnique);
+    found = serialiser.Read("shaderTechnique", shaderTechnique);
     Assert(found);
 
     SetShaderTechnique(shaderTechnique);
 
-    if (inSerialiser.BeginGroup("arguments"))
+    if (serialiser.BeginGroup("arguments"))
     {
         for (const ShaderParameter& parameter : mShaderTechnique->GetParameters())
         {
@@ -109,7 +109,7 @@ void Material::Deserialise(Serialiser& inSerialiser)
                 case typeEnum: \
                 { \
                     typeName value; \
-                    if (inSerialiser.Read(parameter.name.c_str(), value)) \
+                    if (serialiser.Read(parameter.name.c_str(), value)) \
                     { \
                         SetArgument(parameter, &value); \
                     } \
@@ -145,15 +145,15 @@ void Material::Deserialise(Serialiser& inSerialiser)
             #undef READ_TYPE
         }
 
-        inSerialiser.EndGroup();
+        serialiser.EndGroup();
     }
 
     UpdateArgumentSet();
 }
 
-void Material::SetShaderTechnique(ShaderTechnique* const inShaderTechnique)
+void Material::SetShaderTechnique(ShaderTechnique* const shaderTechnique)
 {
-    mShaderTechnique = inShaderTechnique;
+    mShaderTechnique = shaderTechnique;
 
     mResources = mShaderTechnique->GetDefaultResources();
 
@@ -163,20 +163,20 @@ void Material::SetShaderTechnique(ShaderTechnique* const inShaderTechnique)
            mConstantData.GetSize());
 }
 
-void Material::GetArgument(const ShaderParameter& inParameter,
+void Material::GetArgument(const ShaderParameter& parameter,
                            void* const            outData) const
 {
-    if (ShaderParameter::IsConstant(inParameter.type))
+    if (ShaderParameter::IsConstant(parameter.type))
     {
         memcpy(outData,
-               mConstantData.Get() + inParameter.constantOffset,
-               ShaderParameter::GetSize(inParameter.type));
+               mConstantData.Get() + parameter.constantOffset,
+               ShaderParameter::GetSize(parameter.type));
     }
     else
     {
-        const ObjPtr<>& resource = mResources[inParameter.argumentIndex];
+        const ObjPtr<>& resource = mResources[parameter.argumentIndex];
 
-        switch (inParameter.type)
+        switch (parameter.type)
         {
             case kShaderParameterType_Texture2D:
             {
@@ -192,45 +192,45 @@ void Material::GetArgument(const ShaderParameter& inParameter,
     }
 }
 
-void Material::GetArgument(const std::string&        inName,
-                           const ShaderParameterType inType,
+void Material::GetArgument(const std::string&        name,
+                           const ShaderParameterType type,
                            void* const               outData) const
 {
-    const ShaderParameter* const parameter = mShaderTechnique->FindParameter(inName);
+    const ShaderParameter* const parameter = mShaderTechnique->FindParameter(name);
 
     AssertMsg(parameter,
               "Parameter '%s' not found in technique '%s'",
-              inName.c_str(),
+              name.c_str(),
               mShaderTechnique->GetPath().c_str());
 
-    AssertMsg(parameter->type == inType,
+    AssertMsg(parameter->type == type,
               "Type mismatch for parameter '%s' in technique '%s' (requested '%s', actual '%s')",
-              inName.c_str(),
+              name.c_str(),
               mShaderTechnique->GetPath().c_str(),
-              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(inType),
+              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(type),
               MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(parameter->type));
 
     GetArgument(*parameter, outData);
 }
 
-void Material::SetArgument(const ShaderParameter& inParameter,
-                           const void* const      inData)
+void Material::SetArgument(const ShaderParameter& parameter,
+                           const void* const      data)
 {
-    if (ShaderParameter::IsConstant(inParameter.type))
+    if (ShaderParameter::IsConstant(parameter.type))
     {
-        memcpy(mConstantData.Get() + inParameter.constantOffset,
-               inData,
-               ShaderParameter::GetSize(inParameter.type));
+        memcpy(mConstantData.Get() + parameter.constantOffset,
+               data,
+               ShaderParameter::GetSize(parameter.type));
     }
     else
     {
-        ObjPtr<>& resource = mResources[inParameter.argumentIndex];
+        ObjPtr<>& resource = mResources[parameter.argumentIndex];
 
-        switch (inParameter.type)
+        switch (parameter.type)
         {
             case kShaderParameterType_Texture2D:
             {
-                auto texture = reinterpret_cast<const Texture2DPtr*>(inData);
+                auto texture = reinterpret_cast<const Texture2DPtr*>(data);
                 resource = texture->Get();
                 break;
             }
@@ -249,25 +249,25 @@ void Material::SetArgument(const ShaderParameter& inParameter,
     }
 }
 
-void Material::SetArgument(const std::string&        inName,
-                           const ShaderParameterType inType,
-                           const void* const         inData)
+void Material::SetArgument(const std::string&        name,
+                           const ShaderParameterType type,
+                           const void* const         data)
 {
-    const ShaderParameter* const parameter = mShaderTechnique->FindParameter(inName);
+    const ShaderParameter* const parameter = mShaderTechnique->FindParameter(name);
 
     AssertMsg(parameter,
               "Parameter '%s' not found in technique '%s'",
-              inName.c_str(),
+              name.c_str(),
               mShaderTechnique->GetPath().c_str());
 
-    AssertMsg(parameter->type == inType,
+    AssertMsg(parameter->type == type,
               "Type mismatch for parameter '%s' in technique '%s' (requested '%s', actual '%s')",
-              inName.c_str(),
+              name.c_str(),
               mShaderTechnique->GetPath().c_str(),
-              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(inType),
+              MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(type),
               MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(parameter->type));
 
-    SetArgument(*parameter, inData);
+    SetArgument(*parameter, data);
 }
 
 GPUConstants Material::GetGPUConstants()

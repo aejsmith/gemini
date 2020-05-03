@@ -38,11 +38,11 @@
 
 #include "Engine/Window.h"
 
-static void GetWMInfo(const Window&  inWindow,
+static void GetWMInfo(const Window&  window,
                       SDL_SysWMinfo& outWMInfo)
 {
     SDL_VERSION(&outWMInfo.version);
-    if (!SDL_GetWindowWMInfo(inWindow.GetSDLWindow(), &outWMInfo))
+    if (!SDL_GetWindowWMInfo(window.GetSDLWindow(), &outWMInfo))
     {
         Fatal("Failed to get SDL WM info: %s", SDL_GetError());
     }
@@ -71,8 +71,8 @@ const char* VulkanSwapchain::GetSurfaceExtensionName()
     return extension;
 }
 
-bool VulkanSwapchain::CheckPresentationSupport(const VkPhysicalDevice inDevice,
-                                               const uint32_t         inQueueFamily)
+bool VulkanSwapchain::CheckPresentationSupport(const VkPhysicalDevice device,
+                                               const uint32_t         queueFamily)
 {
     SDL_SysWMinfo wmInfo;
     GetWMInfo(MainWindow::Get(), wmInfo);
@@ -104,8 +104,8 @@ bool VulkanSwapchain::CheckPresentationSupport(const VkPhysicalDevice inDevice,
                         "vkGetPhysicalDeviceXcbPresentationSupportKHR",
                         true);
 
-                result = vkGetPhysicalDeviceXcbPresentationSupportKHR(inDevice,
-                                                                      inQueueFamily,
+                result = vkGetPhysicalDeviceXcbPresentationSupportKHR(device,
+                                                                      queueFamily,
                                                                       connection,
                                                                       reply->visual);
 

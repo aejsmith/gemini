@@ -24,7 +24,7 @@
 class GPUObject : public GPUDeviceChild
 {
 protected:
-                            GPUObject(GPUDevice& inDevice);
+                            GPUObject(GPUDevice& device);
     virtual                 ~GPUObject() {}
 
 public:
@@ -34,7 +34,7 @@ public:
      * tools (e.g. RenderDoc).
      */
     const std::string&      GetName() const { return mName; }
-    void                    SetName(std::string inName);
+    void                    SetName(std::string name);
 
 protected:
     /** Callback when the name changes to pass this through to the API. */
@@ -45,7 +45,7 @@ private:
 
 };
 
-inline GPUObject::GPUObject(GPUDevice& inDevice) :
-    GPUDeviceChild (inDevice)
+inline GPUObject::GPUObject(GPUDevice& device) :
+    GPUDeviceChild (device)
 {
 }

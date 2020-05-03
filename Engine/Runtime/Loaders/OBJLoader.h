@@ -69,10 +69,10 @@ private:
     bool                        Parse();
 
     template <typename ElementType>
-    bool                        AddVertexElement(const std::vector<std::string>& inTokens,
+    bool                        AddVertexElement(const std::vector<std::string>& tokens,
                                                  std::vector<ElementType>&       ioArray);
 
-    bool                        AddFace(const std::vector<std::string>& inTokens);
+    bool                        AddFace(const std::vector<std::string>& tokens);
 
     AssetPtr                    BuildMesh();
 

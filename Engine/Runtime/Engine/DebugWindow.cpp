@@ -18,10 +18,10 @@
 
 #include "Engine/DebugManager.h"
 
-DebugWindow::DebugWindow(std::string inCategory,
-                         std::string inTitle) :
-    mCategory   (std::move(inCategory)),
-    mTitle      (std::move(inTitle)),
+DebugWindow::DebugWindow(std::string category,
+                         std::string title) :
+    mCategory   (std::move(category)),
+    mTitle      (std::move(title)),
     mOpen       (false)
 {
     Assert(!mCategory.empty());
@@ -35,13 +35,13 @@ DebugWindow::~DebugWindow()
     DebugManager::Get().UnregisterWindow(this, {});
 }
 
-bool DebugWindow::Begin(const ImGuiWindowFlags inFlags)
+bool DebugWindow::Begin(const ImGuiWindowFlags flags)
 {
     if (!mOpen || !DebugManager::Get().IsOverlayVisible())
     {
         return false;
     }
-    else if (!ImGui::Begin(GetTitle().c_str(), &mOpen, inFlags))
+    else if (!ImGui::Begin(GetTitle().c_str(), &mOpen, flags))
     {
         ImGui::End();
         return false;

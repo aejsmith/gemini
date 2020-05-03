@@ -28,9 +28,9 @@ class RenderWorld;
 class RenderContext
 {
 public:
-                                RenderContext(RenderGraph&       inGraph,
-                                              const RenderWorld& inWorld,
-                                              const RenderView&  inView);
+                                RenderContext(RenderGraph&       graph,
+                                              const RenderWorld& world,
+                                              const RenderView&  view);
 
     RenderGraph&                GetGraph() const    { return mGraph; }
     const RenderWorld&          GetWorld() const    { return mWorld; }

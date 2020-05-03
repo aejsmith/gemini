@@ -28,7 +28,7 @@
 class GPUConstantPool : public GPUDeviceChild
 {
 protected:
-                            GPUConstantPool(GPUDevice& inDevice);
+                            GPUConstantPool(GPUDevice& device);
                             ~GPUConstantPool();
 
 public:
@@ -36,19 +36,19 @@ public:
      * Allocate space for constant data, returning a handle to bind it later and
      * a mapping of the allocated space to write data to. This is free-threaded.
      */
-    virtual GPUConstants    Allocate(const size_t inSize,
+    virtual GPUConstants    Allocate(const size_t size,
                                      void*&       outMapping) = 0;
 
     /**
      * Convenience wrapper to allocate constant data space and copy some data
      * into it.
      */
-    GPUConstants            Write(const void* const inData,
-                                  const size_t      inSize);
+    GPUConstants            Write(const void* const data,
+                                  const size_t      size);
 };
 
-inline GPUConstantPool::GPUConstantPool(GPUDevice& inDevice) :
-    GPUDeviceChild  (inDevice)
+inline GPUConstantPool::GPUConstantPool(GPUDevice& device) :
+    GPUDeviceChild  (device)
 {
 }
 
@@ -56,13 +56,13 @@ inline GPUConstantPool::~GPUConstantPool()
 {
 }
 
-inline GPUConstants GPUConstantPool::Write(const void* const inData,
-                                           const size_t      inSize)
+inline GPUConstants GPUConstantPool::Write(const void* const data,
+                                           const size_t      size)
 {
     void* mapping;
-    const GPUConstants handle = Allocate(inSize, mapping);
+    const GPUConstants handle = Allocate(size, mapping);
 
-    memcpy(mapping, inData, inSize);
+    memcpy(mapping, data, size);
 
     return handle;
 }

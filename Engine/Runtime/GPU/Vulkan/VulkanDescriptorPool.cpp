@@ -33,8 +33,8 @@ static const VkDescriptorPoolSize kDescriptorPoolSizes[] =
 
 static constexpr uint32_t kDescriptorPoolMaxSets = 4096;
 
-VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& inDevice) :
-    GPUDeviceChild  (inDevice),
+VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& device) :
+    GPUDeviceChild  (device),
     mHandle         (VK_NULL_HANDLE)
 {
     VkDescriptorPoolCreateInfo createInfo = {};
@@ -55,7 +55,7 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
     vkDestroyDescriptorPool(GetVulkanDevice().GetHandle(), mHandle, nullptr);
 }
 
-VkDescriptorSet VulkanDescriptorPool::Allocate(const VkDescriptorSetLayout inLayout)
+VkDescriptorSet VulkanDescriptorPool::Allocate(const VkDescriptorSetLayout layout)
 {
     std::unique_lock lock(mLock);
 
@@ -64,7 +64,7 @@ VkDescriptorSet VulkanDescriptorPool::Allocate(const VkDescriptorSetLayout inLay
     allocateInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocateInfo.descriptorPool     = mHandle;
     allocateInfo.descriptorSetCount = 1;
-    allocateInfo.pSetLayouts        = &inLayout;
+    allocateInfo.pSetLayouts        = &layout;
 
     VkDescriptorSet descriptorSet;
 
@@ -75,12 +75,12 @@ VkDescriptorSet VulkanDescriptorPool::Allocate(const VkDescriptorSetLayout inLay
     return descriptorSet;
 }
 
-void VulkanDescriptorPool::Free(const VkDescriptorSet inDescriptorSet)
+void VulkanDescriptorPool::Free(const VkDescriptorSet descriptorSet)
 {
     std::unique_lock lock(mLock);
 
     VulkanCheck(vkFreeDescriptorSets(GetVulkanDevice().GetHandle(),
                                      mHandle,
                                      1,
-                                     &inDescriptorSet));
+                                     &descriptorSet));
 }

@@ -68,9 +68,9 @@ VulkanDevice::VulkanDevice() :
 
     uint8_t nextContextID = 0;
     auto CreateContext =
-        [&] (const uint32_t inQueueFamily)
+        [&] (const uint32_t queueFamily)
         {
-            auto context = new VulkanContext(*this, nextContextID, inQueueFamily);
+            auto context = new VulkanContext(*this, nextContextID, queueFamily);
             mContexts[nextContextID++] = context;
             return context;
         };
@@ -257,11 +257,11 @@ void VulkanDevice::CreateDevice()
     std::unordered_set<std::string> availableExtensions;
 
     auto EnumerateExtensions =
-        [&] (const char* const inLayerName)
+        [&] (const char* const layerName)
         {
-            VulkanCheck(vkEnumerateDeviceExtensionProperties(mPhysicalDevice, inLayerName, &count, nullptr));
+            VulkanCheck(vkEnumerateDeviceExtensionProperties(mPhysicalDevice, layerName, &count, nullptr));
             std::vector<VkExtensionProperties> extensionProps(count);
-            VulkanCheck(vkEnumerateDeviceExtensionProperties(mPhysicalDevice, inLayerName, &count, extensionProps.data()));
+            VulkanCheck(vkEnumerateDeviceExtensionProperties(mPhysicalDevice, layerName, &count, extensionProps.data()));
 
             for (const VkExtensionProperties& extension : extensionProps)
             {
@@ -285,18 +285,18 @@ void VulkanDevice::CreateDevice()
     std::vector<const char*> enabledExtensions;
 
     auto EnableExtension =
-        [&] (const char* const inName, const uint32_t inCap, const bool inRequired = false) -> bool
+        [&] (const char* const name, const uint32_t cap, const bool required = false) -> bool
         {
-            const bool available = availableExtensions.find(inName) != availableExtensions.end();
+            const bool available = availableExtensions.find(name) != availableExtensions.end();
 
             if (available)
             {
-                enabledExtensions.emplace_back(inName);
-                mCaps |= inCap;
+                enabledExtensions.emplace_back(name);
+                mCaps |= cap;
             }
-            else if (inRequired)
+            else if (required)
             {
-                Fatal("Required Vulkan device extension '%s' not available", inName);
+                Fatal("Required Vulkan device extension '%s' not available", name);
             }
 
             return available;
@@ -351,58 +351,58 @@ void VulkanDevice::CreateDevice()
     #undef LOAD_OPTIONAL_VULKAN_DEVICE_FUNC
 }
 
-GPUArgumentSet* VulkanDevice::CreateArgumentSet(const GPUArgumentSetLayoutRef inLayout,
-                                                const GPUArgument* const      inArguments)
+GPUArgumentSet* VulkanDevice::CreateArgumentSet(const GPUArgumentSetLayoutRef layout,
+                                                const GPUArgument* const      arguments)
 {
-    return new VulkanArgumentSet(*this, inLayout, inArguments);
+    return new VulkanArgumentSet(*this, layout, arguments);
 }
 
-GPUArgumentSetLayout* VulkanDevice::CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& inDesc)
+GPUArgumentSetLayout* VulkanDevice::CreateArgumentSetLayoutImpl(GPUArgumentSetLayoutDesc&& desc)
 {
-    return new VulkanArgumentSetLayout(*this, std::move(inDesc));
+    return new VulkanArgumentSetLayout(*this, std::move(desc));
 }
 
-GPUBuffer* VulkanDevice::CreateBuffer(const GPUBufferDesc& inDesc)
+GPUBuffer* VulkanDevice::CreateBuffer(const GPUBufferDesc& desc)
 {
-    return new VulkanBuffer(*this, inDesc);
+    return new VulkanBuffer(*this, desc);
 }
 
-GPUComputePipeline* VulkanDevice::CreateComputePipeline(const GPUComputePipelineDesc& inDesc)
+GPUComputePipeline* VulkanDevice::CreateComputePipeline(const GPUComputePipelineDesc& desc)
 {
-    return new VulkanComputePipeline(*this, inDesc);
+    return new VulkanComputePipeline(*this, desc);
 }
 
-GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& inDesc)
+GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& desc)
 {
-    return new VulkanPipeline(*this, inDesc);
+    return new VulkanPipeline(*this, desc);
 }
 
-GPUResourceView* VulkanDevice::CreateResourceView(GPUResource* const         inResource,
-                                                  const GPUResourceViewDesc& inDesc)
+GPUResourceView* VulkanDevice::CreateResourceView(GPUResource* const         resource,
+                                                  const GPUResourceViewDesc& desc)
 {
-    return new VulkanResourceView(*inResource, inDesc);
+    return new VulkanResourceView(*resource, desc);
 }
 
-GPUSampler* VulkanDevice::CreateSamplerImpl(const GPUSamplerDesc& inDesc)
+GPUSampler* VulkanDevice::CreateSamplerImpl(const GPUSamplerDesc& desc)
 {
-    return new VulkanSampler(*this, inDesc);
+    return new VulkanSampler(*this, desc);
 }
 
-GPUShaderPtr VulkanDevice::CreateShader(const GPUShaderStage inStage,
-                                        GPUShaderCode        inCode,
-                                        const std::string&   inFunction)
+GPUShaderPtr VulkanDevice::CreateShader(const GPUShaderStage stage,
+                                        GPUShaderCode        code,
+                                        const std::string&   function)
 {
-    return new VulkanShader(*this, inStage, std::move(inCode), inFunction);
+    return new VulkanShader(*this, stage, std::move(code), function);
 }
 
-void VulkanDevice::CreateSwapchain(Window& inWindow)
+void VulkanDevice::CreateSwapchain(Window& window)
 {
-    new VulkanSwapchain(*this, inWindow);
+    new VulkanSwapchain(*this, window);
 }
 
-GPUTexture* VulkanDevice::CreateTexture(const GPUTextureDesc& inDesc)
+GPUTexture* VulkanDevice::CreateTexture(const GPUTextureDesc& desc)
 {
-    return new VulkanTexture(*this, inDesc);
+    return new VulkanTexture(*this, desc);
 }
 
 void VulkanDevice::EndFrameImpl()
@@ -467,10 +467,10 @@ void VulkanDevice::EndFrameImpl()
     mGeometryPool->BeginFrame();
 }
 
-void VulkanDevice::AddFrameCompleteCallback(FrameCompleteCallback inCallback)
+void VulkanDevice::AddFrameCompleteCallback(FrameCompleteCallback callback)
 {
     std::unique_lock lock(mCompleteCallbacksLock);
-    mFrames[mCurrentFrame].completeCallbacks.emplace_back(std::move(inCallback));
+    mFrames[mCurrentFrame].completeCallbacks.emplace_back(std::move(callback));
 }
 
 VkSemaphore VulkanDevice::AllocateSemaphore()
@@ -517,11 +517,11 @@ VkFence VulkanDevice::AllocateFence()
     return fence;
 }
 
-VkPipelineLayout VulkanDevice::GetPipelineLayout(const VulkanPipelineLayoutKey& inKey)
+VkPipelineLayout VulkanDevice::GetPipelineLayout(const VulkanPipelineLayoutKey& key)
 {
     std::unique_lock lock(mCacheLock);
 
-    VkPipelineLayout& cachedLayout = mPipelineLayoutCache[inKey];
+    VkPipelineLayout& cachedLayout = mPipelineLayoutCache[key];
     if (cachedLayout == VK_NULL_HANDLE)
     {
         VkDescriptorSetLayout setLayouts[kMaxArgumentSets];
@@ -533,11 +533,11 @@ VkPipelineLayout VulkanDevice::GetPipelineLayout(const VulkanPipelineLayoutKey& 
         for (size_t i = 0; i < kMaxArgumentSets; i++)
         {
             const VulkanArgumentSetLayout* setLayout;
-            if (inKey.argumentSetLayouts[i])
+            if (key.argumentSetLayouts[i])
             {
                 createInfo.setLayoutCount = i + 1;
 
-                setLayout = static_cast<const VulkanArgumentSetLayout*>(inKey.argumentSetLayouts[i]);
+                setLayout = static_cast<const VulkanArgumentSetLayout*>(key.argumentSetLayouts[i]);
             }
             else
             {
@@ -589,11 +589,11 @@ static const VkSubpassDependency kDefaultRenderPassDependencies[] =
     },
 };
 
-VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
+VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& key)
 {
     std::unique_lock lock(mCacheLock);
 
-    VkRenderPass& cachedRenderPass = mRenderPassCache[inKey];
+    VkRenderPass& cachedRenderPass = mRenderPassCache[key];
 
     if (cachedRenderPass == VK_NULL_HANDLE)
     {
@@ -605,10 +605,10 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
         VkAttachmentReference colourReferences[kMaxRenderPassColourAttachments];
         VkAttachmentReference depthStencilReference;
 
-        auto AddAttachment = [&] (const VulkanRenderPassKey::Attachment& inSrcAttachment,
+        auto AddAttachment = [&] (const VulkanRenderPassKey::Attachment& srcAttachment,
                                   VkAttachmentReference&                 outReference) -> bool
         {
-            const bool result = inSrcAttachment.format != kPixelFormat_Unknown;
+            const bool result = srcAttachment.format != kPixelFormat_Unknown;
 
             if (result)
             {
@@ -616,7 +616,7 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
 
                 VkImageLayout layout;
 
-                switch (inSrcAttachment.state)
+                switch (srcAttachment.state)
                 {
                     case kGPUResourceState_RenderTarget:
                         layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -648,12 +648,12 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
 
                 auto& attachment = attachments[createInfo.attachmentCount++];
 
-                attachment.format         = VulkanFormat::GetVulkanFormat(inSrcAttachment.format);
+                attachment.format         = VulkanFormat::GetVulkanFormat(srcAttachment.format);
                 attachment.samples        = VK_SAMPLE_COUNT_1_BIT; // TODO
-                attachment.loadOp         = VulkanUtils::ConvertLoadOp(inSrcAttachment.loadOp);
-                attachment.stencilLoadOp  = VulkanUtils::ConvertLoadOp(inSrcAttachment.stencilLoadOp);
-                attachment.storeOp        = VulkanUtils::ConvertStoreOp(inSrcAttachment.storeOp);
-                attachment.stencilStoreOp = VulkanUtils::ConvertStoreOp(inSrcAttachment.stencilStoreOp);
+                attachment.loadOp         = VulkanUtils::ConvertLoadOp(srcAttachment.loadOp);
+                attachment.stencilLoadOp  = VulkanUtils::ConvertLoadOp(srcAttachment.stencilLoadOp);
+                attachment.storeOp        = VulkanUtils::ConvertStoreOp(srcAttachment.storeOp);
+                attachment.stencilStoreOp = VulkanUtils::ConvertStoreOp(srcAttachment.stencilStoreOp);
                 attachment.initialLayout  = layout;
                 attachment.finalLayout    = layout;
             }
@@ -667,14 +667,14 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
 
         for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
         {
-            if (AddAttachment(inKey.colour[i], colourReferences[i]))
+            if (AddAttachment(key.colour[i], colourReferences[i]))
             {
                 subpass.colorAttachmentCount = i + 1;
                 subpass.pColorAttachments    = colourReferences;
             }
         }
 
-        if (AddAttachment(inKey.depthStencil, depthStencilReference))
+        if (AddAttachment(key.depthStencil, depthStencilReference))
         {
             subpass.pDepthStencilAttachment = &depthStencilReference;
         }
@@ -696,15 +696,15 @@ VkRenderPass VulkanDevice::GetRenderPass(const VulkanRenderPassKey& inKey)
     return cachedRenderPass;
 }
 
-void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
+void VulkanDevice::GetRenderPass(const GPURenderPass& pass,
                                  VkRenderPass&        outVulkanRenderPass,
                                  VkFramebuffer&       outFramebuffer)
 {
-    VulkanRenderPassKey passKey(inPass);
+    VulkanRenderPassKey passKey(pass);
 
     outVulkanRenderPass = GetRenderPass(passKey);
 
-    VulkanFramebufferKey framebufferKey(inPass);
+    VulkanFramebufferKey framebufferKey(pass);
 
     std::unique_lock lock(mCacheLock);
 
@@ -719,7 +719,7 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
 
         for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
         {
-            const auto view = static_cast<const VulkanResourceView*>(inPass.colour[i].view);
+            const auto view = static_cast<const VulkanResourceView*>(pass.colour[i].view);
 
             if (view)
             {
@@ -727,16 +727,16 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
             }
         }
 
-        const auto view = static_cast<const VulkanResourceView*>(inPass.depthStencil.view);
+        const auto view = static_cast<const VulkanResourceView*>(pass.depthStencil.view);
 
         if (view)
         {
             imageViews[createInfo.attachmentCount++] = view->GetImageView();
         }
 
-        inPass.GetDimensions(createInfo.width,
-                             createInfo.height,
-                             createInfo.layers);
+        pass.GetDimensions(createInfo.width,
+                           createInfo.height,
+                           createInfo.layers);
 
         createInfo.sType        = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         createInfo.renderPass   = outVulkanRenderPass;
@@ -751,25 +751,25 @@ void VulkanDevice::GetRenderPass(const GPURenderPass& inPass,
     outFramebuffer = cachedFramebuffer;
 }
 
-VkRenderPass VulkanDevice::GetRenderPass(const GPURenderTargetStateDesc& inState)
+VkRenderPass VulkanDevice::GetRenderPass(const GPURenderTargetStateDesc& state)
 {
-    VulkanRenderPassKey passKey(inState);
+    VulkanRenderPassKey passKey(state);
     return GetRenderPass(passKey);
 }
 
-void VulkanDevice::InvalidateFramebuffers(const VkImageView inView)
+void VulkanDevice::InvalidateFramebuffers(const VkImageView view)
 {
     std::unique_lock lock(mCacheLock);
 
     for (auto it = mFramebufferCache.begin(); it != mFramebufferCache.end(); )
     {
-        bool isMatch = it->first.depthStencil == inView;
+        bool isMatch = it->first.depthStencil == view;
 
         if (!isMatch)
         {
             for (VkImageView colourView : it->first.colour)
             {
-                isMatch = colourView == inView;
+                isMatch = colourView == view;
                 if (isMatch)
                 {
                     break;
@@ -780,9 +780,9 @@ void VulkanDevice::InvalidateFramebuffers(const VkImageView inView)
         if (isMatch)
         {
             AddFrameCompleteCallback(
-                [framebuffer = it->second] (VulkanDevice& inDevice)
+                [framebuffer = it->second] (VulkanDevice& device)
                 {
-                    vkDestroyFramebuffer(inDevice.GetHandle(), framebuffer, nullptr);
+                    vkDestroyFramebuffer(device.GetHandle(), framebuffer, nullptr);
                 });
 
             it = mFramebufferCache.erase(it);

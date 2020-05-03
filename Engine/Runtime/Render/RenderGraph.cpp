@@ -69,7 +69,7 @@ class RenderGraphWindow : public DebugWindow
 public:
                                 RenderGraphWindow();
 
-    void                        RenderWindow(const RenderGraph& inGraph);
+    void                        RenderWindow(const RenderGraph& graph);
 
     static RenderGraphWindow&   Get();
 
@@ -83,38 +83,38 @@ private:
 
 RenderGraph::ResourceKey RenderGraph::mDebugOutput;
 
-RenderGraphPass::RenderGraphPass(RenderGraph&              inGraph,
-                                 std::string               inName,
-                                 const RenderGraphPassType inType,
-                                 const RenderLayer* const  inLayer) :
-    mGraph      (inGraph),
-    mName       (inName),
-    mType       (inType),
-    mLayer      (inLayer),
+RenderGraphPass::RenderGraphPass(RenderGraph&              graph,
+                                 std::string               name,
+                                 const RenderGraphPassType type,
+                                 const RenderLayer* const  layer) :
+    mGraph      (graph),
+    mName       (name),
+    mType       (type),
+    mLayer      (layer),
     mRequired   (false)
 {
 }
 
-static GPUResourceUsage ResourceUsageFromState(const GPUResourceState inState)
+static GPUResourceUsage ResourceUsageFromState(const GPUResourceState state)
 {
     GPUResourceUsage usage = kGPUResourceUsage_Standard;
 
-    if (inState & kGPUResourceState_AllShaderRead)
+    if (state & kGPUResourceState_AllShaderRead)
     {
         usage |= kGPUResourceUsage_ShaderRead;
     }
 
-    if (inState & kGPUResourceState_AllShaderWrite)
+    if (state & kGPUResourceState_AllShaderWrite)
     {
         usage |= kGPUResourceUsage_ShaderWrite;
     }
 
-    if (inState & kGPUResourceState_RenderTarget)
+    if (state & kGPUResourceState_RenderTarget)
     {
         usage |= kGPUResourceUsage_RenderTarget;
     }
 
-    if (inState & kGPUResourceState_AllDepthStencil)
+    if (state & kGPUResourceState_AllDepthStencil)
     {
         usage |= kGPUResourceUsage_DepthStencil;
     }
@@ -124,39 +124,39 @@ static GPUResourceUsage ResourceUsageFromState(const GPUResourceState inState)
     return usage;
 }
 
-void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
-                                  const GPUSubresourceRange& inRange,
-                                  const GPUResourceState     inState,
+void RenderGraphPass::UseResource(const RenderResourceHandle handle,
+                                  const GPUSubresourceRange& range,
+                                  const GPUResourceState     state,
                                   RenderResourceHandle*      outNewHandle)
 {
-    RenderGraph::Resource* resource = mGraph.mResources[inHandle.index];
+    RenderGraph::Resource* resource = mGraph.mResources[handle.index];
 
-    const bool isWrite = inState & kGPUResourceState_AllWrite;
+    const bool isWrite = state & kGPUResourceState_AllWrite;
 
     AssertMsg(isWrite || !outNewHandle,
               "outNewHandle must be null for a read-only access");
-    AssertMsg(resource->currentVersion == inHandle.version,
+    AssertMsg(resource->currentVersion == handle.version,
               "Resource access must be to current version (see TODO)");
 
-    GPUUtils::ValidateResourceState(inState, resource->type == kRenderResourceType_Texture);
+    GPUUtils::ValidateResourceState(state, resource->type == kRenderResourceType_Texture);
 
     for (const RenderGraphPass::UsedResource& otherUse : mUsedResources)
     {
-        if (otherUse.handle.index == inHandle.index)
+        if (otherUse.handle.index == handle.index)
         {
-            AssertMsg(!otherUse.range.Overlaps(inRange),
+            AssertMsg(!otherUse.range.Overlaps(range),
                       "Subresources cannot be used multiple times in the same pass");
         }
     }
 
     mUsedResources.emplace_back();
     UsedResource& use = mUsedResources.back();
-    use.handle        = inHandle;
-    use.range         = inRange;
-    use.state         = inState;
+    use.handle        = handle;
+    use.range         = range;
+    use.state         = state;
 
     /* Add required usage flags for this resource state. */
-    resource->usage |= ResourceUsageFromState(inState);
+    resource->usage |= ResourceUsageFromState(state);
 
     if (isWrite)
     {
@@ -168,35 +168,35 @@ void RenderGraphPass::UseResource(const RenderResourceHandle inHandle,
 
         if (outNewHandle)
         {
-            outNewHandle->index   = inHandle.index;
+            outNewHandle->index   = handle.index;
             outNewHandle->version = resource->currentVersion;
         }
     }
 }
 
-RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle,
-                                             const RenderViewDesc&      inDesc,
+RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle handle,
+                                             const RenderViewDesc&      desc,
                                              RenderResourceHandle*      outNewHandle)
 {
-    const bool isTexture = mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture;
+    const bool isTexture = mGraph.GetResourceType(handle) == kRenderResourceType_Texture;
 
     GPUSubresourceRange range = { 0, 1, 0, 1 };
 
     if (isTexture)
     {
-        range.mipOffset   = inDesc.mipOffset;
-        range.mipCount    = inDesc.mipCount;
-        range.layerOffset = inDesc.elementOffset;
-        range.layerCount  = inDesc.elementCount;
+        range.mipOffset   = desc.mipOffset;
+        range.mipCount    = desc.mipCount;
+        range.layerOffset = desc.elementOffset;
+        range.layerCount  = desc.elementCount;
     }
     else
     {
-        Assert(inDesc.mipOffset == 0 && inDesc.mipCount == 1);
+        Assert(desc.mipOffset == 0 && desc.mipCount == 1);
     }
 
-    UseResource(inHandle,
+    UseResource(handle,
                 range,
-                inDesc.state,
+                desc.state,
                 outNewHandle);
 
     RenderViewHandle viewHandle;
@@ -205,47 +205,47 @@ RenderViewHandle RenderGraphPass::CreateView(const RenderResourceHandle inHandle
 
     mViews.emplace_back();
     View& view = mViews.back();
-    view.resource = inHandle;
-    view.desc     = inDesc;
+    view.resource = handle;
+    view.desc     = desc;
     view.view     = nullptr;
 
     if (isTexture && view.desc.format == kPixelFormat_Unknown)
     {
         /* Set from texture format. */
-        view.desc.format = mGraph.GetTextureDesc(inHandle).format;
+        view.desc.format = mGraph.GetTextureDesc(handle).format;
     }
 
     return viewHandle;
 }
 
-void RenderGraphPass::SetColour(const uint8_t              inIndex,
-                                const RenderResourceHandle inHandle,
+void RenderGraphPass::SetColour(const uint8_t              index,
+                                const RenderResourceHandle handle,
                                 RenderResourceHandle*      outNewHandle)
 {
-    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(inHandle);
+    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(handle);
 
     RenderViewDesc viewDesc;
     viewDesc.type   = kGPUResourceViewType_Texture2D;
     viewDesc.state  = kGPUResourceState_RenderTarget;
     viewDesc.format = textureDesc.format;
 
-    SetColour(inIndex, inHandle, viewDesc, outNewHandle);
+    SetColour(index, handle, viewDesc, outNewHandle);
 }
 
-void RenderGraphPass::SetColour(const uint8_t              inIndex,
-                                const RenderResourceHandle inHandle,
-                                const RenderViewDesc&      inDesc,
+void RenderGraphPass::SetColour(const uint8_t              index,
+                                const RenderResourceHandle handle,
+                                const RenderViewDesc&      desc,
                                 RenderResourceHandle*      outNewHandle)
 {
     Assert(mType == kRenderGraphPassType_Render);
-    Assert(inIndex < kMaxRenderPassColourAttachments);
-    Assert(mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture);
-    Assert(inDesc.state == kGPUResourceState_RenderTarget);
-    Assert(PixelFormatInfo::IsColour(inDesc.format));
+    Assert(index < kMaxRenderPassColourAttachments);
+    Assert(mGraph.GetResourceType(handle) == kRenderResourceType_Texture);
+    Assert(desc.state == kGPUResourceState_RenderTarget);
+    Assert(PixelFormatInfo::IsColour(desc.format));
     Assert(outNewHandle);
 
-    Attachment& attachment = mColour[inIndex];
-    attachment.view = CreateView(inHandle, inDesc, outNewHandle);
+    Attachment& attachment = mColour[index];
+    attachment.view = CreateView(handle, desc, outNewHandle);
 
     /* If this is the first version of the resource, it will be cleared, so set
      * a default clear value. */
@@ -253,56 +253,56 @@ void RenderGraphPass::SetColour(const uint8_t              inIndex,
     attachment.clearData.colour = glm::vec4(0.0f);
 }
 
-void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inHandle,
-                                      const GPUResourceState     inState,
+void RenderGraphPass::SetDepthStencil(const RenderResourceHandle handle,
+                                      const GPUResourceState     state,
                                       RenderResourceHandle*      outNewHandle)
 {
-    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(inHandle);
+    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(handle);
 
     RenderViewDesc viewDesc;
     viewDesc.type   = kGPUResourceViewType_Texture2D;
-    viewDesc.state  = inState;
+    viewDesc.state  = state;
     viewDesc.format = textureDesc.format;
 
-    SetDepthStencil(inHandle, viewDesc, outNewHandle);
+    SetDepthStencil(handle, viewDesc, outNewHandle);
 }
 
-void RenderGraphPass::SetDepthStencil(const RenderResourceHandle inHandle,
-                                      const RenderViewDesc&      inDesc,
+void RenderGraphPass::SetDepthStencil(const RenderResourceHandle handle,
+                                      const RenderViewDesc&      desc,
                                       RenderResourceHandle*      outNewHandle)
 {
     Assert(mType == kRenderGraphPassType_Render);
-    Assert(mGraph.GetResourceType(inHandle) == kRenderResourceType_Texture);
-    Assert(inDesc.state & kGPUResourceState_AllDepthStencil && IsOnlyOneBitSet(inDesc.state));
-    Assert(PixelFormatInfo::IsDepth(inDesc.format));
+    Assert(mGraph.GetResourceType(handle) == kRenderResourceType_Texture);
+    Assert(desc.state & kGPUResourceState_AllDepthStencil && IsOnlyOneBitSet(desc.state));
+    Assert(PixelFormatInfo::IsDepth(desc.format));
 
-    mDepthStencil.view = CreateView(inHandle, inDesc, outNewHandle);
+    mDepthStencil.view = CreateView(handle, desc, outNewHandle);
 
     /* If this is the first version of the resource, it will be cleared, so set
      * a default clear value. */
-    mDepthStencil.clearData.type    = (PixelFormatInfo::IsDepthStencil(inDesc.format))
+    mDepthStencil.clearData.type    = (PixelFormatInfo::IsDepthStencil(desc.format))
                                           ? GPUTextureClearData::kDepthStencil
                                           : GPUTextureClearData::kDepth;
     mDepthStencil.clearData.depth   = 1.0f;
     mDepthStencil.clearData.stencil = 0;
 }
 
-void RenderGraphPass::ClearColour(const uint8_t    inIndex,
-                                  const glm::vec4& inValue)
+void RenderGraphPass::ClearColour(const uint8_t    index,
+                                  const glm::vec4& value)
 {
-    Assert(inIndex < kMaxRenderPassColourAttachments);
+    Assert(index < kMaxRenderPassColourAttachments);
 
-    Attachment& attachment = mColour[inIndex];
+    Attachment& attachment = mColour[index];
     Assert(attachment.view);
 
     View& view = mViews[attachment.view.index];
     Assert(view.resource.version == 0);
     Unused(view);
 
-    attachment.clearData.colour = inValue;
+    attachment.clearData.colour = value;
 }
 
-void RenderGraphPass::ClearDepth(const float inValue)
+void RenderGraphPass::ClearDepth(const float value)
 {
     Assert(mDepthStencil.view);
 
@@ -310,10 +310,10 @@ void RenderGraphPass::ClearDepth(const float inValue)
     Assert(view.resource.version == 0);
     Unused(view);
 
-    mDepthStencil.clearData.depth = inValue;
+    mDepthStencil.clearData.depth = value;
 }
 
-void RenderGraphPass::ClearStencil(const uint32_t inValue)
+void RenderGraphPass::ClearStencil(const uint32_t value)
 {
     Assert(mDepthStencil.view);
 
@@ -321,17 +321,17 @@ void RenderGraphPass::ClearStencil(const uint32_t inValue)
     Assert(view.resource.version == 0);
     Unused(view);
 
-    mDepthStencil.clearData.stencil = inValue;
+    mDepthStencil.clearData.stencil = value;
 }
 
-GPUResourceView* RenderGraphPass::GetView(const RenderViewHandle inHandle) const
+GPUResourceView* RenderGraphPass::GetView(const RenderViewHandle handle) const
 {
-    Assert(inHandle.pass == this);
+    Assert(handle.pass == this);
     Assert(mGraph.mIsExecuting);
-    Assert(inHandle.index < mViews.size());
-    AssertMsg(mViews[inHandle.index].view, "Attempt to use view of culled resource");
+    Assert(handle.index < mViews.size());
+    AssertMsg(mViews[handle.index].view, "Attempt to use view of culled resource");
 
-    return mViews[inHandle.index].view;
+    return mViews[handle.index].view;
 }
 
 RenderGraph::RenderGraph() :
@@ -352,12 +352,12 @@ RenderGraph::~RenderGraph()
     }
 }
 
-RenderGraphPass& RenderGraph::AddPass(std::string               inName,
-                                      const RenderGraphPassType inType)
+RenderGraphPass& RenderGraph::AddPass(std::string               name,
+                                      const RenderGraphPassType type)
 {
     RenderGraphPass* pass = new RenderGraphPass(*this,
-                                                std::move(inName),
-                                                inType,
+                                                std::move(name),
+                                                type,
                                                 mCurrentLayer);
 
     mPasses.emplace_back(pass);
@@ -365,54 +365,54 @@ RenderGraphPass& RenderGraph::AddPass(std::string               inName,
     return *pass;
 }
 
-RenderGraphPass& RenderGraph::AddBlitPass(std::string                inName,
-                                          const RenderResourceHandle inDestHandle,
-                                          const GPUSubresource       inDestSubresource,
-                                          const RenderResourceHandle inSourceHandle,
-                                          const GPUSubresource       inSourceSubresource,
+RenderGraphPass& RenderGraph::AddBlitPass(std::string                name,
+                                          const RenderResourceHandle destHandle,
+                                          const GPUSubresource       destSubresource,
+                                          const RenderResourceHandle sourceHandle,
+                                          const GPUSubresource       sourceSubresource,
                                           RenderResourceHandle*      outNewHandle)
 {
-    Assert(GetResourceType(inDestHandle) == kRenderResourceType_Texture);
-    Assert(GetResourceType(inSourceHandle) == kRenderResourceType_Texture);
+    Assert(GetResourceType(destHandle) == kRenderResourceType_Texture);
+    Assert(GetResourceType(sourceHandle) == kRenderResourceType_Texture);
     Assert(outNewHandle);
 
-    RenderGraphPass& pass = AddPass(std::move(inName), kRenderGraphPassType_Transfer);
+    RenderGraphPass& pass = AddPass(std::move(name), kRenderGraphPassType_Transfer);
 
-    pass.UseResource(inSourceHandle,
-                     inSourceSubresource,
+    pass.UseResource(sourceHandle,
+                     sourceSubresource,
                      kGPUResourceState_TransferRead,
                      nullptr);
 
-    pass.UseResource(inDestHandle,
-                     inDestSubresource,
+    pass.UseResource(destHandle,
+                     destSubresource,
                      kGPUResourceState_TransferWrite,
                      outNewHandle);
 
-    pass.SetFunction([=] (const RenderGraph&     inGraph,
-                          const RenderGraphPass& inPass,
-                          GPUTransferContext&    inContext)
+    pass.SetFunction([=] (const RenderGraph&     graph,
+                          const RenderGraphPass& pass,
+                          GPUTransferContext&    context)
     {
-        inContext.BlitTexture(inGraph.GetTexture(inDestHandle),
-                              inDestSubresource,
-                              inGraph.GetTexture(inSourceHandle),
-                              inSourceSubresource);
+        context.BlitTexture(graph.GetTexture(destHandle),
+                            destSubresource,
+                            graph.GetTexture(sourceHandle),
+                            sourceSubresource);
     });
 
     return pass;
 }
 
-RenderGraphPass& RenderGraph::AddUploadPass(std::string                inName,
-                                            const RenderResourceHandle inDestHandle,
-                                            const uint32_t             inDestOffset,
-                                            GPUStagingBuffer           inSourceBuffer,
+RenderGraphPass& RenderGraph::AddUploadPass(std::string                name,
+                                            const RenderResourceHandle destHandle,
+                                            const uint32_t             destOffset,
+                                            GPUStagingBuffer           sourceBuffer,
                                             RenderResourceHandle*      outNewHandle)
 {
-    Assert(GetResourceType(inDestHandle) == kRenderResourceType_Buffer);
+    Assert(GetResourceType(destHandle) == kRenderResourceType_Buffer);
     Assert(outNewHandle);
 
-    RenderGraphPass& pass = AddPass(std::move(inName), kRenderGraphPassType_Transfer);
+    RenderGraphPass& pass = AddPass(std::move(name), kRenderGraphPassType_Transfer);
 
-    pass.UseResource(inDestHandle,
+    pass.UseResource(destHandle,
                      GPUSubresource{0, 0},
                      kGPUResourceState_TransferWrite,
                      outNewHandle);
@@ -420,18 +420,18 @@ RenderGraphPass& RenderGraph::AddUploadPass(std::string                inName,
     /* Ugh, non-copyable objects can't be captured in a std::function since
      * that is copyable. Make a transient allocation to hold the staging handle
      * instead. */
-    auto sourceBuffer = NewTransient<GPUStagingBuffer>(std::move(inSourceBuffer));
+    auto sourceCopy = NewTransient<GPUStagingBuffer>(std::move(sourceBuffer));
 
-    pass.SetFunction([inDestHandle, inDestOffset, sourceBuffer]
-                     (const RenderGraph&     inGraph,
-                      const RenderGraphPass& inPass,
-                      GPUTransferContext&    inContext)
+    pass.SetFunction([destHandle, destOffset, sourceCopy]
+                     (const RenderGraph&     graph,
+                      const RenderGraphPass& pass,
+                      GPUTransferContext&    context)
     {
-        inContext.UploadBuffer(inGraph.GetBuffer(inDestHandle),
-                               *sourceBuffer,
-                               sourceBuffer->GetSize(),
-                               inDestOffset,
-                               0);
+        context.UploadBuffer(graph.GetBuffer(destHandle),
+                             *sourceCopy,
+                             sourceCopy->GetSize(),
+                             destOffset,
+                             0);
     });
 
     return pass;
@@ -463,12 +463,12 @@ const char* RenderGraph::Resource::GetName() const
                : this->buffer.name;
 }
 
-RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
+RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& desc)
 {
     Resource* resource = new Resource;
     resource->type     = kRenderResourceType_Buffer;
     resource->layer    = mCurrentLayer;
-    resource->buffer   = inDesc;
+    resource->buffer   = desc;
 
     RenderResourceHandle handle;
     handle.index   = mResources.size();
@@ -479,12 +479,12 @@ RenderResourceHandle RenderGraph::CreateBuffer(const RenderBufferDesc& inDesc)
     return handle;
 }
 
-RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& inDesc)
+RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& desc)
 {
     Resource* resource = new Resource;
     resource->layer    = mCurrentLayer;
     resource->type     = kRenderResourceType_Texture;
-    resource->texture  = inDesc;
+    resource->texture  = desc;
 
     RenderResourceHandle handle;
     handle.index   = mResources.size();
@@ -495,31 +495,31 @@ RenderResourceHandle RenderGraph::CreateTexture(const RenderTextureDesc& inDesc)
     return handle;
 }
 
-RenderResourceHandle RenderGraph::ImportResource(GPUResource* const        inResource,
-                                                 const GPUResourceState    inState,
-                                                 const char* const         inName,
-                                                 std::function<void ()>    inBeginCallback,
-                                                 std::function<void ()>    inEndCallback,
-                                                 const RenderOutput* const inOutput)
+RenderResourceHandle RenderGraph::ImportResource(GPUResource* const        extResource,
+                                                 const GPUResourceState    state,
+                                                 const char* const         name,
+                                                 std::function<void ()>    beginCallback,
+                                                 std::function<void ()>    endCallback,
+                                                 const RenderOutput* const output)
 {
     Resource* resource      = new Resource;
     resource->layer         = nullptr;
     resource->imported      = true;
-    resource->resource      = inResource;
-    resource->originalState = inState;
-    resource->currentState  = inState;
-    resource->output        = inOutput;
-    resource->beginCallback = std::move(inBeginCallback);
-    resource->endCallback   = std::move(inEndCallback);
+    resource->resource      = extResource;
+    resource->originalState = state;
+    resource->currentState  = state;
+    resource->output        = output;
+    resource->beginCallback = std::move(beginCallback);
+    resource->endCallback   = std::move(endCallback);
 
-    if (inResource->IsTexture())
+    if (extResource->IsTexture())
     {
         resource->type = kRenderResourceType_Texture;
 
-        const auto texture      = static_cast<const GPUTexture*>(inResource);
+        const auto texture      = static_cast<const GPUTexture*>(extResource);
         RenderTextureDesc& desc = resource->texture;
 
-        desc.name         = inName;
+        desc.name         = name;
         desc.type         = texture->GetType();
         desc.flags        = texture->GetFlags();
         desc.format       = texture->GetFormat();
@@ -533,10 +533,10 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const        inRes
     {
         resource->type = kRenderResourceType_Buffer;
 
-        const auto buffer      = static_cast<const GPUBuffer*>(inResource);
+        const auto buffer      = static_cast<const GPUBuffer*>(extResource);
         RenderBufferDesc& desc = resource->buffer;
 
-        desc.name = inName;
+        desc.name = name;
         desc.size = buffer->GetSize();
     }
 
@@ -549,30 +549,30 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const        inRes
     return handle;
 }
 
-void RenderGraph::TransitionResource(Resource&                  inResource,
-                                     const GPUSubresourceRange& inRange,
-                                     const GPUResourceState     inState)
+void RenderGraph::TransitionResource(Resource&                  resource,
+                                     const GPUSubresourceRange& range,
+                                     const GPUResourceState     state)
 {
-    const bool isWholeResource = inRange == inResource.resource->GetSubresourceRange();
+    const bool isWholeResource = range == resource.resource->GetSubresourceRange();
 
     if (!isWholeResource)
     {
         Fatal("TODO: Per-subresource state tracking");
     }
 
-    if (inResource.currentState != inState)
+    if (resource.currentState != state)
     {
         mBarriers.emplace_back();
         GPUResourceBarrier& barrier = mBarriers.back();
-        barrier.resource     = inResource.resource;
-        barrier.range        = inRange;
-        barrier.currentState = inResource.currentState;
-        barrier.newState     = inState;
+        barrier.resource     = resource.resource;
+        barrier.range        = range;
+        barrier.currentState = resource.currentState;
+        barrier.newState     = state;
 
         /* Discard if state is currently none, i.e. this is first use. */
-        barrier.discard = inResource.currentState == kGPUResourceState_None;
+        barrier.discard = resource.currentState == kGPUResourceState_None;
 
-        inResource.currentState = inState;
+        resource.currentState = state;
     }
 }
 
@@ -668,25 +668,25 @@ void RenderGraph::DetermineRequiredPasses()
     }
 }
 
-void RenderGraph::MakeBufferDesc(const Resource* const inResource,
+void RenderGraph::MakeBufferDesc(const Resource* const resource,
                                  GPUBufferDesc&        outDesc)
 {
-    outDesc.usage = inResource->usage;
-    outDesc.size  = inResource->buffer.size;
+    outDesc.usage = resource->usage;
+    outDesc.size  = resource->buffer.size;
 }
 
-void RenderGraph::MakeTextureDesc(const Resource* const inResource,
+void RenderGraph::MakeTextureDesc(const Resource* const resource,
                                   GPUTextureDesc&       outDesc)
 {
-    outDesc.type         = inResource->texture.type;
-    outDesc.usage        = inResource->usage;
-    outDesc.flags        = inResource->texture.flags;
-    outDesc.format       = inResource->texture.format;
-    outDesc.width        = inResource->texture.width;
-    outDesc.height       = inResource->texture.height;
-    outDesc.depth        = inResource->texture.depth;
-    outDesc.arraySize    = inResource->texture.arraySize;
-    outDesc.numMipLevels = inResource->texture.numMipLevels;
+    outDesc.type         = resource->texture.type;
+    outDesc.usage        = resource->usage;
+    outDesc.flags        = resource->texture.flags;
+    outDesc.format       = resource->texture.format;
+    outDesc.width        = resource->texture.width;
+    outDesc.height       = resource->texture.height;
+    outDesc.depth        = resource->texture.depth;
+    outDesc.arraySize    = resource->texture.arraySize;
+    outDesc.numMipLevels = resource->texture.numMipLevels;
 }
 
 void RenderGraph::AllocateResources()
@@ -790,16 +790,16 @@ void RenderGraph::EndResources()
     }
 }
 
-void RenderGraph::PrepareResources(RenderGraphPass& inPass)
+void RenderGraph::PrepareResources(RenderGraphPass& pass)
 {
-    for (const RenderGraphPass::UsedResource& use : inPass.mUsedResources)
+    for (const RenderGraphPass::UsedResource& use : pass.mUsedResources)
     {
         Resource* const resource = mResources[use.handle.index];
 
         /* If this is the first pass to use the resource and it has a begin
          * callback, call that now. Could have multiple uses of a resource
          * within the pass, only begin once. */
-        if (resource->firstPass == &inPass && !resource->begun)
+        if (resource->firstPass == &pass && !resource->begun)
         {
             if (resource->beginCallback)
             {
@@ -815,9 +815,9 @@ void RenderGraph::PrepareResources(RenderGraphPass& inPass)
     FlushBarriers();
 }
 
-void RenderGraph::CreateViews(RenderGraphPass& inPass)
+void RenderGraph::CreateViews(RenderGraphPass& pass)
 {
-    for (RenderGraphPass::View& view : inPass.mViews)
+    for (RenderGraphPass::View& view : pass.mViews)
     {
         Resource* const resource = mResources[view.resource.index];
 
@@ -839,22 +839,22 @@ void RenderGraph::CreateViews(RenderGraphPass& inPass)
     }
 }
 
-void RenderGraph::DestroyViews(RenderGraphPass& inPass)
+void RenderGraph::DestroyViews(RenderGraphPass& pass)
 {
-    for (RenderGraphPass::View& view : inPass.mViews)
+    for (RenderGraphPass::View& view : pass.mViews)
     {
         delete view.view;
         view.view = nullptr;
     }
 }
 
-void RenderGraph::ExecutePass(RenderGraphPass& inPass)
+void RenderGraph::ExecutePass(RenderGraphPass& pass)
 {
-    switch (inPass.mType)
+    switch (pass.mType)
     {
         case kRenderGraphPassType_Render:
         {
-            Assert(inPass.mRenderFunction);
+            Assert(pass.mRenderFunction);
 
             GPUGraphicsContext& context = GPUGraphicsContext::Get();
 
@@ -862,11 +862,11 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
 
             for (size_t i = 0; i < kMaxRenderPassColourAttachments; i++)
             {
-                RenderGraphPass::Attachment& colourAtt = inPass.mColour[i];
+                RenderGraphPass::Attachment& colourAtt = pass.mColour[i];
 
                 if (colourAtt.view)
                 {
-                    RenderGraphPass::View& view = inPass.mViews[colourAtt.view.index];
+                    RenderGraphPass::View& view = pass.mViews[colourAtt.view.index];
 
                     renderPass.SetColour(i, view.view);
 
@@ -876,29 +876,29 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
                      * resources, but do sometimes. */
                     Resource* const resource = mResources[view.resource.index];
 
-                    if (resource->firstPass == &inPass)
+                    if (resource->firstPass == &pass)
                     {
                         renderPass.ClearColour(i, colourAtt.clearData.colour);
                     }
 
-                    if (!resource->imported && resource->lastPass == &inPass)
+                    if (!resource->imported && resource->lastPass == &pass)
                     {
                         renderPass.DiscardColour(i);
                     }
                 }
             }
 
-            RenderGraphPass::Attachment& depthAtt = inPass.mDepthStencil;
+            RenderGraphPass::Attachment& depthAtt = pass.mDepthStencil;
 
             if (depthAtt.view)
             {
-                RenderGraphPass::View& view = inPass.mViews[depthAtt.view.index];
+                RenderGraphPass::View& view = pass.mViews[depthAtt.view.index];
 
                 renderPass.SetDepthStencil(view.view);
 
                 Resource* const resource = mResources[view.resource.index];
 
-                if (resource->firstPass == &inPass)
+                if (resource->firstPass == &pass)
                 {
                     renderPass.ClearDepth(depthAtt.clearData.depth);
 
@@ -908,7 +908,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
                     }
                 }
 
-                if (!resource->imported && resource->lastPass == &inPass)
+                if (!resource->imported && resource->lastPass == &pass)
                 {
                     renderPass.DiscardDepth();
 
@@ -922,12 +922,12 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
             GPUGraphicsCommandList* const cmdList = context.CreateRenderPass(renderPass);
             cmdList->Begin();
 
-            inPass.mRenderFunction(*this, inPass, *cmdList);
+            pass.mRenderFunction(*this, pass, *cmdList);
 
             cmdList->End();
 
             {
-                SCOPED_DEBUG_MARKER(context, inPass.mName);
+                SCOPED_DEBUG_MARKER(context, pass.mName);
                 context.SubmitRenderPass(cmdList);
             }
 
@@ -936,7 +936,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
 
         case kRenderGraphPassType_Compute:
         {
-            Assert(inPass.mComputeFunction);
+            Assert(pass.mComputeFunction);
 
             /* TODO: Async compute. */
             GPUComputeContext& context = GPUGraphicsContext::Get();
@@ -944,12 +944,12 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
             GPUComputeCommandList* const cmdList = context.CreateComputePass();
             cmdList->Begin();
 
-            inPass.mComputeFunction(*this, inPass, *cmdList);
+            pass.mComputeFunction(*this, pass, *cmdList);
 
             cmdList->End();
 
             {
-                SCOPED_DEBUG_MARKER(context, inPass.mName);
+                SCOPED_DEBUG_MARKER(context, pass.mName);
                 context.SubmitComputePass(cmdList);
             }
 
@@ -958,7 +958,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
 
         case kRenderGraphPassType_Transfer:
         {
-            Assert(inPass.mTransferFunction);
+            Assert(pass.mTransferFunction);
 
             /* Transfer passes are just executed on the main graphics context.
              * Not worth using a transfer queue for mid-frame transfers, it'll
@@ -973,8 +973,8 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
             GPUComputeContext& context = GPUGraphicsContext::Get();
 
             {
-                SCOPED_DEBUG_MARKER(context, inPass.mName);
-                inPass.mTransferFunction(*this, inPass, context);
+                SCOPED_DEBUG_MARKER(context, pass.mName);
+                pass.mTransferFunction(*this, pass, context);
             }
 
             break;
@@ -991,14 +991,14 @@ void RenderGraph::ExecutePass(RenderGraphPass& inPass)
     {
         /* Check if this pass produces the resource version we want as the debug
          * output, and if so, copy it. */
-        for (const RenderGraphPass::UsedResource& use : inPass.mUsedResources)
+        for (const RenderGraphPass::UsedResource& use : pass.mUsedResources)
         {
             RenderGraph::Resource* resource = mResources[use.handle.index];
 
             if (resource->layer == mDebugOutput.layer &&
                 resource->GetName() &&
                 strcmp(resource->GetName(), mDebugOutput.name) == 0 &&
-                inPass.mName == mDebugOutput.versionProducer)
+                pass.mName == mDebugOutput.versionProducer)
             {
                 Assert(!resource->debugResource);
                 Assert(resource->type == kRenderResourceType_Texture);
@@ -1057,36 +1057,36 @@ void RenderGraph::Execute()
     RenderGraphWindow::Get().RenderWindow(*this);
 }
 
-GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle inHandle) const
+GPUBuffer* RenderGraph::GetBuffer(const RenderResourceHandle handle) const
 {
     Assert(mIsExecuting);
-    Assert(GetResourceType(inHandle) == kRenderResourceType_Buffer);
-    AssertMsg(mResources[inHandle.index]->resource, "Attempt to use culled resource");
+    Assert(GetResourceType(handle) == kRenderResourceType_Buffer);
+    AssertMsg(mResources[handle.index]->resource, "Attempt to use culled resource");
 
-    return static_cast<GPUBuffer*>(mResources[inHandle.index]->resource);
+    return static_cast<GPUBuffer*>(mResources[handle.index]->resource);
 }
 
-GPUTexture* RenderGraph::GetTexture(const RenderResourceHandle inHandle) const
+GPUTexture* RenderGraph::GetTexture(const RenderResourceHandle handle) const
 {
     Assert(mIsExecuting);
-    Assert(GetResourceType(inHandle) == kRenderResourceType_Texture);
-    AssertMsg(mResources[inHandle.index]->resource, "Attempt to use culled resource");
+    Assert(GetResourceType(handle) == kRenderResourceType_Texture);
+    AssertMsg(mResources[handle.index]->resource, "Attempt to use culled resource");
 
-    return static_cast<GPUTexture*>(mResources[inHandle.index]->resource);
+    return static_cast<GPUTexture*>(mResources[handle.index]->resource);
 }
 
-void RenderGraph::AddDestructor(Destructor inDestructor)
+void RenderGraph::AddDestructor(Destructor destructor)
 {
-    mDestructors.emplace_back(std::move(inDestructor));
+    mDestructors.emplace_back(std::move(destructor));
 }
 
-const RenderGraphPass* RenderGraph::FindPass(const PassKey& inKey) const
+const RenderGraphPass* RenderGraph::FindPass(const PassKey& key) const
 {
-    if (!inKey.name.empty())
+    if (!key.name.empty())
     {
         for (const RenderGraphPass* pass : mPasses)
         {
-            if (pass->mLayer == inKey.layer && pass->mName == inKey.name)
+            if (pass->mLayer == key.layer && pass->mName == key.name)
             {
                 return pass;
             }
@@ -1096,15 +1096,15 @@ const RenderGraphPass* RenderGraph::FindPass(const PassKey& inKey) const
     return nullptr;
 }
 
-const RenderGraph::Resource* RenderGraph::FindResource(const ResourceKey& inKey) const
+const RenderGraph::Resource* RenderGraph::FindResource(const ResourceKey& key) const
 {
-    if (inKey.name)
+    if (key.name)
     {
         for (const Resource* resource : mResources)
         {
-            if (resource->layer == inKey.layer &&
+            if (resource->layer == key.layer &&
                 resource->GetName() &&
-                strcmp(resource->GetName(), inKey.name) == 0)
+                strcmp(resource->GetName(), key.name) == 0)
             {
                 return resource;
             }
@@ -1129,7 +1129,7 @@ RenderGraphWindow& RenderGraphWindow::Get()
     return sWindow;
 }
 
-void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
+void RenderGraphWindow::RenderWindow(const RenderGraph& graph)
 {
     ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(350, 600), ImGuiCond_Once);
@@ -1150,37 +1150,37 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
     constexpr ImGuiTreeNodeFlags kLeafFlags = ImGuiTreeNodeFlags_Leaf |
                                               ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-    auto SmallButton = [] (const char* const inLabel, const uint32_t inWidth)
+    auto SmallButton = [] (const char* const label, const uint32_t width)
     {
         ImGuiStyle& style = ImGui::GetStyle();
         const float padding = style.FramePadding.y;
         style.FramePadding.y = 0.0f;
-        const bool pressed = ImGui::Button(inLabel, ImVec2(inWidth, 0));
+        const bool pressed = ImGui::Button(label, ImVec2(width, 0));
         style.FramePadding.y = padding;
         return pressed;
     };
 
-    auto GetPassKey = [] (const RenderGraphPass* inPass) -> RenderGraph::PassKey
+    auto GetPassKey = [] (const RenderGraphPass* pass) -> RenderGraph::PassKey
     {
         RenderGraph::PassKey key;
 
-        if (inPass)
+        if (pass)
         {
-            key.layer = inPass->mLayer;
-            key.name  = inPass->mName;
+            key.layer = pass->mLayer;
+            key.name  = pass->mName;
         }
 
         return key;
     };
 
-    auto GetResourceKey = [] (const RenderGraph::Resource* inResource) -> RenderGraph::ResourceKey
+    auto GetResourceKey = [] (const RenderGraph::Resource* resource) -> RenderGraph::ResourceKey
     {
         RenderGraph::ResourceKey key;
 
-        if (inResource)
+        if (resource)
         {
-            key.layer = inResource->layer;
-            key.name  = inResource->GetName();
+            key.layer = resource->layer;
+            key.name  = resource->GetName();
         }
 
         return key;
@@ -1190,8 +1190,8 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
     bool selectResources = false;
 
     {
-        const RenderGraphPass* jumpToPass           = inGraph.FindPass(mJumpToPass);
-        const RenderGraph::Resource* jumpToResource = inGraph.FindResource(mJumpToResource);
+        const RenderGraphPass* jumpToPass           = graph.FindPass(mJumpToPass);
+        const RenderGraph::Resource* jumpToResource = graph.FindResource(mJumpToResource);
 
         if (jumpToPass)
         {
@@ -1210,7 +1210,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
 
     if (ImGui::BeginTabItem("Passes", nullptr, (selectPasses) ? ImGuiTabItemFlags_SetSelected : 0))
     {
-        const RenderGraphPass* currentPass = inGraph.FindPass(mCurrentPass);
+        const RenderGraphPass* currentPass = graph.FindPass(mCurrentPass);
 
         /* Tree of all outputs/layers/passes. */
         {
@@ -1232,7 +1232,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
                         continue;
                     }
 
-                    for (const RenderGraphPass* pass : inGraph.mPasses)
+                    for (const RenderGraphPass* pass : graph.mPasses)
                     {
                         if (pass->mLayer != layer)
                         {
@@ -1287,7 +1287,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
 
             for (const RenderGraphPass::UsedResource& use : currentPass->mUsedResources)
             {
-                const RenderGraph::Resource* resource = inGraph.mResources[use.handle.index];
+                const RenderGraph::Resource* resource = graph.mResources[use.handle.index];
 
                 /* Don't list as an input if this is the first producer. */
                 if (resource->imported || use.handle.version != 0)
@@ -1313,7 +1313,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
 
             for (const RenderGraphPass::UsedResource& use : currentPass->mUsedResources)
             {
-                const RenderGraph::Resource* resource = inGraph.mResources[use.handle.index];
+                const RenderGraph::Resource* resource = graph.mResources[use.handle.index];
 
                 if (use.state & kGPUResourceState_AllWrite)
                 {
@@ -1338,7 +1338,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
 
     if (ImGui::BeginTabItem("Resources", nullptr, (selectResources) ? ImGuiTabItemFlags_SetSelected : 0))
     {
-        const RenderGraph::Resource* currentResource = inGraph.FindResource(mCurrentResource);
+        const RenderGraph::Resource* currentResource = graph.FindResource(mCurrentResource);
 
         /* Tree of all outputs/layers/resources. */
         {
@@ -1360,7 +1360,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
                         continue;
                     }
 
-                    for (const RenderGraph::Resource* resource : inGraph.mResources)
+                    for (const RenderGraph::Resource* resource : graph.mResources)
                     {
                         if (resource->layer != layer)
                         {
@@ -1397,7 +1397,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
         ImGui::Text("Debug Output:");
         ImGui::SameLine();
 
-        if (inGraph.FindResource(RenderGraph::mDebugOutput))
+        if (graph.FindResource(RenderGraph::mDebugOutput))
         {
             ImGui::Text("%s (%s)",
                         RenderGraph::mDebugOutput.name,
@@ -1448,11 +1448,11 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& inGraph)
             }
             else
             {
-                auto DoUsage = [&] (const GPUResourceUsage inUsage, const char* const inStr)
+                auto DoUsage = [&] (const GPUResourceUsage usage, const char* const str)
                 {
-                    if (currentResource->usage & inUsage)
+                    if (currentResource->usage & usage)
                     {
-                        ImGui::SameLine(); ImGui::Text("%s", inStr);
+                        ImGui::SameLine(); ImGui::Text("%s", str);
                     }
                 };
 

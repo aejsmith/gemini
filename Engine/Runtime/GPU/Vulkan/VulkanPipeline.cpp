@@ -38,13 +38,13 @@ static VkPipelineDynamicStateCreateInfo kDynamicStateInfo =
     kDynamicStates
 };
 
-static void ConvertShaderState(const GPUPipelineDesc&           inDesc,
+static void ConvertShaderState(const GPUPipelineDesc&           desc,
                                VkPipelineShaderStageCreateInfo* outStageInfos,
                                uint32_t&                        outStageCount)
 {
     for (size_t stage = 0; stage < kGPUShaderStage_NumGraphics; stage++)
     {
-        auto shader = static_cast<VulkanShader*>(inDesc.shaders[stage]);
+        auto shader = static_cast<VulkanShader*>(desc.shaders[stage]);
 
         if (shader)
         {
@@ -59,13 +59,13 @@ static void ConvertShaderState(const GPUPipelineDesc&           inDesc,
     }
 }
 
-static void ConvertVertexInputState(const GPUPipelineDesc&                inDesc,
+static void ConvertVertexInputState(const GPUPipelineDesc&                desc,
                                     VkPipelineVertexInputStateCreateInfo& outVertexInputInfo,
                                     VkVertexInputAttributeDescription*    outVertexAttributes,
                                     VkVertexInputBindingDescription*      outVertexBindings)
 {
-    const auto& stateDesc = inDesc.vertexInputState->GetDesc();
-    const auto shader     = static_cast<VulkanShader*>(inDesc.shaders[kGPUShaderStage_Vertex]);
+    const auto& stateDesc = desc.vertexInputState->GetDesc();
+    const auto shader     = static_cast<VulkanShader*>(desc.shaders[kGPUShaderStage_Vertex]);
 
     outVertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -116,14 +116,14 @@ static void ConvertVertexInputState(const GPUPipelineDesc&                inDesc
     }
 }
 
-static void ConvertInputAssemblyState(const GPUPipelineDesc&                  inDesc,
+static void ConvertInputAssemblyState(const GPUPipelineDesc&                  desc,
                                       VkPipelineInputAssemblyStateCreateInfo& outInputAssemblyInfo)
 {
     outInputAssemblyInfo.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    outInputAssemblyInfo.topology = VulkanUtils::ConvertPrimitiveTopology(inDesc.topology);
+    outInputAssemblyInfo.topology = VulkanUtils::ConvertPrimitiveTopology(desc.topology);
 }
 
-static void ConvertViewportState(const GPUPipelineDesc&             inDesc,
+static void ConvertViewportState(const GPUPipelineDesc&             desc,
                                  VkPipelineViewportStateCreateInfo& outViewportInfo)
 {
     outViewportInfo.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -131,11 +131,11 @@ static void ConvertViewportState(const GPUPipelineDesc&             inDesc,
     outViewportInfo.scissorCount  = 1;
 }
 
-static void ConvertRasterizerState(const GPUPipelineDesc&                  inDesc,
+static void ConvertRasterizerState(const GPUPipelineDesc&                  desc,
                                    VkPipelineRasterizationStateCreateInfo& outRasterizationInfo,
                                    VkPipelineMultisampleStateCreateInfo&   outMultisampleInfo)
 {
-    const auto& stateDesc = inDesc.rasterizerState->GetDesc();
+    const auto& stateDesc = desc.rasterizerState->GetDesc();
 
     outRasterizationInfo.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     outRasterizationInfo.depthClampEnable        = stateDesc.depthClampEnable;
@@ -150,10 +150,10 @@ static void ConvertRasterizerState(const GPUPipelineDesc&                  inDes
     outMultisampleInfo.rasterizationSamples      = VK_SAMPLE_COUNT_1_BIT;
 }
 
-static void ConvertDepthStencilState(const GPUPipelineDesc&                 inDesc,
+static void ConvertDepthStencilState(const GPUPipelineDesc&                 desc,
                                      VkPipelineDepthStencilStateCreateInfo& outDepthStencilInfo)
 {
-    const auto& stateDesc = inDesc.depthStencilState->GetDesc();
+    const auto& stateDesc = desc.depthStencilState->GetDesc();
 
     outDepthStencilInfo.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     outDepthStencilInfo.depthTestEnable       = stateDesc.depthTestEnable;
@@ -177,12 +177,12 @@ static void ConvertDepthStencilState(const GPUPipelineDesc&                 inDe
     outDepthStencilInfo.back.reference        = stateDesc.stencilBack.reference;
 }
 
-static void ConvertBlendState(const GPUPipelineDesc&               inDesc,
+static void ConvertBlendState(const GPUPipelineDesc&               desc,
                               VkPipelineColorBlendStateCreateInfo& outBlendInfo,
                               VkPipelineColorBlendAttachmentState* outBlendAttachments)
 {
-    const auto& stateDesc   = inDesc.blendState->GetDesc();
-    const auto& rtStateDesc = inDesc.renderTargetState->GetDesc();
+    const auto& stateDesc   = desc.blendState->GetDesc();
+    const auto& rtStateDesc = desc.renderTargetState->GetDesc();
 
     outBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 
@@ -213,14 +213,14 @@ static void ConvertBlendState(const GPUPipelineDesc&               inDesc,
     }
 }
 
-VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
-                               const GPUPipelineDesc& inDesc) :
-    GPUPipeline (inDevice, inDesc),
+VulkanPipeline::VulkanPipeline(VulkanDevice&          device,
+                               const GPUPipelineDesc& desc) :
+    GPUPipeline (device, desc),
     mHandle     (VK_NULL_HANDLE),
     mLayout     (VK_NULL_HANDLE)
 {
     VulkanPipelineLayoutKey layoutKey;
-    memcpy(layoutKey.argumentSetLayouts, inDesc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
+    memcpy(layoutKey.argumentSetLayouts, desc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
     mLayout = GetVulkanDevice().GetPipelineLayout(layoutKey);
 
     VkPipelineShaderStageCreateInfo        stageInfo[kGPUShaderStage_NumGraphics]            = {{}};
@@ -268,23 +268,23 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          inDevice,
 VulkanPipeline::~VulkanPipeline()
 {
     GetVulkanDevice().AddFrameCompleteCallback(
-        [handle = mHandle] (VulkanDevice& inDevice)
+        [handle = mHandle] (VulkanDevice& device)
         {
-            vkDestroyPipeline(inDevice.GetHandle(), handle, nullptr);
+            vkDestroyPipeline(device.GetHandle(), handle, nullptr);
         });
 }
 
-VulkanComputePipeline::VulkanComputePipeline(VulkanDevice&                 inDevice,
-                                             const GPUComputePipelineDesc& inDesc) :
-    GPUComputePipeline  (inDevice, inDesc),
+VulkanComputePipeline::VulkanComputePipeline(VulkanDevice&                 device,
+                                             const GPUComputePipelineDesc& desc) :
+    GPUComputePipeline  (device, desc),
     mHandle             (VK_NULL_HANDLE),
     mLayout             (VK_NULL_HANDLE)
 {
     VulkanPipelineLayoutKey layoutKey;
-    memcpy(layoutKey.argumentSetLayouts, inDesc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
+    memcpy(layoutKey.argumentSetLayouts, desc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
     mLayout = GetVulkanDevice().GetPipelineLayout(layoutKey);
 
-    const auto shader = static_cast<VulkanShader*>(inDesc.shader);
+    const auto shader = static_cast<VulkanShader*>(desc.shader);
 
     VkComputePipelineCreateInfo createInfo = {};
     createInfo.sType        = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -304,8 +304,8 @@ VulkanComputePipeline::VulkanComputePipeline(VulkanDevice&                 inDev
 VulkanComputePipeline::~VulkanComputePipeline()
 {
     GetVulkanDevice().AddFrameCompleteCallback(
-        [handle = mHandle] (VulkanDevice& inDevice)
+        [handle = mHandle] (VulkanDevice& device)
         {
-            vkDestroyPipeline(inDevice.GetHandle(), handle, nullptr);
+            vkDestroyPipeline(device.GetHandle(), handle, nullptr);
         });
 }

@@ -21,7 +21,7 @@
 
 #include "Render/RenderGraph.h"
 
-EntityDrawSortKey EntityDrawSortKey::GetOpaque(const GPUPipeline* const inPipeline)
+EntityDrawSortKey EntityDrawSortKey::GetOpaque(const GPUPipeline* const pipeline)
 {
     /*
      * Currently we have:
@@ -41,9 +41,9 @@ EntityDrawSortKey EntityDrawSortKey::GetOpaque(const GPUPipeline* const inPipeli
 
     EntityDrawSortKey key = {};
 
-    key.mValue |= static_cast<uint64_t>(inPipeline->GetID())                             << kPipelineIDShift;
-    key.mValue |= static_cast<uint64_t>(inPipeline->GetShaderID(kGPUShaderStage_Vertex)) << kVertexShaderIDShift;
-    key.mValue |= static_cast<uint64_t>(inPipeline->GetShaderID(kGPUShaderStage_Pixel))  << kPixelShaderIDShift;
+    key.mValue |= static_cast<uint64_t>(pipeline->GetID())                             << kPipelineIDShift;
+    key.mValue |= static_cast<uint64_t>(pipeline->GetShaderID(kGPUShaderStage_Vertex)) << kVertexShaderIDShift;
+    key.mValue |= static_cast<uint64_t>(pipeline->GetShaderID(kGPUShaderStage_Pixel))  << kPixelShaderIDShift;
 
     return key;
 }
@@ -56,19 +56,19 @@ EntityDrawList::~EntityDrawList()
 {
 }
 
-void EntityDrawList::Reserve(const size_t inExpectedCount)
+void EntityDrawList::Reserve(const size_t expectedCount)
 {
-    mDrawCalls.reserve(inExpectedCount);
-    mEntries.reserve(inExpectedCount);
+    mDrawCalls.reserve(expectedCount);
+    mEntries.reserve(expectedCount);
 }
 
-EntityDrawCall& EntityDrawList::Add(const EntityDrawSortKey inSortKey)
+EntityDrawCall& EntityDrawList::Add(const EntityDrawSortKey sortKey)
 {
     Assert(mDrawCalls.size() == mEntries.size());
 
     Entry& entry = mEntries.emplace_back();
     entry.index  = mDrawCalls.size();
-    entry.key    = inSortKey;
+    entry.key    = sortKey;
 
     return mDrawCalls.emplace_back();
 }
@@ -84,7 +84,7 @@ void EntityDrawList::Sort()
         });
 }
 
-void EntityDrawList::Draw(GPUGraphicsCommandList& inCmdList) const
+void EntityDrawList::Draw(GPUGraphicsCommandList& cmdList) const
 {
     // TODO: Implement draw parallelisation here. Partition the list into jobs
     // and execute in parallel, combine command lists in order at the end.
@@ -107,7 +107,7 @@ void EntityDrawList::Draw(GPUGraphicsCommandList& inCmdList) const
          * so we'll just pass everything through.
          */
 
-        inCmdList.SetPipeline(drawCall.pipeline);
+        cmdList.SetPipeline(drawCall.pipeline);
 
         for (size_t i = 0; i < ArraySize(drawCall.arguments); i++)
         {
@@ -115,13 +115,13 @@ void EntityDrawList::Draw(GPUGraphicsCommandList& inCmdList) const
 
             if (arguments.argumentSet)
             {
-                inCmdList.SetArguments(i, arguments.argumentSet);
+                cmdList.SetArguments(i, arguments.argumentSet);
 
                 for (auto& constants : arguments.constants)
                 {
                     if (constants.constants != kGPUConstants_Invalid)
                     {
-                        inCmdList.SetConstants(i, constants.argumentIndex, constants.constants);
+                        cmdList.SetConstants(i, constants.argumentIndex, constants.constants);
                     }
                 }
             }
@@ -133,7 +133,7 @@ void EntityDrawList::Draw(GPUGraphicsCommandList& inCmdList) const
 
             if (vertexBuffer.buffer)
             {
-                inCmdList.SetVertexBuffer(i, vertexBuffer.buffer, vertexBuffer.offset);
+                cmdList.SetVertexBuffer(i, vertexBuffer.buffer, vertexBuffer.offset);
             }
         }
 
@@ -141,23 +141,23 @@ void EntityDrawList::Draw(GPUGraphicsCommandList& inCmdList) const
 
         if (indexBuffer.buffer)
         {
-            inCmdList.SetIndexBuffer(drawCall.indexType, indexBuffer.buffer, indexBuffer.offset);
+            cmdList.SetIndexBuffer(drawCall.indexType, indexBuffer.buffer, indexBuffer.offset);
 
-            inCmdList.DrawIndexed(drawCall.vertexCount, drawCall.indexOffset, drawCall.vertexOffset);
+            cmdList.DrawIndexed(drawCall.vertexCount, drawCall.indexOffset, drawCall.vertexOffset);
         }
         else
         {
-            inCmdList.Draw(drawCall.vertexCount, drawCall.vertexOffset);
+            cmdList.Draw(drawCall.vertexCount, drawCall.vertexOffset);
         }
     }
 }
 
-void EntityDrawList::Draw(RenderGraphPass& inPass) const
+void EntityDrawList::Draw(RenderGraphPass& pass) const
 {
-    inPass.SetFunction([this] (const RenderGraph&      inGraph,
-                               const RenderGraphPass&  inPass,
-                               GPUGraphicsCommandList& inCmdList)
+    pass.SetFunction([this] (const RenderGraph&      graph,
+                             const RenderGraphPass&  pass,
+                             GPUGraphicsCommandList& cmdList)
     {
-        Draw(inCmdList);
+        Draw(cmdList);
     });
 }

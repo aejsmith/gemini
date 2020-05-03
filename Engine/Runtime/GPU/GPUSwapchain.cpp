@@ -18,10 +18,10 @@
 
 #include "Engine/Window.h"
 
-GPUSwapchain::GPUSwapchain(GPUDevice& inDevice,
-                           Window&    inWindow) :
-    GPUDeviceChild (inDevice),
-    mWindow        (inWindow),
+GPUSwapchain::GPUSwapchain(GPUDevice& device,
+                           Window&    window) :
+    GPUDeviceChild (device),
+    mWindow        (window),
     mFormat        (kPixelFormat_Unknown),
     mTexture       (nullptr)
 {

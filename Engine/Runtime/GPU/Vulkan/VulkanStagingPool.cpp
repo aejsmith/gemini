@@ -18,8 +18,8 @@
 
 #include "VulkanDevice.h"
 
-VulkanStagingPool::VulkanStagingPool(VulkanDevice& inDevice) :
-    GPUStagingPool  (inDevice)
+VulkanStagingPool::VulkanStagingPool(VulkanDevice& device) :
+    GPUStagingPool  (device)
 {
 }
 
@@ -27,8 +27,8 @@ VulkanStagingPool::~VulkanStagingPool()
 {
 }
 
-void* VulkanStagingPool::Allocate(const GPUStagingAccess inAccess,
-                                  const uint32_t         inSize,
+void* VulkanStagingPool::Allocate(const GPUStagingAccess access,
+                                  const uint32_t         size,
                                   void*&                 outMapping)
 {
     // TODO: Better implementation that creates a VkBuffer per VkDeviceMemory
@@ -38,7 +38,7 @@ void* VulkanStagingPool::Allocate(const GPUStagingAccess inAccess,
 
     VkBufferCreateInfo createInfo = {};
     createInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    createInfo.size        = inSize;
+    createInfo.size        = size;
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -46,7 +46,7 @@ void* VulkanStagingPool::Allocate(const GPUStagingAccess inAccess,
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.pUserData = this;
     allocationCreateInfo.flags     = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-    allocationCreateInfo.usage     = (inAccess == kGPUStagingAccess_Write)
+    allocationCreateInfo.usage     = (access == kGPUStagingAccess_Write)
                                          ? VMA_MEMORY_USAGE_CPU_TO_GPU
                                          : VMA_MEMORY_USAGE_GPU_TO_CPU;
 
@@ -66,15 +66,15 @@ void* VulkanStagingPool::Allocate(const GPUStagingAccess inAccess,
     return allocation;
 }
 
-void VulkanStagingPool::Free(void* const inHandle)
+void VulkanStagingPool::Free(void* const handle)
 {
-    auto allocation = static_cast<VulkanStagingAllocation*>(inHandle);
+    auto allocation = static_cast<VulkanStagingAllocation*>(handle);
 
     GetVulkanDevice().AddFrameCompleteCallback(
-        [handle = allocation->handle, allocation = allocation->allocation] (VulkanDevice& inDevice)
+        [handle = allocation->handle, allocation = allocation->allocation] (VulkanDevice& device)
         {
-            vkDestroyBuffer(inDevice.GetHandle(), handle, nullptr);
-            inDevice.GetMemoryManager().Free(allocation);
+            vkDestroyBuffer(device.GetHandle(), handle, nullptr);
+            device.GetMemoryManager().Free(allocation);
         });
 
     delete allocation;

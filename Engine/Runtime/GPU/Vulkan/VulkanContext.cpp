@@ -33,12 +33,12 @@
  */
 static thread_local VulkanCommandPool* sCommandPools[kVulkanMaxContexts][kVulkanInFlightFrameCount] = {{}};
 
-VulkanContext::VulkanContext(VulkanDevice&  inDevice,
-                             const uint8_t  inID,
-                             const uint32_t inQueueFamily) :
-    GPUGraphicsContext  (inDevice),
-    mID                 (inID),
-    mQueueFamily        (inQueueFamily),
+VulkanContext::VulkanContext(VulkanDevice&  device,
+                             const uint8_t  id,
+                             const uint32_t queueFamily) :
+    GPUGraphicsContext  (device),
+    mID                 (id),
+    mQueueFamily        (queueFamily),
     mCommandBuffer      (VK_NULL_HANDLE)
 {
     vkGetDeviceQueue(GetVulkanDevice().GetHandle(),
@@ -78,9 +78,9 @@ VulkanCommandPool& VulkanContext::GetCommandPool()
     return *pool;
 }
 
-VkCommandBuffer VulkanContext::GetCommandBuffer(const bool inAllocate)
+VkCommandBuffer VulkanContext::GetCommandBuffer(const bool allocate)
 {
-    if (mCommandBuffer == VK_NULL_HANDLE && inAllocate)
+    if (mCommandBuffer == VK_NULL_HANDLE && allocate)
     {
         /* We do not have a command buffer, so allocate one and begin it. */
         mCommandBuffer = GetCommandPool().AllocatePrimary();
@@ -95,11 +95,11 @@ VkCommandBuffer VulkanContext::GetCommandBuffer(const bool inAllocate)
     return mCommandBuffer;
 }
 
-void VulkanContext::Submit(const VkSemaphore inSignalSemaphore)
+void VulkanContext::Submit(const VkSemaphore signalSemaphore)
 {
     /* Don't need to do anything if we have nothing to submit and don't have a
      * semaphore to signal. */
-    if (!HaveCommandBuffer() && inSignalSemaphore == VK_NULL_HANDLE)
+    if (!HaveCommandBuffer() && signalSemaphore == VK_NULL_HANDLE)
     {
         return;
     }
@@ -122,8 +122,8 @@ void VulkanContext::Submit(const VkSemaphore inSignalSemaphore)
     submitInfo.pWaitDstStageMask    = waitStages;
     submitInfo.commandBufferCount   = (mCommandBuffer != VK_NULL_HANDLE) ? 1 : 0;
     submitInfo.pCommandBuffers      = (mCommandBuffer != VK_NULL_HANDLE) ? &mCommandBuffer : nullptr;
-    submitInfo.signalSemaphoreCount = (inSignalSemaphore != VK_NULL_HANDLE) ? 1 : 0;
-    submitInfo.pSignalSemaphores    = (inSignalSemaphore != VK_NULL_HANDLE) ? &inSignalSemaphore : nullptr;
+    submitInfo.signalSemaphoreCount = (signalSemaphore != VK_NULL_HANDLE) ? 1 : 0;
+    submitInfo.pSignalSemaphores    = (signalSemaphore != VK_NULL_HANDLE) ? &signalSemaphore : nullptr;
 
     /* Submit with a fence from the device fence pool. This will be used by the
      * device to determine when the current frame is completed. */
@@ -139,15 +139,15 @@ void VulkanContext::Submit(const VkSemaphore inSignalSemaphore)
     mWaitSemaphores.clear();
 }
 
-void VulkanContext::Wait(const VkSemaphore inSemaphore)
+void VulkanContext::Wait(const VkSemaphore semaphore)
 {
     /* Submit any outstanding work. This needs to happen prior to the wait. */
     Submit();
 
-    mWaitSemaphores.emplace_back(inSemaphore);
+    mWaitSemaphores.emplace_back(semaphore);
 }
 
-void VulkanContext::Wait(GPUContext& inOtherContext)
+void VulkanContext::Wait(GPUContext& otherContext)
 {
     ValidateContext();
 
@@ -182,29 +182,29 @@ void VulkanContext::EndFrame()
     }
 }
 
-void VulkanContext::BeginPresent(GPUSwapchain& inSwapchain)
+void VulkanContext::BeginPresent(GPUSwapchain& swapchain)
 {
     ValidateContext();
 
-    auto& swapchain = static_cast<VulkanSwapchain&>(inSwapchain);
+    auto& vkSwapchain = static_cast<VulkanSwapchain&>(swapchain);
 
     /* Get a semaphore to be signalled when the swapchain image is available to
      * be rendered to. */
     const VkSemaphore acquireSemaphore = GetVulkanDevice().AllocateSemaphore();
 
     /* Acquire a swapchain image. */
-    swapchain.Acquire(acquireSemaphore);
+    vkSwapchain.Acquire(acquireSemaphore);
 
     /* Subsequent work on the context must wait for the image to have been
      * acquired. */
     Wait(acquireSemaphore);
 }
 
-void VulkanContext::EndPresent(GPUSwapchain& inSwapchain)
+void VulkanContext::EndPresent(GPUSwapchain& swapchain)
 {
     ValidateContext();
 
-    auto& swapchain = static_cast<VulkanSwapchain&>(inSwapchain);
+    auto& vkSwapchain = static_cast<VulkanSwapchain&>(swapchain);
 
     /* We need to signal a semaphore after rendering to the swapchain is
      * complete to let the window system know it can present the image. */
@@ -214,26 +214,26 @@ void VulkanContext::EndPresent(GPUSwapchain& inSwapchain)
     Submit(completeSemaphore);
 
     /* Present it. */
-    swapchain.Present(mQueue, completeSemaphore);
+    vkSwapchain.Present(mQueue, completeSemaphore);
 }
 
-void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
-                                    const size_t                    inCount)
+void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const barriers,
+                                    const size_t                    count)
 {
     ValidateContext();
 
-    Assert(inCount > 0);
+    Assert(count > 0);
 
     /* Determine how many barrier structures we're going to need. */
     uint32_t imageBarrierCount  = 0;
     uint32_t bufferBarrierCount = 0;
 
-    for (size_t i = 0; i < inCount; i++)
+    for (size_t i = 0; i < count; i++)
     {
-        Assert(inBarriers[i].resource);
-        inBarriers[i].resource->ValidateBarrier(inBarriers[i]);
+        Assert(barriers[i].resource);
+        barriers[i].resource->ValidateBarrier(barriers[i]);
 
-        if (inBarriers[i].resource->IsTexture())
+        if (barriers[i].resource->IsTexture())
         {
             imageBarrierCount++;
         }
@@ -252,40 +252,40 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
     VkPipelineStageFlags srcStageMask = 0;
     VkPipelineStageFlags dstStageMask = 0;
 
-    for (size_t i = 0; i < inCount; i++)
+    for (size_t i = 0; i < count; i++)
     {
-        const bool isTexture = inBarriers[i].resource->IsTexture();
+        const bool isTexture = barriers[i].resource->IsTexture();
 
         VkAccessFlags srcAccessMask  = 0;
         VkAccessFlags dstAccessMask  = 0;
         VkImageLayout oldImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageLayout newImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-        auto HandleState = [&] (const GPUResourceState     inState,
-                                const VkPipelineStageFlags inStageMask,
-                                const VkAccessFlags        inAccessMask,
-                                const VkImageLayout        inLayout = VK_IMAGE_LAYOUT_UNDEFINED)
+        auto HandleState = [&] (const GPUResourceState     state,
+                                const VkPipelineStageFlags stageMask,
+                                const VkAccessFlags        accessMask,
+                                const VkImageLayout        layout = VK_IMAGE_LAYOUT_UNDEFINED)
         {
-            if (inBarriers[i].currentState & inState)
+            if (barriers[i].currentState & state)
             {
-                srcStageMask  |= inStageMask;
+                srcStageMask  |= stageMask;
 
                 /* Only write bits are relevant in a source access mask. */
-                srcAccessMask |= inAccessMask & kVkAccessFlagBits_AllWrite;
+                srcAccessMask |= accessMask & kVkAccessFlagBits_AllWrite;
 
                 /* Overwrite the image layout. The most preferential layout is
                  * handled last below. The only case where this matters is depth
                  * read-only states + shader read states, where we want to use
                  * the depth/stencil layout as opposed to
                  * SHADER_READ_ONLY. */
-                oldImageLayout = inLayout;
+                oldImageLayout = layout;
             }
 
-            if (inBarriers[i].newState & inState)
+            if (barriers[i].newState & state)
             {
-                dstStageMask  |= inStageMask;
-                dstAccessMask |= inAccessMask;
-                newImageLayout = inLayout;
+                dstStageMask  |= stageMask;
+                dstAccessMask |= accessMask;
+                newImageLayout = layout;
             }
         };
 
@@ -366,12 +366,12 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
          * image within this frame - we don't need to preserve existing content,
          * and it avoids the problem that on first use the layout will be
          * undefined. */
-        if (inBarriers[i].currentState & kGPUResourceState_Present)
+        if (barriers[i].currentState & kGPUResourceState_Present)
         {
             srcStageMask  |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
             Assert(isTexture);
-            auto texture = static_cast<VulkanTexture*>(inBarriers[i].resource);
+            auto texture = static_cast<VulkanTexture*>(barriers[i].resource);
             Assert(texture->IsSwapchain());
 
             if (texture->GetAndResetNeedDiscard())
@@ -384,13 +384,13 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
             }
         }
 
-        if (inBarriers[i].newState & kGPUResourceState_Present)
+        if (barriers[i].newState & kGPUResourceState_Present)
         {
             dstStageMask  |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
             newImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         }
 
-        if (inBarriers[i].discard)
+        if (barriers[i].discard)
         {
             /* Undefined can always be specified as the old layout which
              * indicates we don't care about current content. */
@@ -405,8 +405,8 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
         {
             if (isTexture)
             {
-                auto texture = static_cast<VulkanTexture*>(inBarriers[i].resource);
-                auto range   = texture->GetExactSubresourceRange(inBarriers[i].range);
+                auto texture = static_cast<VulkanTexture*>(barriers[i].resource);
+                auto range   = texture->GetExactSubresourceRange(barriers[i].range);
 
                 auto& imageBarrier = imageBarriers[imageBarrierCount++];
                 imageBarrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -425,7 +425,7 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
             }
             else
             {
-                auto buffer = static_cast<VulkanBuffer*>(inBarriers[i].resource);
+                auto buffer = static_cast<VulkanBuffer*>(barriers[i].resource);
 
                 auto& bufferBarrier = bufferBarriers[bufferBarrierCount++];
                 bufferBarrier.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -462,163 +462,163 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const inBarriers,
     }
 }
 
-void VulkanContext::BlitTexture(GPUTexture* const    inDestTexture,
-                                const GPUSubresource inDestSubresource,
-                                const glm::ivec3&    inDestOffset,
-                                const glm::ivec3&    inDestSize,
-                                GPUTexture* const    inSourceTexture,
-                                const GPUSubresource inSourceSubresource,
-                                const glm::ivec3&    inSourceOffset,
-                                const glm::ivec3&    inSourceSize)
+void VulkanContext::BlitTexture(GPUTexture* const    destTexture,
+                                const GPUSubresource destSubresource,
+                                const glm::ivec3&    destOffset,
+                                const glm::ivec3&    destSize,
+                                GPUTexture* const    sourceTexture,
+                                const GPUSubresource sourceSubresource,
+                                const glm::ivec3&    sourceOffset,
+                                const glm::ivec3&    sourceSize)
 {
     ValidateContext();
 
-    auto destTexture   = static_cast<VulkanTexture*>(inDestTexture);
-    auto sourceTexture = static_cast<VulkanTexture*>(inSourceTexture);
+    auto vkDestTexture   = static_cast<VulkanTexture*>(destTexture);
+    auto vkSourceTexture = static_cast<VulkanTexture*>(sourceTexture);
 
     VkImageBlit imageBlit;
-    imageBlit.srcSubresource.aspectMask     = sourceTexture->GetAspectMask();
-    imageBlit.srcSubresource.baseArrayLayer = inSourceSubresource.layer;
+    imageBlit.srcSubresource.aspectMask     = vkSourceTexture->GetAspectMask();
+    imageBlit.srcSubresource.baseArrayLayer = sourceSubresource.layer;
     imageBlit.srcSubresource.layerCount     = 1;
-    imageBlit.srcSubresource.mipLevel       = inSourceSubresource.mipLevel;
-    imageBlit.srcOffsets[0].x               = inSourceOffset.x;
-    imageBlit.srcOffsets[0].y               = inSourceOffset.y;
-    imageBlit.srcOffsets[0].z               = inSourceOffset.z;
-    imageBlit.srcOffsets[1].x               = inSourceOffset.x + inSourceSize.x;
-    imageBlit.srcOffsets[1].y               = inSourceOffset.y + inSourceSize.y;
-    imageBlit.srcOffsets[1].z               = inSourceOffset.z + inSourceSize.z;
-    imageBlit.dstSubresource.aspectMask     = destTexture->GetAspectMask();
-    imageBlit.dstSubresource.baseArrayLayer = inDestSubresource.layer;
+    imageBlit.srcSubresource.mipLevel       = sourceSubresource.mipLevel;
+    imageBlit.srcOffsets[0].x               = sourceOffset.x;
+    imageBlit.srcOffsets[0].y               = sourceOffset.y;
+    imageBlit.srcOffsets[0].z               = sourceOffset.z;
+    imageBlit.srcOffsets[1].x               = sourceOffset.x + sourceSize.x;
+    imageBlit.srcOffsets[1].y               = sourceOffset.y + sourceSize.y;
+    imageBlit.srcOffsets[1].z               = sourceOffset.z + sourceSize.z;
+    imageBlit.dstSubresource.aspectMask     = vkDestTexture->GetAspectMask();
+    imageBlit.dstSubresource.baseArrayLayer = destSubresource.layer;
     imageBlit.dstSubresource.layerCount     = 1;
-    imageBlit.dstSubresource.mipLevel       = inDestSubresource.mipLevel;
-    imageBlit.dstOffsets[0].x               = inDestOffset.x;
-    imageBlit.dstOffsets[0].y               = inDestOffset.y;
-    imageBlit.dstOffsets[0].z               = inDestOffset.z;
-    imageBlit.dstOffsets[1].x               = inDestOffset.x + inDestSize.x;
-    imageBlit.dstOffsets[1].y               = inDestOffset.y + inDestSize.y;
-    imageBlit.dstOffsets[1].z               = inDestOffset.z + inDestSize.z;
+    imageBlit.dstSubresource.mipLevel       = destSubresource.mipLevel;
+    imageBlit.dstOffsets[0].x               = destOffset.x;
+    imageBlit.dstOffsets[0].y               = destOffset.y;
+    imageBlit.dstOffsets[0].z               = destOffset.z;
+    imageBlit.dstOffsets[1].x               = destOffset.x + destSize.x;
+    imageBlit.dstOffsets[1].y               = destOffset.y + destSize.y;
+    imageBlit.dstOffsets[1].z               = destOffset.z + destSize.z;
 
     vkCmdBlitImage(GetCommandBuffer(),
-                   sourceTexture->GetHandle(),
+                   vkSourceTexture->GetHandle(),
                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                   destTexture->GetHandle(),
+                   vkDestTexture->GetHandle(),
                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                    1, &imageBlit,
                    VK_FILTER_LINEAR);
 }
 
-void VulkanContext::ClearTexture(GPUTexture* const          inTexture,
-                                 const GPUTextureClearData& inData,
-                                 const GPUSubresourceRange& inRange)
+void VulkanContext::ClearTexture(GPUTexture* const          texture,
+                                 const GPUTextureClearData& data,
+                                 const GPUSubresourceRange& range)
 {
     ValidateContext();
 
-    auto texture = static_cast<VulkanTexture*>(inTexture);
-    auto range   = texture->GetExactSubresourceRange(inRange);
+    auto vkTexture  = static_cast<VulkanTexture*>(texture);
+    auto exactRange = vkTexture->GetExactSubresourceRange(range);
 
     VkImageSubresourceRange vkRange;
     vkRange.aspectMask     = 0;
-    vkRange.baseArrayLayer = range.layerOffset;
-    vkRange.layerCount     = range.layerCount;
-    vkRange.baseMipLevel   = range.mipOffset;
-    vkRange.levelCount     = range.mipCount;
+    vkRange.baseArrayLayer = exactRange.layerOffset;
+    vkRange.layerCount     = exactRange.layerCount;
+    vkRange.baseMipLevel   = exactRange.mipOffset;
+    vkRange.levelCount     = exactRange.mipCount;
 
-    if (inData.type == GPUTextureClearData::kColour)
+    if (data.type == GPUTextureClearData::kColour)
     {
-        Assert(texture->GetAspectMask() == VK_IMAGE_ASPECT_COLOR_BIT);
+        Assert(vkTexture->GetAspectMask() == VK_IMAGE_ASPECT_COLOR_BIT);
         vkRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
         VkClearColorValue value;
-        value.float32[0] = inData.colour.r;
-        value.float32[1] = inData.colour.g;
-        value.float32[2] = inData.colour.b;
-        value.float32[3] = inData.colour.a;
+        value.float32[0] = data.colour.r;
+        value.float32[1] = data.colour.g;
+        value.float32[2] = data.colour.b;
+        value.float32[3] = data.colour.a;
 
         vkCmdClearColorImage(GetCommandBuffer(),
-                             texture->GetHandle(),
+                             vkTexture->GetHandle(),
                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                              &value,
                              1, &vkRange);
     }
     else
     {
-        if (inData.type == GPUTextureClearData::kDepth || inData.type == GPUTextureClearData::kDepthStencil)
+        if (data.type == GPUTextureClearData::kDepth || data.type == GPUTextureClearData::kDepthStencil)
         {
-            Assert(texture->GetAspectMask() & VK_IMAGE_ASPECT_DEPTH_BIT);
+            Assert(vkTexture->GetAspectMask() & VK_IMAGE_ASPECT_DEPTH_BIT);
             vkRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
         }
 
-        if (inData.type == GPUTextureClearData::kStencil || inData.type == GPUTextureClearData::kDepthStencil)
+        if (data.type == GPUTextureClearData::kStencil || data.type == GPUTextureClearData::kDepthStencil)
         {
-            Assert(texture->GetAspectMask() & VK_IMAGE_ASPECT_STENCIL_BIT);
+            Assert(vkTexture->GetAspectMask() & VK_IMAGE_ASPECT_STENCIL_BIT);
             vkRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
         }
 
         VkClearDepthStencilValue value;
-        value.depth   = inData.depth;
-        value.stencil = inData.stencil;
+        value.depth   = data.depth;
+        value.stencil = data.stencil;
 
         vkCmdClearDepthStencilImage(GetCommandBuffer(),
-                                    texture->GetHandle(),
+                                    vkTexture->GetHandle(),
                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                     &value,
                                     1, &vkRange);
     }
 }
 
-void VulkanContext::UploadBuffer(GPUBuffer* const        inDestBuffer,
-                                 const GPUStagingBuffer& inSourceBuffer,
-                                 const uint32_t          inSize,
-                                 const uint32_t          inDestOffset,
-                                 const uint32_t          inSourceOffset)
+void VulkanContext::UploadBuffer(GPUBuffer* const        destBuffer,
+                                 const GPUStagingBuffer& sourceBuffer,
+                                 const uint32_t          size,
+                                 const uint32_t          destOffset,
+                                 const uint32_t          sourceOffset)
 {
     ValidateContext();
 
-    Assert(inSourceBuffer.IsFinalised());
-    Assert(inSourceBuffer.GetAccess() == kGPUStagingAccess_Write);
+    Assert(sourceBuffer.IsFinalised());
+    Assert(sourceBuffer.GetAccess() == kGPUStagingAccess_Write);
 
-    auto destBuffer       = static_cast<VulkanBuffer*>(inDestBuffer);
-    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(inSourceBuffer.GetHandle());
+    auto vkDestBuffer     = static_cast<VulkanBuffer*>(destBuffer);
+    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(sourceBuffer.GetHandle());
 
     VkBufferCopy region;
-    region.size      = inSize;
-    region.dstOffset = inDestOffset;
-    region.srcOffset = inSourceOffset;
+    region.size      = size;
+    region.dstOffset = destOffset;
+    region.srcOffset = sourceOffset;
 
     vkCmdCopyBuffer(GetCommandBuffer(),
                     sourceAllocation->handle,
-                    destBuffer->GetHandle(),
+                    vkDestBuffer->GetHandle(),
                     1, &region);
 }
 
-void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
-                                  const GPUStagingTexture& inSourceTexture)
+void VulkanContext::UploadTexture(GPUTexture* const        destTexture,
+                                  const GPUStagingTexture& sourceTexture)
 {
     ValidateContext();
 
-    Assert(inSourceTexture.IsFinalised());
-    Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
-    Assert(inDestTexture->SizeMatches(inSourceTexture));
-    Assert(inDestTexture->GetFormat() == inSourceTexture.GetFormat());
-    Assert(PixelFormatInfo::IsColour(inDestTexture->GetFormat()));
+    Assert(sourceTexture.IsFinalised());
+    Assert(sourceTexture.GetAccess() == kGPUStagingAccess_Write);
+    Assert(destTexture->SizeMatches(sourceTexture));
+    Assert(destTexture->GetFormat() == sourceTexture.GetFormat());
+    Assert(PixelFormatInfo::IsColour(destTexture->GetFormat()));
 
-    auto destTexture      = static_cast<VulkanTexture*>(inDestTexture);
-    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(inSourceTexture.GetHandle());
+    auto vkDestTexture    = static_cast<VulkanTexture*>(destTexture);
+    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(sourceTexture.GetHandle());
 
     const auto regions = AllocateStackArray(VkBufferImageCopy, destTexture->GetArraySize() * destTexture->GetNumMipLevels());
 
     uint32_t subresourceIndex = 0;
-    for (uint32_t layer = 0; layer < destTexture->GetArraySize(); layer++)
+    for (uint32_t layer = 0; layer < vkDestTexture->GetArraySize(); layer++)
     {
-        for (uint32_t mipLevel = 0; mipLevel < destTexture->GetNumMipLevels(); mipLevel++)
+        for (uint32_t mipLevel = 0; mipLevel < vkDestTexture->GetNumMipLevels(); mipLevel++)
         {
             auto& region = regions[subresourceIndex++];
 
-            const uint32_t width  = destTexture->GetMipWidth(mipLevel);
-            const uint32_t height = destTexture->GetMipHeight(mipLevel);
-            const uint32_t depth  = destTexture->GetMipDepth(mipLevel);
+            const uint32_t width  = vkDestTexture->GetMipWidth(mipLevel);
+            const uint32_t height = vkDestTexture->GetMipHeight(mipLevel);
+            const uint32_t depth  = vkDestTexture->GetMipDepth(mipLevel);
 
-            region.bufferOffset                    = inSourceTexture.GetSubresourceOffset({mipLevel, layer});
+            region.bufferOffset                    = sourceTexture.GetSubresourceOffset({mipLevel, layer});
             region.bufferRowLength                 = 0;
             region.bufferImageHeight               = 0;
             region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -632,71 +632,71 @@ void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
 
     vkCmdCopyBufferToImage(GetCommandBuffer(),
                            sourceAllocation->handle,
-                           destTexture->GetHandle(),
+                           vkDestTexture->GetHandle(),
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                            subresourceIndex,
                            regions);
 }
 
-void VulkanContext::UploadTexture(GPUTexture* const        inDestTexture,
-                                  const GPUSubresource     inDestSubresource,
-                                  const glm::ivec3&        inDestOffset,
-                                  const GPUStagingTexture& inSourceTexture,
-                                  const GPUSubresource     inSourceSubresource,
-                                  const glm::ivec3&        inSourceOffset,
-                                  const glm::ivec3&        inSize)
+void VulkanContext::UploadTexture(GPUTexture* const        destTexture,
+                                  const GPUSubresource     destSubresource,
+                                  const glm::ivec3&        destOffset,
+                                  const GPUStagingTexture& sourceTexture,
+                                  const GPUSubresource     sourceSubresource,
+                                  const glm::ivec3&        sourceOffset,
+                                  const glm::ivec3&        size)
 {
     ValidateContext();
 
-    Assert(inSourceTexture.IsFinalised());
-    Assert(inSourceTexture.GetAccess() == kGPUStagingAccess_Write);
-    Assert(inDestTexture->GetFormat() == inSourceTexture.GetFormat());
-    Assert(PixelFormatInfo::IsColour(inDestTexture->GetFormat()));
+    Assert(sourceTexture.IsFinalised());
+    Assert(sourceTexture.GetAccess() == kGPUStagingAccess_Write);
+    Assert(destTexture->GetFormat() == sourceTexture.GetFormat());
+    Assert(PixelFormatInfo::IsColour(destTexture->GetFormat()));
 
-    auto destTexture      = static_cast<VulkanTexture*>(inDestTexture);
-    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(inSourceTexture.GetHandle());
+    auto vkDestTexture    = static_cast<VulkanTexture*>(destTexture);
+    auto sourceAllocation = static_cast<VulkanStagingAllocation*>(sourceTexture.GetHandle());
 
-    const uint32_t destWidth  = destTexture->GetMipWidth(inDestSubresource.mipLevel);  Unused(destWidth);
-    const uint32_t destHeight = destTexture->GetMipHeight(inDestSubresource.mipLevel); Unused(destHeight);
-    const uint32_t destDepth  = destTexture->GetMipDepth(inDestSubresource.mipLevel);  Unused(destDepth);
+    const uint32_t destWidth  = vkDestTexture->GetMipWidth(destSubresource.mipLevel);  Unused(destWidth);
+    const uint32_t destHeight = vkDestTexture->GetMipHeight(destSubresource.mipLevel); Unused(destHeight);
+    const uint32_t destDepth  = vkDestTexture->GetMipDepth(destSubresource.mipLevel);  Unused(destDepth);
 
-    Assert(static_cast<uint32_t>(inDestOffset.x + inSize.x) <= destWidth);
-    Assert(static_cast<uint32_t>(inDestOffset.y + inSize.y) <= destHeight);
-    Assert(static_cast<uint32_t>(inDestOffset.z + inSize.z) <= destDepth);
+    Assert(static_cast<uint32_t>(destOffset.x + size.x) <= destWidth);
+    Assert(static_cast<uint32_t>(destOffset.y + size.y) <= destHeight);
+    Assert(static_cast<uint32_t>(destOffset.z + size.z) <= destDepth);
 
-    const uint32_t sourceWidth  = inSourceTexture.GetMipWidth(inSourceSubresource.mipLevel);  Unused(sourceWidth);
-    const uint32_t sourceHeight = inSourceTexture.GetMipHeight(inSourceSubresource.mipLevel); Unused(sourceHeight);
-    const uint32_t sourceDepth  = inSourceTexture.GetMipDepth(inSourceSubresource.mipLevel);  Unused(sourceDepth);
+    const uint32_t sourceWidth  = sourceTexture.GetMipWidth(sourceSubresource.mipLevel);  Unused(sourceWidth);
+    const uint32_t sourceHeight = sourceTexture.GetMipHeight(sourceSubresource.mipLevel); Unused(sourceHeight);
+    const uint32_t sourceDepth  = sourceTexture.GetMipDepth(sourceSubresource.mipLevel);  Unused(sourceDepth);
 
-    Assert(static_cast<uint32_t>(inSourceOffset.x + inSize.x) <= sourceWidth);
-    Assert(static_cast<uint32_t>(inSourceOffset.y + inSize.y) <= sourceHeight);
-    Assert(static_cast<uint32_t>(inSourceOffset.z + inSize.z) <= sourceDepth);
+    Assert(static_cast<uint32_t>(sourceOffset.x + size.x) <= sourceWidth);
+    Assert(static_cast<uint32_t>(sourceOffset.y + size.y) <= sourceHeight);
+    Assert(static_cast<uint32_t>(sourceOffset.z + size.z) <= sourceDepth);
 
-    const size_t bytesPerPixel = PixelFormatInfo::BytesPerPixel(inSourceTexture.GetFormat());
+    const size_t bytesPerPixel = PixelFormatInfo::BytesPerPixel(sourceTexture.GetFormat());
     const size_t bytesPerRow   = bytesPerPixel * sourceWidth;
     const size_t bytesPerSlice = bytesPerRow * sourceHeight;
 
     VkBufferImageCopy region;
-    region.bufferOffset                    = inSourceTexture.GetSubresourceOffset(inSourceSubresource) +
-                                             (inSourceOffset.z * bytesPerSlice) +
-                                             (inSourceOffset.y * bytesPerRow) +
-                                             (inSourceOffset.x * bytesPerPixel);
+    region.bufferOffset                    = sourceTexture.GetSubresourceOffset(sourceSubresource) +
+                                             (sourceOffset.z * bytesPerSlice) +
+                                             (sourceOffset.y * bytesPerRow) +
+                                             (sourceOffset.x * bytesPerPixel);
     region.bufferRowLength                 = sourceWidth;
     region.bufferImageHeight               = sourceHeight;
     region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.baseArrayLayer = inDestSubresource.layer;
+    region.imageSubresource.baseArrayLayer = destSubresource.layer;
     region.imageSubresource.layerCount     = 1;
-    region.imageSubresource.mipLevel       = inDestSubresource.mipLevel;
-    region.imageOffset.x                   = inDestOffset.x;
-    region.imageOffset.y                   = inDestOffset.y;
-    region.imageOffset.z                   = inDestOffset.z;
-    region.imageExtent.width               = inSize.x;
-    region.imageExtent.height              = inSize.y;
-    region.imageExtent.depth               = inSize.z;
+    region.imageSubresource.mipLevel       = destSubresource.mipLevel;
+    region.imageOffset.x                   = destOffset.x;
+    region.imageOffset.y                   = destOffset.y;
+    region.imageOffset.z                   = destOffset.z;
+    region.imageExtent.width               = size.x;
+    region.imageExtent.height              = size.y;
+    region.imageExtent.depth               = size.z;
 
     vkCmdCopyBufferToImage(GetCommandBuffer(),
                            sourceAllocation->handle,
-                           destTexture->GetHandle(),
+                           vkDestTexture->GetHandle(),
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                            1, &region);
 }
@@ -706,34 +706,34 @@ GPUComputeCommandList* VulkanContext::CreateComputePassImpl()
     return FrameAllocator::New<VulkanComputeCommandList>(*this, nullptr);
 }
 
-void VulkanContext::SubmitComputePassImpl(GPUComputeCommandList* const inCmdList)
+void VulkanContext::SubmitComputePassImpl(GPUComputeCommandList* const cmdList)
 {
-    auto cmdList = static_cast<VulkanComputeCommandList*>(inCmdList);
-    cmdList->Submit(GetCommandBuffer());
-    FrameAllocator::Delete(cmdList);
+    auto vkCmdList = static_cast<VulkanComputeCommandList*>(cmdList);
+    vkCmdList->Submit(GetCommandBuffer());
+    FrameAllocator::Delete(vkCmdList);
 }
 
-GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& inRenderPass)
+GPUGraphicsCommandList* VulkanContext::CreateRenderPassImpl(const GPURenderPass& renderPass)
 {
-    return FrameAllocator::New<VulkanGraphicsCommandList>(*this, nullptr, inRenderPass);
+    return FrameAllocator::New<VulkanGraphicsCommandList>(*this, nullptr, renderPass);
 }
 
-void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList)
+void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const cmdList)
 {
-    auto cmdList = static_cast<VulkanGraphicsCommandList*>(inCmdList);
-    cmdList->Submit(GetCommandBuffer());
-    FrameAllocator::Delete(cmdList);
+    auto vkCmdList = static_cast<VulkanGraphicsCommandList*>(cmdList);
+    vkCmdList->Submit(GetCommandBuffer());
+    FrameAllocator::Delete(vkCmdList);
 }
 
 #if GEMINI_BUILD_DEBUG
 
-void VulkanContext::BeginMarker(const char* const inLabel)
+void VulkanContext::BeginMarker(const char* const label)
 {
     if (GetVulkanDevice().HasCap(VulkanDevice::kCap_DebugMarker))
     {
         VkDebugMarkerMarkerInfoEXT markerInfo = {};
         markerInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-        markerInfo.pMarkerName = inLabel;
+        markerInfo.pMarkerName = label;
 
         vkCmdDebugMarkerBeginEXT(GetCommandBuffer(), &markerInfo);
     }

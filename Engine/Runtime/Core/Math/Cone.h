@@ -22,10 +22,10 @@ class Cone
 {
 public:
                                 Cone();
-                                Cone(const glm::vec3& inOrigin,
-                                     const glm::vec3& inDirection,
-                                     const float      inHeight,
-                                     const Radians    inHalfAngle);
+                                Cone(const glm::vec3& origin,
+                                     const glm::vec3& direction,
+                                     const float      height,
+                                     const Radians    halfAngle);
 
     const glm::vec3&            GetOrigin() const       { return mOrigin; }
     const glm::vec3&            GetDirection() const    { return mDirection; }
@@ -33,10 +33,10 @@ public:
     Radians                     GetHalfAngle() const    { return mHalfAngle; }
 
     /**
-     * Generate geometry (triangle list) representing the cone. inBaseVertices
+     * Generate geometry (triangle list) representing the cone. baseVertices
      * specifies the number of divisions around the base.
      */
-    void                        CreateGeometry(const uint32_t          inBaseVertices,
+    void                        CreateGeometry(const uint32_t          baseVertices,
                                                std::vector<glm::vec3>& outVertices,
                                                std::vector<uint16_t>&  outIndices) const;
 
@@ -63,14 +63,14 @@ inline Cone::Cone() :
 {
 }
 
-inline Cone::Cone(const glm::vec3& inOrigin,
-                  const glm::vec3& inDirection,
-                  const float      inHeight,
-                  const Radians    inHalfAngle) :
-    mOrigin     (inOrigin),
-    mDirection  (inDirection),
-    mHeight     (inHeight),
-    mHalfAngle  (inHalfAngle)
+inline Cone::Cone(const glm::vec3& origin,
+                  const glm::vec3& direction,
+                  const float      height,
+                  const Radians    halfAngle) :
+    mOrigin     (origin),
+    mDirection  (direction),
+    mHeight     (height),
+    mHalfAngle  (halfAngle)
 {
-    Assert(glm::isNormalized(inDirection, 0.0001f));
+    Assert(glm::isNormalized(direction, 0.0001f));
 }

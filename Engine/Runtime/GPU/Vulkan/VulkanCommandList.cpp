@@ -55,11 +55,11 @@ inline VkCommandBuffer VulkanCommandList<T>::GetCommandBuffer()
 }
 
 template <typename T>
-inline void VulkanCommandList<T>::SubmitImpl(const VkCommandBuffer inBuffer) const
+inline void VulkanCommandList<T>::SubmitImpl(const VkCommandBuffer buffer) const
 {
     if (mCommandBuffers.size() > 0)
     {
-        vkCmdExecuteCommands(inBuffer, mCommandBuffers.size(), mCommandBuffers.data());
+        vkCmdExecuteCommands(buffer, mCommandBuffers.size(), mCommandBuffers.data());
     }
 }
 
@@ -76,16 +76,16 @@ inline void VulkanCommandList<T>::EndImpl()
 }
 
 template <typename T>
-inline void VulkanCommandList<T>::SubmitChildrenImpl(GPUCommandList** const inChildren,
-                                                     const size_t           inCount)
+inline void VulkanCommandList<T>::SubmitChildrenImpl(GPUCommandList** const children,
+                                                     const size_t           count)
 {
     /* The submitted children should be ordered after any previous commands on
      * this command list. End the current command buffer, if any. */
     EndImpl();
 
-    for (size_t i = 0; i < inCount; i++)
+    for (size_t i = 0; i < count; i++)
     {
-        const auto cmdList = static_cast<const T*>(inChildren[i]);
+        const auto cmdList = static_cast<const T*>(children[i]);
 
         mCommandBuffers.insert(mCommandBuffers.end(),
                                cmdList->mCommandBuffers.begin(),
@@ -96,44 +96,44 @@ inline void VulkanCommandList<T>::SubmitChildrenImpl(GPUCommandList** const inCh
 }
 
 template <typename T>
-inline void VulkanCommandList<T>::SetArgumentsImpl(const uint8_t         inIndex,
-                                                   GPUArgumentSet* const inSet)
+inline void VulkanCommandList<T>::SetArgumentsImpl(const uint8_t         index,
+                                                   GPUArgumentSet* const set)
 {
-    const auto set = static_cast<VulkanArgumentSet*>(inSet);
+    const auto vkSet = static_cast<VulkanArgumentSet*>(set);
 
-    if (set->GetHandle() != mDescriptorSets[inIndex])
+    if (vkSet->GetHandle() != mDescriptorSets[index])
     {
-        auto& argumentState = GetT().mArgumentState[inIndex];
+        auto& argumentState = GetT().mArgumentState[index];
         argumentState.dirty = true;
 
-        mDescriptorSets[inIndex] = set->GetHandle();
+        mDescriptorSets[index] = vkSet->GetHandle();
     }
 }
 
 template <typename T>
-inline void VulkanCommandList<T>::SetArgumentsImpl(const uint8_t            inIndex,
-                                                   const GPUArgument* const inArguments)
+inline void VulkanCommandList<T>::SetArgumentsImpl(const uint8_t            index,
+                                                   const GPUArgument* const arguments)
 {
-    auto& argumentState = GetT().mArgumentState[inIndex];
+    auto& argumentState = GetT().mArgumentState[index];
     argumentState.dirty = true;
 
     const auto layout = static_cast<const VulkanArgumentSetLayout*>(argumentState.layout);
 
     if (layout->IsConstantOnly())
     {
-        mDescriptorSets[inIndex] = layout->GetConstantOnlySet();
+        mDescriptorSets[index] = layout->GetConstantOnlySet();
     }
     else
     {
-        mDescriptorSets[inIndex] = GetVulkanContext().GetCommandPool().AllocateDescriptorSet(layout->GetHandle());
+        mDescriptorSets[index] = GetVulkanContext().GetCommandPool().AllocateDescriptorSet(layout->GetHandle());
 
-        VulkanArgumentSet::Write(mDescriptorSets[inIndex], layout, inArguments);
+        VulkanArgumentSet::Write(mDescriptorSets[index], layout, arguments);
     }
 }
 
 template <typename T>
-inline void VulkanCommandList<T>::BindDescriptorSets(const VkPipelineBindPoint inBindPoint,
-                                                     const VkPipelineLayout    inPipelineLayout)
+inline void VulkanCommandList<T>::BindDescriptorSets(const VkPipelineBindPoint bindPoint,
+                                                     const VkPipelineLayout    pipelineLayout)
 {
     GetT().ValidateArguments();
 
@@ -149,8 +149,8 @@ inline void VulkanCommandList<T>::BindDescriptorSets(const VkPipelineBindPoint i
         [&] ()
         {
             vkCmdBindDescriptorSets(GetCommandBuffer(),
-                                    inBindPoint,
-                                    inPipelineLayout,
+                                    bindPoint,
+                                    pipelineLayout,
                                     firstSet,
                                     setCount,
                                     sets,
@@ -197,13 +197,13 @@ inline void VulkanCommandList<T>::BindDescriptorSets(const VkPipelineBindPoint i
     }
 }
 
-VulkanComputeCommandList::VulkanComputeCommandList(VulkanContext&                     inContext,
-                                                   const GPUComputeCommandList* const inParent) :
-    GPUComputeCommandList   (inContext, inParent)
+VulkanComputeCommandList::VulkanComputeCommandList(VulkanContext&                     context,
+                                                   const GPUComputeCommandList* const parent) :
+    GPUComputeCommandList   (context, parent)
 {
 }
 
-void VulkanComputeCommandList::BeginCommandBuffer(const VkCommandBuffer inBuffer) const
+void VulkanComputeCommandList::BeginCommandBuffer(const VkCommandBuffer buffer) const
 {
     VkCommandBufferInheritanceInfo inheritanceInfo = {};
     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -213,12 +213,12 @@ void VulkanComputeCommandList::BeginCommandBuffer(const VkCommandBuffer inBuffer
     beginInfo.flags            = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     beginInfo.pInheritanceInfo = &inheritanceInfo;
 
-    VulkanCheck(vkBeginCommandBuffer(inBuffer, &beginInfo));
+    VulkanCheck(vkBeginCommandBuffer(buffer, &beginInfo));
 }
 
-void VulkanComputeCommandList::Submit(const VkCommandBuffer inBuffer) const
+void VulkanComputeCommandList::Submit(const VkCommandBuffer buffer) const
 {
-    SubmitImpl(inBuffer);
+    SubmitImpl(buffer);
 }
 
 GPUCommandList* VulkanComputeCommandList::CreateChildImpl()
@@ -242,29 +242,29 @@ void VulkanComputeCommandList::PreDispatch()
     BindDescriptorSets(VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->GetLayout());
 }
 
-void VulkanComputeCommandList::Dispatch(const uint32_t inGroupCountX,
-                                        const uint32_t inGroupCountY,
-                                        const uint32_t inGroupCountZ)
+void VulkanComputeCommandList::Dispatch(const uint32_t groupCountX,
+                                        const uint32_t groupCountY,
+                                        const uint32_t groupCountZ)
 {
     PreDispatch();
 
     vkCmdDispatch(GetCommandBuffer(),
-                  inGroupCountX,
-                  inGroupCountY,
-                  inGroupCountZ);
+                  groupCountX,
+                  groupCountY,
+                  groupCountZ);
 }
 
-VulkanGraphicsCommandList::VulkanGraphicsCommandList(VulkanContext&                      inContext,
-                                                     const GPUGraphicsCommandList* const inParent,
-                                                     const GPURenderPass&                inRenderPass) :
-    GPUGraphicsCommandList (inContext, inParent, inRenderPass)
+VulkanGraphicsCommandList::VulkanGraphicsCommandList(VulkanContext&                      context,
+                                                     const GPUGraphicsCommandList* const parent,
+                                                     const GPURenderPass&                renderPass) :
+    GPUGraphicsCommandList (context, parent, renderPass)
 {
     if (mParent)
     {
         /* Inherit Vulkan objects from the parent. */
-        const auto parent = static_cast<const VulkanGraphicsCommandList*>(inParent);
-        mVulkanRenderPass = parent->GetVulkanRenderPass();
-        mFramebuffer      = parent->GetFramebuffer();
+        const auto vkParent = static_cast<const VulkanGraphicsCommandList*>(parent);
+        mVulkanRenderPass   = vkParent->GetVulkanRenderPass();
+        mFramebuffer        = vkParent->GetFramebuffer();
     }
     else
     {
@@ -275,7 +275,7 @@ VulkanGraphicsCommandList::VulkanGraphicsCommandList(VulkanContext&             
     }
 }
 
-void VulkanGraphicsCommandList::BeginCommandBuffer(const VkCommandBuffer inBuffer) const
+void VulkanGraphicsCommandList::BeginCommandBuffer(const VkCommandBuffer buffer) const
 {
     VkCommandBufferInheritanceInfo inheritanceInfo = {};
     inheritanceInfo.sType       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -289,10 +289,10 @@ void VulkanGraphicsCommandList::BeginCommandBuffer(const VkCommandBuffer inBuffe
                                  VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
     beginInfo.pInheritanceInfo = &inheritanceInfo;
 
-    VulkanCheck(vkBeginCommandBuffer(inBuffer, &beginInfo));
+    VulkanCheck(vkBeginCommandBuffer(buffer, &beginInfo));
 }
 
-void VulkanGraphicsCommandList::Submit(const VkCommandBuffer inBuffer) const
+void VulkanGraphicsCommandList::Submit(const VkCommandBuffer buffer) const
 {
     VkRenderPassBeginInfo beginInfo = {};
     beginInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -349,13 +349,13 @@ void VulkanGraphicsCommandList::Submit(const VkCommandBuffer inBuffer) const
 
     beginInfo.pClearValues = (beginInfo.clearValueCount > 0) ? clearValues : nullptr;
 
-    vkCmdBeginRenderPass(inBuffer,
+    vkCmdBeginRenderPass(buffer,
                          &beginInfo,
                          VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-    SubmitImpl(inBuffer);
+    SubmitImpl(buffer);
 
-    vkCmdEndRenderPass(inBuffer);
+    vkCmdEndRenderPass(buffer);
 }
 
 GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
@@ -363,7 +363,7 @@ GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
     return FrameAllocator::New<VulkanGraphicsCommandList>(GetVulkanContext(), this, mRenderPass);
 }
 
-void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
+void VulkanGraphicsCommandList::PreDraw(const bool isIndexed)
 {
     const auto pipeline = static_cast<VulkanPipeline*>(mPipeline);
 
@@ -449,7 +449,7 @@ void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
         mDirtyVertexBuffers.Reset();
     }
 
-    if (inIsIndexed && mDirtyState & kDirtyState_IndexBuffer)
+    if (isIndexed && mDirtyState & kDirtyState_IndexBuffer)
     {
         Assert(mIndexBuffer.offset != kInvalidBuffer);
 
@@ -472,34 +472,34 @@ void VulkanGraphicsCommandList::PreDraw(const bool inIsIndexed)
     }
 }
 
-void VulkanGraphicsCommandList::Draw(const uint32_t inVertexCount,
-                                     const uint32_t inFirstVertex)
+void VulkanGraphicsCommandList::Draw(const uint32_t vertexCount,
+                                     const uint32_t firstVertex)
 {
     PreDraw(false);
 
     vkCmdDraw(GetCommandBuffer(),
-              inVertexCount,
+              vertexCount,
               1,
-              inFirstVertex,
+              firstVertex,
               0);
 }
 
-void VulkanGraphicsCommandList::DrawIndexed(const uint32_t inIndexCount,
-                                            const uint32_t inFirstIndex,
-                                            const int32_t  inVertexOffset)
+void VulkanGraphicsCommandList::DrawIndexed(const uint32_t indexCount,
+                                            const uint32_t firstIndex,
+                                            const int32_t  vertexOffset)
 {
     PreDraw(true);
 
     vkCmdDrawIndexed(GetCommandBuffer(),
-                     inIndexCount,
+                     indexCount,
                      1,
-                     inFirstIndex,
-                     inVertexOffset,
+                     firstIndex,
+                     vertexOffset,
                      0);
 }
 
-uint32_t VulkanGraphicsCommandList::AllocateTransientBuffer(const size_t inSize,
+uint32_t VulkanGraphicsCommandList::AllocateTransientBuffer(const size_t size,
                                                             void*&       outMapping)
 {
-    return GetVulkanDevice().GetGeometryPool().Allocate(inSize, outMapping);
+    return GetVulkanDevice().GetGeometryPool().Allocate(size, outMapping);
 }

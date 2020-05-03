@@ -28,11 +28,11 @@ class Plane
 {
 public:
                                 Plane();
-                                Plane(const glm::vec4& inVector);
-                                Plane(const glm::vec3& inNormal,
-                                      const float      inDistance);
-                                Plane(const glm::vec3& inNormal,
-                                      const glm::vec3& inPoint);
+                                Plane(const glm::vec4& vector);
+                                Plane(const glm::vec3& normal,
+                                      const float      distance);
+                                Plane(const glm::vec3& normal,
+                                      const glm::vec3& point);
 
     /** Get the vector representation of the plane (normal, distance). */
     const glm::vec4&            GetVector() const   { return mVector; }
@@ -47,7 +47,7 @@ public:
      * Get the signed distance to a point from the plane. Positive if in front
      * of the plane, i.e. in the direction of the normal.
      */
-    float                       DistanceTo(const glm::vec3& inPoint) const;
+    float                       DistanceTo(const glm::vec3& point) const;
 
 private:
     glm::vec4                   mVector;
@@ -58,26 +58,26 @@ inline Plane::Plane() :
 {
 }
 
-inline Plane::Plane(const glm::vec4& inVector) :
-    mVector (inVector)
+inline Plane::Plane(const glm::vec4& vector) :
+    mVector (vector)
 {
 }
 
-inline Plane::Plane(const glm::vec3& inNormal,
-                    const float      inDistance) :
-    mVector (inNormal, inDistance)
+inline Plane::Plane(const glm::vec3& normal,
+                    const float      distance) :
+    mVector (normal, distance)
 {
-    Assert(glm::isNormalized(inNormal, FLT_EPSILON));
+    Assert(glm::isNormalized(normal, FLT_EPSILON));
 }
 
-inline Plane::Plane(const glm::vec3& inNormal,
-                    const glm::vec3& inPoint) :
-    mVector (inNormal, glm::dot(inNormal, inPoint))
+inline Plane::Plane(const glm::vec3& normal,
+                    const glm::vec3& point) :
+    mVector (normal, glm::dot(normal, point))
 {
-    Assert(glm::isNormalized(inNormal, FLT_EPSILON));
+    Assert(glm::isNormalized(normal, FLT_EPSILON));
 }
 
-inline float Plane::DistanceTo(const glm::vec3& inPoint) const
+inline float Plane::DistanceTo(const glm::vec3& point) const
 {
-    return glm::dot(glm::vec3(mVector), inPoint) - mVector.w;
+    return glm::dot(glm::vec3(mVector), point) - mVector.w;
 }

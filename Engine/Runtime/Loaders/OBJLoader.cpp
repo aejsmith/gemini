@@ -114,12 +114,12 @@ bool OBJLoader::Parse()
 }
 
 template <typename ElementType>
-bool OBJLoader::AddVertexElement(const std::vector<std::string>& inTokens,
+bool OBJLoader::AddVertexElement(const std::vector<std::string>& tokens,
                                  std::vector<ElementType>&       ioArray)
 {
     ElementType value;
 
-    if (inTokens.size() < value.length() + 1)
+    if (tokens.size() < value.length() + 1)
     {
         LogError("%s: %u: Expected %d values",
                  mPath,
@@ -131,11 +131,11 @@ bool OBJLoader::AddVertexElement(const std::vector<std::string>& inTokens,
 
     for (size_t i = 0; i < value.length(); i++)
     {
-        const char* const token = inTokens[i + 1].c_str();
+        const char* const token = tokens[i + 1].c_str();
         char* end;
 
         value[i] = strtof(token, &end);
-        if (end != token + inTokens[i + 1].length())
+        if (end != token + tokens[i + 1].length())
         {
             LogError("%s: %u: Expected float value", mPath, mCurrentLine);
             return false;
@@ -146,7 +146,7 @@ bool OBJLoader::AddVertexElement(const std::vector<std::string>& inTokens,
     return true;
 }
 
-bool OBJLoader::AddFace(const std::vector<std::string>& inTokens)
+bool OBJLoader::AddFace(const std::vector<std::string>& tokens)
 {
     /* If we don't have a current submesh, we must get a new one. If there is
      * an existing submesh using the same material, we merge into that. */
@@ -156,7 +156,7 @@ bool OBJLoader::AddFace(const std::vector<std::string>& inTokens)
         mCurrentSubMesh = &ret.first->second;
     }
 
-    const size_t numVertices = inTokens.size() - 1;
+    const size_t numVertices = tokens.size() - 1;
 
     if (numVertices != 3 && numVertices != 4)
     {
@@ -170,7 +170,7 @@ bool OBJLoader::AddFace(const std::vector<std::string>& inTokens)
     for (size_t i = 0; i < numVertices; i++)
     {
         std::vector<std::string> subTokens;
-        StringUtils::Tokenize(inTokens[i + 1], subTokens, "/", -1, false);
+        StringUtils::Tokenize(tokens[i + 1], subTokens, "/", -1, false);
         if (subTokens.size() != 3)
         {
             LogError("%s: %u: Expected v/vt/vn", mPath, mCurrentLine);

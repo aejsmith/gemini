@@ -34,53 +34,53 @@ RenderLight::~RenderLight()
 {
 }
 
-void RenderLight::SetType(const LightType inType)
+void RenderLight::SetType(const LightType type)
 {
-    mType = inType;
+    mType = type;
 }
 
-void RenderLight::SetColour(const glm::vec3& inColour)
+void RenderLight::SetColour(const glm::vec3& colour)
 {
-    mColour = inColour;
+    mColour = colour;
 }
 
-void RenderLight::SetIntensity(const float inIntensity)
+void RenderLight::SetIntensity(const float intensity)
 {
-    mIntensity = inIntensity;
+    mIntensity = intensity;
 }
 
-void RenderLight::SetRange(const float inRange)
+void RenderLight::SetRange(const float range)
 {
-    mRange = inRange;
+    mRange = range;
 
     UpdateBoundingSphere();
 }
 
-void RenderLight::SetConeAngles(const Radians inInnerConeAngle,
-                                const Radians inOuterConeAngle)
+void RenderLight::SetConeAngles(const Radians innerConeAngle,
+                                const Radians outerConeAngle)
 {
-    mConeAngle       = inOuterConeAngle;
-    mConeAngleScale  = 1.0f / std::max(0.001f, std::cos(inInnerConeAngle) - std::cos(inOuterConeAngle));
-    mConeAngleOffset = -std::cos(inOuterConeAngle) * mConeAngleScale;
+    mConeAngle       = outerConeAngle;
+    mConeAngleScale  = 1.0f / std::max(0.001f, std::cos(innerConeAngle) - std::cos(outerConeAngle));
+    mConeAngleOffset = -std::cos(outerConeAngle) * mConeAngleScale;
 
     UpdateBoundingSphere();
 }
 
-void RenderLight::SetPosition(const glm::vec3& inPosition)
+void RenderLight::SetPosition(const glm::vec3& position)
 {
-    mPosition = inPosition;
+    mPosition = position;
 
     UpdateBoundingSphere();
 }
 
-void RenderLight::SetDirection(const glm::vec3& inDirection)
+void RenderLight::SetDirection(const glm::vec3& direction)
 {
-    mDirection = inDirection;
+    mDirection = direction;
 
     UpdateBoundingSphere();
 }
 
-bool RenderLight::Cull(const Frustum& inFrustum) const
+bool RenderLight::Cull(const Frustum& frustum) const
 {
     if (mType == kLightType_Directional || mRange == 0.0f)
     {
@@ -88,7 +88,7 @@ bool RenderLight::Cull(const Frustum& inFrustum) const
     }
     else
     {
-        return Math::Intersect(mBoundingSphere, inFrustum);
+        return Math::Intersect(mBoundingSphere, frustum);
     }
 }
 

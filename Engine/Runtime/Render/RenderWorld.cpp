@@ -27,30 +27,30 @@ RenderWorld::~RenderWorld()
     Assert(mEntities.IsEmpty());
 }
 
-void RenderWorld::AddEntity(RenderEntity* const inEntity)
+void RenderWorld::AddEntity(RenderEntity* const entity)
 {
-    mEntities.Append(inEntity);
+    mEntities.Append(entity);
 }
 
-void RenderWorld::RemoveEntity(RenderEntity* const inEntity)
+void RenderWorld::RemoveEntity(RenderEntity* const entity)
 {
-    mEntities.Remove(inEntity);
+    mEntities.Remove(entity);
 }
 
-void RenderWorld::AddLight(RenderLight* const inLight)
+void RenderWorld::AddLight(RenderLight* const light)
 {
-    mLights.Append(inLight);
+    mLights.Append(light);
 }
 
-void RenderWorld::RemoveLight(RenderLight* const inLight)
+void RenderWorld::RemoveLight(RenderLight* const light)
 {
-    mLights.Remove(inLight);
+    mLights.Remove(light);
 }
 
-void RenderWorld::Cull(const RenderView& inView,
+void RenderWorld::Cull(const RenderView& view,
                        CullResults&      outResults) const
 {
-    const Frustum& frustum = inView.GetFrustum();
+    const Frustum& frustum = view.GetFrustum();
 
     for (const RenderEntity* entity : mEntities)
     {

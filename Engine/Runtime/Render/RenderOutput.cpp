@@ -22,8 +22,8 @@
 #include "Render/RenderLayer.h"
 #include "Render/RenderManager.h"
 
-RenderOutput::RenderOutput(const glm::uvec2& inSize) :
-    mSize   (inSize)
+RenderOutput::RenderOutput(const glm::uvec2& size) :
+    mSize   (size)
 {
 }
 
@@ -34,28 +34,28 @@ RenderOutput::~RenderOutput()
     UnregisterOutput();
 }
 
-void RenderOutput::AddPasses(RenderGraph& inGraph,
+void RenderOutput::AddPasses(RenderGraph& graph,
                              OnlyCalledBy<RenderManager>)
 {
     /* Import our output texture into the render graph. */
     RenderResourceHandle outputTexture =
-        inGraph.ImportResource(GetTexture(),
-                               GetFinalState(),
-                               "Output",
-                               [this] () { BeginRender(); },
-                               [this] () { EndRender(); },
-                               this);
+        graph.ImportResource(GetTexture(),
+                             GetFinalState(),
+                             "Output",
+                             [this] () { BeginRender(); },
+                             [this] () { EndRender(); },
+                             this);
 
     /* Each layer gets the previous layer's result handle as its target, so
      * that they get rendered on top of each other in order. */
     for (RenderLayer* layer : mLayers)
     {
-        inGraph.SetCurrentLayer(layer);
-        layer->AddPasses(inGraph, outputTexture, outputTexture);
+        graph.SetCurrentLayer(layer);
+        layer->AddPasses(graph, outputTexture, outputTexture);
     }
 }
 
-void RenderOutput::RegisterLayer(RenderLayer* const inLayer,
+void RenderOutput::RegisterLayer(RenderLayer* const layer,
                                  OnlyCalledBy<RenderLayer>)
 {
     /* List is sorted by order. */
@@ -63,21 +63,21 @@ void RenderOutput::RegisterLayer(RenderLayer* const inLayer,
     {
         const RenderLayer* const other = *it;
 
-        if (inLayer->GetLayerOrder() < other->GetLayerOrder())
+        if (layer->GetLayerOrder() < other->GetLayerOrder())
         {
-            mLayers.insert(it, inLayer);
+            mLayers.insert(it, layer);
             return;
         }
     }
 
     /* Insertion point not found, add at end. */
-    mLayers.emplace_back(inLayer);
+    mLayers.emplace_back(layer);
 }
 
-void RenderOutput::UnregisterLayer(RenderLayer* const inLayer,
+void RenderOutput::UnregisterLayer(RenderLayer* const layer,
                                    OnlyCalledBy<RenderLayer>)
 {
-    mLayers.remove(inLayer);
+    mLayers.remove(layer);
 }
 
 void RenderOutput::RegisterOutput()

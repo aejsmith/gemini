@@ -28,7 +28,7 @@ class World;
 class WorldEditorWindow : public DebugWindow
 {
 public:
-                            WorldEditorWindow(World* inWorld);
+                            WorldEditorWindow(World* world);
 
 protected:
     void                    Render() override;

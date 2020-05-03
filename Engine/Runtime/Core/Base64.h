@@ -25,13 +25,13 @@ namespace Base64
      * Decode a Base64 string returning the binary data that it represents.
      * Returns whether the string was successfully parsed.
      */
-    bool                    Decode(const char* const inString,
-                                   const size_t      inLength,
+    bool                    Decode(const char* const string,
+                                   const size_t      length,
                                    ByteArray&        outData);
-    bool                    Decode(const std::string& inString,
-                                   ByteArray&        outData);
+    bool                    Decode(const std::string& string,
+                                   ByteArray&         outData);
 
-    std::string             Encode(const void* const inData,
-                                   const size_t      inLength);
-    std::string             Encode(const ByteArray& inData);
+    std::string             Encode(const void* const data,
+                                   const size_t      length);
+    std::string             Encode(const ByteArray& data);
 }

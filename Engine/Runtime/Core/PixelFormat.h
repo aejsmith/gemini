@@ -56,15 +56,15 @@ enum PixelFormat : uint8_t
 class PixelFormatInfo
 {
 public:
-    static bool                 IsColour(const PixelFormat inFormat);
-    static bool                 IsSRGB(const PixelFormat inFormat);
-    static bool                 IsFloat(const PixelFormat inFormat);
-    static bool                 IsDepth(const PixelFormat inFormat);
-    static bool                 IsDepthStencil(const PixelFormat inFormat);
-    static size_t               BytesPerPixel(const PixelFormat inFormat);
+    static bool                 IsColour(const PixelFormat format);
+    static bool                 IsSRGB(const PixelFormat format);
+    static bool                 IsFloat(const PixelFormat format);
+    static bool                 IsDepth(const PixelFormat format);
+    static bool                 IsDepthStencil(const PixelFormat format);
+    static size_t               BytesPerPixel(const PixelFormat format);
 
-    static PixelFormat          GetSRGBEquivalent(const PixelFormat inFormat);
-    static PixelFormat          GetNonSRGBEquivalent(const PixelFormat inFormat);
+    static PixelFormat          GetSRGBEquivalent(const PixelFormat format);
+    static PixelFormat          GetNonSRGBEquivalent(const PixelFormat format);
 
 private:
     struct Format
@@ -80,32 +80,32 @@ private:
 
 };
 
-inline bool PixelFormatInfo::IsColour(const PixelFormat inFormat)
+inline bool PixelFormatInfo::IsColour(const PixelFormat format)
 {
-    return !sInfo[inFormat].isDepth;
+    return !sInfo[format].isDepth;
 }
 
-inline bool PixelFormatInfo::IsSRGB(const PixelFormat inFormat)
+inline bool PixelFormatInfo::IsSRGB(const PixelFormat format)
 {
-    return sInfo[inFormat].isSRGB;
+    return sInfo[format].isSRGB;
 }
 
-inline bool PixelFormatInfo::IsFloat(const PixelFormat inFormat)
+inline bool PixelFormatInfo::IsFloat(const PixelFormat format)
 {
-    return sInfo[inFormat].isFloat;
+    return sInfo[format].isFloat;
 }
 
-inline bool PixelFormatInfo::IsDepth(const PixelFormat inFormat)
+inline bool PixelFormatInfo::IsDepth(const PixelFormat format)
 {
-    return sInfo[inFormat].isDepth;
+    return sInfo[format].isDepth;
 }
 
-inline bool PixelFormatInfo::IsDepthStencil(const PixelFormat inFormat)
+inline bool PixelFormatInfo::IsDepthStencil(const PixelFormat format)
 {
-    return sInfo[inFormat].isDepthStencil;
+    return sInfo[format].isDepthStencil;
 }
 
-inline size_t PixelFormatInfo::BytesPerPixel(const PixelFormat inFormat)
+inline size_t PixelFormatInfo::BytesPerPixel(const PixelFormat format)
 {
-    return sInfo[inFormat].bytesPerPixel;
+    return sInfo[format].bytesPerPixel;
 }

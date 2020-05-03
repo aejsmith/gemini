@@ -40,19 +40,19 @@ protected:
      */
     VkCommandBuffer                 GetCommandBuffer();
 
-    void                            SubmitImpl(const VkCommandBuffer inBuffer) const;
+    void                            SubmitImpl(const VkCommandBuffer buffer) const;
 
     void                            EndImpl();
-    void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
-                                                       const size_t           inCount);
+    void                            SubmitChildrenImpl(GPUCommandList** const children,
+                                                       const size_t           count);
 
-    void                            SetArgumentsImpl(const uint8_t         inIndex,
-                                                     GPUArgumentSet* const inSet);
-    void                            SetArgumentsImpl(const uint8_t            inIndex,
-                                                     const GPUArgument* const inArguments);
+    void                            SetArgumentsImpl(const uint8_t         index,
+                                                     GPUArgumentSet* const set);
+    void                            SetArgumentsImpl(const uint8_t            index,
+                                                     const GPUArgument* const arguments);
 
-    void                            BindDescriptorSets(const VkPipelineBindPoint inBindPoint,
-                                                       const VkPipelineLayout    inPipelineLayout);
+    void                            BindDescriptorSets(const VkPipelineBindPoint bindPoint,
+                                                       const VkPipelineLayout    pipelineLayout);
 
 private:
     T&                              GetT()          { return static_cast<T&>(*this); }
@@ -73,8 +73,8 @@ class VulkanComputeCommandList final : public GPUComputeCommandList,
                                        public VulkanCommandList<VulkanComputeCommandList>
 {
 public:
-                                    VulkanComputeCommandList(VulkanContext&                     inContext,
-                                                             const GPUComputeCommandList* const inParent);
+                                    VulkanComputeCommandList(VulkanContext&                     context,
+                                                             const GPUComputeCommandList* const parent);
 
                                     ~VulkanComputeCommandList() {}
 
@@ -82,9 +82,9 @@ public:
      * GPUComputeCommandList methods.
      */
 public:
-    void                            Dispatch(const uint32_t inGroupCountX,
-                                             const uint32_t inGroupCountY,
-                                             const uint32_t inGroupCountZ) override;
+    void                            Dispatch(const uint32_t groupCountX,
+                                             const uint32_t groupCountY,
+                                             const uint32_t groupCountZ) override;
 
 protected:
     GPUCommandList*                 CreateChildImpl() override;
@@ -92,25 +92,25 @@ protected:
     void                            EndImpl() override
                                         { VulkanCommandList::EndImpl(); }
 
-    void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
-                                                       const size_t           inCount) override
-                                        { VulkanCommandList::SubmitChildrenImpl(inChildren, inCount); }
+    void                            SubmitChildrenImpl(GPUCommandList** const children,
+                                                       const size_t           count) override
+                                        { VulkanCommandList::SubmitChildrenImpl(children, count); }
 
-    void                            SetArgumentsImpl(const uint8_t         inIndex,
-                                                     GPUArgumentSet* const inSet) override
-                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inSet); }
+    void                            SetArgumentsImpl(const uint8_t         index,
+                                                     GPUArgumentSet* const set) override
+                                        { VulkanCommandList::SetArgumentsImpl(index, set); }
 
-    void                            SetArgumentsImpl(const uint8_t            inIndex,
-                                                     const GPUArgument* const inArguments) override
-                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inArguments); }
+    void                            SetArgumentsImpl(const uint8_t            index,
+                                                     const GPUArgument* const arguments) override
+                                        { VulkanCommandList::SetArgumentsImpl(index, arguments); }
 
     /**
      * Internal methods.
      */
 public:
-    void                            BeginCommandBuffer(const VkCommandBuffer inBuffer) const;
+    void                            BeginCommandBuffer(const VkCommandBuffer buffer) const;
 
-    void                            Submit(const VkCommandBuffer inBuffer) const;
+    void                            Submit(const VkCommandBuffer buffer) const;
 
 private:
     void                            PreDispatch();
@@ -123,9 +123,9 @@ class VulkanGraphicsCommandList final : public GPUGraphicsCommandList,
                                         public VulkanCommandList<VulkanGraphicsCommandList>
 {
 public:
-                                    VulkanGraphicsCommandList(VulkanContext&                      inContext,
-                                                              const GPUGraphicsCommandList* const inParent,
-                                                              const GPURenderPass&                inRenderPass);
+                                    VulkanGraphicsCommandList(VulkanContext&                      context,
+                                                              const GPUGraphicsCommandList* const parent,
+                                                              const GPURenderPass&                renderPass);
 
                                     ~VulkanGraphicsCommandList() {}
 
@@ -133,12 +133,12 @@ public:
      * GPUGraphicsCommandList methods.
      */
 public:
-    void                            Draw(const uint32_t inVertexCount,
-                                         const uint32_t inFirstVertex) override;
+    void                            Draw(const uint32_t vertexCount,
+                                         const uint32_t firstVertex) override;
 
-    void                            DrawIndexed(const uint32_t inIndexCount,
-                                                const uint32_t inFirstIndex,
-                                                const int32_t  inVertexOffset) override;
+    void                            DrawIndexed(const uint32_t indexCount,
+                                                const uint32_t firstIndex,
+                                                const int32_t  vertexOffset) override;
 
 protected:
     GPUCommandList*                 CreateChildImpl() override;
@@ -146,19 +146,19 @@ protected:
     void                            EndImpl() override
                                         { VulkanCommandList::EndImpl(); }
 
-    void                            SubmitChildrenImpl(GPUCommandList** const inChildren,
-                                                       const size_t           inCount) override
-                                        { VulkanCommandList::SubmitChildrenImpl(inChildren, inCount); }
+    void                            SubmitChildrenImpl(GPUCommandList** const children,
+                                                       const size_t           count) override
+                                        { VulkanCommandList::SubmitChildrenImpl(children, count); }
 
-    void                            SetArgumentsImpl(const uint8_t         inIndex,
-                                                     GPUArgumentSet* const inSet) override
-                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inSet); }
+    void                            SetArgumentsImpl(const uint8_t         index,
+                                                     GPUArgumentSet* const set) override
+                                        { VulkanCommandList::SetArgumentsImpl(index, set); }
 
-    void                            SetArgumentsImpl(const uint8_t            inIndex,
-                                                     const GPUArgument* const inArguments) override
-                                        { VulkanCommandList::SetArgumentsImpl(inIndex, inArguments); }
+    void                            SetArgumentsImpl(const uint8_t            index,
+                                                     const GPUArgument* const arguments) override
+                                        { VulkanCommandList::SetArgumentsImpl(index, arguments); }
 
-    uint32_t                        AllocateTransientBuffer(const size_t inSize,
+    uint32_t                        AllocateTransientBuffer(const size_t size,
                                                             void*&       outMapping) override;
 
     /**
@@ -168,12 +168,12 @@ public:
     VkRenderPass                    GetVulkanRenderPass() const     { return mVulkanRenderPass; }
     VkFramebuffer                   GetFramebuffer() const          { return mFramebuffer; }
 
-    void                            BeginCommandBuffer(const VkCommandBuffer inBuffer) const;
+    void                            BeginCommandBuffer(const VkCommandBuffer buffer) const;
 
-    void                            Submit(const VkCommandBuffer inBuffer) const;
+    void                            Submit(const VkCommandBuffer buffer) const;
 
 private:
-    void                            PreDraw(const bool inIsIndexed);
+    void                            PreDraw(const bool isIndexed);
 
 private:
     VkRenderPass                    mVulkanRenderPass;

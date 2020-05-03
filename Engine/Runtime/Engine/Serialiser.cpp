@@ -16,29 +16,29 @@
 
 #include "Engine/Serialiser.h"
 
-void Serialiser::SerialiseObject(const Object* const inObject)
+void Serialiser::SerialiseObject(const Object* const object)
 {
     /* We are a friend of Object, we can call this. */
-    inObject->Serialise(*this);
+    object->Serialise(*this);
 }
 
-bool Serialiser::DeserialiseObject(const char* const inClassName,
-                                   const MetaClass&  inMetaClass,
-                                   const bool        inIsPrimary,
+bool Serialiser::DeserialiseObject(const char* const className,
+                                   const MetaClass&  metaClass,
+                                   const bool        isPrimary,
                                    ObjPtr<>&         outObject)
 {
-    const MetaClass* const givenMetaClass = MetaClass::Lookup(inClassName);
+    const MetaClass* const givenMetaClass = MetaClass::Lookup(className);
     if (!givenMetaClass)
     {
-        LogError("Serialised data contains unknown class '%s'", inClassName);
+        LogError("Serialised data contains unknown class '%s'", className);
         return false;
     }
 
-    if (!inMetaClass.IsBaseOf(*givenMetaClass))
+    if (!metaClass.IsBaseOf(*givenMetaClass))
     {
         LogError("Class mismatch in serialised data (expected '%s', have '%s')",
-                 inMetaClass.GetName(),
-                 inClassName);
+                 metaClass.GetName(),
+                 className);
 
         return false;
     }
@@ -46,7 +46,7 @@ bool Serialiser::DeserialiseObject(const char* const inClassName,
     /* We allow deserialisation of classes that do not have a public constructor. */
     outObject = givenMetaClass->ConstructPrivate();
 
-    if (inIsPrimary && this->postConstructFunction)
+    if (isPrimary && this->postConstructFunction)
     {
         this->postConstructFunction(outObject);
     }
@@ -56,16 +56,16 @@ bool Serialiser::DeserialiseObject(const char* const inClassName,
 }
 
 #define SERIALISER_READ_WRITE(Type) \
-    bool Serialiser::Read(const char* const inName, \
+    bool Serialiser::Read(const char* const name, \
                           Type&             outValue) \
     { \
-        return Read(inName, MetaType::Lookup<Type>(), &outValue); \
+        return Read(name, MetaType::Lookup<Type>(), &outValue); \
     } \
     \
-    void Serialiser::Write(const char* const inName, \
-                           const Type&       inValue) \
+    void Serialiser::Write(const char* const name, \
+                           const Type&       value) \
     { \
-        Write(inName, MetaType::Lookup<Type>(), &inValue); \
+        Write(name, MetaType::Lookup<Type>(), &value); \
     }
 
 SERIALISER_READ_WRITE(bool);

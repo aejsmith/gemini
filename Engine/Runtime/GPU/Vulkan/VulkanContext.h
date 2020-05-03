@@ -35,9 +35,9 @@ class VulkanContext final : public GPUGraphicsContext,
                             public VulkanDeviceChild<VulkanContext>
 {
 public:
-                                    VulkanContext(VulkanDevice&  inDevice,
-                                                  const uint8_t  inID,
-                                                  const uint32_t inQueueFamily);
+                                    VulkanContext(VulkanDevice&  device,
+                                                  const uint8_t  id,
+                                                  const uint32_t queueFamily);
 
                                     ~VulkanContext();
 
@@ -45,47 +45,47 @@ public:
      * GPUContext methods.
      */
 public:
-    void                            Wait(GPUContext& inOtherContext) override;
+    void                            Wait(GPUContext& otherContext) override;
 
     /**
      * GPUTransferContext methods.
      */
 public:
-    void                            ResourceBarrier(const GPUResourceBarrier* const inBarriers,
-                                                    const size_t                    inCount) override;
+    void                            ResourceBarrier(const GPUResourceBarrier* const barriers,
+                                                    const size_t                    count) override;
 
-    void                            BlitTexture(GPUTexture* const    inDestTexture,
-                                                const GPUSubresource inDestSubresource,
-                                                const glm::ivec3&    inDestOffset,
-                                                const glm::ivec3&    inDestSize,
-                                                GPUTexture* const    inSourceTexture,
-                                                const GPUSubresource inSourceSubresource,
-                                                const glm::ivec3&    inSourceOffset,
-                                                const glm::ivec3&    inSourceSize) override;
+    void                            BlitTexture(GPUTexture* const    destTexture,
+                                                const GPUSubresource destSubresource,
+                                                const glm::ivec3&    destOffset,
+                                                const glm::ivec3&    destSize,
+                                                GPUTexture* const    sourceTexture,
+                                                const GPUSubresource sourceSubresource,
+                                                const glm::ivec3&    sourceOffset,
+                                                const glm::ivec3&    sourceSize) override;
 
-    void                            ClearTexture(GPUTexture* const          inTexture,
-                                                 const GPUTextureClearData& inData,
-                                                 const GPUSubresourceRange& inRange) override;
+    void                            ClearTexture(GPUTexture* const          texture,
+                                                 const GPUTextureClearData& data,
+                                                 const GPUSubresourceRange& range) override;
 
-    void                            UploadBuffer(GPUBuffer* const        inDestBuffer,
-                                                 const GPUStagingBuffer& inSourceBuffer,
-                                                 const uint32_t          inSize,
-                                                 const uint32_t          inDestOffset,
-                                                 const uint32_t          inSourceOffset) override;
+    void                            UploadBuffer(GPUBuffer* const        destBuffer,
+                                                 const GPUStagingBuffer& sourceBuffer,
+                                                 const uint32_t          size,
+                                                 const uint32_t          destOffset,
+                                                 const uint32_t          sourceOffset) override;
 
-    void                            UploadTexture(GPUTexture* const        inDestTexture,
-                                                  const GPUStagingTexture& inSourceTexture) override;
-    void                            UploadTexture(GPUTexture* const        inDestTexture,
-                                                  const GPUSubresource     inDestSubresource,
-                                                  const glm::ivec3&        inDestOffset,
-                                                  const GPUStagingTexture& inSourceTexture,
-                                                  const GPUSubresource     inSourceSubresource,
-                                                  const glm::ivec3&        inSourceOffset,
-                                                  const glm::ivec3&        inSize) override;
+    void                            UploadTexture(GPUTexture* const        destTexture,
+                                                  const GPUStagingTexture& sourceTexture) override;
+    void                            UploadTexture(GPUTexture* const        destTexture,
+                                                  const GPUSubresource     destSubresource,
+                                                  const glm::ivec3&        destOffset,
+                                                  const GPUStagingTexture& sourceTexture,
+                                                  const GPUSubresource     sourceSubresource,
+                                                  const glm::ivec3&        sourceOffset,
+                                                  const glm::ivec3&        size) override;
 
     #if GEMINI_BUILD_DEBUG
 
-    void                            BeginMarker(const char* const inLabel) override;
+    void                            BeginMarker(const char* const label) override;
     void                            EndMarker() override;
 
     #endif
@@ -94,19 +94,19 @@ public:
      * GPUComputeContext methods.
      */
 public:
-    void                            BeginPresent(GPUSwapchain& inSwapchain) override;
-    void                            EndPresent(GPUSwapchain& inSwapchain) override;
+    void                            BeginPresent(GPUSwapchain& swapchain) override;
+    void                            EndPresent(GPUSwapchain& swapchain) override;
 
 protected:
     GPUComputeCommandList*          CreateComputePassImpl() override;
-    void                            SubmitComputePassImpl(GPUComputeCommandList* const inCmdList) override;
+    void                            SubmitComputePassImpl(GPUComputeCommandList* const cmdList) override;
 
     /**
      * GPUGraphicsContext methods.
      */
 protected:
-    GPUGraphicsCommandList*         CreateRenderPassImpl(const GPURenderPass& inRenderPass) override;
-    void                            SubmitRenderPassImpl(GPUGraphicsCommandList* const inCmdList) override;
+    GPUGraphicsCommandList*         CreateRenderPassImpl(const GPURenderPass& renderPass) override;
+    void                            SubmitRenderPassImpl(GPUGraphicsCommandList* const cmdList) override;
 
     /**
      * Internal methods.
@@ -123,12 +123,12 @@ public:
 
 private:
     /**
-     * Get the current primary command buffer. inAllocate specifies whether to
+     * Get the current primary command buffer. allocate specifies whether to
      * allocate a new command buffer if one is not currently being recorded -
      * this should only be done if we're actually going to record a command,
      * to avoid submitting empty command buffers.
      */
-    VkCommandBuffer                 GetCommandBuffer(const bool inAllocate = true);
+    VkCommandBuffer                 GetCommandBuffer(const bool allocate = true);
 
     bool                            HaveCommandBuffer() const   { return mCommandBuffer != VK_NULL_HANDLE; }
 
@@ -136,14 +136,14 @@ private:
      * If we have a command buffer, submit it. If not null, the specified
      * semaphore will be signalled (even if there is no current command buffer).
      */
-    void                            Submit(const VkSemaphore inSignalSemaphore = VK_NULL_HANDLE);
+    void                            Submit(const VkSemaphore signalSemaphore = VK_NULL_HANDLE);
 
     /**
      * Wait for a semaphore. Any subsequent GPU work on the context will wait
      * until the semaphore has been signalled. If we currently have unsubmitted
      * work, it will be submitted.
      */
-    void                            Wait(const VkSemaphore inSemaphore);
+    void                            Wait(const VkSemaphore semaphore);
 
 private:
     uint8_t                         mID;

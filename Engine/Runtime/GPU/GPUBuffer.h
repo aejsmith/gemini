@@ -40,8 +40,8 @@ inline bool operator==(const GPUBufferDesc& a, const GPUBufferDesc& b)
 class GPUBuffer : public GPUResource
 {
 protected:
-                            GPUBuffer(GPUDevice&           inDevice,
-                                      const GPUBufferDesc& inDesc);
+                            GPUBuffer(GPUDevice&           device,
+                                      const GPUBufferDesc& desc);
 
 public:
                             ~GPUBuffer() {}

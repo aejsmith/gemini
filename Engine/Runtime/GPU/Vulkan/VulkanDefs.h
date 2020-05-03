@@ -257,8 +257,8 @@ static constexpr uint8_t kVulkanMaxContexts = 3;
  * Helper functions/macros.
  */
 
-[[noreturn]] extern void VulkanCheckFailed(const char*    inCall,
-                                           const VkResult inResult);
+[[noreturn]] extern void VulkanCheckFailed(const char*    call,
+                                           const VkResult result);
 
 /** Handle failure of a Vulkan call. */
 #define VulkanCheck(_call) \

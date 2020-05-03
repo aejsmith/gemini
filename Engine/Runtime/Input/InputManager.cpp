@@ -51,24 +51,24 @@ InputModifier InputManager::GetModifiers()
     return modifiers;
 }
 
-bool InputManager::GetButtonState(const InputCode inCode)
+bool InputManager::GetButtonState(const InputCode code)
 {
-    const InputInfo* inputInfo = InputInfo::Lookup(inCode);
+    const InputInfo* inputInfo = InputInfo::Lookup(code);
 
-    AssertMsg(inputInfo, "Input code %d is invalid", inCode);
-    AssertMsg(inputInfo->type == kInputType_Button, "Input %d is not a button", inCode);
+    AssertMsg(inputInfo, "Input code %d is invalid", code);
+    AssertMsg(inputInfo->type == kInputType_Button, "Input %d is not a button", code);
     Unused(inputInfo);
 
-    if (inCode >= kInputCodeKeyboardFirst && inCode <= kInputCodeKeyboardLast)
+    if (code >= kInputCodeKeyboardFirst && code <= kInputCodeKeyboardLast)
     {
         const uint8_t* const keyboardState = SDL_GetKeyboardState(nullptr);
-        return keyboardState[inCode];
+        return keyboardState[code];
     }
-    else if (inCode >= kInputCodeMouseFirst && inCode <= kInputCodeMouseLast)
+    else if (code >= kInputCodeMouseFirst && code <= kInputCodeMouseLast)
     {
         const uint32_t mouseState = SDL_GetMouseState(nullptr, nullptr);
 
-        switch (inCode)
+        switch (code)
         {
             case kInputCode_MouseLeft:
                 return mouseState & SDL_BUTTON(SDL_BUTTON_LEFT);
@@ -97,16 +97,16 @@ glm::ivec2 InputManager::GetCursorPosition()
     return glm::ivec2(x, y);
 }
 
-void InputManager::SetMouseCaptured(const bool inCaptured)
+void InputManager::SetMouseCaptured(const bool captured)
 {
-    if (mMouseCaptured != inCaptured)
+    if (mMouseCaptured != captured)
     {
-        SDL_SetRelativeMouseMode((inCaptured) ? SDL_TRUE : SDL_FALSE);
-        mMouseCaptured = inCaptured;
+        SDL_SetRelativeMouseMode((captured) ? SDL_TRUE : SDL_FALSE);
+        mMouseCaptured = captured;
     }
 }
 
-void InputManager::RegisterHandler(InputHandler* const inHandler,
+void InputManager::RegisterHandler(InputHandler* const handler,
                                    OnlyCalledBy<InputHandler>)
 {
     /* List is sorted by priority. */
@@ -114,64 +114,64 @@ void InputManager::RegisterHandler(InputHandler* const inHandler,
     {
         const InputHandler* const other = *it;
 
-        if (inHandler->GetInputPriority() < other->GetInputPriority())
+        if (handler->GetInputPriority() < other->GetInputPriority())
         {
-            mHandlers.insert(it, inHandler);
+            mHandlers.insert(it, handler);
             return;
         }
     }
 
     /* Insertion point not found, add at end. */
-    mHandlers.push_back(inHandler);
+    mHandlers.push_back(handler);
 }
 
-void InputManager::UnregisterHandler(InputHandler* const inHandler,
+void InputManager::UnregisterHandler(InputHandler* const handler,
                                      OnlyCalledBy<InputHandler>)
 {
-    mHandlers.remove(inHandler);
+    mHandlers.remove(handler);
 }
 
-void InputManager::BeginTextInput(InputHandler* const inHandler,
+void InputManager::BeginTextInput(InputHandler* const handler,
                                   OnlyCalledBy<InputHandler>)
 {
     AssertMsg(!mTextInputHandler, "Multiple input handlers requesting text input");
 
-    mTextInputHandler = inHandler;
+    mTextInputHandler = handler;
     SDL_StartTextInput();
 }
 
-void InputManager::EndTextInput(InputHandler* const inHandler,
+void InputManager::EndTextInput(InputHandler* const handler,
                                 OnlyCalledBy<InputHandler>)
 {
-    Assert(mTextInputHandler == inHandler);
+    Assert(mTextInputHandler == handler);
 
     SDL_StopTextInput();
     mTextInputHandler = nullptr;
 }
 
-bool InputManager::HandleEvent(const SDL_Event& inEvent,
+bool InputManager::HandleEvent(const SDL_Event& event,
                                OnlyCalledBy<Engine>)
 {
     const InputModifier modifiers = GetModifiers();
 
     auto DispatchInputEvent =
-        [&] (auto inFunction)
+        [&] (auto function)
         {
             for (InputHandler* handler : mHandlers)
             {
-                if (inFunction(handler) == InputHandler::kEventResult_Stop)
+                if (function(handler) == InputHandler::kEventResult_Stop)
                 {
                     break;
                 }
             }
         };
 
-    switch (inEvent.type)
+    switch (event.type)
     {
         case SDL_KEYDOWN:
         {
             /* Ignore repeats for now. FIXME. */
-            if (inEvent.key.repeat)
+            if (event.key.repeat)
             {
                 return false;
             }
@@ -182,28 +182,28 @@ bool InputManager::HandleEvent(const SDL_Event& inEvent,
         case SDL_KEYUP:
         {
             /* Map the scan code to an input code. */
-            const InputCode inputCode        = static_cast<InputCode>(inEvent.key.keysym.scancode);
+            const InputCode inputCode        = static_cast<InputCode>(event.key.keysym.scancode);
             const InputInfo* const inputInfo = InputInfo::Lookup(inputCode);
 
             if (!inputInfo)
             {
-                LogWarning("Unrecognised scan code %u", inEvent.key.keysym.scancode);
+                LogWarning("Unrecognised scan code %u", event.key.keysym.scancode);
                 return false;
             }
 
             /* Get the character representation, if any, of this code. SDL's
              * keycodes are defined to ASCII values if they have a printable
              * representation, or the scancode with bit 30 set otherwise. */
-            const char character = (!(inEvent.key.keysym.sym & SDLK_SCANCODE_MASK))
-                                       ? inEvent.key.keysym.sym
+            const char character = (!(event.key.keysym.sym & SDLK_SCANCODE_MASK))
+                                       ? event.key.keysym.sym
                                        : 0;
 
-            const ButtonEvent buttonEvent(inputInfo, modifiers, inEvent.type == SDL_KEYDOWN, character);
+            const ButtonEvent buttonEvent(inputInfo, modifiers, event.type == SDL_KEYDOWN, character);
 
             DispatchInputEvent(
-                [&] (InputHandler* const inHandler)
+                [&] (InputHandler* const handler)
                 {
-                    return inHandler->HandleButton(buttonEvent);
+                    return handler->HandleButton(buttonEvent);
                 });
 
             return true;
@@ -214,7 +214,7 @@ bool InputManager::HandleEvent(const SDL_Event& inEvent,
         {
             /* Convert SDL's button to our own. */
             InputCode inputCode;
-            switch (inEvent.button.button)
+            switch (event.button.button)
             {
                 case SDL_BUTTON_LEFT:
                     inputCode = kInputCode_MouseLeft;
@@ -229,19 +229,19 @@ bool InputManager::HandleEvent(const SDL_Event& inEvent,
                     break;
 
                 default:
-                    LogWarning("Unrecognised SDL button code %u", inEvent.button.button);
+                    LogWarning("Unrecognised SDL button code %u", event.button.button);
                     return false;
 
             }
 
             const InputInfo* const inputInfo = InputInfo::Lookup(inputCode);
 
-            const ButtonEvent buttonEvent(inputInfo, modifiers, inEvent.type == SDL_MOUSEBUTTONDOWN, 0);
+            const ButtonEvent buttonEvent(inputInfo, modifiers, event.type == SDL_MOUSEBUTTONDOWN, 0);
 
             DispatchInputEvent(
-                [&] (InputHandler* const inHandler)
+                [&] (InputHandler* const handler)
                 {
-                    return inHandler->HandleButton(buttonEvent);
+                    return handler->HandleButton(buttonEvent);
                 });
 
             return true;
@@ -249,29 +249,29 @@ bool InputManager::HandleEvent(const SDL_Event& inEvent,
 
         case SDL_MOUSEMOTION:
         {
-            if (inEvent.motion.xrel)
+            if (event.motion.xrel)
             {
                 const InputInfo* const inputInfo = InputInfo::Lookup(kInputCode_MouseX);
 
-                const AxisEvent axisEvent(inputInfo, modifiers, inEvent.motion.xrel);
+                const AxisEvent axisEvent(inputInfo, modifiers, event.motion.xrel);
 
                 DispatchInputEvent(
-                    [&] (InputHandler* const inHandler)
+                    [&] (InputHandler* const handler)
                     {
-                        return inHandler->HandleAxis(axisEvent);
+                        return handler->HandleAxis(axisEvent);
                     });
             }
 
-            if (inEvent.motion.yrel)
+            if (event.motion.yrel)
             {
                 const InputInfo* const inputInfo = InputInfo::Lookup(kInputCode_MouseY);
 
-                const AxisEvent axisEvent(inputInfo, modifiers, inEvent.motion.yrel);
+                const AxisEvent axisEvent(inputInfo, modifiers, event.motion.yrel);
 
                 DispatchInputEvent(
-                    [&] (InputHandler* const inHandler)
+                    [&] (InputHandler* const handler)
                     {
-                        return inHandler->HandleAxis(axisEvent);
+                        return handler->HandleAxis(axisEvent);
                     });
             }
 
@@ -282,12 +282,12 @@ bool InputManager::HandleEvent(const SDL_Event& inEvent,
         {
             const InputInfo* const inputInfo = InputInfo::Lookup(kInputCode_MouseScroll);
 
-            const AxisEvent axisEvent(inputInfo, modifiers, inEvent.wheel.y);
+            const AxisEvent axisEvent(inputInfo, modifiers, event.wheel.y);
 
             DispatchInputEvent(
-                [&] (InputHandler* const inHandler)
+                [&] (InputHandler* const handler)
                 {
-                    return inHandler->HandleAxis(axisEvent);
+                    return handler->HandleAxis(axisEvent);
                 });
 
             return true;
@@ -297,7 +297,7 @@ bool InputManager::HandleEvent(const SDL_Event& inEvent,
         {
             if (mTextInputHandler)
             {
-                const TextInputEvent textInputEvent(inEvent.text.text);
+                const TextInputEvent textInputEvent(event.text.text);
 
                 mTextInputHandler->HandleTextInput(textInputEvent);
             }

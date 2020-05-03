@@ -199,9 +199,9 @@ PixelFormatInfo::Format PixelFormatInfo::sInfo[kPixelFormatCount] =
     }
 };
 
-PixelFormat PixelFormatInfo::GetSRGBEquivalent(const PixelFormat inFormat)
+PixelFormat PixelFormatInfo::GetSRGBEquivalent(const PixelFormat format)
 {
-    switch (inFormat)
+    switch (format)
     {
         case kPixelFormat_R8G8B8A8:
             return kPixelFormat_R8G8B8A8sRGB;
@@ -210,14 +210,14 @@ PixelFormat PixelFormatInfo::GetSRGBEquivalent(const PixelFormat inFormat)
             return kPixelFormat_B8G8R8A8sRGB;
 
         default:
-            return inFormat;
+            return format;
 
     }
 }
 
-PixelFormat PixelFormatInfo::GetNonSRGBEquivalent(const PixelFormat inFormat)
+PixelFormat PixelFormatInfo::GetNonSRGBEquivalent(const PixelFormat format)
 {
-    switch (inFormat)
+    switch (format)
     {
         case kPixelFormat_R8G8B8A8sRGB:
             return kPixelFormat_R8G8B8A8;
@@ -226,7 +226,7 @@ PixelFormat PixelFormatInfo::GetNonSRGBEquivalent(const PixelFormat inFormat)
             return kPixelFormat_B8G8R8A8;
 
         default:
-            return inFormat;
+            return format;
 
     }
 }

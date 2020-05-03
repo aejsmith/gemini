@@ -16,14 +16,14 @@
 
 #include "Render/ShaderParameter.h"
 
-bool ShaderParameter::IsConstant(const ShaderParameterType inType)
+bool ShaderParameter::IsConstant(const ShaderParameterType type)
 {
-    return !IsResource(inType);
+    return !IsResource(type);
 }
 
-bool ShaderParameter::IsResource(const ShaderParameterType inType)
+bool ShaderParameter::IsResource(const ShaderParameterType type)
 {
-    switch (inType)
+    switch (type)
     {
         case kShaderParameterType_Texture2D:
             return true;
@@ -34,17 +34,17 @@ bool ShaderParameter::IsResource(const ShaderParameterType inType)
     }
 }
 
-bool ShaderParameter::HasSampler(const ShaderParameterType inType)
+bool ShaderParameter::HasSampler(const ShaderParameterType type)
 {
     /* Currently all resource types have a sampler. */
-    return IsResource(inType);
+    return IsResource(type);
 }
 
-uint32_t ShaderParameter::GetSize(const ShaderParameterType inType)
+uint32_t ShaderParameter::GetSize(const ShaderParameterType type)
 {
-    Assert(IsConstant(inType));
+    Assert(IsConstant(type));
 
-    switch (inType)
+    switch (type)
     {
         case kShaderParameterType_Int:      return sizeof(shader_int);
         case kShaderParameterType_Int2:     return sizeof(shader_int2);
@@ -65,9 +65,9 @@ uint32_t ShaderParameter::GetSize(const ShaderParameterType inType)
     }
 }
 
-const char* ShaderParameter::GetHLSLType(const ShaderParameterType inType)
+const char* ShaderParameter::GetHLSLType(const ShaderParameterType type)
 {
-    switch (inType)
+    switch (type)
     {
         case kShaderParameterType_Int:      return "int";
         case kShaderParameterType_Int2:     return "int2";
@@ -88,11 +88,11 @@ const char* ShaderParameter::GetHLSLType(const ShaderParameterType inType)
     }
 }
 
-GPUArgumentType ShaderParameter::GetGPUArgumentType(const ShaderParameterType inType)
+GPUArgumentType ShaderParameter::GetGPUArgumentType(const ShaderParameterType type)
 {
-    Assert(IsResource(inType));
+    Assert(IsResource(type));
 
-    switch (inType)
+    switch (type)
     {
         case kShaderParameterType_Texture2D:    return kGPUArgumentType_Texture;
 

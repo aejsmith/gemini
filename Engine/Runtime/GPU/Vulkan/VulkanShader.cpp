@@ -35,15 +35,15 @@ static const char* const kSemanticNames[] =
     /* kGPUAttributeSemantic_TexCoord     */ "TEXCOORD",
 };
 
-VulkanShader::VulkanShader(VulkanDevice&        inDevice,
-                           const GPUShaderStage inStage,
-                           GPUShaderCode        inCode,
-                           const std::string&   inFunction) :
-    GPUShader   (inDevice,
-                 inStage,
-                 std::move(inCode)),
+VulkanShader::VulkanShader(VulkanDevice&        device,
+                           const GPUShaderStage stage,
+                           GPUShaderCode        code,
+                           const std::string&   function) :
+    GPUShader   (device,
+                 stage,
+                 std::move(code)),
     mHandle     (VK_NULL_HANDLE),
-    mFunction   (inFunction)
+    mFunction   (function)
 {
     VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

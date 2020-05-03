@@ -20,20 +20,20 @@
 
 namespace GPUUtils
 {
-    size_t              GetAttributeSize(const GPUAttributeFormat inFormat);
-    size_t              GetIndexSize(const GPUIndexType inType);
+    size_t              GetAttributeSize(const GPUAttributeFormat format);
+    size_t              GetIndexSize(const GPUIndexType type);
 
     /**
      * Validate a resource state combination. Does not do anything on non-debug
      * builds.
      */
-    void                ValidateResourceState(const GPUResourceState inState,
-                                              const bool             inIsTexture);
+    void                ValidateResourceState(const GPUResourceState state,
+                                              const bool             isTexture);
 }
 
-inline size_t GPUUtils::GetIndexSize(const GPUIndexType inType)
+inline size_t GPUUtils::GetIndexSize(const GPUIndexType type)
 {
-    switch (inType)
+    switch (type)
     {
         case kGPUIndexType_16: return 2;
         case kGPUIndexType_32: return 4;
@@ -46,8 +46,8 @@ inline size_t GPUUtils::GetIndexSize(const GPUIndexType inType)
 
 #if !GEMINI_BUILD_DEBUG
 
-inline void GPUUtils::ValidateResourceState(const GPUResourceState inState,
-                                            const bool             inIsTexture)
+inline void GPUUtils::ValidateResourceState(const GPUResourceState state,
+                                            const bool             isTexture)
 {
 }
 

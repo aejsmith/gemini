@@ -50,18 +50,18 @@ AssetManager::~AssetManager()
     Assert(mAssets.empty());
 }
 
-AssetPtr AssetManager::Load(const Path& inPath)
+AssetPtr AssetManager::Load(const Path& path)
 {
-    Asset* const exist = LookupAsset(inPath);
+    Asset* const exist = LookupAsset(path);
     if (exist)
     {
         return exist;
     }
 
     Path fsPath;
-    if (!GetFilesystemPath(inPath, fsPath))
+    if (!GetFilesystemPath(path, fsPath))
     {
-        LogError("Could not find asset '%s' (unknown search path)", inPath.GetCString());
+        LogError("Could not find asset '%s' (unknown search path)", path.GetCString());
         return nullptr;
     }
 
@@ -71,7 +71,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
     UPtr<Directory> directory(Filesystem::OpenDirectory(directoryPath));
     if (!directory)
     {
-        LogError("Could not find asset '%s'", inPath.GetCString());
+        LogError("Could not find asset '%s'", path.GetCString());
         return nullptr;
     }
 
@@ -106,7 +106,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
             {
                 if (data)
                 {
-                    LogError("Asset '%s' has multiple data streams", inPath.GetCString());
+                    LogError("Asset '%s' has multiple data streams", path.GetCString());
                     return nullptr;
                 }
 
@@ -125,7 +125,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
     /* Succeeded if we have at least a data stream. */
     if (!data)
     {
-        LogError("Could not find asset '%s'", inPath.GetCString());
+        LogError("Could not find asset '%s'", path.GetCString());
         return nullptr;
     }
 
@@ -133,11 +133,11 @@ AssetPtr AssetManager::Load(const Path& inPath)
 
     /* Helper function used on both paths below to mark the asset as managed
      * and cache it. */
-    auto AddAsset = [&] (Object* const inObject)
+    auto AddAsset = [&] (Object* const object)
     {
-        auto asset = static_cast<Asset*>(inObject);
-        asset->SetPath(inPath.GetString(), {});
-        mAssets.insert(std::make_pair(inPath.GetString(), asset));
+        auto newAsset = static_cast<Asset*>(object);
+        newAsset->SetPath(path.GetString(), {});
+        mAssets.insert(std::make_pair(path.GetString(), newAsset));
     };
 
     if (type == kObjectFileExtension)
@@ -146,7 +146,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
         type.clear();
         if (loaderData)
         {
-            LogError("%s: Serialised object cannot have a loader", inPath.GetCString());
+            LogError("%s: Serialised object cannot have a loader", path.GetCString());
             return nullptr;
         }
 
@@ -155,7 +155,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
         ByteArray serialisedData(data->GetSize());
         if (!data->Read(serialisedData.Get(), data->GetSize()))
         {
-            LogError("%s: Failed to read asset data", inPath.GetCString());
+            LogError("%s: Failed to read asset data", path.GetCString());
             return nullptr;
         }
 
@@ -172,7 +172,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
         asset = serialiser.Deserialise<Asset>(serialisedData);
         if (!asset)
         {
-            LogError("%s: Error during object deserialisation", inPath.GetCString());
+            LogError("%s: Error during object deserialisation", path.GetCString());
             return nullptr;
         }
     }
@@ -186,7 +186,7 @@ AssetPtr AssetManager::Load(const Path& inPath)
             ByteArray serialisedData(loaderData->GetSize());
             if (!loaderData->Read(serialisedData.Get(), loaderData->GetSize()))
             {
-                LogError("%s: Failed to read loader data", inPath.GetCString());
+                LogError("%s: Failed to read loader data", path.GetCString());
                 return nullptr;
             }
 
@@ -194,13 +194,13 @@ AssetPtr AssetManager::Load(const Path& inPath)
             loader = serialiser.Deserialise<AssetLoader>(serialisedData);
             if (!loader)
             {
-                LogError("%s: Error during loader deserialisation", inPath.GetCString());
+                LogError("%s: Error during loader deserialisation", path.GetCString());
                 return nullptr;
             }
 
             if (type != loader->GetExtension())
             {
-                LogError("%s: Asset '%s' has loader but is for a different file type", inPath.GetCString());
+                LogError("%s: Asset '%s' has loader but is for a different file type", path.GetCString());
                 return nullptr;
             }
         }
@@ -209,13 +209,13 @@ AssetPtr AssetManager::Load(const Path& inPath)
             loader = AssetLoader::Create(type);
             if (!loader)
             {
-                LogError("%s: Unknown file type '%s'", inPath.GetCString(), type.c_str());
+                LogError("%s: Unknown file type '%s'", path.GetCString(), type.c_str());
                 return nullptr;
             }
         }
 
         /* Create the asset. The loader should log an error if it fails. */
-        asset = loader->Load(data.get(), inPath.GetCString());
+        asset = loader->Load(data.get(), path.GetCString());
         if (!asset)
         {
             return nullptr;
@@ -226,48 +226,48 @@ AssetPtr AssetManager::Load(const Path& inPath)
 
     if (!type.empty())
     {
-        LogDebug("Loaded asset '%s' from source file type '%s'", inPath.GetCString(), type.c_str());
+        LogDebug("Loaded asset '%s' from source file type '%s'", path.GetCString(), type.c_str());
     }
     else
     {
-        LogDebug("Loaded asset '%s'", inPath.GetCString());
+        LogDebug("Loaded asset '%s'", path.GetCString());
     }
 
     return asset;
 }
 
-void AssetManager::UnregisterAsset(Asset* const inAsset,
+void AssetManager::UnregisterAsset(Asset* const asset,
                                    OnlyCalledBy<Asset>)
 {
-    const size_t ret = mAssets.erase(inAsset->GetPath());
+    const size_t ret = mAssets.erase(asset->GetPath());
     AssertMsg(ret > 0,
               "Destroying asset '%s' which is not in the cache",
-              inAsset->GetPath().c_str());
+              asset->GetPath().c_str());
     Unused(ret);
 
-    LogDebug("Unregistered asset '%s'", inAsset->GetPath().c_str());
+    LogDebug("Unregistered asset '%s'", asset->GetPath().c_str());
 }
 
-bool AssetManager::GetFilesystemPath(const Path& inPath,
+bool AssetManager::GetFilesystemPath(const Path& path,
                                      Path&       outFSPath)
 {
-    auto searchPath = mSearchPaths.find(inPath.Subset(0, 1).GetString());
+    auto searchPath = mSearchPaths.find(path.Subset(0, 1).GetString());
     if (searchPath == mSearchPaths.end())
     {
         return false;
     }
 
-    outFSPath = Path(searchPath->second) / inPath.Subset(1);
+    outFSPath = Path(searchPath->second) / path.Subset(1);
     return true;
 }
 
-bool AssetManager::SaveAsset(Asset* const inAsset,
-                             const Path&  inPath)
+bool AssetManager::SaveAsset(Asset* const asset,
+                             const Path&  path)
 {
     Path fsPath;
-    if (!GetFilesystemPath(inPath, fsPath))
+    if (!GetFilesystemPath(path, fsPath))
     {
-        LogError("Could not save asset '%s': unknown search path", inPath.GetCString());
+        LogError("Could not save asset '%s': unknown search path", path.GetCString());
         return false;
     }
 
@@ -275,50 +275,50 @@ bool AssetManager::SaveAsset(Asset* const inAsset,
     fsPath += kObjectFileExtension;
 
     JSONSerialiser serialiser;
-    ByteArray serialisedData = serialiser.Serialise(inAsset);
+    ByteArray serialisedData = serialiser.Serialise(asset);
 
     UPtr<File> file(Filesystem::OpenFile(fsPath, kFileMode_Write | kFileMode_Create | kFileMode_Truncate));
     if (!file)
     {
-        LogError("Could not save asset '%s': failed to open '%s'", inPath.GetCString(), fsPath.GetCString());
+        LogError("Could not save asset '%s': failed to open '%s'", path.GetCString(), fsPath.GetCString());
         return false;
     }
 
     if (!file->Write(serialisedData.Get(), serialisedData.GetSize()))
     {
-        LogError("Could not save asset '%s': failed to write", inPath.GetCString());
+        LogError("Could not save asset '%s': failed to write", path.GetCString());
         return false;
     }
 
-    LogDebug("Saved asset '%s' ('%s')", inPath.GetCString(), fsPath.GetCString());
+    LogDebug("Saved asset '%s' ('%s')", path.GetCString(), fsPath.GetCString());
 
-    if (inAsset->IsManaged())
+    if (asset->IsManaged())
     {
         /* Re-insert under new path. */
-        mAssets.erase(inAsset->GetPath());
+        mAssets.erase(asset->GetPath());
     }
 
-    inAsset->SetPath(inPath.GetString(), {});
-    mAssets.insert(std::make_pair(inPath.GetString(), inAsset));
+    asset->SetPath(path.GetString(), {});
+    mAssets.insert(std::make_pair(path.GetString(), asset));
 
     return true;
 }
 
-Asset* AssetManager::LookupAsset(const Path& inPath) const
+Asset* AssetManager::LookupAsset(const Path& path) const
 {
-    auto it = mAssets.find(inPath.GetString());
+    auto it = mAssets.find(path.GetString());
     return (it != mAssets.end()) ? it->second : nullptr;
 }
 
 bool AssetManager::DebugUIAssetSelector(AssetPtr&        ioAsset,
-                                        const MetaClass& inPointeeClass,
-                                        const bool       inActivate)
+                                        const MetaClass& pointeeClass,
+                                        const bool       activate)
 {
     /* Because this is a modal dialog, we should only have one active at a time
      * and so using a single static buffer is fine. */
     static char pathBuf[128] = {};
 
-    if (inActivate)
+    if (activate)
     {
         ImGui::OpenPopup("Select Asset");
 
@@ -379,7 +379,7 @@ bool AssetManager::DebugUIAssetSelector(AssetPtr&        ioAsset,
 
             ImGui::OpenPopup("Invalid Asset");
         }
-        else if (!inPointeeClass.IsBaseOf(newAsset->GetMetaClass()))
+        else if (!pointeeClass.IsBaseOf(newAsset->GetMetaClass()))
         {
             result        = false;
             incorrectType = newAsset->GetMetaClass().GetName();

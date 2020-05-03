@@ -56,14 +56,14 @@ public:
 
 public:
                             Frustum() {}
-                            Frustum(const glm::mat4& inViewProjection,
-                                    const glm::mat4& inInverseViewProjection);
+                            Frustum(const glm::mat4& viewProjection,
+                                    const glm::mat4& inverseViewProjection);
 
-    const Plane&            GetPlane(const int inPlane) const
-                                { return mPlanes[inPlane]; }
+    const Plane&            GetPlane(const int plane) const
+                                { return mPlanes[plane]; }
 
-    const glm::vec3&        GetCorner(const int inCorner) const
-                                { return mCorners[inCorner]; }
+    const glm::vec3&        GetCorner(const int corner) const
+                                { return mCorners[corner]; }
 
 private:
     Plane                   mPlanes[kNumPlanes];

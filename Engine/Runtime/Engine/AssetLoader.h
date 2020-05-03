@@ -28,13 +28,13 @@ public:
     /** Get the file extension which this loader handles. */
     virtual const char*             GetExtension() const = 0;
 
-    AssetPtr                        Load(DataStream* const inData,
-                                         const char* const inPath);
+    AssetPtr                        Load(DataStream* const data,
+                                         const char* const path);
 
     DataStream*                     GetData()       { return mData; }
     const DataStream*               GetData() const { return mData; }
 
-    static ObjPtr<AssetLoader>      Create(const std::string& inExtension);
+    static ObjPtr<AssetLoader>      Create(const std::string& extension);
 
 protected:
                                     AssetLoader();

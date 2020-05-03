@@ -68,12 +68,12 @@ public:
 public:
                                         DeferredRenderPipeline();
 
-    void                                SetName(std::string inName) override;
+    void                                SetName(std::string name) override;
 
-    void                                Render(const RenderWorld&         inWorld,
-                                               const RenderView&          inView,
-                                               RenderGraph&               inGraph,
-                                               const RenderResourceHandle inTexture,
+    void                                Render(const RenderWorld&         world,
+                                               const RenderView&          view,
+                                               RenderGraph&               graph,
+                                               const RenderResourceHandle texture,
                                                RenderResourceHandle&      outNewTexture) override;
 
 protected:
@@ -82,14 +82,14 @@ protected:
 private:
     void                                CreateShaders();
 
-    void                                CreateResources(DeferredRenderContext* const inContext,
-                                                        const RenderResourceHandle   inOutputTexture) const;
+    void                                CreateResources(DeferredRenderContext* const context,
+                                                        const RenderResourceHandle   outputTexture) const;
 
-    void                                BuildDrawLists(DeferredRenderContext* const inContext) const;
-    void                                PrepareLights(DeferredRenderContext* const inContext) const;
-    void                                AddGBufferPasses(DeferredRenderContext* const inContext) const;
-    void                                AddCullingPass(DeferredRenderContext* const inContext) const;
-    void                                AddLightingPass(DeferredRenderContext* const inContext) const;
+    void                                BuildDrawLists(DeferredRenderContext* const context) const;
+    void                                PrepareLights(DeferredRenderContext* const context) const;
+    void                                AddGBufferPasses(DeferredRenderContext* const context) const;
+    void                                AddCullingPass(DeferredRenderContext* const context) const;
+    void                                AddLightingPass(DeferredRenderContext* const context) const;
 
 private:
     GPUShaderPtr                        mCullingShader;

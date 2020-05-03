@@ -24,8 +24,8 @@ class VulkanBuffer final : public GPUBuffer,
                            public VulkanDeviceChild<VulkanBuffer>
 {
 public:
-                            VulkanBuffer(VulkanDevice&        inDevice,
-                                         const GPUBufferDesc& inDesc);
+                            VulkanBuffer(VulkanDevice&        device,
+                                         const GPUBufferDesc& desc);
 
                             ~VulkanBuffer();
 

@@ -25,9 +25,9 @@
 
 static const uint32_t kNumSwapchainImages = 3;
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice& inDevice,
-                                 Window&       inWindow) :
-    GPUSwapchain    (inDevice, inWindow),
+VulkanSwapchain::VulkanSwapchain(VulkanDevice& device,
+                                 Window&       window) :
+    GPUSwapchain    (device, window),
     mSurfaceHandle  (VK_NULL_HANDLE),
     mHandle         (VK_NULL_HANDLE),
     mCurrentImage   (std::numeric_limits<uint32_t>::max())
@@ -224,7 +224,7 @@ void VulkanSwapchain::CreateTexture()
     mTexture = texture;
 }
 
-void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
+void VulkanSwapchain::Acquire(const VkSemaphore acquireSemaphore)
 {
     Assert(mCurrentImage == std::numeric_limits<uint32_t>::max());
 
@@ -233,7 +233,7 @@ void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
     VkResult result = vkAcquireNextImageKHR(GetVulkanDevice().GetHandle(),
                                             mHandle,
                                             std::numeric_limits<uint64_t>::max(),
-                                            inAcquireSemaphore,
+                                            acquireSemaphore,
                                             VK_NULL_HANDLE,
                                             &mCurrentImage);
 
@@ -264,21 +264,21 @@ void VulkanSwapchain::Acquire(const VkSemaphore inAcquireSemaphore)
     texture->SetImage(mImages[mCurrentImage], {});
 }
 
-void VulkanSwapchain::Present(const VkQueue     inQueue,
-                              const VkSemaphore inWaitSemaphore)
+void VulkanSwapchain::Present(const VkQueue     queue,
+                              const VkSemaphore waitSemaphore)
 {
     Assert(mCurrentImage != std::numeric_limits<uint32_t>::max());
-    Assert(inWaitSemaphore != VK_NULL_HANDLE);
+    Assert(waitSemaphore != VK_NULL_HANDLE);
 
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores    = &inWaitSemaphore;
+    presentInfo.pWaitSemaphores    = &waitSemaphore;
     presentInfo.swapchainCount     = 1;
     presentInfo.pSwapchains        = &mHandle;
     presentInfo.pImageIndices      = &mCurrentImage;
 
-    VkResult result = vkQueuePresentKHR(inQueue, &presentInfo);
+    VkResult result = vkQueuePresentKHR(queue, &presentInfo);
 
     switch (result)
     {

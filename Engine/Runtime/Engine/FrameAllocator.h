@@ -39,20 +39,20 @@ class Engine;
 class FrameAllocator
 {
 public:
-    static void*                Allocate(const size_t inSize,
-                                         const size_t inAlignment = 0);
+    static void*                Allocate(const size_t size,
+                                         const size_t alignment = 0);
 
     template <typename T, typename... Args>
-    static T*                   Allocate(Args&&... inArgs);
+    static T*                   Allocate(Args&&... args);
 
     template <typename T>
-    static T*                   AllocateArray(const uint32_t inCount);
+    static T*                   AllocateArray(const uint32_t count);
 
     template <typename T, typename... Args>
-    static T*                   New(Args&&... inArgs);
+    static T*                   New(Args&&... args);
 
     template <typename T>
-    static void                 Delete(T* const inObject);
+    static void                 Delete(T* const object);
 
     static void                 EndFrame(OnlyCalledBy<Engine>);
 
@@ -65,34 +65,34 @@ private:
 
 };
 
-inline void* FrameAllocator::Allocate(const size_t inSize,
-                                      const size_t inAlignment)
+inline void* FrameAllocator::Allocate(const size_t size,
+                                      const size_t alignment)
 {
-    return mAllocator.Allocate(inSize, inAlignment);
+    return mAllocator.Allocate(size, alignment);
 }
 
 template <typename T, typename... Args>
-inline T* FrameAllocator::Allocate(Args&&... inArgs)
+inline T* FrameAllocator::Allocate(Args&&... args)
 {
-    return mAllocator.Allocate<T>(std::forward<Args>(inArgs)...);
+    return mAllocator.Allocate<T>(std::forward<Args>(args)...);
 }
 
 template <typename T>
-inline T* FrameAllocator::AllocateArray(const uint32_t inCount)
+inline T* FrameAllocator::AllocateArray(const uint32_t count)
 {
-    return mAllocator.AllocateArray<T>(inCount);
+    return mAllocator.AllocateArray<T>(count);
 }
 
 template <typename T, typename... Args>
-inline T* FrameAllocator::New(Args&&... inArgs)
+inline T* FrameAllocator::New(Args&&... args)
 {
-    return mAllocator.New<T>(std::forward<Args>(inArgs)...);
+    return mAllocator.New<T>(std::forward<Args>(args)...);
 }
 
 template <typename T>
-inline void FrameAllocator::Delete(T* const inObject)
+inline void FrameAllocator::Delete(T* const object)
 {
-    mAllocator.Delete<T>(inObject);
+    mAllocator.Delete<T>(object);
 }
 
 inline void FrameAllocator::EndFrame(OnlyCalledBy<Engine>)

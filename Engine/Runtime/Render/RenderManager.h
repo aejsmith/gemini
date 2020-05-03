@@ -65,9 +65,9 @@ public:
     // main scene would need to be rendered first), a way to disable outputs
     // (don't want to render to texture when it's not going to be needed in
     // main scene).
-    void                        RegisterOutput(RenderOutput* const inOutput,
+    void                        RegisterOutput(RenderOutput* const output,
                                                OnlyCalledBy<RenderOutput>);
-    void                        UnregisterOutput(RenderOutput* const inOutput,
+    void                        UnregisterOutput(RenderOutput* const output,
                                                  OnlyCalledBy<RenderOutput>);
 
     /**
@@ -79,9 +79,9 @@ public:
      * descriptor. Will reuse resources from previous frames if available.
      * Resources that go unused for a certain period will be freed.
      */
-    GPUResource*                GetTransientBuffer(const GPUBufferDesc& inDesc,
+    GPUResource*                GetTransientBuffer(const GPUBufferDesc& desc,
                                                    OnlyCalledBy<RenderGraph>);
-    GPUResource*                GetTransientTexture(const GPUTextureDesc& inDesc,
+    GPUResource*                GetTransientTexture(const GPUTextureDesc& desc,
                                                     OnlyCalledBy<RenderGraph>);
 
 private:

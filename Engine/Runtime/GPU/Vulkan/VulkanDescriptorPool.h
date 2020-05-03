@@ -28,12 +28,12 @@ class VulkanDescriptorPool final : public GPUDeviceChild,
                                    public VulkanDeviceChild<VulkanDescriptorPool>
 {
 public:
-                                VulkanDescriptorPool(VulkanDevice& inDevice);
+                                VulkanDescriptorPool(VulkanDevice& device);
                                 ~VulkanDescriptorPool();
 
 public:
-    VkDescriptorSet             Allocate(const VkDescriptorSetLayout inLayout);
-    void                        Free(const VkDescriptorSet inDescriptorSet);
+    VkDescriptorSet             Allocate(const VkDescriptorSetLayout layout);
+    void                        Free(const VkDescriptorSet descriptorSet);
 
 private:
     VkDescriptorPool            mHandle;

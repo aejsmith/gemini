@@ -24,20 +24,20 @@ class Sphere
 {
 public:
                                 Sphere();
-                                Sphere(const glm::vec3& inCentre,
-                                       const float      inRadius);
+                                Sphere(const glm::vec3& centre,
+                                       const float      radius);
 
     const glm::vec3&            GetCentre() const   { return mCentre; }
     float                       GetRadius() const   { return mRadius; }
 
     /**
-     * Generate geometry (triangle list) representing the sphere. inRings
+     * Generate geometry (triangle list) representing the sphere. rings
      * specifies the number of rings along the Y axis (like lines of latitude),
-     * inSectors specifies the number of rings around the Y axis (like lines of
+     * sectors specifies the number of rings around the Y axis (like lines of
      * longitude).
      */
-    void                        CreateGeometry(const uint32_t          inRings,
-                                               const uint32_t          inSectors,
+    void                        CreateGeometry(const uint32_t          rings,
+                                               const uint32_t          sectors,
                                                std::vector<glm::vec3>& outVertices,
                                                std::vector<uint16_t>&  outIndices) const;
 
@@ -53,10 +53,10 @@ inline Sphere::Sphere() :
 {
 }
 
-inline Sphere::Sphere(const glm::vec3& inCentre,
-                      const float      inRadius) :
-    mCentre (inCentre),
-    mRadius (inRadius)
+inline Sphere::Sphere(const glm::vec3& centre,
+                      const float      radius) :
+    mCentre (centre),
+    mRadius (radius)
 {
-    Assert(inRadius >= 0.0f);
+    Assert(radius >= 0.0f);
 }

@@ -28,12 +28,12 @@ class RenderView
 {
 public:
     /** Create a view with a perspective projection. */
-    static RenderView       CreatePerspective(const glm::vec3&  inPosition,
-                                              const glm::quat&  inOrientation,
-                                              const Radians     inVerticalFOV,
-                                              const float       inZNear,
-                                              const float       inZFar,
-                                              const glm::uvec2& inTargetSize);
+    static RenderView       CreatePerspective(const glm::vec3&  position,
+                                              const glm::quat&  orientation,
+                                              const Radians     verticalFOV,
+                                              const float       zNear,
+                                              const float       zFar,
+                                              const glm::uvec2& targetSize);
 
     const glm::vec3&        GetPosition() const                     { return mPosition; }
     const glm::quat&        GetOrientation() const                  { return mOrientation; }

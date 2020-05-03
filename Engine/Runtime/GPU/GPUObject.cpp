@@ -16,11 +16,11 @@
 
 #include "GPU/GPUObject.h"
 
-void GPUObject::SetName(std::string inName)
+void GPUObject::SetName(std::string name)
 {
-    if (inName != mName)
+    if (name != mName)
     {
-        mName = std::move(inName);
+        mName = std::move(name);
         UpdateName();
     }
 }

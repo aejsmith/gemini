@@ -98,7 +98,7 @@ public:
     uint64_t                        GetValue() const    { return mValue; }
 
     /** Get a sort key for a standard opaque entity. */
-    static EntityDrawSortKey        GetOpaque(const GPUPipeline* const inPipeline);
+    static EntityDrawSortKey        GetOpaque(const GPUPipeline* const pipeline);
 
 private:
     uint64_t                        mValue;
@@ -130,27 +130,27 @@ public:
                                     ~EntityDrawList();
 
     /** Allocate space for an expected number of draw calls. */
-    void                            Reserve(const size_t inExpectedCount);
+    void                            Reserve(const size_t expectedCount);
 
     /**
      * Add an entry to the list. Returns a reference to a draw call structure
      * in the list to be populated (reference may be invalidated by future
      * additions).
      */
-    EntityDrawCall&                 Add(const EntityDrawSortKey inSortKey);
+    EntityDrawCall&                 Add(const EntityDrawSortKey sortKey);
 
     /** Sort all entries in the list based on their key. */
     void                            Sort();
 
     /** Draw the entities to a given command list. */
-    void                            Draw(GPUGraphicsCommandList& inCmdList) const;
+    void                            Draw(GPUGraphicsCommandList& cmdList) const;
 
     /**
      * Set the function for a render graph pass to draw the entities. Caller
      * must ensure that the EntityDrawList instance still exists during graph
      * execution.
      */
-    void                            Draw(RenderGraphPass& inPass) const;
+    void                            Draw(RenderGraphPass& pass) const;
 
 private:
     /**

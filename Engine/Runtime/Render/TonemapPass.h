@@ -30,9 +30,9 @@ public:
                                 TonemapPass();
                                 ~TonemapPass();
 
-    void                        AddPass(RenderGraph&               inGraph,
-                                        const RenderResourceHandle inSourceTexture,
-                                        const RenderResourceHandle inDestTexture,
+    void                        AddPass(RenderGraph&               graph,
+                                        const RenderResourceHandle sourceTexture,
+                                        const RenderResourceHandle destTexture,
                                         RenderResourceHandle&      outNewDestTexture) const;
 
 private:

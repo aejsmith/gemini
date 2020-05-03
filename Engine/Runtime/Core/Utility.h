@@ -51,12 +51,12 @@
  */
 
 /** Allocate an array of a given type on the stack. */
-#define AllocateStackArray(Type, inCount) \
-    reinterpret_cast<Type*>(alloca(sizeof(Type) * inCount))
+#define AllocateStackArray(Type, count) \
+    reinterpret_cast<Type*>(alloca(sizeof(Type) * count))
 
 /** Allocate an array of a given type on the stack, cleared to zero. */
-#define AllocateZeroedStackArray(Type, inCount) \
-    reinterpret_cast<Type*>(memset(alloca(sizeof(Type) * inCount), 0, sizeof(Type) * inCount))
+#define AllocateZeroedStackArray(Type, count) \
+    reinterpret_cast<Type*>(memset(alloca(sizeof(Type) * count), 0, sizeof(Type) * count))
 
 /** Get the size of an array. */
 template <typename T, size_t N>
@@ -67,52 +67,52 @@ constexpr size_t ArraySize(T (&array)[N])
 
 /** Test that only one bit is set in a value. */
 template <typename T>
-constexpr bool IsOnlyOneBitSet(const T& inValue)
+constexpr bool IsOnlyOneBitSet(const T& value)
 {
-    return inValue && !(inValue & (inValue - 1));
+    return value && !(value & (value - 1));
 }
 
 /** Test that a value is a power of 2. */
 template <typename T>
-constexpr bool IsPowerOf2(const T& inValue)
+constexpr bool IsPowerOf2(const T& value)
 {
-    return IsOnlyOneBitSet(inValue);
+    return IsOnlyOneBitSet(value);
 }
 
 /** Round an integer value up to a power of 2. */
 template <typename T>
-constexpr T RoundUpPow2(const T& inValue, const T& inNearest)
+constexpr T RoundUpPow2(const T& value, const T& nearest)
 {
-    return (inValue & (inNearest - 1))
-               ? ((inValue + inNearest) & ~(inNearest - 1))
-               : inValue;
+    return (value & (nearest - 1))
+               ? ((value + nearest) & ~(nearest - 1))
+               : value;
 }
 
 /** Round a value down to a power of 2. */
 template <typename T>
-constexpr T RoundDownPow2(const T& inValue, const T& inNearest)
+constexpr T RoundDownPow2(const T& value, const T& nearest)
 {
-    return (inValue & (inNearest - 1))
-               ? (inValue & ~(inNearest - 1))
-               : inValue;
+    return (value & (nearest - 1))
+               ? (value & ~(nearest - 1))
+               : value;
 }
 
 /** Round an integer value up. Use RoundUpPow2() if known as a power of 2. */
 template <typename T>
-constexpr T RoundUp(const T& inValue, const T& inNearest)
+constexpr T RoundUp(const T& value, const T& nearest)
 {
-    return (inValue % inNearest)
-               ? (inValue - (inValue % inNearest)) + inNearest
-               : inValue;
+    return (value % nearest)
+               ? (value - (value % nearest)) + nearest
+               : value;
 }
 
 /** Round an integer value down. Use RoundDownPow2() if known as a power of 2. */
 template <typename T>
-constexpr T RoundDown(const T& inValue, const T& inNearest)
+constexpr T RoundDown(const T& value, const T& nearest)
 {
-    return (inValue % inNearest)
-               ? inValue - (inValue % inNearest)
-               : inValue;
+    return (value % nearest)
+               ? value - (value % nearest)
+               : value;
 }
 
 /**
@@ -123,8 +123,8 @@ template <typename Function>
 class ScopeGuard
 {
 public:
-                                ScopeGuard(Function inFunction);
-                                ScopeGuard(ScopeGuard&& inOther);
+                                ScopeGuard(Function function);
+                                ScopeGuard(ScopeGuard&& other);
                                 ~ScopeGuard();
 
     void                        Cancel();
@@ -141,8 +141,8 @@ private:
 };
 
 template <typename Function>
-ScopeGuard<Function>::ScopeGuard(Function inFunction) :
-    mFunction   (std::move(inFunction)),
+ScopeGuard<Function>::ScopeGuard(Function function) :
+    mFunction   (std::move(function)),
     mActive     (true)
 {
 }
@@ -157,11 +157,11 @@ ScopeGuard<Function>::~ScopeGuard()
 }
 
 template <typename Function>
-ScopeGuard<Function>::ScopeGuard(ScopeGuard&& inOther) :
-    mFunction   (std::move(inOther.mFunction)),
-    mActive     (inOther.mActive)
+ScopeGuard<Function>::ScopeGuard(ScopeGuard&& other) :
+    mFunction   (std::move(other.mFunction)),
+    mActive     (other.mActive)
 {
-    inOther.Cancel();
+    other.Cancel();
 }
 
 template <typename Function>
@@ -180,9 +180,9 @@ void ScopeGuard<Function>::Cancel()
  * Will call Action() when guard goes out of scope.
  */
 template <typename Function>
-ScopeGuard<Function> MakeScopeGuard(Function inFunction)
+ScopeGuard<Function> MakeScopeGuard(Function function)
 {
-    return ScopeGuard<Function>(std::move(inFunction));
+    return ScopeGuard<Function>(std::move(function));
 }
 
 /**

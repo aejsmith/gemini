@@ -37,8 +37,8 @@ public:
                                          const T inWidth,
                                          const T inHeight);
 
-                                RectImpl(const VecType& inPosition,
-                                         const VecType& inSize);
+                                RectImpl(const VecType& position,
+                                         const VecType& size);
 
 public:
     VecType                     GetPosition() const     { return VecType(x, y); }
@@ -47,11 +47,11 @@ public:
     /**
      * Check whether a point or another rectangle is completely within this one.
      */
-    bool                        Contains(const VecType& inPoint) const;
-    bool                        Contains(const RectImpl& inOther) const;
+    bool                        Contains(const VecType& point) const;
+    bool                        Contains(const RectImpl& other) const;
 
-    bool                        operator ==(const RectImpl& inOther) const;
-    bool                        operator !=(const RectImpl& inOther) const;
+    bool                        operator ==(const RectImpl& other) const;
+    bool                        operator !=(const RectImpl& other) const;
 };
 
 using Rect    = RectImpl<float>;
@@ -79,44 +79,44 @@ inline RectImpl<T>::RectImpl(const T inX,
 }
 
 template <typename T>
-inline RectImpl<T>::RectImpl(const VecType& inPosition,
-                             const VecType& inSize) :
-    x       (inPosition.x),
-    y       (inPosition.y),
-    width   (inSize.x),
-    height  (inSize.y)
+inline RectImpl<T>::RectImpl(const VecType& position,
+                             const VecType& size) :
+    x       (position.x),
+    y       (position.y),
+    width   (size.x),
+    height  (size.y)
 {
 }
 
 template <typename T>
-inline bool RectImpl<T>::Contains(const VecType& inPoint) const
+inline bool RectImpl<T>::Contains(const VecType& point) const
 {
-    return inPoint.x >= x &&
-           inPoint.y >= y &&
-           inPoint.x < (x + width) &&
-           inPoint.y < (y + height);
+    return point.x >= x &&
+           point.y >= y &&
+           point.x < (x + width) &&
+           point.y < (y + height);
 }
 
 template <typename T>
-inline bool RectImpl<T>::Contains(const RectImpl& inOther) const
+inline bool RectImpl<T>::Contains(const RectImpl& other) const
 {
-    return inOther.x >= x &&
-           inOther.y >= y &&
-           (inOther.x + inOther.width) <= (x + width) &&
-           (inOther.y + inOther.height) <= (y + height);
+    return other.x >= x &&
+           other.y >= y &&
+           (other.x + other.width) <= (x + width) &&
+           (other.y + other.height) <= (y + height);
 }
 
 template <typename T>
-inline bool RectImpl<T>::operator ==(const RectImpl& inOther) const
+inline bool RectImpl<T>::operator ==(const RectImpl& other) const
 {
-    return x == inOther.x &&
-           y == inOther.y &&
-           width == inOther.width &&
-           height == inOther.height;
+    return x == other.x &&
+           y == other.y &&
+           width == other.width &&
+           height == other.height;
 }
 
 template <typename T>
-inline bool RectImpl<T>::operator !=(const RectImpl& inOther) const
+inline bool RectImpl<T>::operator !=(const RectImpl& other) const
 {
-    return !(*this == inOther);
+    return !(*this == other);
 }

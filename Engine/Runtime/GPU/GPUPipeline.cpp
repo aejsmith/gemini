@@ -31,10 +31,10 @@ static GPUPipelineID AllocatePipelineID()
     return id;
 }
 
-GPUPipeline::GPUPipeline(GPUDevice&             inDevice,
-                         const GPUPipelineDesc& inDesc) :
-    GPUObject   (inDevice),
-    mDesc       (inDesc),
+GPUPipeline::GPUPipeline(GPUDevice&             device,
+                         const GPUPipelineDesc& desc) :
+    GPUObject   (device),
+    mDesc       (desc),
     mID         (AllocatePipelineID())
 {
     for (size_t stage = 0; stage < kGPUShaderStage_NumGraphics; stage++)
@@ -61,10 +61,10 @@ void GPUPipeline::Destroy(OnlyCalledBy<GPUDevice>)
     delete this;
 }
 
-GPUComputePipeline::GPUComputePipeline(GPUDevice&                    inDevice,
-                                       const GPUComputePipelineDesc& inDesc) :
-    GPUObject   (inDevice),
-    mDesc       (inDesc)
+GPUComputePipeline::GPUComputePipeline(GPUDevice&                    device,
+                                       const GPUComputePipelineDesc& desc) :
+    GPUObject   (device),
+    mDesc       (desc)
 {
     Assert(mDesc.shader);
     Assert(mDesc.shader->GetStage() == kGPUShaderStage_Compute);

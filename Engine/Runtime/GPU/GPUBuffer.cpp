@@ -16,10 +16,10 @@
 
 #include "GPU/GPUBuffer.h"
 
-GPUBuffer::GPUBuffer(GPUDevice&           inDevice,
-                     const GPUBufferDesc& inDesc) :
-    GPUResource (inDevice, kGPUResourceType_Buffer, inDesc.usage),
-    mSize       (inDesc.size)
+GPUBuffer::GPUBuffer(GPUDevice&           device,
+                     const GPUBufferDesc& desc) :
+    GPUResource (device, kGPUResourceType_Buffer, desc.usage),
+    mSize       (desc.size)
 {
     Assert(!(GetUsage() & (kGPUResourceUsage_RenderTarget | kGPUResourceUsage_DepthStencil)));
 }

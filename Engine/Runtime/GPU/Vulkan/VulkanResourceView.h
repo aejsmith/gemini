@@ -26,8 +26,8 @@ class VulkanResourceView final : public GPUResourceView,
                                  public VulkanDeviceChild<VulkanResourceView>
 {
 public:
-                                VulkanResourceView(GPUResource&               inResource,
-                                                   const GPUResourceViewDesc& inDesc);
+                                VulkanResourceView(GPUResource&               resource,
+                                                   const GPUResourceViewDesc& desc);
 
                                 ~VulkanResourceView();
 

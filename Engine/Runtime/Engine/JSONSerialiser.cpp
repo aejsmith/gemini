@@ -51,17 +51,17 @@ public:
 class JSONState
 {
 public:
-    JSONScope&                          GetCurrentScope(const char* const inName);
+    JSONScope&                          GetCurrentScope(const char* const name);
 
-    bool                                BeginScope(const char* const     inName,
-                                                   const JSONScope::Type inType);
+    bool                                BeginScope(const char* const     name,
+                                                   const JSONScope::Type type);
 
-    rapidjson::Value&                   AddMember(JSONScope&        inScope,
-                                                  const char* const inName,
-                                                  rapidjson::Value& inValue);
+    rapidjson::Value&                   AddMember(JSONScope&        scope,
+                                                  const char* const name,
+                                                  rapidjson::Value& value);
 
-    rapidjson::Value*                   GetMember(JSONScope&        inScope,
-                                                  const char* const inName);
+    rapidjson::Value*                   GetMember(JSONScope&        scope,
+                                                  const char* const name);
 
 public:
     bool                                writing;
@@ -91,11 +91,11 @@ JSONScope::JSONScope(const Type        inType,
 {
 }
 
-JSONScope& JSONState::GetCurrentScope(const char* const inName)
+JSONScope& JSONState::GetCurrentScope(const char* const name)
 {
     JSONScope& scope = this->scopes.back();
 
-    if (inName)
+    if (name)
     {
         Assert(scope.type != JSONScope::kArray);
     }
@@ -107,80 +107,80 @@ JSONScope& JSONState::GetCurrentScope(const char* const inName)
     return scope;
 }
 
-bool JSONState::BeginScope(const char* const     inName,
-                           const JSONScope::Type inType)
+bool JSONState::BeginScope(const char* const     name,
+                           const JSONScope::Type type)
 {
-    rapidjson::Type jsonType = (inType == JSONScope::kArray)
+    rapidjson::Type jsonType = (type == JSONScope::kArray)
                                    ? rapidjson::kArrayType
                                    : rapidjson::kObjectType;
 
-    JSONScope& scope = GetCurrentScope(inName);
+    JSONScope& scope = GetCurrentScope(name);
 
     rapidjson::Value* value;
 
     if (this->writing)
     {
         rapidjson::Value initValue(jsonType);
-        value = &AddMember(scope, inName, initValue);
+        value = &AddMember(scope, name, initValue);
     }
     else
     {
-        value = GetMember(scope, inName);
+        value = GetMember(scope, name);
         if (!value || value->GetType() != jsonType)
         {
             return false;
         }
     }
 
-    this->scopes.emplace_back(inType, *value);
+    this->scopes.emplace_back(type, *value);
     return true;
 }
 
-rapidjson::Value& JSONState::AddMember(JSONScope&        inScope,
-                                       const char* const inName,
-                                       rapidjson::Value& inValue)
+rapidjson::Value& JSONState::AddMember(JSONScope&        scope,
+                                       const char* const name,
+                                       rapidjson::Value& value)
 {
-    if (inScope.type == JSONScope::kArray)
+    if (scope.type == JSONScope::kArray)
     {
-        inScope.value.PushBack(inValue,
-                               this->document.GetAllocator());
+        scope.value.PushBack(value,
+                             this->document.GetAllocator());
 
-        rapidjson::Value& ret = inScope.value[inScope.value.Size() - 1];
+        rapidjson::Value& ret = scope.value[scope.value.Size() - 1];
         return ret;
     }
     else
     {
-        Assert(!inScope.value.HasMember(inName));
+        Assert(!scope.value.HasMember(name));
 
-        inScope.value.AddMember(rapidjson::StringRef(inName),
-                                inValue,
-                                this->document.GetAllocator());
+        scope.value.AddMember(rapidjson::StringRef(name),
+                              value,
+                              this->document.GetAllocator());
 
-        rapidjson::Value &ret = inScope.value[inName];
+        rapidjson::Value &ret = scope.value[name];
         return ret;
     }
 }
 
-rapidjson::Value* JSONState::GetMember(JSONScope&        inScope,
-                                       const char* const inName)
+rapidjson::Value* JSONState::GetMember(JSONScope&        scope,
+                                       const char* const name)
 {
-    if (inScope.type == JSONScope::kArray)
+    if (scope.type == JSONScope::kArray)
     {
-        if (inScope.nextIndex >= inScope.value.Size())
+        if (scope.nextIndex >= scope.value.Size())
         {
             return nullptr;
         }
 
-        return &inScope.value[inScope.nextIndex++];
+        return &scope.value[scope.nextIndex++];
     }
     else
     {
-        if (!inScope.value.HasMember(inName))
+        if (!scope.value.HasMember(name))
         {
             return nullptr;
         }
 
-        return &inScope.value[inName];
+        return &scope.value[name];
     }
 }
 
@@ -189,7 +189,7 @@ JSONSerialiser::JSONSerialiser() :
 {
 }
 
-ByteArray JSONSerialiser::Serialise(const Object* const inObject)
+ByteArray JSONSerialiser::Serialise(const Object* const object)
 {
     JSONState state;
 
@@ -198,7 +198,7 @@ ByteArray JSONSerialiser::Serialise(const Object* const inObject)
     mState->document.SetArray();
 
     /* Serialise the object. */
-    AddObject(inObject);
+    AddObject(object);
 
     /* Write out the JSON stream. */
     rapidjson::StringBuffer buffer;
@@ -212,7 +212,7 @@ ByteArray JSONSerialiser::Serialise(const Object* const inObject)
     return data;
 }
 
-uint32_t JSONSerialiser::AddObject(const Object* const inObject)
+uint32_t JSONSerialiser::AddObject(const Object* const object)
 {
     /* Create a new object. */
     const uint32_t id = mState->document.Size();
@@ -222,14 +222,14 @@ uint32_t JSONSerialiser::AddObject(const Object* const inObject)
     rapidjson::Value& value = mState->document[mState->document.Size() - 1];
 
     /* Record it in the object map so we don't serialise it again. */
-    mState->objectToIDMap.insert(std::make_pair(inObject, id));
+    mState->objectToIDMap.insert(std::make_pair(object, id));
 
     /* Write out the type of the object, as well as its ID. The ID is not used
      * in deserialisation (it's done based on order of appearance in the array),
      * but we write it anyway because JSON is meant to be a human readable
      * format, and having the ID helps to understand it. */
     value.AddMember("objectClass",
-                    rapidjson::StringRef(inObject->GetMetaClass().GetName()),
+                    rapidjson::StringRef(object->GetMetaClass().GetName()),
                     mState->document.GetAllocator());
     value.AddMember("objectID",
                     id,
@@ -237,14 +237,14 @@ uint32_t JSONSerialiser::AddObject(const Object* const inObject)
 
     /* Serialise the object in a new scope. */
     mState->scopes.emplace_back(JSONScope::kObject, value);
-    SerialiseObject(inObject);
+    SerialiseObject(object);
     mState->scopes.pop_back();
 
     return id;
 }
 
-ObjPtr<> JSONSerialiser::Deserialise(const ByteArray& inData,
-                                     const MetaClass& inExpectedClass)
+ObjPtr<> JSONSerialiser::Deserialise(const ByteArray& data,
+                                     const MetaClass& expectedClass)
 {
     JSONState state;
 
@@ -252,7 +252,7 @@ ObjPtr<> JSONSerialiser::Deserialise(const ByteArray& inData,
     mState->writing = false;
 
     /* Parse the JSON stream. */
-    mState->document.Parse(reinterpret_cast<const char*>(inData.Get()), inData.GetSize());
+    mState->document.Parse(reinterpret_cast<const char*>(data.Get()), data.GetSize());
 
     if (mState->document.HasParseError())
     {
@@ -264,17 +264,17 @@ ObjPtr<> JSONSerialiser::Deserialise(const ByteArray& inData,
     }
 
     /* The object to return is the first object in the file. */
-    ObjPtr<> object = FindObject(0, inExpectedClass);
+    ObjPtr<> object = FindObject(0, expectedClass);
 
     mState = nullptr;
     return object;
 }
 
-ObjPtr<> JSONSerialiser::FindObject(const uint32_t   inID,
-                                    const MetaClass& inMetaClass)
+ObjPtr<> JSONSerialiser::FindObject(const uint32_t   id,
+                                    const MetaClass& metaClass)
 {
     /* Check if it is already deserialised. */
-    auto existing = mState->idToObjectMap.find(inID);
+    auto existing = mState->idToObjectMap.find(id);
     if (existing != mState->idToObjectMap.end())
     {
         return existing->second;
@@ -285,20 +285,20 @@ ObjPtr<> JSONSerialiser::FindObject(const uint32_t   inID,
         LogError("Serialised data is not an array");
         return nullptr;
     }
-    else if (inID >= mState->document.Size())
+    else if (id >= mState->document.Size())
     {
         LogError("Invalid serialised object ID %zu (only %zu objects available)",
-                 inID,
+                 id,
                  mState->document.Size());
 
         return nullptr;
     }
 
-    rapidjson::Value& value = mState->document[inID];
+    rapidjson::Value& value = mState->document[id];
 
     if (!value.HasMember("objectClass"))
     {
-        LogError("Serialised object %zu does not have an 'objectClass' value", inID);
+        LogError("Serialised object %zu does not have an 'objectClass' value", id);
         return nullptr;
     }
 
@@ -309,14 +309,14 @@ ObjPtr<> JSONSerialiser::FindObject(const uint32_t   inID,
      * pointer referred to as soon it has constructed the object, before calling
      * Deserialise(). This ensures that deserialised references to the object
      * will point to the correct object. */
-    auto inserted = mState->idToObjectMap.insert(std::make_pair(inID, nullptr));
+    auto inserted = mState->idToObjectMap.insert(std::make_pair(id, nullptr));
     Assert(inserted.second);
 
     mState->scopes.emplace_back(JSONScope::kObject, value);
 
     const bool success = DeserialiseObject(value["objectClass"].GetString(),
-                                           inMetaClass,
-                                           inID == 0,
+                                           metaClass,
+                                           id == 0,
                                            inserted.first->second);
 
     mState->scopes.pop_back();
@@ -332,11 +332,11 @@ ObjPtr<> JSONSerialiser::FindObject(const uint32_t   inID,
     }
 }
 
-bool JSONSerialiser::BeginGroup(const char* const inName)
+bool JSONSerialiser::BeginGroup(const char* const name)
 {
     Assert(mState);
 
-    return mState->BeginScope(inName, JSONScope::kGroup);
+    return mState->BeginScope(name, JSONScope::kGroup);
 }
 
 void JSONSerialiser::EndGroup()
@@ -347,11 +347,11 @@ void JSONSerialiser::EndGroup()
     mState->scopes.pop_back();
 }
 
-bool JSONSerialiser::BeginArray(const char* const inName)
+bool JSONSerialiser::BeginArray(const char* const name)
 {
     Assert(mState);
 
-    return mState->BeginScope(inName, JSONScope::kArray);
+    return mState->BeginScope(name, JSONScope::kArray);
 }
 
 void JSONSerialiser::EndArray()
@@ -362,14 +362,14 @@ void JSONSerialiser::EndArray()
     mState->scopes.pop_back();
 }
 
-void JSONSerialiser::Write(const char* const inName,
-                           const MetaType&   inType,
-                           const void* const inValue)
+void JSONSerialiser::Write(const char* const name,
+                           const MetaType&   type,
+                           const void* const value)
 {
     Assert(mState);
     Assert(mState->writing);
 
-    if (inType.IsPointer() && inType.GetPointeeType().IsObject())
+    if (type.IsPointer() && type.GetPointeeType().IsObject())
     {
         /* Object references require special handling. We serialise these as a
          * JSON object containing details of where to find the object. If the
@@ -378,9 +378,9 @@ void JSONSerialiser::Write(const char* const inName,
          * asset path. Otherwise, we serialise the object if it has not already
          * been added to the file, and store an "objectID" member referring to
          * it. */
-        BeginGroup(inName);
+        BeginGroup(name);
 
-        const Object* const object = *reinterpret_cast<const Object* const*>(inValue);
+        const Object* const object = *reinterpret_cast<const Object* const*>(value);
         if (object)
         {
             /* Check if it is already serialised. We check this before handling
@@ -411,162 +411,162 @@ void JSONSerialiser::Write(const char* const inName,
         return;
     }
 
-    JSONScope& scope = mState->GetCurrentScope(inName);
+    JSONScope& scope = mState->GetCurrentScope(name);
     auto& allocator  = mState->document.GetAllocator();
 
     rapidjson::Value jsonValue;
 
     /* Determine the value to write. */
-    if (&inType == &MetaType::Lookup<bool>())
+    if (&type == &MetaType::Lookup<bool>())
     {
-        jsonValue.SetBool(*reinterpret_cast<const bool*>(inValue));
+        jsonValue.SetBool(*reinterpret_cast<const bool*>(value));
     }
-    else if (&inType == &MetaType::Lookup<int8_t>())
+    else if (&type == &MetaType::Lookup<int8_t>())
     {
-        jsonValue.SetInt(*reinterpret_cast<const int8_t*>(inValue));
+        jsonValue.SetInt(*reinterpret_cast<const int8_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<uint8_t>())
+    else if (&type == &MetaType::Lookup<uint8_t>())
     {
-        jsonValue.SetUint(*reinterpret_cast<const uint8_t*>(inValue));
+        jsonValue.SetUint(*reinterpret_cast<const uint8_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<int16_t>())
+    else if (&type == &MetaType::Lookup<int16_t>())
     {
-        jsonValue.SetInt(*reinterpret_cast<const int16_t*>(inValue));
+        jsonValue.SetInt(*reinterpret_cast<const int16_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<uint16_t>())
+    else if (&type == &MetaType::Lookup<uint16_t>())
     {
-        jsonValue.SetUint(*reinterpret_cast<const uint16_t*>(inValue));
+        jsonValue.SetUint(*reinterpret_cast<const uint16_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<int32_t>())
+    else if (&type == &MetaType::Lookup<int32_t>())
     {
-        jsonValue.SetInt(*reinterpret_cast<const int32_t*>(inValue));
+        jsonValue.SetInt(*reinterpret_cast<const int32_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<uint32_t>())
+    else if (&type == &MetaType::Lookup<uint32_t>())
     {
-        jsonValue.SetUint(*reinterpret_cast<const uint32_t*>(inValue));
+        jsonValue.SetUint(*reinterpret_cast<const uint32_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<int64_t>())
+    else if (&type == &MetaType::Lookup<int64_t>())
     {
-        jsonValue.SetInt64(*reinterpret_cast<const int64_t*>(inValue));
+        jsonValue.SetInt64(*reinterpret_cast<const int64_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<uint64_t>())
+    else if (&type == &MetaType::Lookup<uint64_t>())
     {
-        jsonValue.SetUint64(*reinterpret_cast<const uint64_t*>(inValue));
+        jsonValue.SetUint64(*reinterpret_cast<const uint64_t*>(value));
     }
-    else if (&inType == &MetaType::Lookup<float>())
+    else if (&type == &MetaType::Lookup<float>())
     {
-        jsonValue.SetFloat(*reinterpret_cast<const float*>(inValue));
+        jsonValue.SetFloat(*reinterpret_cast<const float*>(value));
     }
-    else if (&inType == &MetaType::Lookup<double>())
+    else if (&type == &MetaType::Lookup<double>())
     {
-        jsonValue.SetDouble(*reinterpret_cast<const double*>(inValue));
+        jsonValue.SetDouble(*reinterpret_cast<const double*>(value));
     }
-    else if (&inType == &MetaType::Lookup<std::string>())
+    else if (&type == &MetaType::Lookup<std::string>())
     {
-        auto str = reinterpret_cast<const std::string*>(inValue);
+        auto str = reinterpret_cast<const std::string*>(value);
         jsonValue.SetString(str->c_str(), allocator);
     }
-    else if (&inType == &MetaType::Lookup<glm::vec2>())
+    else if (&type == &MetaType::Lookup<glm::vec2>())
     {
-        auto vec = reinterpret_cast<const glm::vec2*>(inValue);
+        auto vec = reinterpret_cast<const glm::vec2*>(value);
         jsonValue.SetArray();
         jsonValue.PushBack(vec->x, allocator);
         jsonValue.PushBack(vec->y, allocator);
     }
-    else if (&inType == &MetaType::Lookup<glm::vec3>())
+    else if (&type == &MetaType::Lookup<glm::vec3>())
     {
-        auto vec = reinterpret_cast<const glm::vec3*>(inValue);
-        jsonValue.SetArray();
-        jsonValue.PushBack(vec->x, allocator);
-        jsonValue.PushBack(vec->y, allocator);
-        jsonValue.PushBack(vec->z, allocator);
-    }
-    else if (&inType == &MetaType::Lookup<glm::vec4>())
-    {
-        auto vec = reinterpret_cast<const glm::vec4*>(inValue);
-        jsonValue.SetArray();
-        jsonValue.PushBack(vec->x, allocator);
-        jsonValue.PushBack(vec->y, allocator);
-        jsonValue.PushBack(vec->z, allocator);
-        jsonValue.PushBack(vec->w, allocator);
-    }
-    else if (&inType == &MetaType::Lookup<glm::ivec2>())
-    {
-        auto vec = reinterpret_cast<const glm::ivec2*>(inValue);
-        jsonValue.SetArray();
-        jsonValue.PushBack(vec->x, allocator);
-        jsonValue.PushBack(vec->y, allocator);
-    }
-    else if (&inType == &MetaType::Lookup<glm::ivec3>())
-    {
-        auto vec = reinterpret_cast<const glm::ivec3*>(inValue);
+        auto vec = reinterpret_cast<const glm::vec3*>(value);
         jsonValue.SetArray();
         jsonValue.PushBack(vec->x, allocator);
         jsonValue.PushBack(vec->y, allocator);
         jsonValue.PushBack(vec->z, allocator);
     }
-    else if (&inType == &MetaType::Lookup<glm::ivec4>())
+    else if (&type == &MetaType::Lookup<glm::vec4>())
     {
-        auto vec = reinterpret_cast<const glm::ivec4*>(inValue);
+        auto vec = reinterpret_cast<const glm::vec4*>(value);
         jsonValue.SetArray();
         jsonValue.PushBack(vec->x, allocator);
         jsonValue.PushBack(vec->y, allocator);
         jsonValue.PushBack(vec->z, allocator);
         jsonValue.PushBack(vec->w, allocator);
     }
-    else if (&inType == &MetaType::Lookup<glm::uvec2>())
+    else if (&type == &MetaType::Lookup<glm::ivec2>())
     {
-        auto vec = reinterpret_cast<const glm::uvec2*>(inValue);
+        auto vec = reinterpret_cast<const glm::ivec2*>(value);
         jsonValue.SetArray();
         jsonValue.PushBack(vec->x, allocator);
         jsonValue.PushBack(vec->y, allocator);
     }
-    else if (&inType == &MetaType::Lookup<glm::uvec3>())
+    else if (&type == &MetaType::Lookup<glm::ivec3>())
     {
-        auto vec = reinterpret_cast<const glm::uvec3*>(inValue);
+        auto vec = reinterpret_cast<const glm::ivec3*>(value);
         jsonValue.SetArray();
         jsonValue.PushBack(vec->x, allocator);
         jsonValue.PushBack(vec->y, allocator);
         jsonValue.PushBack(vec->z, allocator);
     }
-    else if (&inType == &MetaType::Lookup<glm::uvec4>())
+    else if (&type == &MetaType::Lookup<glm::ivec4>())
     {
-        auto vec = reinterpret_cast<const glm::uvec4*>(inValue);
+        auto vec = reinterpret_cast<const glm::ivec4*>(value);
         jsonValue.SetArray();
         jsonValue.PushBack(vec->x, allocator);
         jsonValue.PushBack(vec->y, allocator);
         jsonValue.PushBack(vec->z, allocator);
         jsonValue.PushBack(vec->w, allocator);
     }
-    else if (&inType == &MetaType::Lookup<glm::quat>())
+    else if (&type == &MetaType::Lookup<glm::uvec2>())
     {
-        auto quat = reinterpret_cast<const glm::quat*>(inValue);
+        auto vec = reinterpret_cast<const glm::uvec2*>(value);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+    }
+    else if (&type == &MetaType::Lookup<glm::uvec3>())
+    {
+        auto vec = reinterpret_cast<const glm::uvec3*>(value);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+        jsonValue.PushBack(vec->z, allocator);
+    }
+    else if (&type == &MetaType::Lookup<glm::uvec4>())
+    {
+        auto vec = reinterpret_cast<const glm::uvec4*>(value);
+        jsonValue.SetArray();
+        jsonValue.PushBack(vec->x, allocator);
+        jsonValue.PushBack(vec->y, allocator);
+        jsonValue.PushBack(vec->z, allocator);
+        jsonValue.PushBack(vec->w, allocator);
+    }
+    else if (&type == &MetaType::Lookup<glm::quat>())
+    {
+        auto quat = reinterpret_cast<const glm::quat*>(value);
         jsonValue.SetArray();
         jsonValue.PushBack(quat->w, allocator);
         jsonValue.PushBack(quat->x, allocator);
         jsonValue.PushBack(quat->y, allocator);
         jsonValue.PushBack(quat->z, allocator);
     }
-    else if (inType.IsEnum())
+    else if (type.IsEnum())
     {
         // FIXME: Potentially handle cases where we don't have enum metadata?
-        const MetaType::EnumConstantArray& constants = inType.GetEnumConstants();
+        const MetaType::EnumConstantArray& constants = type.GetEnumConstants();
         for (const MetaType::EnumConstant& constant : constants)
         {
-            int64_t value;
+            int64_t intValue;
 
-            switch (inType.GetSize())
+            switch (type.GetSize())
             {
-                case 1: value = static_cast<int64_t>(*reinterpret_cast<const int8_t* >(inValue)); break;
-                case 2: value = static_cast<int64_t>(*reinterpret_cast<const int16_t*>(inValue)); break;
-                case 4: value = static_cast<int64_t>(*reinterpret_cast<const int32_t*>(inValue)); break;
-                case 8: value = static_cast<int64_t>(*reinterpret_cast<const int64_t*>(inValue)); break;
+                case 1: intValue = static_cast<int64_t>(*reinterpret_cast<const int8_t* >(value)); break;
+                case 2: intValue = static_cast<int64_t>(*reinterpret_cast<const int16_t*>(value)); break;
+                case 4: intValue = static_cast<int64_t>(*reinterpret_cast<const int32_t*>(value)); break;
+                case 8: intValue = static_cast<int64_t>(*reinterpret_cast<const int64_t*>(value)); break;
 
                 default:
                     Unreachable();
             }
 
-            if (value == constant.second)
+            if (intValue == constant.second)
             {
                 jsonValue.SetString(rapidjson::StringRef(constant.first));
                 break;
@@ -577,23 +577,23 @@ void JSONSerialiser::Write(const char* const inName,
     }
     else
     {
-        Fatal("Type '%s' is unsupported for serialisation", inType.GetName());
+        Fatal("Type '%s' is unsupported for serialisation", type.GetName());
     }
 
-    mState->AddMember(scope, inName, jsonValue);
+    mState->AddMember(scope, name, jsonValue);
 }
 
-bool JSONSerialiser::Read(const char* const inName,
-                          const MetaType&   inType,
+bool JSONSerialiser::Read(const char* const name,
+                          const MetaType&   type,
                           void* const       outValue)
 {
     Assert(mState);
     Assert(!mState->writing);
 
-    if (inType.IsPointer() && inType.GetPointeeType().IsObject())
+    if (type.IsPointer() && type.GetPointeeType().IsObject())
     {
         /* See Write() for details on how we handle object references. */
-        if (!BeginGroup(inName))
+        if (!BeginGroup(name))
         {
             return false;
         }
@@ -606,7 +606,7 @@ bool JSONSerialiser::Read(const char* const inName,
             return true;
         }
 
-        auto& metaClass = static_cast<const MetaClass&>(inType.GetPointeeType());
+        auto& metaClass = static_cast<const MetaClass&>(type.GetPointeeType());
 
         ObjPtr<> ret;
 
@@ -638,7 +638,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         if (ret)
         {
-            if (inType.IsRefcounted())
+            if (type.IsRefcounted())
             {
                 *reinterpret_cast<ObjPtr<>*>(outValue) = std::move(ret);
             }
@@ -655,9 +655,9 @@ bool JSONSerialiser::Read(const char* const inName,
         }
     }
 
-    JSONScope& scope = mState->GetCurrentScope(inName);
+    JSONScope& scope = mState->GetCurrentScope(name);
 
-    rapidjson::Value* member = mState->GetMember(scope, inName);
+    rapidjson::Value* member = mState->GetMember(scope, name);
     if (!member)
     {
         return false;
@@ -666,7 +666,7 @@ bool JSONSerialiser::Read(const char* const inName,
     /* Get a reference to make the [] operator usage nicer below. */
     rapidjson::Value& jsonValue = *member;
 
-    if (&inType == &MetaType::Lookup<bool>())
+    if (&type == &MetaType::Lookup<bool>())
     {
         if (!jsonValue.IsBool())
         {
@@ -675,7 +675,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<bool*>(outValue) = jsonValue.GetBool();
     }
-    else if (&inType == &MetaType::Lookup<int8_t>())
+    else if (&type == &MetaType::Lookup<int8_t>())
     {
         if (!jsonValue.IsInt())
         {
@@ -684,7 +684,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<int8_t*>(outValue) = jsonValue.GetInt();
     }
-    else if (&inType == &MetaType::Lookup<uint8_t>())
+    else if (&type == &MetaType::Lookup<uint8_t>())
     {
         if (!jsonValue.IsUint())
         {
@@ -693,7 +693,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<uint8_t*>(outValue) = jsonValue.GetUint();
     }
-    else if (&inType == &MetaType::Lookup<int16_t>())
+    else if (&type == &MetaType::Lookup<int16_t>())
     {
         if (!jsonValue.IsInt())
         {
@@ -702,7 +702,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<int16_t*>(outValue) = jsonValue.GetInt();
     }
-    else if (&inType == &MetaType::Lookup<uint16_t>())
+    else if (&type == &MetaType::Lookup<uint16_t>())
     {
         if (!jsonValue.IsUint())
         {
@@ -711,7 +711,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<uint16_t*>(outValue) = jsonValue.GetUint();
     }
-    else if (&inType == &MetaType::Lookup<int32_t>())
+    else if (&type == &MetaType::Lookup<int32_t>())
     {
         if (!jsonValue.IsInt())
         {
@@ -720,7 +720,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<int32_t*>(outValue) = jsonValue.GetInt();
     }
-    else if (&inType == &MetaType::Lookup<uint32_t>())
+    else if (&type == &MetaType::Lookup<uint32_t>())
     {
         if (!jsonValue.IsUint())
         {
@@ -729,7 +729,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<uint32_t*>(outValue) = jsonValue.GetUint();
     }
-    else if (&inType == &MetaType::Lookup<int64_t>())
+    else if (&type == &MetaType::Lookup<int64_t>())
     {
         if (!jsonValue.IsInt64())
         {
@@ -738,7 +738,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<int64_t*>(outValue) = jsonValue.GetInt64();
     }
-    else if (&inType == &MetaType::Lookup<uint64_t>())
+    else if (&type == &MetaType::Lookup<uint64_t>())
     {
         if (!jsonValue.IsUint64())
         {
@@ -747,7 +747,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<uint64_t*>(outValue) = jsonValue.GetUint64();
     }
-    else if (&inType == &MetaType::Lookup<float>())
+    else if (&type == &MetaType::Lookup<float>())
     {
         if (!jsonValue.IsFloat())
         {
@@ -756,7 +756,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<float*>(outValue) = jsonValue.GetFloat();
     }
-    else if (&inType == &MetaType::Lookup<double>())
+    else if (&type == &MetaType::Lookup<double>())
     {
         if (!jsonValue.IsDouble())
         {
@@ -765,7 +765,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<double*>(outValue) = jsonValue.GetDouble();
     }
-    else if (&inType == &MetaType::Lookup<std::string>())
+    else if (&type == &MetaType::Lookup<std::string>())
     {
         if (!jsonValue.IsString())
         {
@@ -774,7 +774,7 @@ bool JSONSerialiser::Read(const char* const inName,
 
         *reinterpret_cast<std::string*>(outValue) = jsonValue.GetString();
     }
-    else if (&inType == &MetaType::Lookup<glm::vec2>())
+    else if (&type == &MetaType::Lookup<glm::vec2>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 2 ||
@@ -787,7 +787,7 @@ bool JSONSerialiser::Read(const char* const inName,
         *reinterpret_cast<glm::vec2*>(outValue) = glm::vec2(jsonValue[0u].GetFloat(),
                                                             jsonValue[1u].GetFloat());
     }
-    else if (&inType == &MetaType::Lookup<glm::vec3>())
+    else if (&type == &MetaType::Lookup<glm::vec3>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 3 ||
@@ -802,7 +802,7 @@ bool JSONSerialiser::Read(const char* const inName,
                                                             jsonValue[1u].GetFloat(),
                                                             jsonValue[2u].GetFloat());
     }
-    else if (&inType == &MetaType::Lookup<glm::vec4>())
+    else if (&type == &MetaType::Lookup<glm::vec4>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 4 ||
@@ -819,7 +819,7 @@ bool JSONSerialiser::Read(const char* const inName,
                                                             jsonValue[2u].GetFloat(),
                                                             jsonValue[3u].GetFloat());
     }
-    else if (&inType == &MetaType::Lookup<glm::ivec2>())
+    else if (&type == &MetaType::Lookup<glm::ivec2>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 2 ||
@@ -832,7 +832,7 @@ bool JSONSerialiser::Read(const char* const inName,
         *reinterpret_cast<glm::ivec2*>(outValue) = glm::ivec2(jsonValue[0u].GetInt(),
                                                               jsonValue[1u].GetInt());
     }
-    else if (&inType == &MetaType::Lookup<glm::ivec3>())
+    else if (&type == &MetaType::Lookup<glm::ivec3>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 3 ||
@@ -847,7 +847,7 @@ bool JSONSerialiser::Read(const char* const inName,
                                                               jsonValue[1u].GetInt(),
                                                               jsonValue[2u].GetInt());
     }
-    else if (&inType == &MetaType::Lookup<glm::ivec4>())
+    else if (&type == &MetaType::Lookup<glm::ivec4>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 4 ||
@@ -864,7 +864,7 @@ bool JSONSerialiser::Read(const char* const inName,
                                                               jsonValue[2u].GetInt(),
                                                               jsonValue[3u].GetInt());
     }
-    else if (&inType == &MetaType::Lookup<glm::uvec2>())
+    else if (&type == &MetaType::Lookup<glm::uvec2>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 2 ||
@@ -877,7 +877,7 @@ bool JSONSerialiser::Read(const char* const inName,
         *reinterpret_cast<glm::uvec2*>(outValue) = glm::uvec2(jsonValue[0u].GetUint(),
                                                               jsonValue[1u].GetUint());
     }
-    else if (&inType == &MetaType::Lookup<glm::uvec3>())
+    else if (&type == &MetaType::Lookup<glm::uvec3>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 3 ||
@@ -892,7 +892,7 @@ bool JSONSerialiser::Read(const char* const inName,
                                                               jsonValue[1u].GetUint(),
                                                               jsonValue[2u].GetUint());
     }
-    else if (&inType == &MetaType::Lookup<glm::uvec4>())
+    else if (&type == &MetaType::Lookup<glm::uvec4>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 4 ||
@@ -909,7 +909,7 @@ bool JSONSerialiser::Read(const char* const inName,
                                                               jsonValue[2u].GetUint(),
                                                               jsonValue[3u].GetUint());
     }
-    else if (&inType == &MetaType::Lookup<glm::quat>())
+    else if (&type == &MetaType::Lookup<glm::quat>())
     {
         if (!jsonValue.IsArray() ||
             jsonValue.Size() != 4 ||
@@ -926,7 +926,7 @@ bool JSONSerialiser::Read(const char* const inName,
                                                             jsonValue[2u].GetFloat(),
                                                             jsonValue[3u].GetFloat());
     }
-    else if (inType.IsEnum())
+    else if (type.IsEnum())
     {
         if (!jsonValue.IsString())
         {
@@ -934,14 +934,14 @@ bool JSONSerialiser::Read(const char* const inName,
         }
 
         /* Match the string against a value. */
-        const MetaType::EnumConstantArray& constants = inType.GetEnumConstants();
+        const MetaType::EnumConstantArray& constants = type.GetEnumConstants();
 
         auto constant = constants.begin();
         while (constant != constants.end())
         {
             if (std::strcmp(jsonValue.GetString(), constant->first) == 0)
             {
-                switch (inType.GetSize())
+                switch (type.GetSize())
                 {
                     case 1: *reinterpret_cast<int8_t* >(outValue) = static_cast<int8_t >(constant->second); break;
                     case 2: *reinterpret_cast<int16_t*>(outValue) = static_cast<int16_t>(constant->second); break;
@@ -965,34 +965,34 @@ bool JSONSerialiser::Read(const char* const inName,
     }
     else
     {
-        Fatal("Type '%s' is unsupported for deserialisation", inType.GetName());
+        Fatal("Type '%s' is unsupported for deserialisation", type.GetName());
     }
 
     return true;
 }
 
 
-void JSONSerialiser::WriteBinary(const char* const inName,
-                                 const void* const inData,
-                                 const size_t      inLength)
+void JSONSerialiser::WriteBinary(const char* const name,
+                                 const void* const data,
+                                 const size_t      length)
 {
     /* Binary data is encoded as base64. We store it in an object containing a
      * "base64" string member, rather than just a plain string, to get better
      * differentiation of type between this and regular strings, as well as to
      * allow the possibility of supporting different encoding schemes later. */
-    std::string base64 = Base64::Encode(inData, inLength);
+    std::string base64 = Base64::Encode(data, length);
 
-    BeginGroup(inName);
+    BeginGroup(name);
     Serialiser::Write("base64", base64);
     EndGroup();
 }
 
-bool JSONSerialiser::ReadBinary(const char* const inName,
+bool JSONSerialiser::ReadBinary(const char* const name,
                                 ByteArray&        outData)
 {
     bool result = false;
 
-    if (BeginGroup(inName))
+    if (BeginGroup(name))
     {
         std::string base64;
         if (Serialiser::Read("base64", base64))

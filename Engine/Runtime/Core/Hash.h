@@ -24,51 +24,51 @@
 #include <string>
 #include <type_traits>
 
-inline size_t HashData(const void*    inData,
-                       const size_t   inSize,
-                       const uint64_t inSeed = 0)
+inline size_t HashData(const void*    data,
+                       const size_t   size,
+                       const uint64_t seed = 0)
 {
-    return Gemini_XXH64(inData, inSize, inSeed);
+    return Gemini_XXH64(data, size, seed);
 }
 
 template <typename T>
 inline typename std::enable_if<std::is_integral<T>::value, size_t>::type
-HashValue(const T inValue)
+HashValue(const T value)
 {
     /* This is probably reasonable for many cases. */
-    return static_cast<size_t>(inValue);
+    return static_cast<size_t>(value);
 }
 
 template <typename T>
 inline typename std::enable_if<std::is_enum<T>::value, size_t>::type
-HashValue(const T inValue)
+HashValue(const T value)
 {
-    return HashValue(static_cast<typename std::underlying_type<T>::type>(inValue));
+    return HashValue(static_cast<typename std::underlying_type<T>::type>(value));
 }
 
 template <typename T>
 inline typename std::enable_if<std::is_floating_point<T>::value, size_t>::type
-HashValue(const T inValue)
+HashValue(const T value)
 {
     /* Generate the same hash for -0.0 and 0.0. */
-    if (inValue == static_cast<T>(0))
+    if (value == static_cast<T>(0))
     {
         return 0;
     }
 
-    return HashData(&inValue, sizeof(inValue));
+    return HashData(&value, sizeof(value));
 }
 
 /** Hash a pointer (the pointer itself, not what it refers to). */
 template <typename T>
-inline size_t HashValue(T* const inValue)
+inline size_t HashValue(T* const value)
 {
-    return reinterpret_cast<size_t>(inValue);
+    return reinterpret_cast<size_t>(value);
 }
 
-inline size_t HashValue(const std::string& inValue)
+inline size_t HashValue(const std::string& value)
 {
-    return HashData(inValue.c_str(), inValue.length());
+    return HashData(value.c_str(), value.length());
 }
 
 /**
@@ -85,11 +85,11 @@ inline size_t HashValue(const std::string& inValue)
  * HashData().
  */
 template <typename T>
-inline size_t HashCombine(const size_t inSeed, const T& inValue)
+inline size_t HashCombine(const size_t seed, const T& value)
 {
     /* Borrowed from boost::hash_combine(). */
-    size_t hash   = HashValue(inValue);
-    size_t result = inSeed ^ (hash + 0x9e3779b9 + (inSeed << 6) + (inSeed >> 2));
+    size_t hash   = HashValue(value);
+    size_t result = seed ^ (hash + 0x9e3779b9 + (seed << 6) + (seed >> 2));
 
     return result;
 }
@@ -105,7 +105,7 @@ struct Hash
     using argument_type       = T;
     using result_type         = size_t;
 
-    result_type                 operator()(const T& inValue) const { return HashValue(inValue); }
+    result_type                 operator()(const T& value) const { return HashValue(value); }
 };
 
 /**
@@ -117,12 +117,12 @@ struct Hash
  * content in different objects resulting in different results).
  */
 #define DEFINE_HASH_MEM_OPS(T) \
-    inline size_t HashValue(const T& inValue) \
+    inline size_t HashValue(const T& value) \
     { \
-        return HashData(&inValue, sizeof(T)); \
+        return HashData(&value, sizeof(T)); \
     } \
     \
-    inline bool operator==(const T& inA, const T& inB) \
+    inline bool operator==(const T& a, const T& b) \
     { \
-        return memcmp(&inA, &inB, sizeof(T)) == 0; \
+        return memcmp(&a, &b, sizeof(T)) == 0; \
     }

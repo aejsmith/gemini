@@ -36,9 +36,9 @@ static VkDescriptorType kArgumentTypeMapping[kGPUArgumentTypeCount] =
     /* kGPUArgumentType_Sampler         */ VK_DESCRIPTOR_TYPE_SAMPLER,
 };
 
-VulkanArgumentSetLayout::VulkanArgumentSetLayout(VulkanDevice&              inDevice,
-                                                 GPUArgumentSetLayoutDesc&& inDesc) :
-    GPUArgumentSetLayout    (inDevice, std::move(inDesc)),
+VulkanArgumentSetLayout::VulkanArgumentSetLayout(VulkanDevice&              device,
+                                                 GPUArgumentSetLayoutDesc&& desc) :
+    GPUArgumentSetLayout    (device, std::move(desc)),
     mHandle                 (VK_NULL_HANDLE),
     mConstantOnlySet        (VK_NULL_HANDLE)
 {
@@ -85,22 +85,22 @@ VulkanArgumentSetLayout::~VulkanArgumentSetLayout()
     vkDestroyDescriptorSetLayout(GetVulkanDevice().GetHandle(), mHandle, nullptr);
 }
 
-VulkanArgumentSet::VulkanArgumentSet(VulkanDevice&                 inDevice,
-                                     const GPUArgumentSetLayoutRef inLayout,
-                                     const GPUArgument* const      inArguments) :
-    GPUArgumentSet  (inDevice, inLayout, inArguments)
+VulkanArgumentSet::VulkanArgumentSet(VulkanDevice&                 device,
+                                     const GPUArgumentSetLayoutRef layout,
+                                     const GPUArgument* const      arguments) :
+    GPUArgumentSet  (device, layout, arguments)
 {
-    const auto layout = static_cast<const VulkanArgumentSetLayout*>(GetLayout());
+    const auto vkLayout = static_cast<const VulkanArgumentSetLayout*>(GetLayout());
 
-    if (layout->IsConstantOnly())
+    if (vkLayout->IsConstantOnly())
     {
-        mHandle = layout->GetConstantOnlySet();
+        mHandle = vkLayout->GetConstantOnlySet();
     }
     else
     {
-        mHandle = GetVulkanDevice().GetDescriptorPool().Allocate(layout->GetHandle());
+        mHandle = GetVulkanDevice().GetDescriptorPool().Allocate(vkLayout->GetHandle());
 
-        Write(mHandle, layout, inArguments);
+        Write(mHandle, vkLayout, arguments);
     }
 }
 
@@ -109,24 +109,24 @@ VulkanArgumentSet::~VulkanArgumentSet()
     if (!GetLayout()->IsConstantOnly())
     {
         GetVulkanDevice().AddFrameCompleteCallback(
-            [handle = mHandle] (VulkanDevice& inDevice)
+            [handle = mHandle] (VulkanDevice& device)
             {
-                inDevice.GetDescriptorPool().Free(handle);
+                device.GetDescriptorPool().Free(handle);
             });
     }
 }
 
-void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
-                              const VulkanArgumentSetLayout* const inLayout,
-                              const GPUArgument* const             inArguments)
+void VulkanArgumentSet::Write(const VkDescriptorSet                handle,
+                              const VulkanArgumentSetLayout* const layout,
+                              const GPUArgument* const             arguments)
 {
-    const auto& arguments = inLayout->GetArguments();
+    const auto& argumentTypes = layout->GetArguments();
 
-    auto descriptorWrites = AllocateStackArray(VkWriteDescriptorSet, inLayout->GetArgumentCount());
-    auto bufferInfos      = AllocateStackArray(VkDescriptorBufferInfo, inLayout->GetArgumentCount());
-    auto imageInfos       = AllocateStackArray(VkDescriptorImageInfo, inLayout->GetArgumentCount());
+    auto descriptorWrites = AllocateStackArray(VkWriteDescriptorSet, layout->GetArgumentCount());
+    auto bufferInfos      = AllocateStackArray(VkDescriptorBufferInfo, layout->GetArgumentCount());
+    auto imageInfos       = AllocateStackArray(VkDescriptorImageInfo, layout->GetArgumentCount());
 
-    for (uint8_t i = 0; i < inLayout->GetArgumentCount(); i++)
+    for (uint8_t i = 0; i < layout->GetArgumentCount(); i++)
     {
         auto& descriptorWrite = descriptorWrites[i];
         auto& bufferInfo      = bufferInfos[i];
@@ -134,28 +134,28 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
 
         descriptorWrite.sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrite.pNext            = nullptr;
-        descriptorWrite.dstSet           = inHandle;
+        descriptorWrite.dstSet           = handle;
         descriptorWrite.dstBinding       = i;
         descriptorWrite.dstArrayElement  = 0;
         descriptorWrite.descriptorCount  = 1;
-        descriptorWrite.descriptorType   = kArgumentTypeMapping[arguments[i]];
+        descriptorWrite.descriptorType   = kArgumentTypeMapping[argumentTypes[i]];
         descriptorWrite.pImageInfo       = nullptr;
         descriptorWrite.pBufferInfo      = nullptr;
         descriptorWrite.pTexelBufferView = nullptr;
 
-        if (arguments[i] == kGPUArgumentType_Constants)
+        if (argumentTypes[i] == kGPUArgumentType_Constants)
         {
             /* This just refers to the constant pool, which we offset at bind
              * time. */
-            bufferInfo.buffer = static_cast<VulkanConstantPool&>(inLayout->GetDevice().GetConstantPool()).GetHandle();
+            bufferInfo.buffer = static_cast<VulkanConstantPool&>(layout->GetDevice().GetConstantPool()).GetHandle();
             bufferInfo.offset = 0;
-            bufferInfo.range  = std::min(inLayout->GetVulkanDevice().GetLimits().maxUniformBufferRange, kMaxConstantsSize);
+            bufferInfo.range  = std::min(layout->GetVulkanDevice().GetLimits().maxUniformBufferRange, kMaxConstantsSize);
 
             descriptorWrite.pBufferInfo = &bufferInfo;
         }
-        else if (arguments[i] == kGPUArgumentType_Sampler)
+        else if (argumentTypes[i] == kGPUArgumentType_Sampler)
         {
-            const auto sampler = static_cast<const VulkanSampler*>(inArguments[i].sampler);
+            const auto sampler = static_cast<const VulkanSampler*>(arguments[i].sampler);
 
             imageInfo.imageView   = VK_NULL_HANDLE;
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -165,9 +165,9 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
         }
         else
         {
-            const auto view = static_cast<VulkanResourceView*>(inArguments[i].view);
+            const auto view = static_cast<VulkanResourceView*>(arguments[i].view);
 
-            switch (arguments[i])
+            switch (argumentTypes[i])
             {
                 case kGPUArgumentType_Buffer:
                 case kGPUArgumentType_RWBuffer:
@@ -187,7 +187,7 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
                 {
                     // FIXME: Depth sampling layout is wrong.
                     imageInfo.imageView   = view->GetImageView();
-                    imageInfo.imageLayout = (arguments[i] == kGPUArgumentType_RWTexture)
+                    imageInfo.imageLayout = (argumentTypes[i] == kGPUArgumentType_RWTexture)
                                                 ? VK_IMAGE_LAYOUT_GENERAL
                                                 : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     imageInfo.sampler     = VK_NULL_HANDLE;
@@ -212,8 +212,8 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                inHandle,
         }
     }
 
-    vkUpdateDescriptorSets(inLayout->GetVulkanDevice().GetHandle(),
-                           inLayout->GetArgumentCount(),
+    vkUpdateDescriptorSets(layout->GetVulkanDevice().GetHandle(),
+                           layout->GetArgumentCount(),
                            descriptorWrites,
                            0,
                            nullptr);

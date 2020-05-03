@@ -22,27 +22,27 @@
 
 namespace Math
 {
-    bool                    Intersect(const Frustum&     inFrustum,
-                                      const Sphere&      inSphere);
+    bool                    Intersect(const Frustum&     frustum,
+                                      const Sphere&      sphere);
 
-    bool                    Intersect(const Sphere&      inSphere,
-                                      const Frustum&     inFrustum);
+    bool                    Intersect(const Sphere&      sphere,
+                                      const Frustum&     frustum);
 
-    bool                    Intersect(const Frustum&     inFrustum,
-                                      const BoundingBox& inBox);
+    bool                    Intersect(const Frustum&     frustum,
+                                      const BoundingBox& box);
 
-    bool                    Intersect(const BoundingBox& inBox,
-                                      const Frustum&     inFrustum);
+    bool                    Intersect(const BoundingBox& box,
+                                      const Frustum&     frustum);
 }
 
-inline bool Math::Intersect(const Sphere&  inSphere,
-                            const Frustum& inFrustum)
+inline bool Math::Intersect(const Sphere&  sphere,
+                            const Frustum& frustum)
 {
-    return Intersect(inFrustum, inSphere);
+    return Intersect(frustum, sphere);
 }
 
-inline bool Math::Intersect(const BoundingBox& inBox,
-                            const Frustum&     inFrustum)
+inline bool Math::Intersect(const BoundingBox& box,
+                            const Frustum&     frustum)
 {
-    return Intersect(inFrustum, inBox);
+    return Intersect(frustum, box);
 }

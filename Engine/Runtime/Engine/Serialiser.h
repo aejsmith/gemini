@@ -136,21 +136,21 @@ public:
      * Deserialise() to reconstruct the object, written to a file to deserialise
      * later, etc.
      */
-    virtual ByteArray               Serialise(const Object* const inObject) = 0;
+    virtual ByteArray               Serialise(const Object* const object) = 0;
 
     /**
      * Deserialises an object previously serialised in the format implemented
      * by this serialiser instance. Returns null on failure.
      */
-    virtual ObjPtr<>                Deserialise(const ByteArray& inData,
-                                                const MetaClass& inExpectedClass) = 0;
+    virtual ObjPtr<>                Deserialise(const ByteArray& data,
+                                                const MetaClass& expectedClass) = 0;
 
     /**
      * Deserialises an object previously serialised in the format implemented
      * by this serialiser instance. Returns null on failure.
      */
     template <typename T>
-    ObjPtr<T>                       Deserialise(const ByteArray& inData);
+    ObjPtr<T>                       Deserialise(const ByteArray& data);
 
     /**
      * A function that will be called after construction of the object being
@@ -196,7 +196,7 @@ public:
      * still groups remaining in the array, or false if the end has been
      * reached.
      */
-    virtual bool                    BeginGroup(const char* const inName = nullptr) = 0;
+    virtual bool                    BeginGroup(const char* const name = nullptr) = 0;
     virtual void                    EndGroup() = 0;
 
     /**
@@ -218,35 +218,35 @@ public:
      * cannot be found at the current scope. If false is returned, EndArray()
      * should not be called. Does not fail for serialisation.
      */
-    virtual bool                    BeginArray(const char* const inName = nullptr) = 0;
+    virtual bool                    BeginArray(const char* const name = nullptr) = 0;
     virtual void                    EndArray() = 0;
 
-    void                            Write(const char* const inName, const bool& inValue);
-    void                            Write(const char* const inName, const int8_t& inValue);
-    void                            Write(const char* const inName, const uint8_t& inValue);
-    void                            Write(const char* const inName, const int16_t& inValue);
-    void                            Write(const char* const inName, const uint16_t& inValue);
-    void                            Write(const char* const inName, const int32_t& inValue);
-    void                            Write(const char* const inName, const uint32_t& inValue);
-    void                            Write(const char* const inName, const int64_t& inValue);
-    void                            Write(const char* const inName, const uint64_t& inValue);
-    void                            Write(const char* const inName, const float& inValue);
-    void                            Write(const char* const inName, const double& inValue);
-    void                            Write(const char* const inName, const std::string& inValue);
-    void                            Write(const char* const inName, const glm::vec2& inValue);
-    void                            Write(const char* const inName, const glm::vec3& inValue);
-    void                            Write(const char* const inName, const glm::vec4& inValue);
-    void                            Write(const char* const inName, const glm::ivec2& inValue);
-    void                            Write(const char* const inName, const glm::ivec3& inValue);
-    void                            Write(const char* const inName, const glm::ivec4& inValue);
-    void                            Write(const char* const inName, const glm::uvec2& inValue);
-    void                            Write(const char* const inName, const glm::uvec3& inValue);
-    void                            Write(const char* const inName, const glm::uvec4& inValue);
-    void                            Write(const char* const inName, const glm::quat& inValue);
+    void                            Write(const char* const name, const bool& value);
+    void                            Write(const char* const name, const int8_t& value);
+    void                            Write(const char* const name, const uint8_t& value);
+    void                            Write(const char* const name, const int16_t& value);
+    void                            Write(const char* const name, const uint16_t& value);
+    void                            Write(const char* const name, const int32_t& value);
+    void                            Write(const char* const name, const uint32_t& value);
+    void                            Write(const char* const name, const int64_t& value);
+    void                            Write(const char* const name, const uint64_t& value);
+    void                            Write(const char* const name, const float& value);
+    void                            Write(const char* const name, const double& value);
+    void                            Write(const char* const name, const std::string& value);
+    void                            Write(const char* const name, const glm::vec2& value);
+    void                            Write(const char* const name, const glm::vec3& value);
+    void                            Write(const char* const name, const glm::vec4& value);
+    void                            Write(const char* const name, const glm::ivec2& value);
+    void                            Write(const char* const name, const glm::ivec3& value);
+    void                            Write(const char* const name, const glm::ivec4& value);
+    void                            Write(const char* const name, const glm::uvec2& value);
+    void                            Write(const char* const name, const glm::uvec3& value);
+    void                            Write(const char* const name, const glm::uvec4& value);
+    void                            Write(const char* const name, const glm::quat& value);
 
     template <typename T, typename std::enable_if<std::is_enum<T>::value>::type* = nullptr>
-    void                            Write(const char* const inName, const T& inValue)
-                                        { Write(inName, MetaType::Lookup<T>(), &inValue); }
+    void                            Write(const char* const name, const T& value)
+                                        { Write(name, MetaType::Lookup<T>(), &value); }
 
     /**
      * Serialises the object referred to by the given pointer if it has not
@@ -256,8 +256,8 @@ public:
      * including a serialised copy of the asset.
      */
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type* = nullptr>
-    void                            Write(const char* const inName, const ObjPtr<T>& inObject)
-                                        { Write(inName, MetaType::Lookup<const ObjPtr<T>>(), &inObject); }
+    void                            Write(const char* const name, const ObjPtr<T>& object)
+                                        { Write(name, MetaType::Lookup<const ObjPtr<T>>(), &object); }
 
     /**
      * Serialises the object referred to by the given pointer if it has not
@@ -267,8 +267,8 @@ public:
      * including a serialised copy of the asset.
      */
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type* = nullptr>
-    void                            Write(const char* const inName, const T* inObject)
-                                        { Write(inName, MetaType::Lookup<const T*>(), &inObject); }
+    void                            Write(const char* const name, const T* object)
+                                        { Write(name, MetaType::Lookup<const T*>(), &object); }
 
     /**
      * This method can be used to write any type which provides a Serialise
@@ -280,45 +280,45 @@ public:
      * Serialise() method, and end the group.
      */
     template <typename T, typename std::enable_if<Detail::HasSerialise<T>::value>::type* = nullptr>
-    void                            Write(const char* const inName, const T& inValue);
+    void                            Write(const char* const name, const T& value);
 
     /** Write a chunk of binary data. */
-    virtual void                    WriteBinary(const char* const inName,
-                                                const void* const inData,
-                                                const size_t      inLength) = 0;
-    void                            WriteBinary(const char* const inName,
-                                                const ByteArray&  inData);
+    virtual void                    WriteBinary(const char* const name,
+                                                const void* const data,
+                                                const size_t      length) = 0;
+    void                            WriteBinary(const char* const name,
+                                                const ByteArray&  data);
 
     template <typename T>
-    void                            Push(T&& inValue)
-                                        { Write(nullptr, std::forward<T>(inValue)); }
+    void                            Push(T&& value)
+                                        { Write(nullptr, std::forward<T>(value)); }
 
-    bool                            Read(const char* const inName, bool& outValue);
-    bool                            Read(const char* const inName, int8_t& outValue);
-    bool                            Read(const char* const inName, uint8_t& outValue);
-    bool                            Read(const char* const inName, int16_t& outValue);
-    bool                            Read(const char* const inName, uint16_t& outValue);
-    bool                            Read(const char* const inName, int32_t& outValue);
-    bool                            Read(const char* const inName, uint32_t& outValue);
-    bool                            Read(const char* const inName, int64_t& outValue);
-    bool                            Read(const char* const inName, uint64_t& outValue);
-    bool                            Read(const char* const inName, float& outValue);
-    bool                            Read(const char* const inName, double& outValue);
-    bool                            Read(const char* const inName, std::string& outValue);
-    bool                            Read(const char* const inName, glm::vec2& outValue);
-    bool                            Read(const char* const inName, glm::vec3& outValue);
-    bool                            Read(const char* const inName, glm::vec4& outValue);
-    bool                            Read(const char* const inName, glm::ivec2& outValue);
-    bool                            Read(const char* const inName, glm::ivec3& outValue);
-    bool                            Read(const char* const inName, glm::ivec4& outValue);
-    bool                            Read(const char* const inName, glm::uvec2& outValue);
-    bool                            Read(const char* const inName, glm::uvec3& outValue);
-    bool                            Read(const char* const inName, glm::uvec4& outValue);
-    bool                            Read(const char* const inName, glm::quat& outValue);
+    bool                            Read(const char* const name, bool& outValue);
+    bool                            Read(const char* const name, int8_t& outValue);
+    bool                            Read(const char* const name, uint8_t& outValue);
+    bool                            Read(const char* const name, int16_t& outValue);
+    bool                            Read(const char* const name, uint16_t& outValue);
+    bool                            Read(const char* const name, int32_t& outValue);
+    bool                            Read(const char* const name, uint32_t& outValue);
+    bool                            Read(const char* const name, int64_t& outValue);
+    bool                            Read(const char* const name, uint64_t& outValue);
+    bool                            Read(const char* const name, float& outValue);
+    bool                            Read(const char* const name, double& outValue);
+    bool                            Read(const char* const name, std::string& outValue);
+    bool                            Read(const char* const name, glm::vec2& outValue);
+    bool                            Read(const char* const name, glm::vec3& outValue);
+    bool                            Read(const char* const name, glm::vec4& outValue);
+    bool                            Read(const char* const name, glm::ivec2& outValue);
+    bool                            Read(const char* const name, glm::ivec3& outValue);
+    bool                            Read(const char* const name, glm::ivec4& outValue);
+    bool                            Read(const char* const name, glm::uvec2& outValue);
+    bool                            Read(const char* const name, glm::uvec3& outValue);
+    bool                            Read(const char* const name, glm::uvec4& outValue);
+    bool                            Read(const char* const name, glm::quat& outValue);
 
     template <typename T, typename std::enable_if<std::is_enum<T>::value>::type* = nullptr>
-    bool                            Read(const char* const inName, T& outValue)
-                                        { return Read(inName, MetaType::Lookup<T>(), &outValue); }
+    bool                            Read(const char* const name, T& outValue)
+                                        { return Read(name, MetaType::Lookup<T>(), &outValue); }
 
     /**
      * Deserialises the specified object if it has not already been deserialised
@@ -326,8 +326,8 @@ public:
      * could not be found, the supplied ObjPtr is not changed.
      */
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type* = nullptr>
-    bool                            Read(const char* const inName, ObjPtr<T>& outObject)
-                                        { return Read(inName, MetaType::Lookup<ObjPtr<T>>(), &outObject); }
+    bool                            Read(const char* const name, ObjPtr<T>& outObject)
+                                        { return Read(name, MetaType::Lookup<ObjPtr<T>>(), &outObject); }
 
     /**
      * Deserialises the specified object if it has not already been deserialised
@@ -341,11 +341,11 @@ public:
      * invalid.
      */
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type* = nullptr>
-    bool                            Read(const char* const inName, T*& outObject)
-                                        { return Read(inName, MetaType::Lookup<T*>(), &outObject); }
+    bool                            Read(const char* const name, T*& outObject)
+                                        { return Read(name, MetaType::Lookup<T*>(), &outObject); }
 
     /** Read a chunk of binary data. */
-    virtual bool                    ReadBinary(const char* const inName,
+    virtual bool                    ReadBinary(const char* const name,
                                                ByteArray&        outData) = 0;
 
     /**
@@ -358,7 +358,7 @@ public:
      * Deserialise() method, and end the group.
      */
     template <typename T, typename std::enable_if<Detail::HasDeserialise<T>::value>::type * = nullptr>
-    bool                            Read(const char* const inName, T& outValue);
+    bool                            Read(const char* const name, T& outValue);
 
     template <typename T>
     bool                            Pop(T&& outValue)
@@ -368,51 +368,51 @@ protected:
                                     Serialiser() {}
 
 protected:
-    virtual void                    Write(const char* const inName,
-                                          const MetaType&   inType,
-                                          const void* const inValue) = 0;
+    virtual void                    Write(const char* const name,
+                                          const MetaType&   type,
+                                          const void* const value) = 0;
 
-    virtual bool                    Read(const char* const inName,
-                                         const MetaType&   inType,
+    virtual bool                    Read(const char* const name,
+                                         const MetaType&   type,
                                          void* const       outValue) = 0;
 
-    void                            SerialiseObject(const Object* const inObject);
+    void                            SerialiseObject(const Object* const object);
 
-    bool                            DeserialiseObject(const char* const inClassName,
-                                                      const MetaClass&  inMetaClass,
-                                                      const bool        inIsPrimary,
+    bool                            DeserialiseObject(const char* const className,
+                                                      const MetaClass&  metaClass,
+                                                      const bool        isPrimary,
                                                       ObjPtr<>&         outObject);
 
     friend class Object;
 };
 
 template <typename T>
-inline ObjPtr<T> Serialiser::Deserialise(const ByteArray& inData)
+inline ObjPtr<T> Serialiser::Deserialise(const ByteArray& data)
 {
-    ObjPtr<> object = Deserialise(inData, T::staticMetaClass);
+    ObjPtr<> object = Deserialise(data, T::staticMetaClass);
     return object.StaticCast<T>();
 }
 
 template <typename T, typename std::enable_if<Detail::HasSerialise<T>::value>::type*>
-inline void Serialiser::Write(const char* const inName,
-                              const T&          inValue)
+inline void Serialiser::Write(const char* const name,
+                              const T&          value)
 {
-    BeginGroup(inName);
-    inValue.Serialise(*this);
+    BeginGroup(name);
+    value.Serialise(*this);
     EndGroup();
 }
 
-inline void Serialiser::WriteBinary(const char* const inName,
-                                    const ByteArray&  inData)
+inline void Serialiser::WriteBinary(const char* const name,
+                                    const ByteArray&  data)
 {
-    WriteBinary(inName, inData.Get(), inData.GetSize());
+    WriteBinary(name, data.Get(), data.GetSize());
 }
 
 template <typename T, typename std::enable_if<Detail::HasDeserialise<T>::value>::type*>
-inline bool Serialiser::Read(const char* const inName,
+inline bool Serialiser::Read(const char* const name,
                              T&                outValue)
 {
-    if (BeginGroup(inName))
+    if (BeginGroup(name))
     {
         outValue.Deserialise(*this);
         EndGroup();

@@ -42,11 +42,11 @@ static constexpr uint32_t kMenuBarHeight     = 19;
 class DebugInputHandler final : public InputHandler
 {
 public:
-                            DebugInputHandler(DebugManager* const inManager);
+                            DebugInputHandler(DebugManager* const manager);
 
 protected:
-    EventResult             HandleButton(const ButtonEvent& inEvent) override;
-    EventResult             HandleAxis(const AxisEvent& inEvent) override;
+    EventResult             HandleButton(const ButtonEvent& event) override;
+    EventResult             HandleAxis(const AxisEvent& event) override;
 
 private:
     DebugManager*           mManager;
@@ -54,22 +54,22 @@ private:
 
 };
 
-DebugInputHandler::DebugInputHandler(DebugManager* const inManager) :
+DebugInputHandler::DebugInputHandler(DebugManager* const manager) :
     InputHandler            (kPriority_DebugOverlay),
-    mManager                (inManager),
+    mManager                (manager),
     mPreviousMouseCapture   (false)
 {
     RegisterInputHandler();
 }
 
-InputHandler::EventResult DebugInputHandler::HandleButton(const ButtonEvent& inEvent)
+InputHandler::EventResult DebugInputHandler::HandleButton(const ButtonEvent& event)
 {
-    if (!inEvent.down)
+    if (!event.down)
     {
-        auto SetState = [&] (const DebugManager::OverlayState inState)
+        auto SetState = [&] (const DebugManager::OverlayState state)
         {
             if (mManager->mOverlayState < DebugManager::kOverlayState_Active &&
-                inState >= DebugManager::kOverlayState_Active)
+                state >= DebugManager::kOverlayState_Active)
             {
                 /* Set the global mouse capture state to false because we want
                  * to use the OS cursor. */
@@ -78,22 +78,22 @@ InputHandler::EventResult DebugInputHandler::HandleButton(const ButtonEvent& inE
                 ImGUIManager::Get().SetInputEnabled(true);
             }
             else if (mManager->mOverlayState >= DebugManager::kOverlayState_Active &&
-                     inState < DebugManager::kOverlayState_Active)
+                     state < DebugManager::kOverlayState_Active)
             {
                 InputManager::Get().SetMouseCaptured(mPreviousMouseCapture);
                 ImGUIManager::Get().SetInputEnabled(false);
             }
 
-            mManager->mOverlayState = inState;
+            mManager->mOverlayState = state;
         };
 
-        if (inEvent.code == kInputCode_F1)
+        if (event.code == kInputCode_F1)
         {
             SetState((mManager->mOverlayState == DebugManager::kOverlayState_Inactive)
                          ? DebugManager::kOverlayState_Active
                          : DebugManager::kOverlayState_Inactive);
         }
-        else if (inEvent.code == kInputCode_F2 &&
+        else if (event.code == kInputCode_F2 &&
                  mManager->mOverlayState >= DebugManager::kOverlayState_Visible)
         {
             SetState((mManager->mOverlayState == DebugManager::kOverlayState_Visible)
@@ -110,7 +110,7 @@ InputHandler::EventResult DebugInputHandler::HandleButton(const ButtonEvent& inE
                : kEventResult_Continue;
 }
 
-InputHandler::EventResult DebugInputHandler::HandleAxis(const AxisEvent& inEvent)
+InputHandler::EventResult DebugInputHandler::HandleAxis(const AxisEvent& event)
 {
     /* As above. */
     return (mManager->mOverlayState >= DebugManager::kOverlayState_Active)
@@ -239,34 +239,34 @@ void DebugManager::RenderOverlay(OnlyCalledBy<Engine>)
     }
 }
 
-void DebugManager::AddText(const char* const inText,
-                           const glm::vec4&  inColour)
+void DebugManager::AddText(const char* const text,
+                           const glm::vec4&  colour)
 {
     /* Creating a window with the same title appends to it. */
     ImGui::Begin(kDebugTextWindowName, nullptr, 0);
-    ImGui::PushStyleColor(ImGuiCol_Text, inColour);
-    ImGui::Text(inText);
+    ImGui::PushStyleColor(ImGuiCol_Text, colour);
+    ImGui::Text(text);
     ImGui::PopStyleColor();
     ImGui::End();
 }
 
-void DebugManager::RegisterWindow(DebugWindow* const inWindow,
+void DebugManager::RegisterWindow(DebugWindow* const window,
                                   OnlyCalledBy<DebugWindow>)
 {
-    WindowList& windowList = mWindows[inWindow->GetCategory()];
-    windowList.emplace_back(inWindow);
+    WindowList& windowList = mWindows[window->GetCategory()];
+    windowList.emplace_back(window);
 }
 
-void DebugManager::UnregisterWindow(DebugWindow* const inWindow,
+void DebugManager::UnregisterWindow(DebugWindow* const window,
                                     OnlyCalledBy<DebugWindow>)
 {
-    WindowList& windowList = mWindows[inWindow->GetCategory()];
-    windowList.remove(inWindow);
+    WindowList& windowList = mWindows[window->GetCategory()];
+    windowList.remove(window);
 }
 
-void DebugManager::RenderPrimitives(const RenderView&          inView,
-                                    RenderGraph&               inGraph,
-                                    const RenderResourceHandle inTexture,
+void DebugManager::RenderPrimitives(const RenderView&          view,
+                                    RenderGraph&               graph,
+                                    const RenderResourceHandle texture,
                                     RenderResourceHandle&      outNewTexture)
 {
     {
@@ -275,20 +275,20 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
         if (mPrimitives.empty())
         {
             /* There's nothing to render, just pass through the resource handle. */
-            outNewTexture = inTexture;
+            outNewTexture = texture;
             return;
         }
     }
 
-    const GPUConstants viewConstants = inView.GetConstants();
+    const GPUConstants viewConstants = view.GetConstants();
 
-    RenderGraphPass& pass = inGraph.AddPass("DebugPrimitives", kRenderGraphPassType_Render);
+    RenderGraphPass& pass = graph.AddPass("DebugPrimitives", kRenderGraphPassType_Render);
 
-    pass.SetColour(0, inTexture, &outNewTexture);
+    pass.SetColour(0, texture, &outNewTexture);
 
-    pass.SetFunction([this, viewConstants] (const RenderGraph&      inGraph,
-                                            const RenderGraphPass&  inPass,
-                                            GPUGraphicsCommandList& inCmdList)
+    pass.SetFunction([this, viewConstants] (const RenderGraph&      graph,
+                                            const RenderGraphPass&  pass,
+                                            GPUGraphicsCommandList& cmdList)
     {
         std::unique_lock lock(mPrimitivesLock);
 
@@ -299,7 +299,7 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
         pipelineDesc.blendState                                  = GPUBlendState::GetDefault();
         pipelineDesc.depthStencilState                           = GPUDepthStencilState::GetDefault();
         pipelineDesc.rasterizerState                             = mRasterizerState;
-        pipelineDesc.renderTargetState                           = inCmdList.GetRenderTargetState();
+        pipelineDesc.renderTargetState                           = cmdList.GetRenderTargetState();
         pipelineDesc.vertexInputState                            = mVertexInputState;
 
         DebugPrimitiveConstants constants;
@@ -387,92 +387,92 @@ void DebugManager::RenderPrimitives(const RenderView&          inView,
                                                ? mFillRasterizerState
                                                : mRasterizerState;
 
-            inCmdList.SetPipeline(pipelineDesc);
+            cmdList.SetPipeline(pipelineDesc);
 
-            inCmdList.SetConstants(kArgumentSet_ViewEntity,
-                                   kViewEntityArguments_ViewConstants,
-                                   viewConstants);
+            cmdList.SetConstants(kArgumentSet_ViewEntity,
+                                 kViewEntityArguments_ViewConstants,
+                                 viewConstants);
 
             if (constants.colour != primitive.colour)
             {
                 constants.colour = primitive.colour;
 
-                inCmdList.WriteConstants(kArgumentSet_ViewEntity,
-                                         kViewEntityArguments_EntityConstants,
-                                         &constants,
-                                         sizeof(constants));
+                cmdList.WriteConstants(kArgumentSet_ViewEntity,
+                                       kViewEntityArguments_EntityConstants,
+                                       &constants,
+                                       sizeof(constants));
             }
 
-            inCmdList.WriteVertexBuffer(0, vertices.data(), vertices.size() * sizeof(vertices[0]));
+            cmdList.WriteVertexBuffer(0, vertices.data(), vertices.size() * sizeof(vertices[0]));
 
             if (!indices.empty())
             {
-                inCmdList.WriteIndexBuffer(kGPUIndexType_16, indices.data(), indices.size() * sizeof(indices[0]));
+                cmdList.WriteIndexBuffer(kGPUIndexType_16, indices.data(), indices.size() * sizeof(indices[0]));
 
-                inCmdList.DrawIndexed(static_cast<uint16_t>(indices.size()));
+                cmdList.DrawIndexed(static_cast<uint16_t>(indices.size()));
             }
             else
             {
-                inCmdList.Draw(static_cast<uint32_t>(vertices.size()));
+                cmdList.Draw(static_cast<uint32_t>(vertices.size()));
             }
         }
     });
 }
 
-DebugManager::Primitive::Primitive(const Primitive& inOther)
+DebugManager::Primitive::Primitive(const Primitive& other)
 {
     /* All members have non-trivial constructors hence we need to define this
      * due to the union (copy constructor is otherwise implicitly deleted),
      * however it is safe to just memcpy(). */
-    memcpy(this, &inOther, sizeof(*this));
+    memcpy(this, &other, sizeof(*this));
 }
 
-void DebugManager::DrawPrimitive(const BoundingBox& inBox,
-                                 const glm::vec3&   inColour)
+void DebugManager::DrawPrimitive(const BoundingBox& box,
+                                 const glm::vec3&   colour)
 {
     std::unique_lock lock(mPrimitivesLock);
 
     Primitive& primitive = mPrimitives.emplace_back();
     primitive.type        = kPrimitiveType_BoundingBox;
-    primitive.boundingBox = inBox;
-    primitive.colour      = inColour;
+    primitive.boundingBox = box;
+    primitive.colour      = colour;
     primitive.fill        = false;
 }
 
-void DebugManager::DrawPrimitive(const Cone&      inCone,
-                                 const glm::vec3& inColour,
-                                 const bool       inFill)
+void DebugManager::DrawPrimitive(const Cone&      cone,
+                                 const glm::vec3& colour,
+                                 const bool       fill)
 {
     std::unique_lock lock(mPrimitivesLock);
 
     Primitive& primitive = mPrimitives.emplace_back();
     primitive.type   = kPrimitiveType_Cone;
-    primitive.cone   = inCone;
-    primitive.colour = inColour;
-    primitive.fill   = inFill;
+    primitive.cone   = cone;
+    primitive.colour = colour;
+    primitive.fill   = fill;
 }
 
-void DebugManager::DrawPrimitive(const Line&      inLine,
-                                 const glm::vec3& inColour)
+void DebugManager::DrawPrimitive(const Line&      line,
+                                 const glm::vec3& colour)
 {
     std::unique_lock lock(mPrimitivesLock);
 
     Primitive& primitive = mPrimitives.emplace_back();
     primitive.type   = kPrimitiveType_Line;
-    primitive.line   = inLine;
-    primitive.colour = inColour;
+    primitive.line   = line;
+    primitive.colour = colour;
     primitive.fill   = false;
 }
 
-void DebugManager::DrawPrimitive(const Sphere&    inSphere,
-                                 const glm::vec3& inColour,
-                                 const bool       inFill)
+void DebugManager::DrawPrimitive(const Sphere&    sphere,
+                                 const glm::vec3& colour,
+                                 const bool       fill)
 {
     std::unique_lock lock(mPrimitivesLock);
 
     Primitive& primitive = mPrimitives.emplace_back();
     primitive.type   = kPrimitiveType_Sphere;
-    primitive.sphere = inSphere;
-    primitive.colour = inColour;
-    primitive.fill   = inFill;
+    primitive.sphere = sphere;
+    primitive.colour = colour;
+    primitive.fill   = fill;
 }

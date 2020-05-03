@@ -23,11 +23,11 @@
 static const size_t kMinAlignment = 16;
 static const size_t kMaxAlignment = 4096;
 
-LinearAllocator::LinearAllocator(const size_t inMaxSize) :
+LinearAllocator::LinearAllocator(const size_t maxSize) :
     mCurrentOffset  (0),
-    mMaxSize        (inMaxSize)
+    mMaxSize        (maxSize)
 {
-    mAllocation = std::aligned_alloc(kMaxAlignment, inMaxSize);
+    mAllocation = std::aligned_alloc(kMaxAlignment, maxSize);
 }
 
 LinearAllocator::~LinearAllocator()
@@ -35,18 +35,18 @@ LinearAllocator::~LinearAllocator()
     std::free(mAllocation);
 }
 
-void* LinearAllocator::Allocate(const size_t inSize,
-                                const size_t inAlignment)
+void* LinearAllocator::Allocate(const size_t size,
+                                const size_t alignment)
 {
-    Assert(IsPowerOf2(inAlignment));
-    Assert(inAlignment <= kMaxAlignment);
+    Assert(IsPowerOf2(alignment));
+    Assert(alignment <= kMaxAlignment);
 
     /* Ensure that mCurrentOffset is always aligned to kMinAlignment. */
-    const size_t size = RoundUp(inSize, kMinAlignment);
+    const size_t alignedSize = RoundUp(size, kMinAlignment);
 
     size_t offset;
 
-    if (inAlignment > kMinAlignment)
+    if (alignment > kMinAlignment)
     {
         /* When we have an alignment greater than the minimum, use a CAS loop
          * to get and update the current offset, because we need to make sure
@@ -57,8 +57,8 @@ void* LinearAllocator::Allocate(const size_t inSize,
 
         do
         {
-            offset    = RoundUp(currentOffset, inAlignment);
-            newOffset = offset + size;
+            offset    = RoundUp(currentOffset, alignment);
+            newOffset = offset + alignedSize;
         }
         while (!mCurrentOffset.compare_exchange_strong(currentOffset,
                                                        newOffset,
@@ -68,14 +68,14 @@ void* LinearAllocator::Allocate(const size_t inSize,
     else
     {
         /* Otherwise we can just use a simple atomic add. */
-        offset = mCurrentOffset.fetch_add(size, std::memory_order_relaxed);
+        offset = mCurrentOffset.fetch_add(alignedSize, std::memory_order_relaxed);
     }
 
-    if (offset + size > mMaxSize)
+    if (offset + alignedSize > mMaxSize)
     {
         /* TODO: Make this automatically expand. */
         Fatal("LinearAllocator allocation of %zu bytes exceeded maximum size %zu",
-              inSize,
+              size,
               mMaxSize);
     }
 

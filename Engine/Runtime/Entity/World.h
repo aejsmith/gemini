@@ -38,18 +38,18 @@ public:
     const Entity*               GetRoot() const     { return mRoot; }
 
     /** Create a new entity at the root of the hierarchy. */
-    Entity*                     CreateEntity(std::string inName);
+    Entity*                     CreateEntity(std::string name);
 
     RenderWorld*                GetRenderWorld()    { return mRenderWorld; }
 
-    void                        Tick(const float inDelta);
+    void                        Tick(const float delta);
 
 protected:
                                 World();
                                 ~World();
 
-    void                        Serialise(Serialiser& inSerialiser) const override;
-    void                        Deserialise(Serialiser& inSerialiser) override;
+    void                        Serialise(Serialiser& serialiser) const override;
+    void                        Deserialise(Serialiser& serialiser) override;
 
 private:
     ObjPtr<Entity>              mRoot;

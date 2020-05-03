@@ -65,7 +65,7 @@ public:
     void                    CreateWorld();
 
     /** Load a world asset, replacing the current world (if any). */
-    void                    LoadWorld(const Path& inPath);
+    void                    LoadWorld(const Path& path);
 
 private:
     void                    InitSDL();

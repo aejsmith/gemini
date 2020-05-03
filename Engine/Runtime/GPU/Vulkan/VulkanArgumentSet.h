@@ -24,8 +24,8 @@ class VulkanArgumentSetLayout final : public GPUArgumentSetLayout,
                                       public VulkanDeviceChild<VulkanArgumentSetLayout>
 {
 public:
-                            VulkanArgumentSetLayout(VulkanDevice&              inDevice,
-                                                    GPUArgumentSetLayoutDesc&& inDesc);
+                            VulkanArgumentSetLayout(VulkanDevice&              device,
+                                                    GPUArgumentSetLayoutDesc&& desc);
 
                             ~VulkanArgumentSetLayout();
 
@@ -51,18 +51,18 @@ class VulkanArgumentSet final : public GPUArgumentSet,
                                 public VulkanDeviceChild<VulkanArgumentSet>
 {
 public:
-                            VulkanArgumentSet(VulkanDevice&                 inDevice,
-                                              const GPUArgumentSetLayoutRef inLayout,
-                                              const GPUArgument* const      inArguments);
+                            VulkanArgumentSet(VulkanDevice&                 device,
+                                              const GPUArgumentSetLayoutRef layout,
+                                              const GPUArgument* const      arguments);
 
                             ~VulkanArgumentSet();
 
 public:
     VkDescriptorSet         GetHandle() const   { return mHandle; }
 
-    static void             Write(const VkDescriptorSet                inHandle,
-                                  const VulkanArgumentSetLayout* const inLayout,
-                                  const GPUArgument* const             inArguments);
+    static void             Write(const VkDescriptorSet                handle,
+                                  const VulkanArgumentSetLayout* const layout,
+                                  const GPUArgument* const             arguments);
 
 private:
     VkDescriptorSet         mHandle;

@@ -18,8 +18,8 @@
 
 #include "Render/RenderOutput.h"
 
-RenderLayer::RenderLayer(const uint8_t inOrder) :
-    mOrder  (inOrder),
+RenderLayer::RenderLayer(const uint8_t order) :
+    mOrder  (order),
     mOutput (nullptr),
     mActive (false)
 {
@@ -33,7 +33,7 @@ RenderLayer::~RenderLayer()
     }
 }
 
-void RenderLayer::SetLayerOutput(RenderOutput* const inOutput)
+void RenderLayer::SetLayerOutput(RenderOutput* const output)
 {
     const bool active = mActive;
 
@@ -42,7 +42,7 @@ void RenderLayer::SetLayerOutput(RenderOutput* const inOutput)
         DeactivateLayer();
     }
 
-    mOutput = inOutput;
+    mOutput = output;
 
     if (active)
     {

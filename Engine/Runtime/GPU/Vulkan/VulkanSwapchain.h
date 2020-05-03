@@ -28,20 +28,20 @@ class VulkanSwapchain final : public GPUSwapchain,
                               public VulkanDeviceChild<VulkanSwapchain>
 {
 public:
-                                VulkanSwapchain(VulkanDevice& inDevice,
-                                                Window&       inWindow);
+                                VulkanSwapchain(VulkanDevice& device,
+                                                Window&       window);
                                 ~VulkanSwapchain();
 
 public:
-    void                        Acquire(const VkSemaphore inAcquireSemaphore);
+    void                        Acquire(const VkSemaphore acquireSemaphore);
 
-    void                        Present(const VkQueue     inQueue,
-                                        const VkSemaphore inWaitSemaphore);
+    void                        Present(const VkQueue     queue,
+                                        const VkSemaphore waitSemaphore);
 
     /* Implemented by platform-specific code. */
     static const char*          GetSurfaceExtensionName();
-    static bool                 CheckPresentationSupport(const VkPhysicalDevice inDevice,
-                                                         const uint32_t         inQueueFamily);
+    static bool                 CheckPresentationSupport(const VkPhysicalDevice device,
+                                                         const uint32_t         queueFamily);
 
 private:
     /* Implemented by platform-specific code. */

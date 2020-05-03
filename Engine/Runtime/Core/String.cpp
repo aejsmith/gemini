@@ -18,22 +18,22 @@
 
 #include <cstdio>
 
-std::string StringUtils::VFormat(const char* const inFormat,
-                                 va_list           inArgs)
+std::string StringUtils::VFormat(const char* const format,
+                                 va_list           args)
 {
     char buf[8192];
-    vsnprintf(buf, 8192, inFormat, inArgs);
+    vsnprintf(buf, 8192, format, args);
     return std::string(buf);
 }
 
-std::string StringUtils::Format(const char* inFormat,
+std::string StringUtils::Format(const char* format,
                                 ...)
 {
     char buf[8192];
     va_list args;
 
-    va_start(args, inFormat);
-    vsnprintf(buf, 8192, inFormat, args);
+    va_start(args, format);
+    vsnprintf(buf, 8192, format, args);
     va_end(args);
 
     return std::string(buf);

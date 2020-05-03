@@ -29,12 +29,12 @@ public:
 
     /** Get/set the title of the window. */
     const std::string&          GetTitle() const    { return mTitle; }
-    void                        SetTitle(std::string inTitle)
-                                    { mTitle = std::move(inTitle); }
+    void                        SetTitle(std::string title)
+                                    { mTitle = std::move(title); }
 
 protected:
-                                DebugWindow(std::string inCategory,
-                                            std::string inTitle);
+                                DebugWindow(std::string category,
+                                            std::string title);
     virtual                     ~DebugWindow();
 
     /**
@@ -52,7 +52,7 @@ protected:
      */
     virtual void                Render() {}
 
-    bool                        Begin(const ImGuiWindowFlags inFlags = 0);
+    bool                        Begin(const ImGuiWindowFlags flags = 0);
 
 protected:
     const std::string           mCategory;

@@ -38,9 +38,9 @@ public:
                             ImGUIInputHandler();
 
 protected:
-    EventResult             HandleButton(const ButtonEvent& inEvent) override;
-    EventResult             HandleAxis(const AxisEvent& inEvent) override;
-    void                    HandleTextInput(const TextInputEvent& inEvent) override;
+    EventResult             HandleButton(const ButtonEvent& event) override;
+    EventResult             HandleAxis(const AxisEvent& event) override;
+    void                    HandleTextInput(const TextInputEvent& event) override;
 
 protected:
     bool                    mEnabled;
@@ -158,7 +158,7 @@ ImGUIInputHandler::ImGUIInputHandler() :
     RegisterInputHandler();
 }
 
-InputHandler::EventResult ImGUIInputHandler::HandleButton(const ButtonEvent& inEvent)
+InputHandler::EventResult ImGUIInputHandler::HandleButton(const ButtonEvent& event)
 {
     if (!mEnabled)
     {
@@ -167,24 +167,24 @@ InputHandler::EventResult ImGUIInputHandler::HandleButton(const ButtonEvent& inE
 
     ImGuiIO& io = ImGui::GetIO();
 
-    if (inEvent.code >= kInputCodeKeyboardFirst && inEvent.code <= kInputCodeKeyboardLast)
+    if (event.code >= kInputCodeKeyboardFirst && event.code <= kInputCodeKeyboardLast)
     {
-        io.KeysDown[inEvent.code] = inEvent.down;
+        io.KeysDown[event.code] = event.down;
     }
-    else if (inEvent.code >= kInputCodeMouseFirst && inEvent.code <= kInputCodeMouseLast)
+    else if (event.code >= kInputCodeMouseFirst && event.code <= kInputCodeMouseLast)
     {
-        switch (inEvent.code)
+        switch (event.code)
         {
             case kInputCode_MouseLeft:
-                io.MouseDown[0] = inEvent.down;
+                io.MouseDown[0] = event.down;
                 break;
 
             case kInputCode_MouseRight:
-                io.MouseDown[1] = inEvent.down;
+                io.MouseDown[1] = event.down;
                 break;
 
             case kInputCode_MouseMiddle:
-                io.MouseDown[2] = inEvent.down;
+                io.MouseDown[2] = event.down;
                 break;
 
             default:
@@ -196,7 +196,7 @@ InputHandler::EventResult ImGUIInputHandler::HandleButton(const ButtonEvent& inE
     return kEventResult_Continue;
 }
 
-InputHandler::EventResult ImGUIInputHandler::HandleAxis(const AxisEvent& inEvent)
+InputHandler::EventResult ImGUIInputHandler::HandleAxis(const AxisEvent& event)
 {
     if (!mEnabled)
     {
@@ -205,10 +205,10 @@ InputHandler::EventResult ImGUIInputHandler::HandleAxis(const AxisEvent& inEvent
 
     ImGuiIO& io = ImGui::GetIO();
 
-    switch (inEvent.code)
+    switch (event.code)
     {
         case kInputCode_MouseScroll:
-            io.MouseWheel = inEvent.delta;
+            io.MouseWheel = event.delta;
             break;
 
         default:
@@ -219,10 +219,10 @@ InputHandler::EventResult ImGUIInputHandler::HandleAxis(const AxisEvent& inEvent
     return kEventResult_Continue;
 }
 
-void ImGUIInputHandler::HandleTextInput(const TextInputEvent& inEvent)
+void ImGUIInputHandler::HandleTextInput(const TextInputEvent& event)
 {
     ImGuiIO& io = ImGui::GetIO();
-    io.AddInputCharactersUTF8(inEvent.text.c_str());
+    io.AddInputCharactersUTF8(event.text.c_str());
 }
 
 ImGUIRenderer::ImGUIRenderer()
@@ -412,7 +412,7 @@ void ImGUIRenderer::Render() const
     context.ResourceBarrier(view.get(), kGPUResourceState_RenderTarget, kGPUResourceState_Present);
 }
 
-void ImGUIManager::SetInputEnabled(const bool inEnable)
+void ImGUIManager::SetInputEnabled(const bool enable)
 {
-    mInputHandler->mEnabled = inEnable;
+    mInputHandler->mEnabled = enable;
 }

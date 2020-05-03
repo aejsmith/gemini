@@ -45,21 +45,21 @@ struct VulkanRenderPassKey
     Attachment                  depthStencil;
 
 public:
-                                VulkanRenderPassKey(const GPURenderPass& inPass);
-                                VulkanRenderPassKey(const GPURenderTargetStateDesc& inState);
+                                VulkanRenderPassKey(const GPURenderPass& pass);
+                                VulkanRenderPassKey(const GPURenderTargetStateDesc& state);
 
 };
 
 DEFINE_HASH_MEM_OPS(VulkanRenderPassKey);
 
-inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& inPass)
+inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& pass)
 {
     /* Ensure padding is clear. */
     memset(this, 0, sizeof(*this));
 
     for (size_t i = 0; i < ArraySize(this->colour); i++)
     {
-        const auto& srcAttachment = inPass.colour[i];
+        const auto& srcAttachment = pass.colour[i];
         auto& dstAttachment       = this->colour[i];
 
         if (srcAttachment.view)
@@ -75,7 +75,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& inPass)
         }
     }
 
-    const auto& srcAttachment = inPass.depthStencil;
+    const auto& srcAttachment = pass.depthStencil;
     auto& dstAttachment       = this->depthStencil;
 
     if (srcAttachment.view)
@@ -97,7 +97,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderPass& inPass)
     }
 }
 
-inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderTargetStateDesc& inState)
+inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderTargetStateDesc& state)
 {
     /* Ensure padding is clear. */
     memset(this, 0, sizeof(*this));
@@ -106,7 +106,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderTargetStateDesc& 
     {
         auto& dstAttachment = this->colour[i];
 
-        dstAttachment.format = inState.colour[i];
+        dstAttachment.format = state.colour[i];
 
         if (dstAttachment.format != kPixelFormat_Unknown)
         {
@@ -121,7 +121,7 @@ inline VulkanRenderPassKey::VulkanRenderPassKey(const GPURenderTargetStateDesc& 
 
     auto& dstAttachment = this->depthStencil;
 
-    dstAttachment.format = inState.depthStencil;
+    dstAttachment.format = state.depthStencil;
 
     if (dstAttachment.format != kPixelFormat_Unknown)
     {
@@ -143,20 +143,20 @@ struct VulkanFramebufferKey
     VkImageView                 depthStencil;
 
 public:
-                                VulkanFramebufferKey(const GPURenderPass& inPass);
+                                VulkanFramebufferKey(const GPURenderPass& pass);
 
 };
 
 DEFINE_HASH_MEM_OPS(VulkanFramebufferKey);
 
-inline VulkanFramebufferKey::VulkanFramebufferKey(const GPURenderPass& inPass)
+inline VulkanFramebufferKey::VulkanFramebufferKey(const GPURenderPass& pass)
 {
     /* Ensure padding is clear. */
     memset(this, 0, sizeof(*this));
 
     for (size_t i = 0; i < ArraySize(this->colour); i++)
     {
-        const auto view = static_cast<VulkanResourceView*>(inPass.colour[i].view);
+        const auto view = static_cast<VulkanResourceView*>(pass.colour[i].view);
 
         if (view)
         {
@@ -164,7 +164,7 @@ inline VulkanFramebufferKey::VulkanFramebufferKey(const GPURenderPass& inPass)
         }
     }
 
-    const auto view = static_cast<VulkanResourceView*>(inPass.depthStencil.view);
+    const auto view = static_cast<VulkanResourceView*>(pass.depthStencil.view);
 
     if (view)
     {

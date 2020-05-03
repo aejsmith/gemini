@@ -29,15 +29,15 @@ class VulkanCommandPool final : public GPUDeviceChild,
                                 public VulkanDeviceChild<VulkanCommandPool>
 {
 public:
-                                VulkanCommandPool(VulkanDevice&  inDevice,
-                                                  const uint32_t inQueueFamily);
+                                VulkanCommandPool(VulkanDevice&  device,
+                                                  const uint32_t queueFamily);
                                 ~VulkanCommandPool();
 
 public:
     VkCommandBuffer             AllocatePrimary();
     VkCommandBuffer             AllocateSecondary();
 
-    VkDescriptorSet             AllocateDescriptorSet(const VkDescriptorSetLayout inLayout);
+    VkDescriptorSet             AllocateDescriptorSet(const VkDescriptorSetLayout layout);
 
     void                        Reset();
 

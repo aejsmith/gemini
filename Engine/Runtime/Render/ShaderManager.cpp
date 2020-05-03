@@ -44,10 +44,10 @@ ShaderManager::~ShaderManager()
 {
 }
 
-GPUShaderPtr ShaderManager::GetShader(const Path&                  inPath,
-                                      const std::string&           inFunction,
-                                      const GPUShaderStage         inStage,
-                                      const ShaderTechnique* const inTechnique)
+GPUShaderPtr ShaderManager::GetShader(const Path&                  path,
+                                      const std::string&           function,
+                                      const GPUShaderStage         stage,
+                                      const ShaderTechnique* const technique)
 {
     /*
      * TODO: Cache of GPUShaders. Would need a weak pointer stored in the cache
@@ -56,24 +56,24 @@ GPUShaderPtr ShaderManager::GetShader(const Path&                  inPath,
      */
 
     /* Turn the virtual path into a filesystem path. */
-    auto searchPath = mSearchPaths.find(inPath.Subset(0, 1).GetString());
+    auto searchPath = mSearchPaths.find(path.Subset(0, 1).GetString());
     if (searchPath == mSearchPaths.end())
     {
-        LogError("Could not find shader '%s' (unknown search path)", inPath.GetCString());
+        LogError("Could not find shader '%s' (unknown search path)", path.GetCString());
         return nullptr;
     }
 
     ShaderCompiler::Options options;
-    options.function  = inFunction;
-    options.stage     = inStage;
-    options.technique = inTechnique;
+    options.function  = function;
+    options.stage     = stage;
+    options.technique = technique;
 
-    options.path = Path(searchPath->second) / inPath.Subset(1);
+    options.path = Path(searchPath->second) / path.Subset(1);
 
     if (!Filesystem::Exists(options.path))
     {
         LogError("Could not find shader '%s' ('%s' does not exist)",
-                 inPath.GetCString(),
+                 path.GetCString(),
                  options.path.GetCString());
 
         return nullptr;
@@ -84,16 +84,16 @@ GPUShaderPtr ShaderManager::GetShader(const Path&                  inPath,
 
     if (!compiler.IsCompiled())
     {
-        LogError("Compilation of shader '%s' failed", inPath.GetCString());
+        LogError("Compilation of shader '%s' failed", path.GetCString());
         DebugBreak();
         return nullptr;
     }
 
-    GPUShaderPtr shader = GPUDevice::Get().CreateShader(inStage,
+    GPUShaderPtr shader = GPUDevice::Get().CreateShader(stage,
                                                         compiler.MoveCode(),
-                                                        inFunction);
+                                                        function);
 
-    shader->SetName(inPath.GetString());
+    shader->SetName(path.GetString());
 
     return shader;
 }

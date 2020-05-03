@@ -16,16 +16,16 @@
 
 #include "Core/Math/Intersect.h"
 
-bool Math::Intersect(const Frustum& inFrustum,
-                     const Sphere&  inSphere)
+bool Math::Intersect(const Frustum& frustum,
+                     const Sphere&  sphere)
 {
     for (unsigned i = 0; i < Frustum::kNumPlanes; i++)
     {
-        const Plane& plane = inFrustum.GetPlane(i);
+        const Plane& plane = frustum.GetPlane(i);
 
         /* Plane normals point inside the frustum. DistanceTo() is negative
          * when the point is behind the plane. */
-        if (plane.DistanceTo(inSphere.GetCentre()) < -inSphere.GetRadius())
+        if (plane.DistanceTo(sphere.GetCentre()) < -sphere.GetRadius())
         {
             return false;
         }
@@ -34,8 +34,8 @@ bool Math::Intersect(const Frustum& inFrustum,
     return true;
 }
 
-bool Math::Intersect(const Frustum&     inFrustum,
-                     const BoundingBox& inBox)
+bool Math::Intersect(const Frustum&     frustum,
+                     const BoundingBox& box)
 {
     /*
      * TODO: There is inaccuracy here with larger AABBs. If the AABB intersects
@@ -45,8 +45,8 @@ bool Math::Intersect(const Frustum&     inFrustum,
 
     for (unsigned i = 0; i < Frustum::kNumPlanes; i++)
     {
-        const Plane& plane = inFrustum.GetPlane(i);
-        const glm::vec3 p  = inBox.CalculatePVertex(plane.GetNormal());
+        const Plane& plane = frustum.GetPlane(i);
+        const glm::vec3 p  = box.CalculatePVertex(plane.GetNormal());
 
         if (plane.DistanceTo(p) < 0.0f)
         {

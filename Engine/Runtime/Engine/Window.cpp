@@ -26,14 +26,14 @@
 
 SINGLETON_IMPL(MainWindow);
 
-Window::Window(std::string       inTitle,
-               const glm::uvec2& inSize,
-               const uint32_t    inFlags) :
-    RenderOutput    (inSize),
+Window::Window(std::string       title,
+               const glm::uvec2& size,
+               const uint32_t    flags) :
+    RenderOutput    (size),
     mSDLWindow      (nullptr),
     mSwapchain      (nullptr),
-    mTitle          (std::move(inTitle)),
-    mFlags          (inFlags)
+    mTitle          (std::move(title)),
+    mFlags          (flags)
 {
     uint32_t sdlFlags = 0;
 
@@ -57,12 +57,12 @@ Window::~Window()
     SDL_DestroyWindow(mSDLWindow);
 }
 
-void Window::SetSwapchain(GPUSwapchain* const inSwapchain,
+void Window::SetSwapchain(GPUSwapchain* const swapchain,
                           OnlyCalledBy<GPUSwapchain>)
 {
-    Assert(!inSwapchain || !mSwapchain);
+    Assert(!swapchain || !mSwapchain);
 
-    mSwapchain = inSwapchain;
+    mSwapchain = swapchain;
 
     if (mSwapchain)
     {
@@ -102,11 +102,11 @@ void Window::EndRender()
     GPUGraphicsContext::Get().EndPresent(*mSwapchain);
 }
 
-MainWindow::MainWindow(const glm::uvec2& inSize,
-                       const uint32_t    inFlags) :
+MainWindow::MainWindow(const glm::uvec2& size,
+                       const uint32_t    flags) :
     Window (Game::Get().GetTitle(),
-            inSize,
-            inFlags)
+            size,
+            flags)
 {
 }
 

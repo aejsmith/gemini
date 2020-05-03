@@ -24,9 +24,9 @@
 #include "Entity/Entity.h"
 #include "Entity/World.h"
 
-WorldEditorWindow::WorldEditorWindow(World* const inWorld) :
+WorldEditorWindow::WorldEditorWindow(World* const world) :
     DebugWindow     ("Entity", "World Editor"),
-    mWorld          (inWorld),
+    mWorld          (world),
     mCurrentEntity  (nullptr),
     mEntityToOpen   (nullptr)
 {
@@ -89,14 +89,14 @@ void WorldEditorWindow::RenderMenuBar()
 
     static char nameBuf[128] = {};
 
-    auto NamePopup = [&] (const char* const inTitle,
-                          const char* const inText) -> bool
+    auto NamePopup = [&] (const char* const title,
+                          const char* const text) -> bool
     {
         bool result = false;
 
-        if (ImGui::BeginPopupModal(inTitle, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal(title, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            ImGui::Text(inText);
+            ImGui::Text(text);
 
             if (ImGui::IsWindowAppearing())
             {
@@ -201,47 +201,47 @@ void WorldEditorWindow::RenderEntityTree()
 
     Entity* nextEntity = nullptr;
 
-    std::function<void (Entity*)> AddEntity = [&] (Entity* const inEntity)
+    std::function<void (Entity*)> AddEntity = [&] (Entity* const entity)
     {
         ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow |
                                        ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-        if (inEntity == mWorld->GetRoot())
+        if (entity == mWorld->GetRoot())
         {
             nodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
         }
 
-        if (inEntity == mCurrentEntity)
+        if (entity == mCurrentEntity)
         {
             nodeFlags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        if (inEntity->GetChildren().IsEmpty())
+        if (entity->GetChildren().IsEmpty())
         {
             nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         }
 
-        if (inEntity == mEntityToOpen)
+        if (entity == mEntityToOpen)
         {
             ImGui::SetNextTreeNodeOpen(true);
             mEntityToOpen = nullptr;
         }
 
-        bool nodeOpen = ImGui::TreeNodeEx(inEntity, nodeFlags, "%s", inEntity->GetName().c_str());
+        bool nodeOpen = ImGui::TreeNodeEx(entity, nodeFlags, "%s", entity->GetName().c_str());
 
         if (ImGui::IsItemClicked())
         {
-            nextEntity = inEntity;
+            nextEntity = entity;
         }
 
         if (nodeOpen)
         {
-            for (const Entity* child : inEntity->GetChildren())
+            for (const Entity* child : entity->GetChildren())
             {
                 AddEntity(const_cast<Entity*>(child));
             }
 
-            if (!inEntity->GetChildren().IsEmpty())
+            if (!entity->GetChildren().IsEmpty())
             {
                 ImGui::TreePop();
             }

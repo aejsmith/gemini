@@ -28,17 +28,21 @@ size_t Path::CountComponents() const
     for (size_t pos = 1; pos < mPath.length(); pos++)
     {
         if (mPath[pos] == '/')
+        {
             count++;
+        }
     }
 
     return count;
 }
 
-Path Path::Subset(const size_t inFirstComponent,
-                  const size_t inCount) const
+Path Path::Subset(const size_t firstComponent,
+                  const size_t count) const
 {
-    if (inCount == 0)
+    if (count == 0)
+    {
         return Path();
+    }
 
     size_t current = 0;
     size_t start   = 0;
@@ -49,11 +53,11 @@ Path Path::Subset(const size_t inFirstComponent,
         {
             current++;
 
-            if (current == inFirstComponent)
+            if (current == firstComponent)
                 start = pos + 1;
 
             /* Don't allow it to overflow. */
-            if (inFirstComponent + inCount > inFirstComponent && current == inFirstComponent + inCount)
+            if (firstComponent + count > firstComponent && current == firstComponent + count)
             {
                 return Path(mPath.substr(start,
                                          pos - start),
@@ -62,7 +66,7 @@ Path Path::Subset(const size_t inFirstComponent,
         }
     }
 
-    return (current >= inFirstComponent)
+    return (current >= firstComponent)
                ? Path(mPath.substr(start),
                       kNormalized)
                : Path();
@@ -75,21 +79,21 @@ std::string Path::ToPlatform() const
     return ret;
 }
 
-Path& Path::operator /=(const Path& inOther)
+Path& Path::operator /=(const Path& other)
 {
-    if (inOther.IsAbsolute())
+    if (other.IsAbsolute())
     {
-        mPath = inOther.mPath;
+        mPath = other.mPath;
         return *this;
     }
-    else if (inOther.IsRoot())
+    else if (other.IsRoot())
     {
         return *this;
     }
 
-    if (&inOther == this)
+    if (&other == this)
     {
-        std::string copy(inOther.GetString());
+        std::string copy(other.GetString());
         mPath += '/';
         mPath += copy;
     }
@@ -97,14 +101,16 @@ Path& Path::operator /=(const Path& inOther)
     {
         if (IsRoot())
         {
-            mPath = inOther.mPath;
+            mPath = other.mPath;
         }
         else
         {
             if (!IsAbsoluteRoot())
+            {
                 mPath += '/';
+            }
 
-            mPath += inOther.mPath;
+            mPath += other.mPath;
         }
     }
 
@@ -186,7 +192,7 @@ std::string Path::GetBaseFileName() const
     }
 }
 
-std::string Path::GetExtension(const bool inKeepDot) const
+std::string Path::GetExtension(const bool keepDot) const
 {
     const Path file  = GetFileName();
     const size_t pos = file.mPath.rfind('.');
@@ -197,35 +203,37 @@ std::string Path::GetExtension(const bool inKeepDot) const
     }
     else
     {
-        return file.mPath.substr((inKeepDot) ? pos : pos + 1);
+        return file.mPath.substr((keepDot) ? pos : pos + 1);
     }
 }
 
-void Path::Normalize(const char*              inPath,
-                     const size_t             inLength,
-                     const NormalizationState inState,
+void Path::Normalize(const char*              path,
+                     const size_t             length,
+                     const NormalizationState state,
                      std::string&             outNormalized)
 {
-    if (inLength == 0 || (inLength == 1 && inPath[0] == '.'))
+    if (length == 0 || (length == 1 && path[0] == '.'))
     {
         outNormalized = '.';
         return;
     }
 
-    outNormalized.reserve(inLength);
+    outNormalized.reserve(length);
 
     bool seenSlash = false;
     bool seenDot   = false;
 
-    for (size_t pos = 0; pos < inLength; pos++)
+    for (size_t pos = 0; pos < length; pos++)
     {
-        char ch = inPath[pos];
+        char ch = path[pos];
 
-        if (inState == kUnnormalizedPlatform)
+        if (state == kUnnormalizedPlatform)
         {
             /* Convert platform-specific path separators. */
             if (ch == kPlatformPathSeparator)
+            {
                 ch = '/';
+            }
         }
 
         if (ch == '/')
@@ -262,7 +270,9 @@ void Path::Normalize(const char*              inPath,
 
     /* Ensure we haven't written an extraneous '/' at the end. */
     if (outNormalized.length() > 1 && outNormalized[outNormalized.length() - 1] == '/')
+    {
         outNormalized.pop_back();
+    }
 
     outNormalized.shrink_to_fit();
 }

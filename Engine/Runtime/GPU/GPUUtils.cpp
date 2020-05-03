@@ -16,9 +16,9 @@
 
 #include "GPU/GPUUtils.h"
 
-size_t GPUUtils::GetAttributeSize(const GPUAttributeFormat inFormat)
+size_t GPUUtils::GetAttributeSize(const GPUAttributeFormat format)
 {
-    switch (inFormat)
+    switch (format)
     {
         case kGPUAttributeFormat_R8_UNorm:              return 1;
         case kGPUAttributeFormat_R8G8_UNorm:            return 2;
@@ -53,8 +53,8 @@ size_t GPUUtils::GetAttributeSize(const GPUAttributeFormat inFormat)
 
 #if GEMINI_BUILD_DEBUG
 
-void GPUUtils::ValidateResourceState(const GPUResourceState inState,
-                                     const bool             inIsTexture)
+void GPUUtils::ValidateResourceState(const GPUResourceState state,
+                                     const bool             isTexture)
 {
     static const GPUResourceState kMutuallyExclusiveStates[] =
     {
@@ -87,39 +87,39 @@ void GPUUtils::ValidateResourceState(const GPUResourceState inState,
         kGPUResourceState_DepthStencilRead
     };
 
-    Assert(inState != 0);
+    Assert(state != 0);
 
-    for (auto state : kMutuallyExclusiveStates)
+    for (auto otherState : kMutuallyExclusiveStates)
     {
-        if (inState & state && inState & ~state)
+        if (state & otherState && state & ~otherState)
         {
             Fatal("GPUResourceState combines mutually exclusive state 0x%x with other states (0x%x)",
-                  state,
-                  inState);
+                  otherState,
+                  state);
         }
     }
 
-    if (inIsTexture)
+    if (isTexture)
     {
-        for (auto state : kBufferOnlyStates)
+        for (auto otherState : kBufferOnlyStates)
         {
-            if (inState & state)
+            if (state & otherState)
             {
                 Fatal("GPUResourceState uses buffer-only state 0x%x on texture (0x%x)",
-                      state,
-                      inState);
+                      otherState,
+                      state);
             }
         }
     }
     else
     {
-        for (auto state : kTextureOnlyStates)
+        for (auto otherState : kTextureOnlyStates)
         {
-            if (inState & state)
+            if (state & otherState)
             {
                 Fatal("GPUResourceState uses texture-only state 0x%x on buffer (0x%x)",
-                      state,
-                      inState);
+                      otherState,
+                      state);
             }
         }
     }

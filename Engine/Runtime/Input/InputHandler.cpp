@@ -18,8 +18,8 @@
 
 #include "Input/InputManager.h"
 
-InputHandler::InputHandler(const Priority inPriority) :
-    mPriority   (inPriority),
+InputHandler::InputHandler(const Priority priority) :
+    mPriority   (priority),
     mRegistered (false)
 {
 }
@@ -32,17 +32,17 @@ InputHandler::~InputHandler()
     }
 }
 
-void InputHandler::SetInputPriority(const Priority inPriority)
+void InputHandler::SetInputPriority(const Priority priority)
 {
     if (mRegistered)
     {
         UnregisterInputHandler();
-        mPriority = inPriority;
+        mPriority = priority;
         RegisterInputHandler();
     }
     else
     {
-        mPriority = inPriority;
+        mPriority = priority;
     }
 }
 

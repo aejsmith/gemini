@@ -194,9 +194,9 @@ public:
      * to the type of the pass. The function will be executed on the main
      * thread.
      */
-    void                            SetFunction(RenderFunction inFunction);
-    void                            SetFunction(ComputeFunction inFunction);
-    void                            SetFunction(TransferFunction inFunction);
+    void                            SetFunction(RenderFunction function);
+    void                            SetFunction(ComputeFunction function);
+    void                            SetFunction(TransferFunction function);
 
     /**
      * Declare usage of a resource in the pass. This is to be used when the
@@ -208,17 +208,17 @@ public:
      * returned there. It is valid to pass null if the resource is writeable
      * but it is not needed after the pass, e.g. it is just transient storage.
      */
-    void                            UseResource(const RenderResourceHandle inHandle,
-                                                const GPUSubresourceRange& inRange,
-                                                const GPUResourceState     inState,
+    void                            UseResource(const RenderResourceHandle handle,
+                                                const GPUSubresourceRange& range,
+                                                const GPUResourceState     state,
                                                 RenderResourceHandle*      outNewHandle = nullptr);
 
     /**
      * Create a view to use a resource within the pass. See UseResource()
      * regarding outNewHandle.
      */
-    RenderViewHandle                CreateView(const RenderResourceHandle inHandle,
-                                               const RenderViewDesc&      inDesc,
+    RenderViewHandle                CreateView(const RenderResourceHandle handle,
+                                               const RenderViewDesc&      desc,
                                                RenderResourceHandle*      outNewHandle = nullptr);
 
     /**
@@ -237,12 +237,12 @@ public:
      * op will be set to discard if no subsequent passes use the resource after
      * the pass, otherwise it will be set to store.
      */
-    void                            SetColour(const uint8_t              inIndex,
-                                              const RenderResourceHandle inHandle,
+    void                            SetColour(const uint8_t              index,
+                                              const RenderResourceHandle handle,
                                               RenderResourceHandle*      outNewHandle);
-    void                            SetColour(const uint8_t              inIndex,
-                                              const RenderResourceHandle inHandle,
-                                              const RenderViewDesc&      inDesc,
+    void                            SetColour(const uint8_t              index,
+                                              const RenderResourceHandle handle,
+                                              const RenderViewDesc&      desc,
                                               RenderResourceHandle*      outNewHandle);
 
     /**
@@ -256,11 +256,11 @@ public:
      * Otherwise, it can be non-null if the contents will be needed after the
      * pass, but can still be null if the depth buffer is just transient.
      */
-    void                            SetDepthStencil(const RenderResourceHandle inHandle,
-                                                    const GPUResourceState     inState,
+    void                            SetDepthStencil(const RenderResourceHandle handle,
+                                                    const GPUResourceState     state,
                                                     RenderResourceHandle*      outNewHandle = nullptr);
-    void                            SetDepthStencil(const RenderResourceHandle inHandle,
-                                                    const RenderViewDesc&      inDesc,
+    void                            SetDepthStencil(const RenderResourceHandle handle,
+                                                    const RenderViewDesc&      desc,
                                                     RenderResourceHandle*      outNewHandle = nullptr);
 
     /**
@@ -273,10 +273,10 @@ public:
      * resource is needed, declare a new resource rather than reusing an
      * existing one.
      */
-    void                            ClearColour(const uint8_t    inIndex,
-                                                const glm::vec4& inValue);
-    void                            ClearDepth(const float inValue);
-    void                            ClearStencil(const uint32_t inValue);
+    void                            ClearColour(const uint8_t    index,
+                                                const glm::vec4& value);
+    void                            ClearDepth(const float value);
+    void                            ClearStencil(const uint32_t value);
 
     /**
      * Force this pass to execute even if none of its outputs are consumed.
@@ -291,7 +291,7 @@ public:
      */
 
     /** Retrieve a view from the pass. Only valid inside the pass function. */
-    GPUResourceView*                GetView(const RenderViewHandle inHandle) const;
+    GPUResourceView*                GetView(const RenderViewHandle handle) const;
 
 private:
     struct UsedResource
@@ -315,10 +315,10 @@ private:
     };
 
 private:
-                                    RenderGraphPass(RenderGraph&              inGraph,
-                                                    std::string               inName,
-                                                    const RenderGraphPassType inType,
-                                                    const RenderLayer*        inLayer);
+                                    RenderGraphPass(RenderGraph&              graph,
+                                                    std::string               name,
+                                                    const RenderGraphPassType type,
+                                                    const RenderLayer*        layer);
                                     ~RenderGraphPass() {}
 
 private:
@@ -345,22 +345,22 @@ private:
 
 using RenderGraphPassArray = std::vector<RenderGraphPass*>;
 
-inline void RenderGraphPass::SetFunction(RenderFunction inFunction)
+inline void RenderGraphPass::SetFunction(RenderFunction function)
 {
     Assert(mType == kRenderGraphPassType_Render);
-    mRenderFunction = std::move(inFunction);
+    mRenderFunction = std::move(function);
 }
 
-inline void RenderGraphPass::SetFunction(ComputeFunction inFunction)
+inline void RenderGraphPass::SetFunction(ComputeFunction function)
 {
     Assert(mType == kRenderGraphPassType_Compute);
-    mComputeFunction = std::move(inFunction);
+    mComputeFunction = std::move(function);
 }
 
-inline void RenderGraphPass::SetFunction(TransferFunction inFunction)
+inline void RenderGraphPass::SetFunction(TransferFunction function)
 {
     Assert(mType == kRenderGraphPassType_Transfer);
-    mTransferFunction = std::move(inFunction);
+    mTransferFunction = std::move(function);
 }
 
 /**
@@ -398,9 +398,9 @@ public:
                                     RenderGraph();
                                     ~RenderGraph();
 
-    RenderResourceType              GetResourceType(const RenderResourceHandle inHandle) const;
-    const RenderBufferDesc&         GetBufferDesc(const RenderResourceHandle inHandle) const;
-    const RenderTextureDesc&        GetTextureDesc(const RenderResourceHandle inHandle) const;
+    RenderResourceType              GetResourceType(const RenderResourceHandle handle) const;
+    const RenderBufferDesc&         GetBufferDesc(const RenderResourceHandle handle) const;
+    const RenderTextureDesc&        GetTextureDesc(const RenderResourceHandle handle) const;
 
     /**
      * Graph build methods.
@@ -411,35 +411,35 @@ public:
      * it does not have to be unique but is recommended to be to make it easier
      * to identify passes.
      */
-    RenderGraphPass&                AddPass(std::string               inName,
-                                            const RenderGraphPassType inType);
+    RenderGraphPass&                AddPass(std::string               name,
+                                            const RenderGraphPassType type);
 
     /** Shortcut to add a pass to just blit one texture subresource to another. */
-    RenderGraphPass&                AddBlitPass(std::string                inName,
-                                                const RenderResourceHandle inDestHandle,
-                                                const GPUSubresource       inDestSubresource,
-                                                const RenderResourceHandle inSourceHandle,
-                                                const GPUSubresource       inSourceSubresource,
+    RenderGraphPass&                AddBlitPass(std::string                name,
+                                                const RenderResourceHandle destHandle,
+                                                const GPUSubresource       destSubresource,
+                                                const RenderResourceHandle sourceHandle,
+                                                const GPUSubresource       sourceSubresource,
                                                 RenderResourceHandle*      outNewHandle);
 
     /** Shortcut to add a pass to upload a buffer. */
-    RenderGraphPass&                AddUploadPass(std::string                inName,
-                                                  const RenderResourceHandle inDestHandle,
-                                                  const uint32_t             inDestOffset,
-                                                  GPUStagingBuffer           inSourceBuffer,
+    RenderGraphPass&                AddUploadPass(std::string                name,
+                                                  const RenderResourceHandle destHandle,
+                                                  const uint32_t             destOffset,
+                                                  GPUStagingBuffer           sourceBuffer,
                                                   RenderResourceHandle*      outNewHandle);
 
     /**
      * Create a new buffer resource. The initial content will be undefined so
      * the first pass that uses it must write to it.
      */
-    RenderResourceHandle            CreateBuffer(const RenderBufferDesc& inDesc);
+    RenderResourceHandle            CreateBuffer(const RenderBufferDesc& desc);
 
     /**
      * Create a new texture resource. The initial content will be undefined so
      * the first pass that uses it must write to it.
      */
-    RenderResourceHandle            CreateTexture(const RenderTextureDesc& inDesc);
+    RenderResourceHandle            CreateTexture(const RenderTextureDesc& desc);
 
     /**
      * Import an external resource into the graph. This is to be used for
@@ -456,12 +456,12 @@ public:
      * and after all passes have executed. The begin callback will be called
      * before any views to the resource are created.
      */
-    RenderResourceHandle            ImportResource(GPUResource* const        inResource,
-                                                   const GPUResourceState    inState,
-                                                   const char* const         inName,
-                                                   std::function<void ()>    inBeginCallback = {},
-                                                   std::function<void ()>    inEndCallback = {},
-                                                   const RenderOutput* const inOutput = nullptr);
+    RenderResourceHandle            ImportResource(GPUResource* const        extResource,
+                                                   const GPUResourceState    state,
+                                                   const char* const         name,
+                                                   std::function<void ()>    beginCallback = {},
+                                                   std::function<void ()>    endCallback = {},
+                                                   const RenderOutput* const output = nullptr);
 
     /**
      * Allocate a transient object that needs to remain alive until graph
@@ -471,10 +471,10 @@ public:
      * use the frame allocator directly
      */
     template <typename T, typename... Args>
-    T*                              NewTransient(Args&&... inArgs);
+    T*                              NewTransient(Args&&... args);
 
-    void                            SetCurrentLayer(const RenderLayer* const inLayer)
-                                        { mCurrentLayer = inLayer; }
+    void                            SetCurrentLayer(const RenderLayer* const layer)
+                                        { mCurrentLayer = layer; }
 
     /**
      * Graph execution methods.
@@ -486,8 +486,8 @@ public:
      * Methods to retrieve the real resource from a handle inside a pass
      * function.
      */
-    GPUBuffer*                      GetBuffer(const RenderResourceHandle inHandle) const;
-    GPUTexture*                     GetTexture(const RenderResourceHandle inHandle) const;
+    GPUBuffer*                      GetBuffer(const RenderResourceHandle handle) const;
+    GPUTexture*                     GetTexture(const RenderResourceHandle handle) const;
 
 private:
     struct Resource
@@ -573,29 +573,29 @@ private:
     };
 
 private:
-    void                            AddDestructor(Destructor inDestructor);
+    void                            AddDestructor(Destructor destructor);
 
-    void                            TransitionResource(Resource&                  inResource,
-                                                       const GPUSubresourceRange& inRange,
-                                                       const GPUResourceState     inState);
+    void                            TransitionResource(Resource&                  resource,
+                                                       const GPUSubresourceRange& range,
+                                                       const GPUResourceState     state);
 
     void                            FlushBarriers();
 
-    void                            MakeBufferDesc(const Resource* const inResource,
+    void                            MakeBufferDesc(const Resource* const resource,
                                                    GPUBufferDesc&        outDesc);
-    void                            MakeTextureDesc(const Resource* const inResource,
+    void                            MakeTextureDesc(const Resource* const resource,
                                                     GPUTextureDesc&       outDesc);
 
     void                            DetermineRequiredPasses();
     void                            AllocateResources();
     void                            EndResources();
-    void                            PrepareResources(RenderGraphPass& inPass);
-    void                            CreateViews(RenderGraphPass& inPass);
-    void                            DestroyViews(RenderGraphPass& inPass);
-    void                            ExecutePass(RenderGraphPass& inPass);
+    void                            PrepareResources(RenderGraphPass& pass);
+    void                            CreateViews(RenderGraphPass& pass);
+    void                            DestroyViews(RenderGraphPass& pass);
+    void                            ExecutePass(RenderGraphPass& pass);
 
-    const RenderGraphPass*          FindPass(const PassKey& inKey) const;
-    const Resource*                 FindResource(const ResourceKey& inKey) const;
+    const RenderGraphPass*          FindPass(const PassKey& key) const;
+    const Resource*                 FindResource(const ResourceKey& key) const;
 
 private:
     RenderGraphPassArray            mPasses;
@@ -615,28 +615,28 @@ private:
     friend class RenderGraphWindow;
 };
 
-inline RenderResourceType RenderGraph::GetResourceType(const RenderResourceHandle inHandle) const
+inline RenderResourceType RenderGraph::GetResourceType(const RenderResourceHandle handle) const
 {
-    Assert(inHandle.index < mResources.size());
-    return mResources[inHandle.index]->type;
+    Assert(handle.index < mResources.size());
+    return mResources[handle.index]->type;
 }
 
-inline const RenderBufferDesc& RenderGraph::GetBufferDesc(const RenderResourceHandle inHandle) const
+inline const RenderBufferDesc& RenderGraph::GetBufferDesc(const RenderResourceHandle handle) const
 {
-    Assert(GetResourceType(inHandle) == kRenderResourceType_Buffer);
-    return mResources[inHandle.index]->buffer;
+    Assert(GetResourceType(handle) == kRenderResourceType_Buffer);
+    return mResources[handle.index]->buffer;
 }
 
-inline const RenderTextureDesc& RenderGraph::GetTextureDesc(const RenderResourceHandle inHandle) const
+inline const RenderTextureDesc& RenderGraph::GetTextureDesc(const RenderResourceHandle handle) const
 {
-    Assert(GetResourceType(inHandle) == kRenderResourceType_Texture);
-    return mResources[inHandle.index]->texture;
+    Assert(GetResourceType(handle) == kRenderResourceType_Texture);
+    return mResources[handle.index]->texture;
 }
 
 template <typename T, typename... Args>
-inline T* RenderGraph::NewTransient(Args&&... inArgs)
+inline T* RenderGraph::NewTransient(Args&&... args)
 {
-    T* const result = FrameAllocator::New<T>(std::forward<Args>(inArgs)...);
+    T* const result = FrameAllocator::New<T>(std::forward<Args>(args)...);
     AddDestructor([result] () { FrameAllocator::Delete(result); });
     return result;
 }

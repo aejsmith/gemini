@@ -32,10 +32,10 @@ class IntrusiveListNode
 {
 public:
                                 IntrusiveListNode();
-                                IntrusiveListNode(const IntrusiveListNode& inOther);
+                                IntrusiveListNode(const IntrusiveListNode& other);
                                 ~IntrusiveListNode();
 
-    IntrusiveListNode&          operator=(const IntrusiveListNode& inOther);
+    IntrusiveListNode&          operator=(const IntrusiveListNode& other);
 
     bool                        IsInserted() const;
 
@@ -53,7 +53,7 @@ inline IntrusiveListNode::IntrusiveListNode() :
 {
 }
 
-inline IntrusiveListNode::IntrusiveListNode(const IntrusiveListNode& inOther) :
+inline IntrusiveListNode::IntrusiveListNode(const IntrusiveListNode& other) :
     mPrevious   (this),
     mNext       (this)
 {
@@ -93,16 +93,16 @@ public:
     {
     public:
                                 BaseIterator() : mNode (nullptr) {}
-                                BaseIterator(const BaseIterator& inOther) : mNode (inOther.mNode) {}
-                                BaseIterator(N* const inNode) : mNode (inNode) {}
+                                BaseIterator(const BaseIterator& other) : mNode (other.mNode) {}
+                                BaseIterator(N* const node) : mNode (node) {}
 
-        BaseIterator&           operator=(const BaseIterator& inOther)
-                                    { mNode = inOther.mNode; return *this; }
+        BaseIterator&           operator=(const BaseIterator& other)
+                                    { mNode = other.mNode; return *this; }
 
-        bool                    operator==(const BaseIterator& inOther) const
-                                    { return mNode == inOther.mNode; }
-        bool                    operator!=(const BaseIterator& inOther) const
-                                    { return mNode != inOther.mNode; }
+        bool                    operator==(const BaseIterator& other) const
+                                    { return mNode == other.mNode; }
+        bool                    operator!=(const BaseIterator& other) const
+                                    { return mNode != other.mNode; }
 
         U*                      operator*() const   { return Impl::GetValue(mNode); }
         U*                      operator->() const  { return Impl::GetValue(mNode); }
@@ -126,23 +126,23 @@ public:
 
 public:
                                 IntrusiveList();
-                                IntrusiveList(const IntrusiveList& inOther);
-                                IntrusiveList(IntrusiveList&& inOther);
+                                IntrusiveList(const IntrusiveList& other);
+                                IntrusiveList(IntrusiveList&& other);
                                 ~IntrusiveList();
 
-    IntrusiveList&              operator=(const IntrusiveList& inOther);
-    IntrusiveList&              operator=(IntrusiveList&& inOther);
+    IntrusiveList&              operator=(const IntrusiveList& other);
+    IntrusiveList&              operator=(IntrusiveList&& other);
 
     bool                        IsEmpty() const;
 
-    void                        Append(T* const inValue);
-    void                        Prepend(T* const inValue);
-    void                        InsertBefore(T* const inPosition,
-                                             T* const inValue);
-    void                        InsertAfter(T* const inPosition,
-                                            T* const inValue);
+    void                        Append(T* const value);
+    void                        Prepend(T* const value);
+    void                        InsertBefore(T* const position,
+                                             T* const value);
+    void                        InsertAfter(T* const position,
+                                            T* const value);
 
-    void                        Remove(T* const inValue);
+    void                        Remove(T* const value);
     T*                          RemoveFirst();
     T*                          RemoveLast();
     void                        Clear();
@@ -154,10 +154,10 @@ public:
      * Return a pointer to the preceding/following element in the list, or null
      * if the element is the first/last element, respectively.
      */
-    T*                          Previous(T* const inCurrent) const;
-    const T*                    Previous(const T* const inCurrent) const;
-    T*                          Next(T* const inCurrent) const;
-    const T*                    Next(const T* const inCurrent) const;
+    T*                          Previous(T* const current) const;
+    const T*                    Previous(const T* const current) const;
+    T*                          Next(T* const current) const;
+    const T*                    Next(const T* const current) const;
 
     /**
      * Iterators for use with range-based for loops. The other functions should
@@ -169,11 +169,11 @@ public:
     ConstIterator               end() const     { return ConstIterator(&mHead); }
 
 private:
-    static void                 InsertBefore(IntrusiveListNode* const inPosition,
-                                             IntrusiveListNode* const inNode);
-    static void                 InsertAfter(IntrusiveListNode* const inPosition,
-                                            IntrusiveListNode* const inNode);
-    static void                 Remove(IntrusiveListNode* const inNode);
+    static void                 InsertBefore(IntrusiveListNode* const position,
+                                             IntrusiveListNode* const node);
+    static void                 InsertAfter(IntrusiveListNode* const position,
+                                            IntrusiveListNode* const node);
+    static void                 Remove(IntrusiveListNode* const node);
 
 private:
     IntrusiveListNode           mHead;
@@ -189,18 +189,18 @@ inline IntrusiveList<T, Member>::IntrusiveList()
 }
 
 INTRUSIVELIST_TEMPLATE
-inline IntrusiveList<T, Member>::IntrusiveList(const IntrusiveList& inOther)
+inline IntrusiveList<T, Member>::IntrusiveList(const IntrusiveList& other)
 {
 }
 
 INTRUSIVELIST_TEMPLATE
-inline IntrusiveList<T, Member>::IntrusiveList(IntrusiveList&& inOther)
+inline IntrusiveList<T, Member>::IntrusiveList(IntrusiveList&& other)
 {
-    mHead.mPrevious = inOther.mHead.mPrevious;
-    mHead.mNext     = inOther.mHead.mNext;
+    mHead.mPrevious = other.mHead.mPrevious;
+    mHead.mNext     = other.mHead.mNext;
 
-    inOther.mHead.mPrevious = &inOther.mHead;
-    inOther.mHead.mNext     = &inOther.mHead;
+    other.mHead.mPrevious = &other.mHead;
+    other.mHead.mNext     = &other.mHead;
 }
 
 INTRUSIVELIST_TEMPLATE
@@ -210,20 +210,20 @@ inline IntrusiveList<T, Member>::~IntrusiveList()
 }
 
 INTRUSIVELIST_TEMPLATE
-inline IntrusiveList<T, Member>& IntrusiveList<T, Member>::operator=(const IntrusiveList& inOther)
+inline IntrusiveList<T, Member>& IntrusiveList<T, Member>::operator=(const IntrusiveList& other)
 {
 }
 
 INTRUSIVELIST_TEMPLATE
-inline IntrusiveList<T, Member>& IntrusiveList<T, Member>::operator=(IntrusiveList&& inOther)
+inline IntrusiveList<T, Member>& IntrusiveList<T, Member>::operator=(IntrusiveList&& other)
 {
     Clear();
 
-    mHead.mPrevious = inOther.mHead.mPrevious;
-    mHead.mNext     = inOther.mHead.mNext;
+    mHead.mPrevious = other.mHead.mPrevious;
+    mHead.mNext     = other.mHead.mNext;
 
-    inOther.mHead.mPrevious = &inOther.mHead;
-    inOther.mHead.mNext     = &inOther.mHead;
+    other.mHead.mPrevious = &other.mHead;
+    other.mHead.mNext     = &other.mHead;
 }
 
 INTRUSIVELIST_TEMPLATE
@@ -233,33 +233,33 @@ inline bool IntrusiveList<T, Member>::IsEmpty() const
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::Append(T* const inValue)
+inline void IntrusiveList<T, Member>::Append(T* const value)
 {
-    InsertBefore(&mHead, Impl::GetNode(inValue));
+    InsertBefore(&mHead, Impl::GetNode(value));
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::Prepend(T* const inValue)
+inline void IntrusiveList<T, Member>::Prepend(T* const value)
 {
-    InsertAfter(&mHead, Impl::GetNode(inValue));
+    InsertAfter(&mHead, Impl::GetNode(value));
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::InsertBefore(T* const inPosition, T* const inValue)
+inline void IntrusiveList<T, Member>::InsertBefore(T* const position, T* const value)
 {
-    InsertBefore(Impl::GetNode(inPosition), Impl::GetNode(inValue));
+    InsertBefore(Impl::GetNode(position), Impl::GetNode(value));
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::InsertAfter(T* const inPosition, T* const inValue)
+inline void IntrusiveList<T, Member>::InsertAfter(T* const position, T* const value)
 {
-    InsertAfter(Impl::GetNode(inPosition), Impl::GetNode(inValue));
+    InsertAfter(Impl::GetNode(position), Impl::GetNode(value));
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::Remove(T* const inValue)
+inline void IntrusiveList<T, Member>::Remove(T* const value)
 {
-    Remove(Impl::GetNode(inValue));
+    Remove(Impl::GetNode(value));
 }
 
 INTRUSIVELIST_TEMPLATE
@@ -324,9 +324,9 @@ inline T* IntrusiveList<T, Member>::Last() const
 }
 
 INTRUSIVELIST_TEMPLATE
-inline T* IntrusiveList<T, Member>::Previous(T* const inCurrent) const
+inline T* IntrusiveList<T, Member>::Previous(T* const current) const
 {
-    IntrusiveListNode* node = Impl::GetNode(inCurrent);
+    IntrusiveListNode* node = Impl::GetNode(current);
 
     if (node->mPrevious != &mHead)
     {
@@ -339,9 +339,9 @@ inline T* IntrusiveList<T, Member>::Previous(T* const inCurrent) const
 }
 
 INTRUSIVELIST_TEMPLATE
-inline const T* IntrusiveList<T, Member>::Previous(const T* const inCurrent) const
+inline const T* IntrusiveList<T, Member>::Previous(const T* const current) const
 {
-    IntrusiveListNode* node = Impl::GetNode(inCurrent);
+    IntrusiveListNode* node = Impl::GetNode(current);
 
     if (node->mPrevious != &mHead)
     {
@@ -354,9 +354,9 @@ inline const T* IntrusiveList<T, Member>::Previous(const T* const inCurrent) con
 }
 
 INTRUSIVELIST_TEMPLATE
-inline T* IntrusiveList<T, Member>::Next(T* const inCurrent) const
+inline T* IntrusiveList<T, Member>::Next(T* const current) const
 {
-    IntrusiveListNode* node = Impl::GetNode(inCurrent);
+    IntrusiveListNode* node = Impl::GetNode(current);
 
     if (node->mNext != &mHead)
     {
@@ -369,9 +369,9 @@ inline T* IntrusiveList<T, Member>::Next(T* const inCurrent) const
 }
 
 INTRUSIVELIST_TEMPLATE
-inline const T* IntrusiveList<T, Member>::Next(const T* const inCurrent) const
+inline const T* IntrusiveList<T, Member>::Next(const T* const current) const
 {
-    IntrusiveListNode* node = Impl::GetNode(inCurrent);
+    IntrusiveListNode* node = Impl::GetNode(current);
 
     if (node->mNext != &mHead)
     {
@@ -384,41 +384,41 @@ inline const T* IntrusiveList<T, Member>::Next(const T* const inCurrent) const
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::InsertBefore(IntrusiveListNode* const inPosition,
-                                                   IntrusiveListNode* const inNode)
+inline void IntrusiveList<T, Member>::InsertBefore(IntrusiveListNode* const position,
+                                                   IntrusiveListNode* const node)
 {
-    Assert(!inNode->IsInserted());
+    Assert(!node->IsInserted());
 
-    inNode->mPrevious = inPosition->mPrevious;
-    inNode->mNext     = inPosition;
+    node->mPrevious = position->mPrevious;
+    node->mNext     = position;
 
-    inPosition->mPrevious->mNext = inNode;
-    inPosition->mPrevious        = inNode;
+    position->mPrevious->mNext = node;
+    position->mPrevious        = node;
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::InsertAfter(IntrusiveListNode* const inPosition,
-                                                  IntrusiveListNode* const inNode)
+inline void IntrusiveList<T, Member>::InsertAfter(IntrusiveListNode* const position,
+                                                  IntrusiveListNode* const node)
 {
-    Assert(!inNode->IsInserted());
+    Assert(!node->IsInserted());
 
-    inNode->mPrevious = inPosition;
-    inNode->mNext     = inPosition->mNext;
+    node->mPrevious = position;
+    node->mNext     = position->mNext;
 
-    inPosition->mNext->mPrevious = inNode;
-    inPosition->mNext            = inNode;
+    position->mNext->mPrevious = node;
+    position->mNext            = node;
 }
 
 INTRUSIVELIST_TEMPLATE
-inline void IntrusiveList<T, Member>::Remove(IntrusiveListNode* const inNode)
+inline void IntrusiveList<T, Member>::Remove(IntrusiveListNode* const node)
 {
-    Assert(inNode->IsInserted());
+    Assert(node->IsInserted());
 
-    inNode->mPrevious->mNext = inNode->mNext;
-    inNode->mNext->mPrevious = inNode->mPrevious;
+    node->mPrevious->mNext = node->mNext;
+    node->mNext->mPrevious = node->mPrevious;
 
-    inNode->mNext     = inNode;
-    inNode->mPrevious = inNode;
+    node->mNext     = node;
+    node->mPrevious = node;
 }
 
 #undef INTRUSIVELIST_TEMPLATE

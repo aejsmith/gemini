@@ -39,51 +39,51 @@ Light::~Light()
 {
 }
 
-void Light::SetType(const LightType inType)
+void Light::SetType(const LightType type)
 {
-    if (inType != mType)
+    if (type != mType)
     {
-        mType = inType;
-        mRenderLight.SetType(inType);
+        mType = type;
+        mRenderLight.SetType(type);
     }
 }
 
-void Light::SetColour(const glm::vec3& inColour)
+void Light::SetColour(const glm::vec3& colour)
 {
-    if (inColour != mColour)
+    if (colour != mColour)
     {
-        mColour = inColour;
-        mRenderLight.SetColour(inColour);
+        mColour = colour;
+        mRenderLight.SetColour(colour);
     }
 }
 
-void Light::SetIntensity(const float inIntensity)
+void Light::SetIntensity(const float intensity)
 {
-    Assert(inIntensity >= 0.0f);
+    Assert(intensity >= 0.0f);
 
-    if (inIntensity != mIntensity)
+    if (intensity != mIntensity)
     {
-        mIntensity = inIntensity;
-        mRenderLight.SetIntensity(inIntensity);
+        mIntensity = intensity;
+        mRenderLight.SetIntensity(intensity);
     }
 }
 
-void Light::SetRange(const float inRange)
+void Light::SetRange(const float range)
 {
-    Assert(inRange >= 0.0f);
+    Assert(range >= 0.0f);
 
-    if (inRange != mRange)
+    if (range != mRange)
     {
-        mRange = inRange;
-        mRenderLight.SetRange(inRange);
+        mRange = range;
+        mRenderLight.SetRange(range);
     }
 }
 
-void Light::SetInnerConeAngle(const float inInnerConeAngle)
+void Light::SetInnerConeAngle(const float innerConeAngle)
 {
-    Assert(inInnerConeAngle >= 0.0f && inInnerConeAngle <= 90.0f);
+    Assert(innerConeAngle >= 0.0f && innerConeAngle <= 90.0f);
 
-    const float clampedAngle = glm::clamp(inInnerConeAngle, 0.0f, mOuterConeAngle);
+    const float clampedAngle = glm::clamp(innerConeAngle, 0.0f, mOuterConeAngle);
 
     if (clampedAngle != mInnerConeAngle)
     {
@@ -92,11 +92,11 @@ void Light::SetInnerConeAngle(const float inInnerConeAngle)
     }
 }
 
-void Light::SetOuterConeAngle(const float inOuterConeAngle)
+void Light::SetOuterConeAngle(const float outerConeAngle)
 {
-    Assert(inOuterConeAngle >= 0.0f && inOuterConeAngle <= 90.0f);
+    Assert(outerConeAngle >= 0.0f && outerConeAngle <= 90.0f);
 
-    const float clampedAngle = glm::clamp(inOuterConeAngle, mInnerConeAngle, 90.0f);
+    const float clampedAngle = glm::clamp(outerConeAngle, mInnerConeAngle, 90.0f);
 
     if (clampedAngle != mOuterConeAngle)
     {

@@ -23,7 +23,7 @@ class GPUDevice;
 class GPUDeviceChild : Uncopyable
 {
 protected:
-                                GPUDeviceChild(GPUDevice& inDevice);
+                                GPUDeviceChild(GPUDevice& device);
                                 ~GPUDeviceChild() {}
 
 public:
@@ -34,7 +34,7 @@ private:
 
 };
 
-inline GPUDeviceChild::GPUDeviceChild(GPUDevice& inDevice) :
-    mDevice (inDevice)
+inline GPUDeviceChild::GPUDeviceChild(GPUDevice& device) :
+    mDevice (device)
 {
 }

@@ -31,16 +31,16 @@ public:
 
 public:
                                 Bitset();
-                                Bitset(const Bitset& inOther);
+                                Bitset(const Bitset& other);
 
-    Bitset&                     operator =(const Bitset& inOther);
+    Bitset&                     operator =(const Bitset& other);
 
     bool                        Any() const;
 
-    bool                        Test(const size_t inBit) const;
+    bool                        Test(const size_t bit) const;
 
-    Bitset&                     Set(const size_t inBit);
-    Bitset&                     Clear(const size_t inBit);
+    Bitset&                     Set(const size_t bit);
+    Bitset&                     Clear(const size_t bit);
 
     void                        Reset();
 
@@ -49,9 +49,9 @@ public:
     size_t                      FindLast() const;
 
 private:
-    static size_t               GetElement(const size_t inBit);
-    static size_t               GetOffset(const size_t inBit);
-    static Element              GetValue(const size_t inBit);
+    static size_t               GetElement(const size_t bit);
+    static size_t               GetOffset(const size_t bit);
+    static Element              GetValue(const size_t bit);
 
 private:
     Element                     mData[kNumElements];
@@ -65,35 +65,35 @@ inline Bitset<N>::Bitset()
 }
 
 template <size_t N>
-inline Bitset<N>::Bitset(const Bitset& inOther)
+inline Bitset<N>::Bitset(const Bitset& other)
 {
-    memcpy(mData, inOther.mData, sizeof(mData));
+    memcpy(mData, other.mData, sizeof(mData));
 }
 
 template <size_t N>
-inline Bitset<N>& Bitset<N>::operator =(const Bitset& inOther)
+inline Bitset<N>& Bitset<N>::operator =(const Bitset& other)
 {
-    mData = inOther.mData;
+    mData = other.mData;
     return *this;
 }
 
 template <size_t N>
-inline size_t Bitset<N>::GetElement(const size_t inBit)
+inline size_t Bitset<N>::GetElement(const size_t bit)
 {
-    Assert(inBit < kNumBits);
-    return inBit / kBitsPerElement;
+    Assert(bit < kNumBits);
+    return bit / kBitsPerElement;
 }
 
 template <size_t N>
-inline size_t Bitset<N>::GetOffset(const size_t inBit)
+inline size_t Bitset<N>::GetOffset(const size_t bit)
 {
-    return inBit % kBitsPerElement;
+    return bit % kBitsPerElement;
 }
 
 template <size_t N>
-inline typename Bitset<N>::Element Bitset<N>::GetValue(const size_t inBit)
+inline typename Bitset<N>::Element Bitset<N>::GetValue(const size_t bit)
 {
-    return static_cast<Element>(1) << static_cast<Element>(GetOffset(inBit));
+    return static_cast<Element>(1) << static_cast<Element>(GetOffset(bit));
 }
 
 template <size_t N>
@@ -111,22 +111,22 @@ inline bool Bitset<N>::Any() const
 }
 
 template <size_t N>
-inline bool Bitset<N>::Test(const size_t inBit) const
+inline bool Bitset<N>::Test(const size_t bit) const
 {
-    return (mData[GetElement(inBit)] & GetValue(inBit)) != 0;
+    return (mData[GetElement(bit)] & GetValue(bit)) != 0;
 }
 
 template <size_t N>
-inline Bitset<N>& Bitset<N>::Set(const size_t inBit)
+inline Bitset<N>& Bitset<N>::Set(const size_t bit)
 {
-    mData[GetElement(inBit)] |= GetValue(inBit);
+    mData[GetElement(bit)] |= GetValue(bit);
     return *this;
 }
 
 template <size_t N>
-inline Bitset<N>& Bitset<N>::Clear(const size_t inBit)
+inline Bitset<N>& Bitset<N>::Clear(const size_t bit)
 {
-    mData[GetElement(inBit)] &= ~GetValue(inBit);
+    mData[GetElement(bit)] &= ~GetValue(bit);
     return *this;
 }
 

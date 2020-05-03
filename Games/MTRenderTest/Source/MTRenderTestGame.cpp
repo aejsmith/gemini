@@ -53,8 +53,8 @@ public:
     void                        Initialise();
 
 protected:
-    void                        AddPasses(RenderGraph&               inGraph,
-                                          const RenderResourceHandle inTexture,
+    void                        AddPasses(RenderGraph&               graph,
+                                          const RenderResourceHandle texture,
                                           RenderResourceHandle&      outNewTexture) override;
 
 private:
@@ -68,7 +68,7 @@ private:
     };
 
 private:
-    void                        WorkerThread(const uint32_t inIndex);
+    void                        WorkerThread(const uint32_t index);
 
 private:
     GPUShaderPtr                mVertexShader;
@@ -149,9 +149,9 @@ void MTRenderTestLayer::Initialise()
     }
 }
 
-void MTRenderTestLayer::WorkerThread(const uint32_t inIndex)
+void MTRenderTestLayer::WorkerThread(const uint32_t index)
 {
-    Worker& worker = mWorkers[inIndex];
+    Worker& worker = mWorkers[index];
 
     while (true)
     {
@@ -221,26 +221,26 @@ void MTRenderTestLayer::WorkerThread(const uint32_t inIndex)
     }
 }
 
-void MTRenderTestLayer::AddPasses(RenderGraph&               inGraph,
-                                  const RenderResourceHandle inTexture,
+void MTRenderTestLayer::AddPasses(RenderGraph&               graph,
+                                  const RenderResourceHandle texture,
                                   RenderResourceHandle&      outNewTexture)
 {
-    RenderGraphPass& pass = inGraph.AddPass("Test", kRenderGraphPassType_Render);
+    RenderGraphPass& pass = graph.AddPass("Test", kRenderGraphPassType_Render);
 
-    RenderTextureDesc depthStencilDesc(inGraph.GetTextureDesc(inTexture));
+    RenderTextureDesc depthStencilDesc(graph.GetTextureDesc(texture));
     depthStencilDesc.format = kPixelFormat_Depth32;
 
-    RenderResourceHandle depthStencil = inGraph.CreateTexture(depthStencilDesc);
+    RenderResourceHandle depthStencil = graph.CreateTexture(depthStencilDesc);
 
-    pass.SetColour(0, inTexture, &outNewTexture);
+    pass.SetColour(0, texture, &outNewTexture);
     pass.SetDepthStencil(depthStencil, kGPUResourceState_DepthStencilWrite);
 
     pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     pass.ClearDepth(1.0f);
 
-    pass.SetFunction([this] (const RenderGraph&      inGraph,
-                             const RenderGraphPass&  inPass,
-                             GPUGraphicsCommandList& inCmdList)
+    pass.SetFunction([this] (const RenderGraph&      graph,
+                             const RenderGraphPass&  pass,
+                             GPUGraphicsCommandList& cmdList)
     {
         const uint32_t numRowsRounded = RoundUp(kTotalNumRows, kThreadCount);
         const uint32_t rowsPerThread  = numRowsRounded / kThreadCount;
@@ -255,7 +255,7 @@ void MTRenderTestLayer::AddPasses(RenderGraph&               inGraph,
 
             worker.rowOffset = i * rowsPerThread;
             worker.rowCount  = std::min(worker.rowOffset + rowsPerThread, kTotalNumRows) - worker.rowOffset;
-            worker.cmdList   = inCmdList.CreateChild();
+            worker.cmdList   = cmdList.CreateChild();
 
             children[i] = worker.cmdList;
 
@@ -267,7 +267,7 @@ void MTRenderTestLayer::AddPasses(RenderGraph&               inGraph,
             std::this_thread::yield();
         }
 
-        inCmdList.SubmitChildren(children, kThreadCount);
+        cmdList.SubmitChildren(children, kThreadCount);
     });
 }
 

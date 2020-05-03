@@ -20,16 +20,16 @@
 
 #include "Engine/Window.h"
 
-GPUTexture::GPUTexture(GPUDevice&            inDevice,
-                       const GPUTextureDesc& inDesc) :
-    GPUResource     (inDevice, inDesc.type, inDesc.usage),
-    mFlags          (inDesc.flags),
-    mFormat         (inDesc.format),
-    mWidth          (inDesc.width),
-    mHeight         (inDesc.height),
-    mDepth          (inDesc.depth),
-    mArraySize      (inDesc.arraySize),
-    mNumMipLevels   (inDesc.numMipLevels),
+GPUTexture::GPUTexture(GPUDevice&            device,
+                       const GPUTextureDesc& desc) :
+    GPUResource     (device, desc.type, desc.usage),
+    mFlags          (desc.flags),
+    mFormat         (desc.format),
+    mWidth          (desc.width),
+    mHeight         (desc.height),
+    mDepth          (desc.depth),
+    mArraySize      (desc.arraySize),
+    mNumMipLevels   (desc.numMipLevels),
     mSwapchain      (nullptr)
 {
     Assert(GetType() != kGPUResourceType_Buffer);
@@ -63,18 +63,18 @@ GPUTexture::GPUTexture(GPUDevice&            inDevice,
     }
 }
 
-GPUTexture::GPUTexture(GPUSwapchain& inSwapchain) :
-    GPUResource     (inSwapchain.GetDevice(),
+GPUTexture::GPUTexture(GPUSwapchain& swapchain) :
+    GPUResource     (swapchain.GetDevice(),
                      kGPUResourceType_Texture2D,
                      kGPUResourceUsage_RenderTarget),
     mFlags          (kGPUTexture_None),
-    mFormat         (inSwapchain.GetFormat()),
-    mWidth          (inSwapchain.GetWindow().GetSize().x),
-    mHeight         (inSwapchain.GetWindow().GetSize().y),
+    mFormat         (swapchain.GetFormat()),
+    mWidth          (swapchain.GetWindow().GetSize().x),
+    mHeight         (swapchain.GetWindow().GetSize().y),
     mDepth          (1),
     mArraySize      (1),
     mNumMipLevels   (1),
-    mSwapchain      (&inSwapchain)
+    mSwapchain      (&swapchain)
 {
 }
 

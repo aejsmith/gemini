@@ -64,7 +64,7 @@ public:
      */
     VPROPERTY(bool, active);
     bool                    GetActive() const { return mActive; }
-    void                    SetActive(const bool inActive);
+    void                    SetActive(const bool active);
 
     /**
      * Whether the entity is really active, based on the active property of this
@@ -89,8 +89,8 @@ protected:
                             Component();
                             ~Component();
 
-    void                    Serialise(Serialiser& inSerialiser) const override;
-    void                    Deserialise(Serialiser& inSerialiser) override;
+    void                    Serialise(Serialiser& serialiser) const override;
+    void                    Deserialise(Serialiser& serialiser) override;
 
     /** Called when the component becomes (in)active in the world. */
     virtual void            Activated() {}
@@ -100,7 +100,7 @@ protected:
     virtual void            Transformed() {}
 
     /** Called every frame to update the component. */
-    virtual void            Tick(const float inDelta) {}
+    virtual void            Tick(const float delta) {}
 
 private:
     EntityPtr               mEntity;
@@ -124,7 +124,7 @@ inline bool Component::GetActiveInWorld() const
 class ScopedComponentDeactivation
 {
 public:
-                            ScopedComponentDeactivation(Component* const inComponent);
+                            ScopedComponentDeactivation(Component* const component);
                             ~ScopedComponentDeactivation();
 
 private:
@@ -133,9 +133,9 @@ private:
 
 };
 
-inline ScopedComponentDeactivation::ScopedComponentDeactivation(Component* const inComponent) :
-    mComponent  (inComponent),
-    mWasActive  (inComponent->GetActive())
+inline ScopedComponentDeactivation::ScopedComponentDeactivation(Component* const component) :
+    mComponent  (component),
+    mWasActive  (component->GetActive())
 {
     if (mWasActive)
     {

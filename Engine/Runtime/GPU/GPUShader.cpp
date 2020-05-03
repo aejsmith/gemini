@@ -33,13 +33,13 @@ static GPUShaderID AllocateShaderID()
     return id;
 }
 
-GPUShader::GPUShader(GPUDevice&           inDevice,
-                     const GPUShaderStage inStage,
-                     GPUShaderCode        inCode) :
-    GPUObject   (inDevice),
+GPUShader::GPUShader(GPUDevice&           device,
+                     const GPUShaderStage stage,
+                     GPUShaderCode        code) :
+    GPUObject   (device),
     mID         (AllocateShaderID()),
-    mStage      (inStage),
-    mCode       (std::move(inCode))
+    mStage      (stage),
+    mCode       (std::move(code))
 {
 }
 
@@ -56,16 +56,16 @@ GPUShader::~GPUShader()
     }
 }
 
-void GPUShader::AddPipeline(GPUPipeline* const inPipeline,
+void GPUShader::AddPipeline(GPUPipeline* const pipeline,
                             OnlyCalledBy<GPUDevice>)
 {
-    auto ret = mPipelines.emplace(inPipeline);
+    auto ret = mPipelines.emplace(pipeline);
     Assert(ret.second);
     Unused(ret);
 }
 
-void GPUShader::RemovePipeline(GPUPipeline* const inPipeline,
+void GPUShader::RemovePipeline(GPUPipeline* const pipeline,
                                OnlyCalledBy<GPUPipeline>)
 {
-    mPipelines.erase(inPipeline);
+    mPipelines.erase(pipeline);
 }

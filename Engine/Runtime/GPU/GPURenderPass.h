@@ -84,17 +84,17 @@ public:
      * Set an attachment. Defaults to kGPULoadOp_Load and kGPUStoreOp_Store.
      * Use the Clear/Discard methods to override this.
      */
-    void                        SetColour(const uint8_t          inIndex,
-                                          GPUResourceView* const inView);
-    void                        SetDepthStencil(GPUResourceView* const inView,
-                                                const GPUResourceState inState = kGPUResourceState_DepthStencilWrite);
+    void                        SetColour(const uint8_t          index,
+                                          GPUResourceView* const view);
+    void                        SetDepthStencil(GPUResourceView* const view,
+                                                const GPUResourceState state = kGPUResourceState_DepthStencilWrite);
 
-    void                        ClearColour(const uint8_t    inIndex,
-                                            const glm::vec4& inValue);
-    void                        ClearDepth(const float inValue);
-    void                        ClearStencil(const uint32_t inValue);
+    void                        ClearColour(const uint8_t    index,
+                                            const glm::vec4& value);
+    void                        ClearDepth(const float value);
+    void                        ClearStencil(const uint32_t value);
 
-    void                        DiscardColour(const uint8_t inIndex);
+    void                        DiscardColour(const uint8_t index);
     void                        DiscardDepth();
     void                        DiscardStencil();
 
@@ -117,41 +117,41 @@ inline GPURenderPass::GPURenderPass()
     memset(this, 0, sizeof(*this));
 }
 
-inline void GPURenderPass::SetColour(const uint8_t          inIndex,
-                                     GPUResourceView* const inView)
+inline void GPURenderPass::SetColour(const uint8_t          index,
+                                     GPUResourceView* const view)
 {
-    auto& attachment = this->colour[inIndex];
+    auto& attachment = this->colour[index];
 
-    attachment.view    = inView;
+    attachment.view    = view;
     attachment.state   = kGPUResourceState_RenderTarget;
     attachment.loadOp  = kGPULoadOp_Load;
     attachment.storeOp = kGPUStoreOp_Store;
 }
 
-inline void GPURenderPass::SetDepthStencil(GPUResourceView* const inView,
-                                           const GPUResourceState inState)
+inline void GPURenderPass::SetDepthStencil(GPUResourceView* const view,
+                                           const GPUResourceState state)
 {
     auto& attachment = this->depthStencil;
 
-    attachment.view           = inView;
-    attachment.state          = inState;
+    attachment.view           = view;
+    attachment.state          = state;
     attachment.loadOp         = kGPULoadOp_Load;
     attachment.stencilLoadOp  = kGPULoadOp_Load;
     attachment.storeOp        = kGPUStoreOp_Store;
     attachment.stencilStoreOp = kGPUStoreOp_Store;
 }
 
-inline void GPURenderPass::ClearColour(const uint8_t    inIndex,
-                                       const glm::vec4& inValue)
+inline void GPURenderPass::ClearColour(const uint8_t    index,
+                                       const glm::vec4& value)
 {
-    auto& attachment = this->colour[inIndex];
+    auto& attachment = this->colour[index];
 
     attachment.loadOp            = kGPULoadOp_Clear;
     attachment.clearValue.type   = GPUTextureClearData::kColour;
-    attachment.clearValue.colour = inValue;
+    attachment.clearValue.colour = value;
 }
 
-inline void GPURenderPass::ClearDepth(const float inValue)
+inline void GPURenderPass::ClearDepth(const float value)
 {
     auto& attachment = this->depthStencil;
 
@@ -159,10 +159,10 @@ inline void GPURenderPass::ClearDepth(const float inValue)
     attachment.clearValue.type  = (attachment.stencilLoadOp == kGPULoadOp_Clear)
                                       ? GPUTextureClearData::kDepthStencil
                                       : GPUTextureClearData::kDepth;
-    attachment.clearValue.depth = inValue;
+    attachment.clearValue.depth = value;
 }
 
-inline void GPURenderPass::ClearStencil(const uint32_t inValue)
+inline void GPURenderPass::ClearStencil(const uint32_t value)
 {
     auto& attachment = this->depthStencil;
 
@@ -170,12 +170,12 @@ inline void GPURenderPass::ClearStencil(const uint32_t inValue)
     attachment.clearValue.type    = (attachment.loadOp == kGPULoadOp_Clear)
                                         ? GPUTextureClearData::kDepthStencil
                                         : GPUTextureClearData::kStencil;
-    attachment.clearValue.stencil = inValue;
+    attachment.clearValue.stencil = value;
 }
 
-inline void GPURenderPass::DiscardColour(const uint8_t inIndex)
+inline void GPURenderPass::DiscardColour(const uint8_t index)
 {
-    this->colour[inIndex].storeOp = kGPUStoreOp_Discard;
+    this->colour[index].storeOp = kGPUStoreOp_Discard;
 }
 
 inline void GPURenderPass::DiscardDepth()
