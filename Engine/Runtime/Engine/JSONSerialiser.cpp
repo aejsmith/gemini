@@ -819,6 +819,96 @@ bool JSONSerialiser::Read(const char* const inName,
                                                             jsonValue[2u].GetFloat(),
                                                             jsonValue[3u].GetFloat());
     }
+    else if (&inType == &MetaType::Lookup<glm::ivec2>())
+    {
+        if (!jsonValue.IsArray() ||
+            jsonValue.Size() != 2 ||
+            !jsonValue[0u].IsInt() ||
+            !jsonValue[1u].IsInt())
+        {
+            return false;
+        }
+
+        *reinterpret_cast<glm::ivec2*>(outValue) = glm::ivec2(jsonValue[0u].GetInt(),
+                                                              jsonValue[1u].GetInt());
+    }
+    else if (&inType == &MetaType::Lookup<glm::ivec3>())
+    {
+        if (!jsonValue.IsArray() ||
+            jsonValue.Size() != 3 ||
+            !jsonValue[0u].IsInt() ||
+            !jsonValue[1u].IsInt() ||
+            !jsonValue[2u].IsInt())
+        {
+            return false;
+        }
+
+        *reinterpret_cast<glm::ivec3*>(outValue) = glm::ivec3(jsonValue[0u].GetInt(),
+                                                              jsonValue[1u].GetInt(),
+                                                              jsonValue[2u].GetInt());
+    }
+    else if (&inType == &MetaType::Lookup<glm::ivec4>())
+    {
+        if (!jsonValue.IsArray() ||
+            jsonValue.Size() != 4 ||
+            !jsonValue[0u].IsInt() ||
+            !jsonValue[1u].IsInt() ||
+            !jsonValue[2u].IsInt() ||
+            !jsonValue[3u].IsInt())
+        {
+            return false;
+        }
+
+        *reinterpret_cast<glm::ivec4*>(outValue) = glm::ivec4(jsonValue[0u].GetInt(),
+                                                              jsonValue[1u].GetInt(),
+                                                              jsonValue[2u].GetInt(),
+                                                              jsonValue[3u].GetInt());
+    }
+    else if (&inType == &MetaType::Lookup<glm::uvec2>())
+    {
+        if (!jsonValue.IsArray() ||
+            jsonValue.Size() != 2 ||
+            !jsonValue[0u].IsUint() ||
+            !jsonValue[1u].IsUint())
+        {
+            return false;
+        }
+
+        *reinterpret_cast<glm::uvec2*>(outValue) = glm::uvec2(jsonValue[0u].GetUint(),
+                                                              jsonValue[1u].GetUint());
+    }
+    else if (&inType == &MetaType::Lookup<glm::uvec3>())
+    {
+        if (!jsonValue.IsArray() ||
+            jsonValue.Size() != 3 ||
+            !jsonValue[0u].IsUint() ||
+            !jsonValue[1u].IsUint() ||
+            !jsonValue[2u].IsUint())
+        {
+            return false;
+        }
+
+        *reinterpret_cast<glm::uvec3*>(outValue) = glm::uvec3(jsonValue[0u].GetUint(),
+                                                              jsonValue[1u].GetUint(),
+                                                              jsonValue[2u].GetUint());
+    }
+    else if (&inType == &MetaType::Lookup<glm::uvec4>())
+    {
+        if (!jsonValue.IsArray() ||
+            jsonValue.Size() != 4 ||
+            !jsonValue[0u].IsUint() ||
+            !jsonValue[1u].IsUint() ||
+            !jsonValue[2u].IsUint() ||
+            !jsonValue[3u].IsUint())
+        {
+            return false;
+        }
+
+        *reinterpret_cast<glm::uvec4*>(outValue) = glm::uvec4(jsonValue[0u].GetUint(),
+                                                              jsonValue[1u].GetUint(),
+                                                              jsonValue[2u].GetUint(),
+                                                              jsonValue[3u].GetUint());
+    }
     else if (&inType == &MetaType::Lookup<glm::quat>())
     {
         if (!jsonValue.IsArray() ||
