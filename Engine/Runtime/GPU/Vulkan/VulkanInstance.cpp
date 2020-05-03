@@ -263,7 +263,7 @@ void VulkanInstance::CreateInstance()
 
         if (enable)
         {
-            if (EnableLayer("VK_LAYER_LUNARG_standard_validation", kCap_Validation))
+            if (EnableLayer("VK_LAYER_KHRONOS_validation", kCap_Validation))
             {
                 LogInfo("Enabling Vulkan validation layers");
 
