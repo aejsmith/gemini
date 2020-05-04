@@ -31,6 +31,7 @@
 #include "Loaders/GLTFImporter.h"
 
 #include "Render/Camera.h"
+#include "Render/Light.h"
 #include "Render/Material.h"
 #include "Render/MeshRenderer.h"
 
@@ -87,7 +88,44 @@ void TestGame::Init()
                     "Game/glTF/DamagedHelmet/World");
 #endif
 
-    Engine::Get().LoadWorld("Game/Worlds/LightingTest");
+    Engine::Get().LoadWorld("Game/Worlds/LightingTest2");
+
+#if 0
+    Entity* parent = Engine::Get().GetWorld()->CreateEntity("Lights");
+
+    int lightIndex = 0;
+
+    static glm::vec3 kColours[] =
+    {
+        { 1.0f, 0.0f, 0.0f },
+        { 0.0f, 1.0f, 0.0f },
+        { 0.0f, 0.0f, 1.0f },
+    };
+
+    for (int y : { -2, 34 })
+    {
+        for (int x = -18; x <= 18; x+= 4)
+        {
+            for (int z = -18; z <= 18; z+= 4)
+            {
+                Entity* entity = parent->CreateChild(StringUtils::Format("Light_%d_%d_%d", x, y, z));
+                entity->SetPosition(glm::vec3(x, y, z));
+                entity->SetActive(true);
+
+                Light* light = entity->CreateComponent<Light>();
+                light->SetType(kLightType_Point);
+                light->SetColour(kColours[lightIndex % ArraySize(kColours)]);
+                light->SetIntensity(15.0f);
+                light->SetRange(5.0f);
+                light->SetActive(true);
+
+                lightIndex++;
+            }
+        }
+    }
+
+    parent->SetActive(true);
+#endif
 
 #if 0
     Engine::Get().CreateWorld();
