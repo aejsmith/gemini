@@ -285,7 +285,11 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context)
 
     /* We have fixed size resources and light indices that can only cope with a
      * certain number of lights, ignore any lights that exceed this. */
-    if (lightList.size() > kDeferredMaxLightCount)
+    if (lightList.size() == 0)
+    {
+        return;
+    }
+    else if (lightList.size() > kDeferredMaxLightCount)
     {
         LogWarning("Visible light count %zu exceeds limit %zu, truncating list",
                    lightList.size(),
