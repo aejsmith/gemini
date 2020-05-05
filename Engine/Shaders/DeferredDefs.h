@@ -72,4 +72,20 @@ struct DeferredLightingConstants
     shader_uint2    tileDimensions;
 };
 
+/**
+ * Culling debug shader arguments.
+ */
+
+#define kArgumentSet_DeferredCullingDebug                   0
+
+#define kDeferredCullingDebugArguments_VisibleLightCount    0
+#define kDeferredCullingDebugArguments_Constants            1
+#define kDeferredCullingDebugArgumentsCount                 2
+
+struct DeferredCullingDebugConstants
+{
+    shader_uint2    tileDimensions;
+    shader_uint     maxLightCount;
+};
+
 #endif /* SHADERS_DEFERREDDEFS_H */

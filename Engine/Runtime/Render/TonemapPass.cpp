@@ -62,7 +62,7 @@ void TonemapPass::AddPass(RenderGraph&               graph,
         pipelineDesc.shaders[kGPUShaderStage_Vertex]          = mVertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Pixel]           = mPixelShader;
         pipelineDesc.argumentSetLayouts[kArgumentSet_Tonemap] = mArgumentSetLayout;
-        pipelineDesc.blendState                               = GPUBlendState::GetDefault();;
+        pipelineDesc.blendState                               = GPUBlendState::GetDefault();
         pipelineDesc.depthStencilState                        = GPUDepthStencilState::GetDefault();
         pipelineDesc.rasterizerState                          = GPURasterizerState::GetDefault();
         pipelineDesc.renderTargetState                        = cmdList.GetRenderTargetState();

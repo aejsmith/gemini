@@ -60,6 +60,7 @@ GPUShaderPtr ShaderManager::GetShader(const Path&                  path,
     if (searchPath == mSearchPaths.end())
     {
         LogError("Could not find shader '%s' (unknown search path)", path.GetCString());
+        DebugBreak();
         return nullptr;
     }
 
@@ -76,6 +77,7 @@ GPUShaderPtr ShaderManager::GetShader(const Path&                  path,
                  path.GetCString(),
                  options.path.GetCString());
 
+        DebugBreak();
         return nullptr;
     }
 

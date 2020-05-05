@@ -84,8 +84,11 @@ struct DeferredRenderContext : public RenderContext
 DeferredRenderPipeline::DeferredRenderPipeline() :
     mTonemapPass                (new TonemapPass),
 
-    mDrawEntityBoundingBoxes    (false),
-    mDrawLightVolumes           (false),
+    mDebugEntityBoundingBoxes   (false),
+    mDebugLightVolumes          (false),
+    mDebugLightCulling          (false),
+    mDebugLightCullingMaximum   (20),
+
     mDebugWindow                (new DeferredRenderPipelineWindow(this))
 {
     CreateShaders();
@@ -142,6 +145,18 @@ void DeferredRenderPipeline::CreateShaders()
 
         mLightingPipeline.reset(GPUDevice::Get().CreateComputePipeline(pipelineDesc));
     }
+
+    /* Culling debug shader. */
+    {
+        mCullingDebugVertexShader = ShaderManager::Get().GetShader("Engine/DeferredCullingDebug.hlsl", "VSFullScreen", kGPUShaderStage_Vertex);
+        mCullingDebugPixelShader  = ShaderManager::Get().GetShader("Engine/DeferredCullingDebug.hlsl", "PSMain", kGPUShaderStage_Pixel);
+
+        GPUArgumentSetLayoutDesc argumentLayoutDesc(kDeferredCullingDebugArgumentsCount);
+        argumentLayoutDesc.arguments[kDeferredCullingDebugArguments_VisibleLightCount] = kGPUArgumentType_Buffer;
+        argumentLayoutDesc.arguments[kDeferredCullingDebugArguments_Constants]         = kGPUArgumentType_Constants;
+
+        mCullingDebugArgumentSetLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
+    }
 }
 
 void DeferredRenderPipeline::SetName(std::string name)
@@ -174,6 +189,11 @@ void DeferredRenderPipeline::Render(const RenderWorld&         world,
                           context->colourTexture,
                           texture,
                           outNewTexture);
+
+    if (mDebugLightCulling)
+    {
+        AddCullingDebugPass(context, outNewTexture);
+    }
 
     /* Render debug primitives for the view. */
     DebugManager::Get().RenderPrimitives(view,
@@ -249,7 +269,7 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
 
             entity->GetDrawCall(kShaderPassType_DeferredOpaque, *context, drawCall);
 
-            if (mDrawEntityBoundingBoxes)
+            if (mDebugEntityBoundingBoxes)
             {
                 DebugManager::Get().DrawPrimitive(entity->GetWorldBoundingBox(), glm::vec3(0.0f, 0.0f, 1.0f));
             }
@@ -286,7 +306,7 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context)
 
         light->GetLightParams(lightParams[i]);
 
-        if (mDrawLightVolumes)
+        if (mDebugLightVolumes)
         {
             light->DrawDebugPrimitive();
         }
@@ -452,6 +472,64 @@ void DeferredRenderPipeline::AddLightingPass(DeferredRenderContext* const contex
     });
 }
 
+void DeferredRenderPipeline::AddCullingDebugPass(DeferredRenderContext* const context,
+                                                 RenderResourceHandle&        ioNewTexture) const
+{
+    RenderGraph& graph = context->GetGraph();
+
+    RenderGraphPass& pass = graph.AddPass("DeferredCullingDebug", kRenderGraphPassType_Render);
+
+    RenderViewDesc viewDesc;
+    viewDesc.type                             = kGPUResourceViewType_Buffer;
+    viewDesc.state                            = kGPUResourceState_PixelShaderRead;
+    viewDesc.elementCount                     = graph.GetBufferDesc(context->visibleLightCountBuffer).size;
+    const RenderViewHandle visibleCountHandle = pass.CreateView(context->visibleLightCountBuffer, viewDesc);
+
+    pass.SetColour(0, ioNewTexture, &ioNewTexture);
+
+    pass.SetFunction([=] (const RenderGraph&      graph,
+                          const RenderGraphPass&  pass,
+                          GPUGraphicsCommandList& cmdList)
+    {
+        /* Debug heatmap is blended over the main scene. */
+        GPUBlendStateDesc blendState;
+        blendState.attachments[0].enable          = true;
+        blendState.attachments[0].srcColourFactor = kGPUBlendFactor_SrcAlpha;
+        blendState.attachments[0].dstColourFactor = kGPUBlendFactor_OneMinusSrcAlpha;
+        blendState.attachments[0].srcAlphaFactor  = kGPUBlendFactor_SrcAlpha;
+        blendState.attachments[0].dstAlphaFactor  = kGPUBlendFactor_OneMinusSrcAlpha;
+
+        GPUPipelineDesc pipelineDesc;
+        pipelineDesc.shaders[kGPUShaderStage_Vertex]                       = mCullingDebugVertexShader;
+        pipelineDesc.shaders[kGPUShaderStage_Pixel]                        = mCullingDebugPixelShader;
+        pipelineDesc.argumentSetLayouts[kArgumentSet_DeferredCullingDebug] = mCullingDebugArgumentSetLayout;
+        pipelineDesc.blendState                                            = GPUBlendState::Get(blendState);
+        pipelineDesc.depthStencilState                                     = GPUDepthStencilState::GetDefault();
+        pipelineDesc.rasterizerState                                       = GPURasterizerState::GetDefault();
+        pipelineDesc.renderTargetState                                     = cmdList.GetRenderTargetState();
+        pipelineDesc.vertexInputState                                      = GPUVertexInputState::GetDefault();
+        pipelineDesc.topology                                              = kGPUPrimitiveTopology_TriangleList;
+
+        cmdList.SetPipeline(pipelineDesc);
+
+        GPUArgument arguments[kDeferredCullingDebugArgumentsCount];
+        arguments[kDeferredCullingDebugArguments_VisibleLightCount].view = pass.GetView(visibleCountHandle);
+
+        cmdList.SetArguments(kArgumentSet_DeferredCullingDebug, arguments);
+
+        DeferredCullingDebugConstants constants;
+        constants.tileDimensions = glm::uvec2(context->tilesWidth, context->tilesHeight);
+        constants.maxLightCount  = mDebugLightCullingMaximum;
+
+        cmdList.WriteConstants(kArgumentSet_DeferredCullingDebug,
+                               kDeferredCullingDebugArguments_Constants,
+                               &constants,
+                               sizeof(constants));
+
+        cmdList.Draw(3);
+    });
+}
+
 /**
  * Debug window implementation.
  */
@@ -465,18 +543,25 @@ DeferredRenderPipelineWindow::DeferredRenderPipelineWindow(DeferredRenderPipelin
 void DeferredRenderPipelineWindow::Render()
 {
     ImGuiIO& io = ImGui::GetIO();
-    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 300 - 10, 30), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 430, 30), ImGuiCond_Once);
 
-    if (!Begin())
+    if (!Begin(ImGuiWindowFlags_AlwaysAutoResize))
     {
         return;
     }
 
+    ImGui::Dummy(ImVec2(400, 0));
+
     if (ImGui::CollapsingHeader("Debug visualisation", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::Checkbox("Draw entity bounding boxes", &mPipeline->mDrawEntityBoundingBoxes);
-        ImGui::Checkbox("Draw light volumes", &mPipeline->mDrawLightVolumes);
+        ImGui::Checkbox("Draw entity bounding boxes", &mPipeline->mDebugEntityBoundingBoxes);
+        ImGui::Checkbox("Draw light volumes", &mPipeline->mDebugLightVolumes);
+        ImGui::Checkbox("Visualise light culling", &mPipeline->mDebugLightCulling);
+
+        if (mPipeline->mDebugLightCulling)
+        {
+            ImGui::InputInt("Heatmap max light count", &mPipeline->mDebugLightCullingMaximum, 1, 5);
+        }
     }
 
     ImGui::End();

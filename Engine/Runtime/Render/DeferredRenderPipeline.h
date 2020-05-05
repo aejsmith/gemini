@@ -91,6 +91,9 @@ private:
     void                                AddCullingPass(DeferredRenderContext* const context) const;
     void                                AddLightingPass(DeferredRenderContext* const context) const;
 
+    void                                AddCullingDebugPass(DeferredRenderContext* const context,
+                                                            RenderResourceHandle&        ioNewTexture) const;
+
 private:
     GPUShaderPtr                        mCullingShader;
     GPUShaderPtr                        mLightingShader;
@@ -99,11 +102,20 @@ private:
 
     UPtr<TonemapPass>                   mTonemapPass;
 
-    /** Debug visualisation flags. */
-    bool                                mDrawEntityBoundingBoxes;
-    bool                                mDrawLightVolumes;
+    /**
+     * Debug-only stuff.
+     */
+
+    bool                                mDebugEntityBoundingBoxes;
+    bool                                mDebugLightVolumes;
+    bool                                mDebugLightCulling;
+    int                                 mDebugLightCullingMaximum;
 
     UPtr<DeferredRenderPipelineWindow>  mDebugWindow;
+
+    GPUShaderPtr                        mCullingDebugVertexShader;
+    GPUShaderPtr                        mCullingDebugPixelShader;
+    GPUArgumentSetLayoutRef             mCullingDebugArgumentSetLayout;
 
     friend class DeferredRenderPipelineWindow;
 };
