@@ -53,11 +53,15 @@ private:
 
     glm::vec3               mPosition;
     glm::quat               mOrientation;
+    float                   mZNear;
+    float                   mZFar;
     glm::uvec2              mTargetSize;
+
     glm::mat4               mViewMatrix;
     glm::mat4               mProjectionMatrix;
     glm::mat4               mViewProjectionMatrix;
     glm::mat4               mInverseViewProjectionMatrix;
+
     Frustum                 mFrustum;
 
     GPUConstants            mConstants;

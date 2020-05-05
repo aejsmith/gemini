@@ -77,12 +77,7 @@ void DecodeGBuffer(const DeferredPSOutput output,
     float3 normal = (output.target1.rgb * 2.0f) - 1.0f;
 
     /* Reconstruct world-space position from depth. */
-    float4 ndcPosition = float4(
-        ((float2(targetPos.x, view.targetSize.y - targetPos.y) / view.targetSize) * 2.0f) - 1.0f,
-        depth,
-        1.0f);
-    float4 homogeneousPosition = mul(view.inverseViewProjection, ndcPosition);
-    float3 position = homogeneousPosition.xyz / homogeneousPosition.w;
+    float3 position = ViewPixelPositionToWorld(targetPos, depth);
 
     outMaterial = material;
     outSurface  = CalculateSurfaceParams(position, normal);

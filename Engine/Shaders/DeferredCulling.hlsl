@@ -29,15 +29,108 @@ groupshared uint tileMaxDepth;
 groupshared uint tileLightCount;
 groupshared uint tileLightIndices[kDeferredMaxLightCount];
 
-bool IsLightVisible(float minDepth,
-                    float maxDepth,
-                    uint  lightIndex)
+#define kPlane_Left     0
+#define kPlane_Right    1
+#define kPlane_Top      2
+#define kPlane_Bottom   3
+#define kPlane_Near     4
+#define kPlane_Far      5
+#define kNumPlanes      6
+
+struct Frustum
+{
+    float4 planes[kNumPlanes];
+};
+
+/**
+ * Calculate a plane (normal, distance) from 3 points forming a triangle on the
+ * plane (clockwise winding, the normal will face away from the plane).
+ */
+float4 CalculatePlane(float3 p0, float3 p1, float3 p2)
+{
+    float3 normal  = normalize(cross(p1 - p0, p2 - p0));
+    float distance = dot(normal, p0);
+    return float4(normal, distance);
+}
+
+void CalculateTileFrustum(uint2       tileID,
+                          float       minDepth,
+                          float       maxDepth,
+                          out Frustum frustum)
+{
+    /*
+     * The world-space corners of the frustum are obtained by transforming the
+     * NDC coordinates for the tile, limited to the minimum and maximum depth
+     * range, by the inverse view-projection transform. From these we can
+     * construct the frustum planes used for culling.
+     *
+     * This is actually simplified a little bit so that we don't need to do a
+     * full calculation of all 8 frustum corners. We can just use the far plane
+     * corners combined with the eye position to get all the planes except the
+     * near plane. We then just construct the near plane by inverting the far
+     * plane and then moving it based on the difference between the (linear)
+     * minimum and maximum depth.
+     */
+
+    /* Bottom right may go outside the target if its size is not a multiple of
+     * the tile size, clamp to avoid issues. */
+    float2 tileTopLeft     = ViewPixelPositionToNDC(tileID * kDeferredTileSize);
+    float2 tileBottomRight = ViewPixelPositionToNDC(min((tileID + uint2(1, 1)) * kDeferredTileSize, view.targetSize));
+
+    /* T = Top, B = Bottom, L = Left, R = Right. */
+    float3 farCorners[4];
+    farCorners[0] /* TL */ = ViewNDCPositionToWorld(float3(tileTopLeft, maxDepth));
+    farCorners[1] /* TR */ = ViewNDCPositionToWorld(float3(tileBottomRight.x, tileTopLeft.y, maxDepth));
+    farCorners[2] /* BL */ = ViewNDCPositionToWorld(float3(tileTopLeft.x, tileBottomRight.y, maxDepth));
+    farCorners[3] /* BR */ = ViewNDCPositionToWorld(float3(tileBottomRight, maxDepth));
+
+    frustum.planes[kPlane_Left]   = CalculatePlane(farCorners[0], view.position, farCorners[2]);
+    frustum.planes[kPlane_Right]  = CalculatePlane(farCorners[3], view.position, farCorners[1]);
+    frustum.planes[kPlane_Top]    = CalculatePlane(farCorners[1], view.position, farCorners[0]);
+    frustum.planes[kPlane_Bottom] = CalculatePlane(farCorners[2], view.position, farCorners[3]);
+    frustum.planes[kPlane_Far]    = CalculatePlane(farCorners[1], farCorners[2], farCorners[3]);
+
+    /* Near plane is obtained by inverting the far plane and adjusting the
+     * distance by the difference between the linearised maximum and minimum
+     * depth. */
+    float linearMinDepth = ViewLineariseDepth(minDepth);
+    float linearMaxDepth = ViewLineariseDepth(maxDepth);
+    frustum.planes[kPlane_Near] = -frustum.planes[kPlane_Far];
+    frustum.planes[kPlane_Near].w -= linearMaxDepth - linearMinDepth;
+}
+
+float DistanceToPlane(float3 p, float4 plane)
+{
+    return dot(plane.xyz, p) - plane.w;
+}
+
+bool IsLightVisible(Frustum frustum,
+                    uint    lightIndex)
 {
     LightParams light = lightParams.Load(lightIndex);
 
-    /* TODO: Actually cull the lights... */
+    /* Directional lights are always visible. */
+    bool visible = true;
 
-    return true;
+    if (light.type == kShaderLightType_Point)
+    {
+        /* Sphere/frustum intersection test. */
+        float3 position = light.position;
+        float dist      = -light.range;
+
+        [unroll]
+        for (uint i = 0; i < kNumPlanes; i++)
+        {
+            visible = visible && DistanceToPlane(position, frustum.planes[i]) >= dist;
+        }
+    }
+    else if (light.type == kShaderLightType_Spot)
+    {
+        // TODO: Fit a sphere tightly around the spot light and use same method
+        // as for point.
+    }
+
+    return visible;
 }
 
 [numthreads(kDeferredTileSize, kDeferredTileSize, 1)]
@@ -45,7 +138,8 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
             uint3 groupThreadID    : SV_GroupThreadID,
             uint3 groupID          : SV_GroupID)
 {
-    uint tileIndex   = (groupID.y * constants.tileDimensions.x) + groupID.x;
+    uint2 tileID     = groupID.xy;
+    uint tileIndex   = (tileID.y * constants.tileDimensions.x) + tileID.x;
     uint threadIndex = (groupThreadID.y * kDeferredTileSize) + groupThreadID.x;
     uint threadCount = kDeferredTileSize * kDeferredTileSize;
 
@@ -71,8 +165,12 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
 
     GroupMemoryBarrierWithGroupSync();
 
-    float minDepth = asfloat(tileMinDepth);
-    float maxDepth = asfloat(tileMaxDepth);
+    float minDepth = clamp(asfloat(tileMinDepth), 0.0f, 1.0f);
+    float maxDepth = clamp(asfloat(tileMaxDepth), 0.0f, 1.0f);
+
+    /* Calculate tile frustum planes. */
+    Frustum frustum;
+    CalculateTileFrustum(tileID, minDepth, maxDepth, frustum);
 
     /* Iterate over lights. Each thread processes a single light. */
     uint lightCount     = constants.lightCount;
@@ -86,7 +184,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
          * threads in the last iteration may be outside the count. */
         if (lightIndex < lightCount)
         {
-            if (IsLightVisible(minDepth, maxDepth, lightIndex))
+            if (IsLightVisible(frustum, lightIndex))
             {
                 uint outputIndex;
                 InterlockedAdd(tileLightCount, 1, outputIndex);

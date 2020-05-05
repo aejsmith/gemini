@@ -141,6 +141,8 @@ struct ViewConstants
     shader_float4x4     inverseViewProjection;
     shader_float3       position;
     shader_float        _pad0;
+    shader_float        zNear;
+    shader_float        zFar;
     shader_uint2        targetSize;
 };
 
@@ -180,6 +182,60 @@ float3 EntityNormalToWorld(float3 normal)
 {
     /* Set W component to 0 to remove translation. */
     return mul(entity.transform, float4(normal, 0.0)).xyz;
+}
+
+/**
+ * View helper functions/definitions.
+ */
+
+/**
+ * Linearise a depth buffer value according to the current view. Returns linear
+ * view-space depth in the range [zNear, zFar].
+ */
+float ViewLineariseDepth(float depth)
+{
+    float n = view.zNear;
+    float f = view.zFar;
+    return (f * n) / (f + (depth * (n - f)));
+}
+
+/** Transform a NDC position for the current view to a world-space position. */
+float3 ViewNDCPositionToWorld(float4 ndcPos)
+{
+    float4 homogeneousPos = mul(view.inverseViewProjection, ndcPos);
+    return homogeneousPos.xyz / homogeneousPos.w;
+}
+
+float3 ViewNDCPositionToWorld(float3 ndcPos)
+{
+    return ViewNDCPositionToWorld(float4(ndcPos, 1.0f));
+}
+
+/**
+ * Given an integer pixel coordinate on the current view, return corresponding
+ * NDC X/Y coordinates.
+ */
+float2 ViewPixelPositionToNDC(uint2 targetPos)
+{
+    return ((float2(targetPos.x, view.targetSize.y - targetPos.y) / view.targetSize) * 2.0f) - 1.0f;
+}
+
+/**
+ * Given an integer pixel coordinate on the current view and a depth value,
+ * return corresponding NDC coordinates.
+ */
+float4 ViewPixelPositionToNDC(uint2 targetPos, float depth)
+{
+    return float4(ViewPixelPositionToNDC(targetPos), depth, 1.0f);
+}
+
+/**
+ * Given an integer pixel coordinate on the current view and a depth value,
+ * return corresponding world-space coordinates.
+ */
+float3 ViewPixelPositionToWorld(uint2 targetPos, float depth)
+{
+    return ViewNDCPositionToWorld(ViewPixelPositionToNDC(targetPos, depth));
 }
 
 /**

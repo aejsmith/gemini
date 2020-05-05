@@ -30,6 +30,8 @@ RenderView RenderView::CreatePerspective(const glm::vec3&  position,
 
     view.mPosition    = position;
     view.mOrientation = orientation;
+    view.mZNear       = zNear;
+    view.mZFar        = zFar;
     view.mTargetSize  = targetSize;
 
     /* Calculate the view matrix. This is a world-to-view transformation, so we
@@ -61,6 +63,8 @@ void RenderView::CreateConstants()
     constants.viewProjection        = mViewProjectionMatrix;
     constants.inverseViewProjection = mInverseViewProjectionMatrix;
     constants.position              = mPosition;
+    constants.zNear                 = mZNear;
+    constants.zFar                  = mZFar;
     constants.targetSize            = mTargetSize;
 
     mConstants = GPUDevice::Get().GetConstantPool().Write(&constants, sizeof(constants));
