@@ -43,10 +43,10 @@ Frustum::Frustum(const glm::mat4& viewProjection,
     planes[kPlane_Bottom].z =  viewProjection[2][3] + viewProjection[2][1];
     planes[kPlane_Bottom].w = -viewProjection[3][3] - viewProjection[3][1];
 
-    planes[kPlane_Near].x   =  viewProjection[0][3] + viewProjection[0][2];
-    planes[kPlane_Near].y   =  viewProjection[1][3] + viewProjection[1][2];
-    planes[kPlane_Near].z   =  viewProjection[2][3] + viewProjection[2][2];
-    planes[kPlane_Near].w   = -viewProjection[3][3] - viewProjection[3][2];
+    planes[kPlane_Near].x   =  viewProjection[0][2];
+    planes[kPlane_Near].y   =  viewProjection[1][2];
+    planes[kPlane_Near].z   =  viewProjection[2][2];
+    planes[kPlane_Near].w   = -viewProjection[3][2];
 
     planes[kPlane_Far].x    =  viewProjection[0][3] - viewProjection[0][2];
     planes[kPlane_Far].y    =  viewProjection[1][3] - viewProjection[1][2];
