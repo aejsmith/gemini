@@ -75,7 +75,7 @@ void CalculateTileFrustum(uint2       tileID,
     /* Bottom right may go outside the target if its size is not a multiple of
      * the tile size, clamp to avoid issues. */
     float2 tileTopLeft     = ViewPixelPositionToNDC(tileID * kDeferredTileSize);
-    float2 tileBottomRight = ViewPixelPositionToNDC(min((tileID + uint2(1, 1)) * kDeferredTileSize, view.targetSize));
+    float2 tileBottomRight = ViewPixelPositionToNDC(min((tileID + 1) * kDeferredTileSize, view.targetSize));
 
     /* T = Top, B = Bottom, L = Left, R = Right. */
     float3 farCorners[4];
@@ -155,7 +155,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
 
     /* Clamp to target size in case the target is not a multiple of tile
      * dimensions. */
-    uint2 targetPos = min(dispatchThreadID.xy, view.targetSize);
+    uint2 targetPos = min(dispatchThreadID.xy, view.targetSize - 1);
     float depth     = depthTexture.Load(uint3(targetPos, 0)).x;
 
     /* Compute min/max depth for the tile. TODO: Subgroup-based implementation. */

@@ -86,7 +86,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
 
     /* Sample and decode the G-Buffer. We read emissive (colourTexture) here as
      * well since we want to add our lighting result to that at the end. */
-    uint2 targetPos = min(dispatchThreadID.xy, view.targetSize);
+    uint2 targetPos = min(dispatchThreadID.xy, view.targetSize - 1);
 
     DeferredPSOutput psOutput;
     psOutput.target0 = GBuffer0Texture.Load(uint3(targetPos, 0));
