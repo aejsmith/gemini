@@ -88,7 +88,7 @@ void TestGame::Init()
                     "Game/glTF/DamagedHelmet/World");
 #endif
 
-    Engine::Get().LoadWorld("Game/Worlds/LightingTest2");
+    Engine::Get().LoadWorld("Game/Worlds/LightingTest3");
 
 #if 0
     Entity* parent = Engine::Get().GetWorld()->CreateEntity("Lights");
@@ -125,35 +125,6 @@ void TestGame::Init()
     }
 
     parent->SetActive(true);
-#endif
-
-#if 0
-    Engine::Get().CreateWorld();
-
-    World* world = Engine::Get().GetWorld();
-
-    Entity* playerEntity = world->CreateEntity("Player");
-    playerEntity->SetActive(true);
-
-    Camera* camera = playerEntity->CreateComponent<Camera>();
-    camera->SetActive(true);
-
-    MeshPtr mesh = AssetManager::Get().Load<Mesh>("Game/Meshes/CompanionCube");
-    MaterialPtr material = AssetManager::Get().Load<Material>("Game/Materials/CompanionCube");
-
-    for (unsigned i = 0; i < 2; i++)
-    {
-        Entity* cubeEntity = world->CreateEntity("Cube");
-        cubeEntity->Translate(glm::vec3((i == 1) ? 2.0f : -2.0f, -0.75f, -4.0f));
-        cubeEntity->SetScale(glm::vec3(0.2f, 0.2f, 0.2f));
-        cubeEntity->Rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        cubeEntity->SetActive(true);
-
-        MeshRenderer* meshRenderer = cubeEntity->CreateComponent<MeshRenderer>();
-        meshRenderer->SetMesh(mesh);
-        meshRenderer->SetMaterial(0, material);
-        meshRenderer->SetActive(true);
-    }
 #endif
 }
 
