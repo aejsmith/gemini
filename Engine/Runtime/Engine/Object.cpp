@@ -833,7 +833,7 @@ static void DebugUIPropertyEditors(Object* const         object,
             property,
             [&] (float* ioValue)
             {
-                return ImGui::InputFloat("", ioValue, 0.0f, 0.0f, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+                return ImGui::DragFloat("", ioValue);
             });
 
         DebugUIPropertyEditor<glm::vec2>(
@@ -841,7 +841,7 @@ static void DebugUIPropertyEditors(Object* const         object,
             property,
             [&] (glm::vec2* ioValue)
             {
-                return ImGui::InputFloat2("", &ioValue->x, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+                return ImGui::DragFloat2("", &ioValue->x);
             });
 
         DebugUIPropertyEditor<glm::vec3>(
@@ -849,7 +849,7 @@ static void DebugUIPropertyEditors(Object* const         object,
             property,
             [&] (glm::vec3* ioValue)
             {
-                return ImGui::InputFloat3("", &ioValue->x, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+                return ImGui::DragFloat3("", &ioValue->x);
             });
 
         DebugUIPropertyEditor<glm::vec4>(
@@ -857,7 +857,7 @@ static void DebugUIPropertyEditors(Object* const         object,
             property,
             [&] (glm::vec4* ioValue)
             {
-                return ImGui::InputFloat4("", &ioValue->x, -1, ImGuiInputTextFlags_EnterReturnsTrue);
+                return ImGui::DragFloat4("", &ioValue->x);
             });
 
         DebugUIPropertyEditor<glm::quat>(
