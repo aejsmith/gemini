@@ -1,0 +1,40 @@
+[
+    {
+        "objectClass": "Material",
+        "objectID": 0,
+        "objectProperties": {},
+        "shaderTechnique": {
+            "asset": "Engine/Techniques/PBRMetallicRoughness"
+        },
+        "arguments": {
+            "baseColourTexture": {
+                "asset": "Engine/Textures/DummyWhite2D"
+            },
+            "baseColourFactor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "emissiveTexture": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            },
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "metallicRoughnessTexture": {
+                "asset": "Engine/Textures/DummyWhite2D"
+            },
+            "metallicFactor": 0.0,
+            "normalTexture": {
+                "asset": "Engine/Textures/DefaultNormal"
+            },
+            "occlusionTexture": {
+                "asset": "Engine/Textures/DummyWhite2D"
+            },
+            "roughnessFactor": 1.0
+        }
+    }
+]
