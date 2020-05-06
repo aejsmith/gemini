@@ -9,6 +9,7 @@ objects += list(map(env.Object, [
     'GPUBuffer.cpp',
     'GPUCommandList.cpp',
     'GPUContext.cpp',
+    'GPUDefs.cpp',
     'GPUDevice.cpp',
     'GPUObject.cpp',
     'GPUPipeline.cpp',

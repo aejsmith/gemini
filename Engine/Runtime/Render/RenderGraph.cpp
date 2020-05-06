@@ -927,7 +927,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
             cmdList->End();
 
             {
-                SCOPED_DEBUG_MARKER(context, pass.mName);
+                GPU_MARKER_SCOPE(context, pass.mName);
                 context.SubmitRenderPass(cmdList);
             }
 
@@ -949,7 +949,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
             cmdList->End();
 
             {
-                SCOPED_DEBUG_MARKER(context, pass.mName);
+                GPU_MARKER_SCOPE(context, pass.mName);
                 context.SubmitComputePass(cmdList);
             }
 
@@ -973,7 +973,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
             GPUComputeContext& context = GPUGraphicsContext::Get();
 
             {
-                SCOPED_DEBUG_MARKER(context, pass.mName);
+                GPU_MARKER_SCOPE(context, pass.mName);
                 pass.mTransferFunction(*this, pass, context);
             }
 

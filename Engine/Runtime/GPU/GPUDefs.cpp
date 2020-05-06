@@ -14,26 +14,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Render/RenderDefs.h"
-
 #include "GPU/GPUContext.h"
 
 #if GEMINI_GPU_MARKERS
 
-ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
-                                     const char* const   label) :
+GPUMarkerScope::GPUMarkerScope(GPUTransferContext& context,
+                               const char* const   label) :
     mContext (context)
 {
     mContext.BeginMarker(label);
 }
 
-ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
-                                     const std::string&  label) :
-    ScopedDebugMarker (context, label.c_str())
+GPUMarkerScope::GPUMarkerScope(GPUTransferContext& context,
+                               const std::string&  label) :
+    GPUMarkerScope (context, label.c_str())
 {
 }
 
-ScopedDebugMarker::~ScopedDebugMarker()
+GPUMarkerScope::~GPUMarkerScope()
 {
     mContext.EndMarker();
 }

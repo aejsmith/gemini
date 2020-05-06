@@ -23,7 +23,6 @@ objects += list(map(env.Object, [
     'Light.cpp',
     'Material.cpp',
     'MeshRenderer.cpp',
-    'RenderDefs.cpp',
     'RenderEntity.cpp',
     'RenderContext.cpp',
     'RenderGraph.cpp',

@@ -29,6 +29,7 @@
 #define GEMINI_GPU_MARKERS (!GEMINI_BUILD_RELEASE)
 
 class GPUResource;
+class GPUTransferContext;
 
 /** Maximum number of colour attachments in a render pass. */
 static constexpr size_t kMaxRenderPassColourAttachments = 8;
@@ -661,3 +662,41 @@ enum ENUM() GPUAddressMode : uint8_t
     kGPUAddressMode_Clamp,
     kGPUAddressMode_MirroredClamp,
 };
+
+class GPUMarkerScope
+{
+public:
+                            GPUMarkerScope(GPUTransferContext& context,
+                                           const char* const   label);
+
+                            GPUMarkerScope(GPUTransferContext& context,
+                                           const std::string&  label);
+
+                            ~GPUMarkerScope();
+
+private:
+    #if GEMINI_GPU_MARKERS
+    GPUTransferContext&     mContext;
+    #endif
+};
+
+#if !GEMINI_GPU_MARKERS
+
+inline GPUMarkerScope::GPUMarkerScope(GPUTransferContext& context,
+                                      const char* const   label)
+{
+}
+
+inline GPUMarkerScope::GPUMarkerScope(GPUTransferContext& context,
+                                      const std::string&  label)
+{
+}
+
+inline GPUMarkerScope::~GPUMarkerScope()
+{
+}
+
+#endif
+
+#define GPU_MARKER_SCOPE(context, label) \
+    GPUMarkerScope label_ ## __LINE__ (context, label)
