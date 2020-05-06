@@ -65,7 +65,7 @@ TextureBase::~TextureBase()
 
 void TextureBase::PathChanged()
 {
-    if (GEMINI_BUILD_DEBUG && mTexture && IsManaged())
+    if (GEMINI_GPU_MARKERS && mTexture && IsManaged())
     {
         mTexture->SetName(GetPath());
     }

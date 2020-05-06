@@ -707,7 +707,7 @@ void RenderGraph::AllocateResources()
 
                 resource->resource = RenderManager::Get().GetTransientBuffer(desc, {});
 
-                if (GEMINI_BUILD_DEBUG && resource->buffer.name)
+                if (GEMINI_GPU_MARKERS && resource->buffer.name)
                 {
                     resource->resource->SetName(resource->buffer.name);
                 }
@@ -722,7 +722,7 @@ void RenderGraph::AllocateResources()
 
                 resource->resource = RenderManager::Get().GetTransientTexture(desc, {});
 
-                if (GEMINI_BUILD_DEBUG && resource->texture.name)
+                if (GEMINI_GPU_MARKERS && resource->texture.name)
                 {
                     resource->resource->SetName(resource->texture.name);
                 }

@@ -74,7 +74,7 @@ enum ENUM() LightType
     kLightType_Spot,
 };
 
-/** Scoped debug marker class, does nothing on debug builds. */
+/** Scoped debug marker class. */
 class ScopedDebugMarker
 {
 public:
@@ -87,12 +87,12 @@ public:
                             ~ScopedDebugMarker();
 
 private:
-    #if GEMINI_BUILD_DEBUG
+    #if GEMINI_GPU_MARKERS
     GPUTransferContext&     mContext;
     #endif
 };
 
-#if !GEMINI_BUILD_DEBUG
+#if !GEMINI_GPU_MARKERS
 
 inline ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
                                             const char* const   label)

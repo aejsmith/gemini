@@ -162,7 +162,7 @@ public:
                                                   const glm::ivec3&        sourceOffset,
                                                   const glm::ivec3&        size) = 0;
 
-    #if GEMINI_BUILD_DEBUG
+    #if GEMINI_GPU_MARKERS
 
     /** Begin/end a named debug marker which will show up in debug tools. */
     virtual void                    BeginMarker(const char* const label) {}

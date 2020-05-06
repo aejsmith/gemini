@@ -725,7 +725,7 @@ void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const cmdList)
     FrameAllocator::Delete(vkCmdList);
 }
 
-#if GEMINI_BUILD_DEBUG
+#if GEMINI_GPU_MARKERS
 
 void VulkanContext::BeginMarker(const char* const label)
 {

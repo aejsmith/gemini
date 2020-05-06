@@ -83,7 +83,7 @@ public:
                                                   const glm::ivec3&        sourceOffset,
                                                   const glm::ivec3&        size) override;
 
-    #if GEMINI_BUILD_DEBUG
+    #if GEMINI_GPU_MARKERS
 
     void                            BeginMarker(const char* const label) override;
     void                            EndMarker() override;

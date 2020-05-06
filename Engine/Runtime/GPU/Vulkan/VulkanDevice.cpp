@@ -307,7 +307,7 @@ void VulkanDevice::CreateDevice()
         EnableExtension(extension, 0, true);
     }
 
-    #if GEMINI_BUILD_DEBUG
+    #if GEMINI_GPU_MARKERS
         EnableExtension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, kCap_DebugMarker);
     #endif
 

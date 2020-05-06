@@ -18,7 +18,7 @@
 
 #include "GPU/GPUContext.h"
 
-#if GEMINI_BUILD_DEBUG
+#if GEMINI_GPU_MARKERS
 
 ScopedDebugMarker::ScopedDebugMarker(GPUTransferContext& context,
                                      const char* const   label) :

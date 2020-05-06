@@ -288,7 +288,7 @@ void Mesh::Deserialise(Serialiser& serialiser)
 
 void Mesh::PathChanged()
 {
-    if (GEMINI_BUILD_DEBUG && IsManaged() && mIsBuilt)
+    if (GEMINI_GPU_MARKERS && IsManaged() && mIsBuilt)
     {
         for (size_t i = 0; i < kMaxVertexAttributes; i++)
         {

@@ -12,7 +12,7 @@ import Util
 opts = Variables('.options.cache')
 opts.AddVariables(
     ('GAME',  'Game to build (Test)', 'Test'),
-    ('BUILD', 'Build type to perform (Debug, Sanitize, Release)', 'Release'),
+    ('BUILD', 'Build type to perform (see below)', 'Release'),
 )
 
 env = Environment(ENV = os.environ, variables = opts)
@@ -21,7 +21,14 @@ opts.Save('.options.cache', env)
 helpText = \
     'The following build options can be set on the command line. These will be saved\n' + \
     'for later invocations of SCons, so you do not need to specify them every time:\n' + \
-    opts.GenerateHelpText(env)
+    opts.GenerateHelpText(env) + \
+    '\n' + \
+    'The following build types are supported:\n' + \
+    '\n' + \
+    '    Debug:    No compiler optimisation, all debugging/profiling features enabled\n' + \
+    '    Sanitize: Same as Debug but with ASan/UBSan enabled as well\n' + \
+    '    Profile:  Compiler optimisation enabled, profiling features enabled\n' + \
+    '    Release:  Compiler optimisation enabled, no debugging/profiling features\n'
 Help(helpText)
 
 # Set up pretty build output.
@@ -46,27 +53,37 @@ if not ARGUMENTS.get('V'):
 # Compiler setup #
 ##################
 
+buildFlags = [
+    'GEMINI_BUILD_DEBUG',
+    'GEMINI_BUILD_PROFILE',
+    'GEMINI_BUILD_RELEASE',
+    'GEMINI_SANITIZE',
+]
+
 buildTypes = {
     'Debug': {
         'CPPDEFINES': {
             'GEMINI_BUILD_DEBUG':   1,
-            'GEMINI_BUILD_RELEASE': 0,
         },
     },
     'Sanitize': {
         'CPPDEFINES': {
             'GEMINI_BUILD_DEBUG':   1,
-            'GEMINI_BUILD_RELEASE': 0,
             'GEMINI_SANITIZE':      1,
+        },
+    },
+    'Profile': {
+        'CPPDEFINES': {
+            'GEMINI_BUILD_PROFILE': 1,
+            'NDEBUG':               None,
         },
     },
     'Release': {
         'CPPDEFINES': {
-            'GEMINI_BUILD_DEBUG':   0,
             'GEMINI_BUILD_RELEASE': 1,
-            'NDEBUG': None
+            'NDEBUG':               None,
         },
-    }
+    },
 }
 
 if not env['BUILD'] in buildTypes:
@@ -88,6 +105,10 @@ if sys.platform.startswith('linux'):
         'Sanitize': {
             'CCFLAGS': ['-g', '-fsanitize=undefined', '-fsanitize=address'],
             'LINKFLAGS': ['-fsanitize=undefined', '-fsanitize=address'],
+        },
+        'Profile': {
+            'CCFLAGS': ['-O3', '-g'],
+            'LINKFLAGS': [],
         },
         'Release': {
             'CCFLAGS': ['-O3', '-g'],
@@ -118,6 +139,10 @@ elif sys.platform.startswith('win32'):
             'CCFLAGS': ['/Od', '/Z7'],
             'LINKFLAGS': ['/DEBUG'],
         },
+        'Profile': {
+            'CCFLAGS': ['/O2'],
+            'LINKFLAGS': ['/DEBUG'],
+        },
         'Release': {
             'CCFLAGS': ['/O2'],
             'LINKFLAGS': ['/DEBUG'],
@@ -132,6 +157,10 @@ else:
 env['CCFLAGS'] += platformBuildTypes[env['BUILD']]['CCFLAGS']
 env['LINKFLAGS'] += platformBuildTypes[env['BUILD']]['LINKFLAGS']
 env['CPPDEFINES'].update(buildTypes[env['BUILD']]['CPPDEFINES'])
+
+for flag in buildFlags:
+    if not flag in env['CPPDEFINES']:
+        env['CPPDEFINES'][flag] = 0
 
 ########################
 # Component management #

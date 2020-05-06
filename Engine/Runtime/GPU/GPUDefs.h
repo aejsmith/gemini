@@ -25,6 +25,9 @@
 
 #include <vector>
 
+/** Whether debug markers and object names are enabled. */
+#define GEMINI_GPU_MARKERS (!GEMINI_BUILD_RELEASE)
+
 class GPUResource;
 
 /** Maximum number of colour attachments in a render pass. */
