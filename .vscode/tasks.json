@@ -16,6 +16,15 @@
             }
         },
         {
+            "label": "SCons (Profile)",
+            "type": "shell",
+            "command": "scons BUILD=Profile -j8",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
             "label": "SCons (Release)",
             "type": "shell",
             "command": "scons BUILD=Release -j8",
