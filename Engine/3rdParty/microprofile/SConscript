@@ -2,4 +2,4 @@ Import('manager')
 
 manager.AddComponent(
     name = '3rdParty/microprofile',
-    includePath = 'Repo')
+    includePath = ['Include', 'Repo'])

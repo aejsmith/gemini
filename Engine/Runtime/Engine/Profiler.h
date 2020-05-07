@@ -38,6 +38,7 @@
 
 class Engine;
 class GPUQueryPool;
+class ProfilerWindow;
 
 class Profiler : public Singleton<Profiler>
 {
@@ -46,6 +47,7 @@ public:
                             ~Profiler();
 
     void                    GPUInit(OnlyCalledBy<Engine>);
+    void                    WindowInit(OnlyCalledBy<Engine>);
 
     void                    EndFrame(OnlyCalledBy<Engine>);
 
@@ -58,11 +60,13 @@ private:
     static bool             GPUTickReference(int64_t* outCPU, int64_t* outGPU);
 
 private:
-    GPUQueryPool*           mGPUQueryPool;
+    UPtr<GPUQueryPool>      mGPUQueryPool;
     uint64_t                mGPUFrame;
     std::atomic<uint32_t>   mGPUFramePut;
     uint32_t                mGPUSubmitted[MICROPROFILE_GPU_FRAMES];
     uint64_t                mGPUResults[MICROPROFILE_GPU_MAX_QUERIES];
+
+    UPtr<ProfilerWindow>    mWindow;
 
 };
 

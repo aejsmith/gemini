@@ -110,7 +110,10 @@ Engine::Engine() :
         mSettings->GetMainWindowSize(),
         (mSettings->GetMainWindowFullscreen()) ? Window::kWindow_Fullscreen : 0);
     GPUDevice::Create();
-    Profiler::Get().GPUInit({});
+
+    #if GEMINI_PROFILER
+        Profiler::Get().GPUInit({});
+    #endif
 
     new RenderManager();
 
@@ -120,6 +123,11 @@ Engine::Engine() :
     new InputManager();
     new ImGUIManager();
     new DebugManager();
+
+    #if GEMINI_PROFILER
+        Profiler::Get().WindowInit({});
+    #endif
+
     new AssetManager();
 
     Game::Get().Init();

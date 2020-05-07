@@ -74,6 +74,7 @@ ImGUIManager::ImGUIManager() :
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     /* Set up key mapping. */
     io.KeyMap[ImGuiKey_Tab]         = kInputCode_Tab;
