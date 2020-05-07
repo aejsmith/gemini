@@ -18,9 +18,9 @@
 
 #include "Core/Singleton.h"
 
-#define GEMINI_PROFILER_ENABLED (!GEMINI_BUILD_RELEASE)
+#define GEMINI_PROFILER (!GEMINI_BUILD_RELEASE)
 
-#if GEMINI_PROFILER_ENABLED
+#if GEMINI_PROFILER
 
 #define MICROPROFILE_PER_THREAD_BUFFER_SIZE     (2 * 1024 * 1024)
 #define MICROPROFILE_PER_THREAD_GPU_BUFFER_SIZE (1 * 1024 * 1024)
@@ -28,21 +28,48 @@
 #define MICROPROFILE_LABEL_BUFFER_SIZE          (1 * 1024 * 1024)
 #define MICROPROFILE_GPU_MAX_QUERIES            8192
 
+/* TODO: Support queries within command lists. For now they're only supported
+ * on the contexts which can only be used from the main thread. */
+//#define MICROPROFILE_GPU_TIMERS_MULTITHREADED   1
+
 #include "microprofile.h"
+
+#include <atomic>
+
+class Engine;
+class GPUQueryPool;
 
 class Profiler : public Singleton<Profiler>
 {
 public:
                             Profiler();
+                            ~Profiler();
 
-    void                    EndFrame();
+    void                    GPUInit(OnlyCalledBy<Engine>);
+
+    void                    EndFrame(OnlyCalledBy<Engine>);
+
+private:
+    static void             GPUShutdown();
+    static uint32_t         GPUFlip();
+    static uint32_t         GPUInsertTimer(void* const context);
+    static uint64_t         GPUGetTimestamp(const uint32_t index);
+    static uint64_t         GPUTicksPerSecond();
+    static bool             GPUTickReference(int64_t* outCPU, int64_t* outGPU);
+
+private:
+    GPUQueryPool*           mGPUQueryPool;
+    uint64_t                mGPUFrame;
+    std::atomic<uint32_t>   mGPUFramePut;
+    uint32_t                mGPUSubmitted[MICROPROFILE_GPU_FRAMES];
+    uint64_t                mGPUResults[MICROPROFILE_GPU_MAX_QUERIES];
 
 };
 
 #define PROFILER_SCOPE(group, timer, colour)    MICROPROFILE_SCOPEI(group, timer, colour)
 #define PROFILER_FUNC_SCOPE(group, colour)      MICROPROFILE_SCOPEI(group, __func__, colour)
 
-#else // GEMINI_PROFILER_ENABLED
+#else // GEMINI_PROFILER
 
 #define PROFILER_SCOPE(group, timer, colour)
 #define PROFILER_FUNC_SCOPE(group, colour)

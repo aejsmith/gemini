@@ -101,7 +101,7 @@ Engine::Engine() :
 
     InitSettings();
 
-    #if GEMINI_PROFILER_ENABLED
+    #if GEMINI_PROFILER
         new Profiler();
     #endif
 
@@ -110,6 +110,7 @@ Engine::Engine() :
         mSettings->GetMainWindowSize(),
         (mSettings->GetMainWindowFullscreen()) ? Window::kWindow_Fullscreen : 0);
     GPUDevice::Create();
+    Profiler::Get().GPUInit({});
 
     new RenderManager();
 
@@ -228,10 +229,10 @@ void Engine::Run()
         DebugManager::Get().RenderOverlay({});
         ImGUIManager::Get().Render({});
 
-        #if GEMINI_PROFILER_ENABLED
+        #if GEMINI_PROFILER
             /* Done before presentation since MicroProfile will do a final GPU
              * timestamp. */
-            Profiler::Get().EndFrame();
+            Profiler::Get().EndFrame({});
         #endif
 
         /* Present the main window. This is done outside the render graph. */
