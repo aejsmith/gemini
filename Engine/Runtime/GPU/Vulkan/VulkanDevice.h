@@ -58,6 +58,8 @@ public:
 
     GPUComputePipeline*                 CreateComputePipeline(const GPUComputePipelineDesc& desc) override;
 
+    GPUQueryPool*                       CreateQueryPool(const GPUQueryPoolDesc& desc) override;
+
     GPUResourceView*                    CreateResourceView(GPUResource* const         resource,
                                                            const GPUResourceViewDesc& desc) override;
 

@@ -22,6 +22,13 @@
 
 namespace VulkanUtils
 {
+    template <typename T, typename U>
+    inline void AddToPNextChain(T& dest, U& add)
+    {
+        add.pNext  = const_cast<decltype(add.pNext)>(dest.pNext);
+        dest.pNext = &add;
+    }
+
     inline VkAttachmentLoadOp ConvertLoadOp(const GPULoadOp op)
     {
         switch (op)

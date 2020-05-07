@@ -22,6 +22,7 @@
 #include "VulkanCommandList.h"
 #include "VulkanCommandPool.h"
 #include "VulkanDevice.h"
+#include "VulkanQueryPool.h"
 #include "VulkanStagingPool.h"
 #include "VulkanSwapchain.h"
 #include "VulkanTexture.h"
@@ -726,6 +727,47 @@ void VulkanContext::SubmitRenderPassImpl(GPUGraphicsCommandList* const cmdList)
     auto vkCmdList = static_cast<VulkanGraphicsCommandList*>(cmdList);
     vkCmdList->Submit(GetCommandBuffer());
     FrameAllocator::Delete(vkCmdList);
+}
+
+void VulkanContext::BeginQuery(GPUQueryPool* const queryPool,
+                               const uint16_t      index)
+{
+    auto vkQueryPool = static_cast<VulkanQueryPool*>(queryPool);
+
+    Assert(queryPool->GetType() == kGPUQueryType_Occlusion);
+    Assert(index < queryPool->GetCount());
+
+    vkCmdBeginQuery(GetCommandBuffer(),
+                    vkQueryPool->GetHandle(),
+                    index,
+                    0);
+}
+
+void VulkanContext::EndQuery(GPUQueryPool* const queryPool,
+                             const uint16_t      index)
+{
+    auto vkQueryPool = static_cast<VulkanQueryPool*>(queryPool);
+
+    Assert(queryPool->GetType() == kGPUQueryType_Occlusion);
+    Assert(index < queryPool->GetCount());
+
+    vkCmdEndQuery(GetCommandBuffer(),
+                  vkQueryPool->GetHandle(),
+                  index);
+}
+
+void VulkanContext::Query(GPUQueryPool* const queryPool,
+                          const uint16_t      index)
+{
+    auto vkQueryPool = static_cast<VulkanQueryPool*>(queryPool);
+
+    Assert(queryPool->GetType() == kGPUQueryType_Timestamp);
+    Assert(index < queryPool->GetCount());
+
+    vkCmdWriteTimestamp(GetCommandBuffer(),
+                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                        vkQueryPool->GetHandle(),
+                        index);
 }
 
 #if GEMINI_GPU_MARKERS

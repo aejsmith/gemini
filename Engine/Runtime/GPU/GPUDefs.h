@@ -22,6 +22,7 @@
 #include "Core/Utility.h"
 
 #include "Engine/Object.h"
+#include "Engine/Profiler.h"
 
 #include <vector>
 
@@ -663,6 +664,18 @@ enum ENUM() GPUAddressMode : uint8_t
     kGPUAddressMode_MirroredClamp,
 };
 
+enum GPUQueryType : uint8_t
+{
+    /** GPU timestamp in nanoseconds (single). */
+    kGPUQueryType_Timestamp,
+
+    /**
+     * Indicates whether any pixels were drawn to the render target for a range
+     * of draw calls (pair).
+     */
+    kGPUQueryType_Occlusion,
+};
+
 class GPUMarkerScope
 {
 public:
@@ -677,6 +690,11 @@ public:
 private:
     #if GEMINI_GPU_MARKERS
     GPUTransferContext&     mContext;
+
+    #if GEMINI_PROFILER
+    MicroProfileToken       mToken;
+    uint64_t                mTick;
+    #endif
     #endif
 };
 

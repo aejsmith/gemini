@@ -209,7 +209,8 @@
     macro(vkDebugMarkerSetObjectNameEXT) \
     macro(vkCmdDebugMarkerBeginEXT) \
     macro(vkCmdDebugMarkerEndEXT) \
-    macro(vkCmdDebugMarkerInsertEXT)
+    macro(vkCmdDebugMarkerInsertEXT) \
+    macro(vkResetQueryPoolEXT)
 
 /**
  * Table of Vulkan function pointers loaded manually. These are made available

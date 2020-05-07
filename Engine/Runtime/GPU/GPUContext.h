@@ -162,6 +162,17 @@ public:
                                                   const glm::ivec3&        sourceOffset,
                                                   const glm::ivec3&        size) = 0;
 
+    /**
+     * Perform a query. For paired queries, Begin/EndQuery should be used. For
+     * single queries, Query should be used.
+     */
+    virtual void                    BeginQuery(GPUQueryPool* const queryPool,
+                                               const uint16_t      index) = 0;
+    virtual void                    EndQuery(GPUQueryPool* const queryPool,
+                                             const uint16_t      index) = 0;
+    virtual void                    Query(GPUQueryPool* const queryPool,
+                                          const uint16_t      index) = 0;
+
     #if GEMINI_GPU_MARKERS
 
     /** Begin/end a named debug marker which will show up in debug tools. */

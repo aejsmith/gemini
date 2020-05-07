@@ -83,6 +83,13 @@ public:
                                                   const glm::ivec3&        sourceOffset,
                                                   const glm::ivec3&        size) override;
 
+    void                            BeginQuery(GPUQueryPool* const queryPool,
+                                               const uint16_t      index) override;
+    void                            EndQuery(GPUQueryPool* const queryPool,
+                                             const uint16_t      index) override;
+    void                            Query(GPUQueryPool* const queryPool,
+                                          const uint16_t      index) override;
+
     #if GEMINI_GPU_MARKERS
 
     void                            BeginMarker(const char* const label) override;

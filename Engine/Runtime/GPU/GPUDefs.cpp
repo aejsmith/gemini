@@ -23,6 +23,12 @@ GPUMarkerScope::GPUMarkerScope(GPUTransferContext& context,
     mContext (context)
 {
     mContext.BeginMarker(label);
+
+    #if GEMINI_PROFILER
+        MicroProfileGpuSetContext(&context);
+        mToken = MicroProfileGetToken("GPU", label, 0xff0000, MicroProfileTokenTypeGpu);
+        mTick  = MicroProfileEnter(mToken);
+    #endif
 }
 
 GPUMarkerScope::GPUMarkerScope(GPUTransferContext& context,
@@ -33,6 +39,11 @@ GPUMarkerScope::GPUMarkerScope(GPUTransferContext& context,
 
 GPUMarkerScope::~GPUMarkerScope()
 {
+    #if GEMINI_PROFILER
+        MicroProfileGpuSetContext(&mContext);
+        MicroProfileLeave(mToken, mTick);
+    #endif
+
     mContext.EndMarker();
 }
 

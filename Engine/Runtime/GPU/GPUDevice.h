@@ -32,8 +32,11 @@
 class GPUGraphicsCommandList;
 class GPUGraphicsContext;
 class GPUConstantPool;
+class GPUQueryPool;
 class GPUStagingPool;
 class Window;
+
+struct GPUQueryPoolDesc;
 
 /**
  * This class is the main class of the low-level rendering API abstraction
@@ -98,6 +101,8 @@ public:
     virtual GPUBuffer*              CreateBuffer(const GPUBufferDesc& desc) = 0;
 
     virtual GPUComputePipeline*     CreateComputePipeline(const GPUComputePipelineDesc& desc) = 0;
+
+    virtual GPUQueryPool*           CreateQueryPool(const GPUQueryPoolDesc& desc) = 0;
 
     virtual GPUResourceView*        CreateResourceView(GPUResource* const         resource,
                                                        const GPUResourceViewDesc& desc) = 0;

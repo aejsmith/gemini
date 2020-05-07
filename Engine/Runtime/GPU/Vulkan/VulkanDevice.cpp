@@ -23,6 +23,7 @@
 #include "VulkanFormat.h"
 #include "VulkanMemoryManager.h"
 #include "VulkanPipeline.h"
+#include "VulkanQueryPool.h"
 #include "VulkanRenderPass.h"
 #include "VulkanResourceView.h"
 #include "VulkanSampler.h"
@@ -48,6 +49,9 @@ static const char* kRequiredDeviceExtensions[] =
      * enable them explicitly. */
     VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
     VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
+
+    /* VulkanQueryPool needs this. */
+    VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME,
 };
 
 VulkanDevice::VulkanDevice() :
@@ -329,6 +333,12 @@ void VulkanDevice::CreateDevice()
     deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
     deviceCreateInfo.pEnabledFeatures        = &mFeatures;
 
+    VkPhysicalDeviceHostQueryResetFeaturesEXT hostResetFeatures = {};
+    hostResetFeatures.sType          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES_EXT;
+    hostResetFeatures.hostQueryReset = VK_TRUE;
+
+    VulkanUtils::AddToPNextChain(deviceCreateInfo, hostResetFeatures);
+
     VulkanCheck(vkCreateDevice(mPhysicalDevice,
                                &deviceCreateInfo,
                                nullptr,
@@ -370,6 +380,11 @@ GPUBuffer* VulkanDevice::CreateBuffer(const GPUBufferDesc& desc)
 GPUComputePipeline* VulkanDevice::CreateComputePipeline(const GPUComputePipelineDesc& desc)
 {
     return new VulkanComputePipeline(*this, desc);
+}
+
+GPUQueryPool* VulkanDevice::CreateQueryPool(const GPUQueryPoolDesc& desc)
+{
+    return new VulkanQueryPool(*this, desc);
 }
 
 GPUPipeline* VulkanDevice::CreatePipelineImpl(const GPUPipelineDesc& desc)
