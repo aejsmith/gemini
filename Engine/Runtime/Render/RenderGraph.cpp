@@ -850,12 +850,21 @@ void RenderGraph::DestroyViews(RenderGraphPass& pass)
 
 void RenderGraph::ExecutePass(RenderGraphPass& pass)
 {
+    /* The usual PROFILER_SCOPE macros store the token in a static local, which
+     * won't work for a dynamic name string, so do this manually. */
+    #if GEMINI_PROFILER
+        const MicroProfileToken token = MicroProfileGetToken(RENDER_PROFILER_NAME,
+                                                             pass.mName.c_str(),
+                                                             RENDER_PROFILER_COLOUR,
+                                                             MicroProfileTokenTypeCpu);
+
+        MicroProfileScopeHandler profileScope(token);
+    #endif
+
     switch (pass.mType)
     {
         case kRenderGraphPassType_Render:
         {
-            RENDER_PROFILER_SCOPE(pass.mName.c_str());
-
             Assert(pass.mRenderFunction);
 
             GPUGraphicsContext& context = GPUGraphicsContext::Get();
@@ -936,8 +945,6 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
 
         case kRenderGraphPassType_Compute:
         {
-            RENDER_PROFILER_SCOPE(pass.mName.c_str());
-
             Assert(pass.mComputeFunction);
 
             /* TODO: Async compute. */
@@ -958,8 +965,6 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
 
         case kRenderGraphPassType_Transfer:
         {
-            RENDER_PROFILER_SCOPE(pass.mName.c_str());
-
             Assert(pass.mTransferFunction);
 
             /* Transfer passes are just executed on the main graphics context.

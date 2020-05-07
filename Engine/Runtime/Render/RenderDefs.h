@@ -23,8 +23,10 @@
 
 #include "../../Shaders/ShaderDefs.h"
 
-#define RENDER_PROFILER_SCOPE(timer)    PROFILER_SCOPE("Render", timer, 0x00ff00)
-#define RENDER_PROFILER_FUNC_SCOPE()    PROFILER_FUNC_SCOPE("Render", 0x00ff00)
+#define RENDER_PROFILER_NAME            "Render"
+#define RENDER_PROFILER_COLOUR          0x00ff00
+#define RENDER_PROFILER_SCOPE(timer)    PROFILER_SCOPE(RENDER_PROFILER_NAME, timer, RENDER_PROFILER_COLOUR)
+#define RENDER_PROFILER_FUNC_SCOPE()    PROFILER_FUNC_SCOPE(RENDER_PROFILER_NAME, RENDER_PROFILER_COLOUR)
 
 /**
  * A render pipeline will perform a number of render passes, each of which will
