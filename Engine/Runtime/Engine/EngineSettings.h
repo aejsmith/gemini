@@ -38,6 +38,9 @@ public:
     bool                    GetMainWindowFullscreen() const { return mMainWindowFullscreen; }
     void                    SetMainWindowFullscreen(const bool fullscreen);
 
+    /** Whether to enable the profiler web server. */
+    PROPERTY() bool         profilerWebServer;
+
 private:
                             ~EngineSettings();
 

@@ -51,6 +51,9 @@ depends = [
     'External/shaderc',
 ]
 
+if manager.baseEnv['BUILD'] != 'Release':
+    depends += ['3rdParty/microprofile']
+
 if manager.baseEnv['PLATFORM'] == 'Linux':
     depends += ['External/XCB']
 

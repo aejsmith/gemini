@@ -22,3 +22,6 @@
 [submodule "Engine/3rdParty/stb/Repo"]
 	path = Engine/3rdParty/stb/Repo
 	url = https://github.com/nothings/stb.git
+[submodule "Engine/3rdParty/microprofile/Repo"]
+	path = Engine/3rdParty/microprofile/Repo
+	url = https://github.com/zeux/microprofile.git

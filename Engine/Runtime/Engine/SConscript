@@ -26,6 +26,7 @@ objects += list(map(env.Object, [
     'Main.cpp',
     'Mesh.cpp',
     'Object.cpp',
+    'Profiler.cpp',
     'Serialiser.cpp',
     'Texture.cpp',
     'Version.cpp',

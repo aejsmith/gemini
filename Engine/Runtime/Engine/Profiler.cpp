@@ -14,28 +14,45 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#if !GEMINI_BUILD_RELEASE
+
+#define MICROPROFILE_IMPL 1
+
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wshadow"
+#endif
+
+#endif
+
+#include "Engine/Profiler.h"
+
+#include "Engine/Engine.h"
 #include "Engine/EngineSettings.h"
 
-EngineSettings::EngineSettings() :
-    profilerWebServer       (false),
-    mMainWindowSize         (1600, 900),
-    mMainWindowFullscreen   (false)
+#if GEMINI_PROFILER_ENABLED
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
+
+SINGLETON_IMPL(Profiler);
+
+Profiler::Profiler()
 {
+    MicroProfileInit();
+    MicroProfileSetEnableAllGroups(true);
+    MicroProfileOnThreadCreate("Main");
+
+    if (Engine::Get().GetSettings().profilerWebServer)
+    {
+        MicroProfileWebServerStart();
+    }
 }
 
-EngineSettings::~EngineSettings()
+void Profiler::EndFrame()
 {
+    MicroProfileFlip();
 }
 
-void EngineSettings::SetMainWindowSize(const glm::uvec2& size)
-{
-    // TODO: Support changing at runtime, this is only used for deserialisation
-    // so far.
-    mMainWindowSize = size;
-}
-
-void EngineSettings::SetMainWindowFullscreen(const bool fullscreen)
-{
-    // TODO: Support changing at runtime.
-    mMainWindowFullscreen = fullscreen;
-}
+#endif

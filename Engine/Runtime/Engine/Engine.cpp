@@ -27,6 +27,7 @@
 #include "Engine/FrameAllocator.h"
 #include "Engine/Game.h"
 #include "Engine/ImGUI.h"
+#include "Engine/Profiler.h"
 #include "Engine/Window.h"
 
 #include "Entity/World.h"
@@ -99,6 +100,10 @@ Engine::Engine() :
     SDL_free(platformBasePath);
 
     InitSettings();
+
+    #if GEMINI_PROFILER_ENABLED
+        new Profiler();
+    #endif
 
     /* Set up the main window and graphics API. */
     new MainWindow(
@@ -222,6 +227,12 @@ void Engine::Run()
          * reflect everything submitted to ImGUI up until this point. */
         DebugManager::Get().RenderOverlay({});
         ImGUIManager::Get().Render({});
+
+        #if GEMINI_PROFILER_ENABLED
+            /* Done before presentation since MicroProfile will do a final GPU
+             * timestamp. */
+            Profiler::Get().EndFrame();
+        #endif
 
         /* Present the main window. This is done outside the render graph. */
         MainWindow::Get().Present({});

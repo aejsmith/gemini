@@ -36,7 +36,7 @@ public:
 public:
     void                    Run();
 
-    EngineSettings*         GetSettings() const         { return mSettings; }
+    EngineSettings&         GetSettings() const         { return *mSettings; }
 
     /**
      * Per-frame state.

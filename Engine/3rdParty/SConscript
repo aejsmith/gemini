@@ -1,6 +1,7 @@
 SConscript(dirs = [
     'glm',
     'imgui',
+    'microprofile',
     'Mustache',
     'RapidJSON',
     'SPIRV-Reflect',
