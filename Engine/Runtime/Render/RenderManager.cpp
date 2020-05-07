@@ -71,6 +71,8 @@ RenderManager::~RenderManager()
 
 void RenderManager::Render(OnlyCalledBy<Engine>)
 {
+    RENDER_PROFILER_FUNC_SCOPE();
+
     const uint64_t frameStartTime = Engine::Get().GetFrameStartTime();
 
     /* Free transient resources that have gone unused long enough. */
@@ -96,9 +98,13 @@ void RenderManager::Render(OnlyCalledBy<Engine>)
     /* Build a render graph for all our outputs and execute it. */
     RenderGraph graph;
 
-    for (RenderOutput* output : mOutputs)
     {
-        output->AddPasses(graph, {});
+        RENDER_PROFILER_SCOPE("AddPasses");
+
+        for (RenderOutput* output : mOutputs)
+        {
+            output->AddPasses(graph, {});
+        }
     }
 
     graph.Execute();

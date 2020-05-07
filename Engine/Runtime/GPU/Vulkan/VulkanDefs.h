@@ -18,9 +18,14 @@
 
 #include "Core/CoreDefs.h"
 
+#include "Engine/Profiler.h"
+
 /* We load function pointers ourselves. */
 #define VK_NO_PROTOTYPES
 #include <vulkan/vulkan.h>
+
+#define VULKAN_PROFILER_SCOPE(timer)    PROFILER_SCOPE("Vulkan", timer, 0xffff00)
+#define VULKAN_PROFILER_FUNC_SCOPE()    PROFILER_FUNC_SCOPE("Vulkan", 0xffff00)
 
 /**
  * All functions that we can obtain from vkGetInstanceProcAddr without an

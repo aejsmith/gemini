@@ -50,6 +50,8 @@ void RenderWorld::RemoveLight(RenderLight* const light)
 void RenderWorld::Cull(const RenderView& view,
                        CullResults&      outResults) const
 {
+    RENDER_PROFILER_FUNC_SCOPE();
+
     const Frustum& frustum = view.GetFrustum();
 
     for (const RenderEntity* entity : mEntities)

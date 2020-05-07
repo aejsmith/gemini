@@ -79,5 +79,7 @@ Entity* World::CreateEntity(std::string name)
 
 void World::Tick(const float delta)
 {
+    ENTITY_PROFILER_FUNC_SCOPE();
+
     mRoot->Tick(delta);
 }

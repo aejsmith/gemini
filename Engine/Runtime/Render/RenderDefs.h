@@ -17,10 +17,14 @@
 #pragma once
 
 #include "Engine/Object.h"
+#include "Engine/Profiler.h"
 
 #include "GPU/GPUDefs.h"
 
 #include "../../Shaders/ShaderDefs.h"
+
+#define RENDER_PROFILER_SCOPE(timer)    PROFILER_SCOPE("Render", timer, 0x00ff00)
+#define RENDER_PROFILER_FUNC_SCOPE()    PROFILER_FUNC_SCOPE("Render", 0x00ff00)
 
 /**
  * A render pipeline will perform a number of render passes, each of which will

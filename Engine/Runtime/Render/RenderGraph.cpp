@@ -854,6 +854,8 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
     {
         case kRenderGraphPassType_Render:
         {
+            RENDER_PROFILER_SCOPE(pass.mName.c_str());
+
             Assert(pass.mRenderFunction);
 
             GPUGraphicsContext& context = GPUGraphicsContext::Get();
@@ -926,16 +928,16 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
 
             cmdList->End();
 
-            {
-                GPU_MARKER_SCOPE(context, pass.mName);
-                context.SubmitRenderPass(cmdList);
-            }
+            GPU_MARKER_SCOPE(context, pass.mName);
+            context.SubmitRenderPass(cmdList);
 
             break;
         }
 
         case kRenderGraphPassType_Compute:
         {
+            RENDER_PROFILER_SCOPE(pass.mName.c_str());
+
             Assert(pass.mComputeFunction);
 
             /* TODO: Async compute. */
@@ -948,16 +950,16 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
 
             cmdList->End();
 
-            {
-                GPU_MARKER_SCOPE(context, pass.mName);
-                context.SubmitComputePass(cmdList);
-            }
+            GPU_MARKER_SCOPE(context, pass.mName);
+            context.SubmitComputePass(cmdList);
 
             break;
         }
 
         case kRenderGraphPassType_Transfer:
         {
+            RENDER_PROFILER_SCOPE(pass.mName.c_str());
+
             Assert(pass.mTransferFunction);
 
             /* Transfer passes are just executed on the main graphics context.
@@ -972,10 +974,8 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
              * end of previous frame. */
             GPUComputeContext& context = GPUGraphicsContext::Get();
 
-            {
-                GPU_MARKER_SCOPE(context, pass.mName);
-                pass.mTransferFunction(*this, pass, context);
-            }
+            GPU_MARKER_SCOPE(context, pass.mName);
+            pass.mTransferFunction(*this, pass, context);
 
             break;
         }
@@ -1028,6 +1028,8 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
 
 void RenderGraph::Execute()
 {
+    RENDER_PROFILER_FUNC_SCOPE();
+
     mIsExecuting = true;
 
     DetermineRequiredPasses();

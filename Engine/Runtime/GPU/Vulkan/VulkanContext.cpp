@@ -97,12 +97,15 @@ VkCommandBuffer VulkanContext::GetCommandBuffer(const bool allocate)
 
 void VulkanContext::Submit(const VkSemaphore signalSemaphore)
 {
+
     /* Don't need to do anything if we have nothing to submit and don't have a
      * semaphore to signal. */
     if (!HaveCommandBuffer() && signalSemaphore == VK_NULL_HANDLE)
     {
         return;
     }
+
+    VULKAN_PROFILER_FUNC_SCOPE();
 
     if (HaveCommandBuffer())
     {

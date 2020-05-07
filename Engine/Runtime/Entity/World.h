@@ -18,6 +18,8 @@
 
 #include "Engine/Asset.h"
 
+#include "Entity/EntityDefs.h"
+
 class Entity;
 class RenderWorld;
 class WorldEditorWindow;

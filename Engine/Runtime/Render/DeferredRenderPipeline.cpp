@@ -172,6 +172,8 @@ void DeferredRenderPipeline::Render(const RenderWorld&         world,
                                     const RenderResourceHandle texture,
                                     RenderResourceHandle&      outNewTexture)
 {
+    RENDER_PROFILER_SCOPE("DeferredRenderPipeline");
+
     DeferredRenderContext* const context = graph.NewTransient<DeferredRenderContext>(graph, world, view);
 
     /* Get the visible entities and lights. */

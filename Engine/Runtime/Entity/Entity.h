@@ -21,6 +21,8 @@
 
 #include "Engine/Object.h"
 
+#include "Entity/EntityDefs.h"
+
 class Component;
 class World;
 

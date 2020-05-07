@@ -407,6 +407,8 @@ GPUTexture* VulkanDevice::CreateTexture(const GPUTextureDesc& desc)
 
 void VulkanDevice::EndFrameImpl()
 {
+    VULKAN_PROFILER_SCOPE("EndFrame");
+
     /* Submit outstanding work on all contexts. */
     for (auto context : mContexts)
     {
@@ -426,6 +428,8 @@ void VulkanDevice::EndFrameImpl()
      * there's much greater overhead for just passing all fences here. */
     if (!frame.fences.empty())
     {
+        VULKAN_PROFILER_SCOPE("WaitForFences");
+
         VulkanCheck(vkWaitForFences(mHandle,
                                     frame.fences.size(),
                                     frame.fences.data(),

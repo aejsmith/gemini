@@ -226,6 +226,8 @@ void VulkanSwapchain::CreateTexture()
 
 void VulkanSwapchain::Acquire(const VkSemaphore acquireSemaphore)
 {
+    VULKAN_PROFILER_FUNC_SCOPE();
+
     Assert(mCurrentImage == std::numeric_limits<uint32_t>::max());
 
     OnBeginPresent();
@@ -267,6 +269,8 @@ void VulkanSwapchain::Acquire(const VkSemaphore acquireSemaphore)
 void VulkanSwapchain::Present(const VkQueue     queue,
                               const VkSemaphore waitSemaphore)
 {
+    VULKAN_PROFILER_FUNC_SCOPE();
+
     Assert(mCurrentImage != std::numeric_limits<uint32_t>::max());
     Assert(waitSemaphore != VK_NULL_HANDLE);
 
