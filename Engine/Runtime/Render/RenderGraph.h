@@ -299,6 +299,7 @@ private:
         RenderResourceHandle        handle;
         GPUSubresourceRange         range;
         GPUResourceState            state;
+        bool                        needSplitState;
     };
 
     struct View
@@ -577,7 +578,8 @@ private:
 
     void                            TransitionResource(Resource&                  resource,
                                                        const GPUSubresourceRange& range,
-                                                       const GPUResourceState     state);
+                                                       const GPUResourceState     state,
+                                                       const bool                 needSplitState = false);
 
     void                            FlushBarriers();
 

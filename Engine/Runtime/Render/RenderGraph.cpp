@@ -140,20 +140,32 @@ void RenderGraphPass::UseResource(const RenderResourceHandle handle,
 
     GPUUtils::ValidateResourceState(state, resource->type == kRenderResourceType_Texture);
 
-    for (const RenderGraphPass::UsedResource& otherUse : mUsedResources)
+    bool needSplitState = false;
+
+    for (RenderGraphPass::UsedResource& otherUse : mUsedResources)
     {
         if (otherUse.handle.index == handle.index)
         {
             AssertMsg(!otherUse.range.Overlaps(range),
                       "Subresources cannot be used multiple times in the same pass");
+
+            /* If we have uses of multiple different subresources in this
+             * resource with conflicting states, we'll need split state
+             * tracking. */
+            if (otherUse.state != state)
+            {
+                otherUse.needSplitState = true;
+                needSplitState          = true;
+            }
         }
     }
 
     mUsedResources.emplace_back();
-    UsedResource& use = mUsedResources.back();
-    use.handle        = handle;
-    use.range         = range;
-    use.state         = state;
+    UsedResource& use  = mUsedResources.back();
+    use.handle         = handle;
+    use.range          = range;
+    use.state          = state;
+    use.needSplitState = needSplitState;
 
     /* Add required usage flags for this resource state. */
     resource->usage |= ResourceUsageFromState(state);
@@ -551,13 +563,27 @@ RenderResourceHandle RenderGraph::ImportResource(GPUResource* const        extRe
 
 void RenderGraph::TransitionResource(Resource&                  resource,
                                      const GPUSubresourceRange& range,
-                                     const GPUResourceState     state)
+                                     const GPUResourceState     state,
+                                     const bool                 needSplitState)
 {
+    GPUSubresourceRange transitionRange = range;
+
     const bool isWholeResource = range == resource.resource->GetSubresourceRange();
 
     if (!isWholeResource)
     {
-        Fatal("TODO: Per-subresource state tracking");
+        /* When different subresources are being used with different states by
+         * the same pass, we need to use split state tracking for individual
+         * subresources. Otherwise, we'll just treat the whole resource as one
+         * where we can. */
+        if (needSplitState)
+        {
+            Fatal("TODO: Per-subresource state tracking");
+        }
+        else
+        {
+            transitionRange = resource.resource->GetSubresourceRange();
+        }
     }
 
     if (resource.currentState != state)
@@ -565,7 +591,7 @@ void RenderGraph::TransitionResource(Resource&                  resource,
         mBarriers.emplace_back();
         GPUResourceBarrier& barrier = mBarriers.back();
         barrier.resource     = resource.resource;
-        barrier.range        = range;
+        barrier.range        = transitionRange;
         barrier.currentState = resource.currentState;
         barrier.newState     = state;
 
@@ -809,7 +835,10 @@ void RenderGraph::PrepareResources(RenderGraphPass& pass)
             resource->begun = true;
         }
 
-        TransitionResource(*resource, use.range, use.state);
+        TransitionResource(*resource,
+                           use.range,
+                           use.state,
+                           use.needSplitState);
     }
 
     FlushBarriers();
