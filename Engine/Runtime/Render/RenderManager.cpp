@@ -18,7 +18,9 @@
 
 #include "Core/Time.h"
 
+#include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
+#include "Engine/Texture.h"
 
 #include "GPU/GPUDevice.h"
 
@@ -67,6 +69,15 @@ RenderManager::~RenderManager()
     FreeTransientResources(mTransientTextures);
 
     delete mViewEntityArgumentSet;
+}
+
+void RenderManager::InitAssets(OnlyCalledBy<Engine>)
+{
+    mDummyBlackTexture2D = AssetManager::Get().Load<Texture2D>("Engine/Textures/DummyBlack2D");
+    Assert(mDummyBlackTexture2D);
+
+    mDummyWhiteTexture2D = AssetManager::Get().Load<Texture2D>("Engine/Textures/DummyWhite2D");
+    Assert(mDummyWhiteTexture2D);
 }
 
 void RenderManager::Render(OnlyCalledBy<Engine>)

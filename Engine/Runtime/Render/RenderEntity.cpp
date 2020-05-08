@@ -76,7 +76,7 @@ void RenderEntity::SetTransform(const Transform& transform)
 }
 
 void RenderEntity::GetDrawCall(const ShaderPassType passType,
-                               const RenderContext& context,
+                               const RenderView&    view,
                                EntityDrawCall&      outDrawCall) const
 {
     Assert(SupportsPassType(passType));
@@ -92,7 +92,7 @@ void RenderEntity::GetDrawCall(const ShaderPassType passType,
         auto& arguments = outDrawCall.arguments[kArgumentSet_ViewEntity];
         arguments.argumentSet                = RenderManager::Get().GetViewEntityArgumentSet();
         arguments.constants[0].argumentIndex = kViewEntityArguments_ViewConstants;
-        arguments.constants[0].constants     = context.GetView().GetConstants();
+        arguments.constants[0].constants     = view.GetConstants();
         arguments.constants[1].argumentIndex = kViewEntityArguments_EntityConstants;
         arguments.constants[1].constants     = GPUDevice::Get().GetConstantPool().Write(&entityConstants, sizeof(entityConstants));
     }

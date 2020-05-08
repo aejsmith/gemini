@@ -80,6 +80,16 @@
                         "function": "PSDeferredOpaque"
                     }
                 ]
+            },
+            {
+                "type": "ShadowMap",
+                "shaders": [
+                    {
+                        "stage": "Vertex",
+                        "source": "Engine/ShadowMap.hlsl",
+                        "function": "VSMain"
+                    }
+                ]
             }
         ]
     }

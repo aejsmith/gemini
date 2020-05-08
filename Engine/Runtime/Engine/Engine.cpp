@@ -130,6 +130,8 @@ Engine::Engine() :
 
     new AssetManager();
 
+    RenderManager::Get().InitAssets({});
+
     Game::Get().Init();
 }
 

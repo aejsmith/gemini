@@ -16,10 +16,52 @@
 
 #include "Render/RenderPipeline.h"
 
+#include "Render/RenderLight.h"
+#include "Render/RenderView.h"
+
 RenderPipeline::RenderPipeline()
 {
 }
 
 RenderPipeline::~RenderPipeline()
 {
+}
+
+RenderResourceHandle RenderPipeline::CreateShadowMap(RenderGraph&    graph,
+                                                     const LightType lightType,
+                                                     const uint16_t  resolution) const
+{
+    RenderTextureDesc desc;
+    desc.name   = "ShadowMap";
+    desc.type   = kGPUResourceType_Texture2D;
+    desc.format = kShadowMapFormat;
+    desc.width  = resolution;
+    desc.height = resolution;
+
+    // TODO: Point/directional.
+    Assert(lightType == kLightType_Spot);
+
+    return graph.CreateTexture(desc);
+}
+
+void RenderPipeline::CreateShadowView(const RenderLight* const light,
+                                      const uint16_t           resolution,
+                                      RenderView&              outView) const
+{
+    switch (light->GetType())
+    {
+        case kLightType_Spot:
+            outView = RenderView::CreatePerspective(light->GetPosition(),
+                                                    glm::quatLookAt(light->GetDirection(), glm::vec3(0.0f, 1.0f, 0.0f)),
+                                                    light->GetConeAngle() * 2,
+                                                    0.1f,
+                                                    light->GetRange(),
+                                                    glm::uvec2(resolution, resolution));
+
+            break;
+
+        default:
+            Fatal("TODO: Point/Directional shadows");
+
+    }
 }

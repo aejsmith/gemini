@@ -29,6 +29,7 @@
 class Engine;
 class RenderGraph;
 class RenderOutput;
+class Texture2D;
 
 class RenderManager : public Singleton<RenderManager>
 {
@@ -38,6 +39,8 @@ public:
 public:
                                 RenderManager();
                                 ~RenderManager();
+
+    void                        InitAssets(OnlyCalledBy<Engine>);
 
     /** Get a list of outputs. */
     const OutputList&           GetOutputs() const                      { return mOutputs; }
@@ -56,6 +59,10 @@ public:
      * arguments are needed.
      */
     GPUArgumentSetLayoutRef     GetViewArgumentSetLayout() const        { return mViewArgumentSetLayout; }
+
+    /** Dummy resources. */
+    const Texture2D*            GetDummyBlackTexture2D() const          { return mDummyBlackTexture2D; }
+    const Texture2D*            GetDummyWhiteTexture2D() const          { return mDummyWhiteTexture2D; }
 
     /**
      * Interface with RenderOutput.
@@ -117,5 +124,8 @@ private:
 
     std::list<TransientBuffer>  mTransientBuffers;
     std::list<TransientTexture> mTransientTextures;
+
+    ObjPtr<Texture2D>           mDummyBlackTexture2D;
+    ObjPtr<Texture2D>           mDummyWhiteTexture2D;
 
 };

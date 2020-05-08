@@ -62,6 +62,17 @@ static void GetDefaultStates(const ShaderPassType      passType,
             break;
         }
 
+        case kShaderPassType_ShadowMap:
+        {
+            outRenderTargetDesc.depthStencil = RenderPipeline::kShadowMapFormat;
+
+            outDepthStencilDesc.depthTestEnable  = true;
+            outDepthStencilDesc.depthWriteEnable = true;
+            outDepthStencilDesc.depthCompareOp   = kGPUCompareOp_LessOrEqual;
+
+            break;
+        }
+
         default:
         {
             UnreachableMsg("Unknown pass type %d", passType);

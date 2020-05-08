@@ -51,6 +51,7 @@ public:
     float                       GetRange() const { return mRange; }
     void                        SetRange(const float range);
 
+    Radians                     GetConeAngle() const       { return mConeAngle; }
     float                       GetConeAngleScale() const  { return mConeAngleScale; }
     float                       GetConeAngleOffset() const { return mConeAngleOffset; }
     void                        SetConeAngles(const Radians innerConeAngle,
@@ -61,6 +62,9 @@ public:
 
     const glm::vec3&            GetDirection() const { return mDirection; }
     void                        SetDirection(const glm::vec3& direction);
+
+    bool                        GetCastShadows() const { return mCastShadows; }
+    void                        SetCastShadows(const bool castShadows);
 
     /** Returns whether the light's area of effect intersects with a frustum. */
     bool                        Cull(const Frustum& frustum) const;
@@ -79,6 +83,7 @@ private:
     glm::vec3                   mColour;
     float                       mIntensity;
     float                       mRange;
+    bool                        mCastShadows;
 
     /** Cone angle parameters (radians). */
     Radians                     mConeAngle;

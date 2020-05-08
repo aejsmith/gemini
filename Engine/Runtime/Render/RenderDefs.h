@@ -43,17 +43,16 @@
  */
 enum ENUM() ShaderPassType
 {
-    /**
-     * Basic pass without any lighting etc. (BasicRenderPipeline)
-     */
+    /** Basic pass without any lighting etc. (BasicRenderPipeline) */
     kShaderPassType_Basic,
 
-    /**
-     * Deferred G-Buffer opaque pass (DeferredRenderPipeline).
-     */
+    /** Deferred G-Buffer opaque pass (DeferredRenderPipeline). */
     kShaderPassType_DeferredOpaque,
 
-    kShaderPassTypeCount,
+    /** Shadow map rendering. */
+    kShaderPassType_ShadowMap,
+
+    kShaderPassTypeCount
 };
 
 /** Types of light. */
@@ -76,4 +75,6 @@ enum ENUM() LightType
      * entity's local negative Z axis.
      */
     kLightType_Spot,
+
+    kLightTypeCount
 };

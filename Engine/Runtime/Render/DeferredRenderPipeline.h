@@ -65,6 +65,15 @@ public:
     static constexpr PixelFormat        kGBuffer1Format = kPixelFormat_R10G10B10A2;
     static constexpr PixelFormat        kGBuffer2Format = kPixelFormat_R8G8B8A8;
 
+    /**light
+     * In the deferred render pipeline, shadows are rendered by rendering a
+     * shadow map for each shadow casting light, and then projecting this into
+     * a screen-space shadow mask texture. The mask is an array texture which
+     * has a layer per shadow casting light. Each layer has a single R8 UNorm
+     * channel which encodes the shadow attenuation factor at each pixel.
+     */
+    static constexpr PixelFormat        kShadowMaskFormat = kPixelFormat_R8;
+
 public:
                                         DeferredRenderPipeline();
 
@@ -75,6 +84,21 @@ public:
                                                RenderGraph&               graph,
                                                const RenderResourceHandle texture,
                                                RenderResourceHandle&      outNewTexture) override;
+
+public:
+    /** Resolution to use for shadow maps. */
+    PROPERTY() uint16_t                 shadowMapResolution;
+
+    /**
+     * Maximum number of shadow casting lights per-frame. The world as a whole
+     * can have any number of them, this just limits the number that can be in
+     * view at once. If there are too many, shadows will not be rendered for
+     * some of them.
+     *
+     * This determines the number of layers in the shadow mask, therefore
+     * increasing it increases VRAM usage.
+     */
+    PROPERTY() uint16_t                 maxShadowLights;
 
 protected:
                                         ~DeferredRenderPipeline();
@@ -88,6 +112,7 @@ private:
     void                                BuildDrawLists(DeferredRenderContext* const context) const;
     void                                PrepareLights(DeferredRenderContext* const context) const;
     void                                AddGBufferPasses(DeferredRenderContext* const context) const;
+    void                                AddShadowPasses(DeferredRenderContext* const context) const;
     void                                AddCullingPass(DeferredRenderContext* const context) const;
     void                                AddLightingPass(DeferredRenderContext* const context) const;
 

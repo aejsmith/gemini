@@ -48,6 +48,7 @@ void RenderWorld::RemoveLight(RenderLight* const light)
 }
 
 void RenderWorld::Cull(const RenderView& view,
+                       const CullFlags   flags,
                        CullResults&      outResults) const
 {
     RENDER_PROFILER_FUNC_SCOPE();
@@ -63,12 +64,15 @@ void RenderWorld::Cull(const RenderView& view,
         }
     }
 
-    for (const RenderLight* light : mLights)
+    if (!(flags & kCullFlags_NoLights))
     {
-        if (light->Cull(frustum))
+        for (const RenderLight* light : mLights)
         {
-            // TODO: Allocation overhead, this reallocates every insertion.
-            outResults.lights.emplace_back(light);
+            if (light->Cull(frustum))
+            {
+                // TODO: Allocation overhead, this reallocates every insertion.
+                outResults.lights.emplace_back(light);
+            }
         }
     }
 }

@@ -27,6 +27,8 @@
 class RenderView
 {
 public:
+                            RenderView() {}
+
     /** Create a view with a perspective projection. */
     static RenderView       CreatePerspective(const glm::vec3&  position,
                                               const glm::quat&  orientation,
@@ -47,8 +49,6 @@ public:
     GPUConstants            GetConstants() const                    { return mConstants; }
 
 private:
-                            RenderView() {}
-
     void                    CreateConstants();
 
     glm::vec3               mPosition;

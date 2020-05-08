@@ -26,6 +26,14 @@ struct CullResults
     std::vector<const RenderLight*>     lights;
 };
 
+enum CullFlags : uint32_t
+{
+    kCullFlags_None     = 0,
+
+    /** Don't return lights (e.g. for shadow map pass). */
+    kCullFlags_NoLights = 1 << 0,
+};
+
 /**
  * Representation of the world from the renderer's point of view, to be used to
  * search for visible entities and lights when rendering.
@@ -51,6 +59,7 @@ public:
     void                                RemoveLight(RenderLight* const light);
 
     void                                Cull(const RenderView& view,
+                                             const CullFlags   flags,
                                              CullResults&      outResults) const;
 
 private:

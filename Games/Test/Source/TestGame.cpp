@@ -88,7 +88,7 @@ void TestGame::Init()
                     "Game/glTF/DamagedHelmet/World");
 #endif
 
-    Engine::Get().LoadWorld("Game/Worlds/LightingTest3");
+    Engine::Get().LoadWorld("Game/Worlds/LightingTest4");
 
 #if 0
     Entity* parent = Engine::Get().GetWorld()->CreateEntity("Lights");

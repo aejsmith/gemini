@@ -23,6 +23,8 @@
 #define kShaderLightType_Point          1
 #define kShaderLightType_Spot           2
 
+#define kShaderLight_NoShadows          0xffffffff
+
 struct LightParams
 {
     /** World space position. */
@@ -47,7 +49,10 @@ struct LightParams
     shader_float    spotAngleScale;
     shader_float    spotAngleOffset;
 
-    shader_float2   _pad0;
+    /** Shadow mask channel (kShaderLight_NoShadows if no shadows). */
+    shader_uint     shadowMaskIndex;
+
+    shader_float    _pad0;
 
     /** Point/spot light bounding sphere parameters. */
     shader_float4   boundingSphere;

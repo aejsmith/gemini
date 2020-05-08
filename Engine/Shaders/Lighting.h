@@ -179,8 +179,8 @@ float3 F_Schlick(const BRDFParams material,
  * Vis = G / (4 * (N.L) * (N.V))
  */
 float Vis_SmithJointGGX(const BRDFParams material,
-                      const float      NdotL,
-                      const float      NdotV)
+                        const float      NdotL,
+                        const float      NdotV)
 {
     float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0f - material.alphaRoughnessSq) + material.alphaRoughnessSq);
     float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0f - material.alphaRoughnessSq) + material.alphaRoughnessSq);

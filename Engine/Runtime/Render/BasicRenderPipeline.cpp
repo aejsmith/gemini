@@ -50,7 +50,7 @@ void BasicRenderPipeline::Render(const RenderWorld&         world,
     BasicRenderContext* const context = graph.NewTransient<BasicRenderContext>(graph, world, view);
 
     /* Get the visible entities. */
-    world.Cull(view, context->cullResults);
+    world.Cull(view, kCullFlags_None, context->cullResults);
 
     /* Build a draw list for the entities. */
     context->drawList.Reserve(context->cullResults.entities.size());
@@ -63,7 +63,7 @@ void BasicRenderPipeline::Render(const RenderWorld&         world,
             const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
             EntityDrawCall& drawCall = context->drawList.Add(sortKey);
 
-            entity->GetDrawCall(kShaderPassType_Basic, *context, drawCall);
+            entity->GetDrawCall(kShaderPassType_Basic, context->GetView(), drawCall);
         }
     }
 

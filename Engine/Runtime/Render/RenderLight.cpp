@@ -80,6 +80,11 @@ void RenderLight::SetDirection(const glm::vec3& direction)
     UpdateBoundingSphere();
 }
 
+void RenderLight::SetCastShadows(const bool castShadows)
+{
+    mCastShadows = castShadows;
+}
+
 bool RenderLight::Cull(const Frustum& frustum) const
 {
     if (mType == kLightType_Directional || mRange == 0.0f)
@@ -106,7 +111,8 @@ void RenderLight::GetLightParams(LightParams& outParams) const
     outParams.intensity       = mIntensity;
     outParams.spotAngleScale  = mConeAngleScale;
     outParams.spotAngleOffset = mConeAngleOffset;
-    outParams._pad0           = glm::vec2(0.0f, 0.0f);
+    outParams.shadowMaskIndex = kShaderLight_NoShadows;
+    outParams._pad0           = 0.0f;
     outParams.boundingSphere  = glm::vec4(mBoundingSphere.GetCentre(), mBoundingSphere.GetRadius());
 }
 
@@ -149,5 +155,9 @@ void RenderLight::DrawDebugPrimitive() const
             DebugManager::Get().DrawPrimitive(cone, kLightColour);
             break;
         }
+
+        default:
+            Unreachable();
+
     }
 }

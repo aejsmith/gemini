@@ -27,7 +27,7 @@
 class EntityRenderer;
 class GPUPipeline;
 class Material;
-class RenderContext;
+class RenderView;
 
 struct EntityDrawCall;
 
@@ -65,7 +65,7 @@ public:
      * Pass type must be supported (SupportsPassType()).
      */
     void                            GetDrawCall(const ShaderPassType passType,
-                                                const RenderContext& context,
+                                                const RenderView&    view,
                                                 EntityDrawCall&      outDrawCall) const;
 
 protected:

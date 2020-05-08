@@ -20,6 +20,7 @@
 
 #include "Render/RenderGraph.h"
 
+class RenderLight;
 class RenderView;
 class RenderWorld;
 
@@ -41,28 +42,39 @@ class RenderPipeline : public Object
     CLASS();
 
 public:
+    static constexpr PixelFormat    kShadowMapFormat  = kPixelFormat_Depth32;
+
+public:
     /**
      * Add render graph passes to render everything visible from the given view
      * into the texture. The supplied handle is the texture that the view
      * should be rendered to. A new resource handle should be returned
      * referring to the rendered output.
      */
-    virtual void                Render(const RenderWorld&         world,
-                                       const RenderView&          view,
-                                       RenderGraph&               graph,
-                                       const RenderResourceHandle texture,
-                                       RenderResourceHandle&      outNewTexture) = 0;
+    virtual void                    Render(const RenderWorld&         world,
+                                           const RenderView&          view,
+                                           RenderGraph&               graph,
+                                           const RenderResourceHandle texture,
+                                           RenderResourceHandle&      outNewTexture) = 0;
 
     /** Get/set the name of the pipeline (used for debug purposes). */
-    const std::string&          GetName() const { return mName; }
-    virtual void                SetName(std::string name)
-                                    { mName = std::move(name); }
+    const std::string&              GetName() const { return mName; }
+    virtual void                    SetName(std::string name)
+                                        { mName = std::move(name); }
 
 protected:
-                                RenderPipeline();
-                                ~RenderPipeline();
+                                    RenderPipeline();
+                                    ~RenderPipeline();
+
+    RenderResourceHandle            CreateShadowMap(RenderGraph&    graph,
+                                                    const LightType lightType,
+                                                    const uint16_t  resolution) const;
+
+    void                            CreateShadowView(const RenderLight* const light,
+                                                     const uint16_t           resolution,
+                                                     RenderView&              outView) const;
 
 private:
-    std::string                 mName;
+    std::string                     mName;
 
 };

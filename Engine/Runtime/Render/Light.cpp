@@ -26,7 +26,8 @@ Light::Light() :
     mIntensity      (1.0f),
     mRange          (10.0f),
     mInnerConeAngle (35.0f),
-    mOuterConeAngle (45.0f)
+    mOuterConeAngle (45.0f),
+    mCastShadows    (false)
 {
     mRenderLight.SetType(mType);
     mRenderLight.SetColour(mColour);
@@ -103,6 +104,12 @@ void Light::SetOuterConeAngle(const float outerConeAngle)
         mOuterConeAngle = clampedAngle;
         mRenderLight.SetConeAngles(glm::radians(mInnerConeAngle), glm::radians(mOuterConeAngle));
     }
+}
+
+void Light::SetCastShadows(const bool castShadows)
+{
+    mCastShadows = castShadows;
+    mRenderLight.SetCastShadows(castShadows);
 }
 
 void Light::Activated()

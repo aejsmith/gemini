@@ -52,12 +52,21 @@ struct DeferredRenderContext : public RenderContext
 {
     using RenderContext::RenderContext;
 
+    struct ShadowLight
+    {
+        const RenderLight*      light;
+        RenderView              view;
+        EntityDrawList          drawList;
+    };
+
     CullResults                 cullResults;
     EntityDrawList              opaqueDrawList;
 
     uint32_t                    tilesWidth;
     uint32_t                    tilesHeight;
     uint32_t                    tilesCount;
+
+    std::vector<ShadowLight>    shadowLights;
 
     /**
      * Render graph resource handles (always refer to latest version unless
@@ -79,9 +88,16 @@ struct DeferredRenderContext : public RenderContext
     RenderResourceHandle        lightParamsBuffer;
     RenderResourceHandle        visibleLightCountBuffer;
     RenderResourceHandle        visibleLightsBuffer;
+
+    /** Shadow mask/maps. */
+    RenderResourceHandle        shadowMaskTexture;
+    RenderResourceHandle        shadowMapTextures[kLightTypeCount];
 };
 
 DeferredRenderPipeline::DeferredRenderPipeline() :
+    shadowMapResolution         (512),
+    maxShadowLights             (4),
+
     mTonemapPass                (new TonemapPass),
 
     mDebugEntityBoundingBoxes   (false),
@@ -177,12 +193,13 @@ void DeferredRenderPipeline::Render(const RenderWorld&         world,
     DeferredRenderContext* const context = graph.NewTransient<DeferredRenderContext>(graph, world, view);
 
     /* Get the visible entities and lights. */
-    context->GetWorld().Cull(context->GetView(), context->cullResults);
+    context->GetWorld().Cull(context->GetView(), kCullFlags_None, context->cullResults);
 
     CreateResources(context, texture);
-    BuildDrawLists(context);
     PrepareLights(context);
+    BuildDrawLists(context);
     AddGBufferPasses(context);
+    AddShadowPasses(context);
     AddCullingPass(context);
     AddLightingPass(context);
 
@@ -256,33 +273,12 @@ void DeferredRenderPipeline::CreateResources(DeferredRenderContext* const contex
     context->visibleLightsBuffer     = graph.CreateBuffer(bufferDesc);
 }
 
-void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context) const
-{
-    /* Build a draw list for the opaque G-Buffer pass. */
-    context->opaqueDrawList.Reserve(context->cullResults.entities.size());
-    for (const RenderEntity* entity : context->cullResults.entities)
-    {
-        if (entity->SupportsPassType(kShaderPassType_DeferredOpaque))
-        {
-            const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_DeferredOpaque);
-
-            const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
-            EntityDrawCall& drawCall = context->opaqueDrawList.Add(sortKey);
-
-            entity->GetDrawCall(kShaderPassType_DeferredOpaque, *context, drawCall);
-
-            if (mDebugEntityBoundingBoxes)
-            {
-                DebugManager::Get().DrawPrimitive(entity->GetWorldBoundingBox(), glm::vec3(0.0f, 0.0f, 1.0f));
-            }
-        }
-    }
-
-    context->opaqueDrawList.Sort();
-}
-
 void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context) const
 {
+    RENDER_PROFILER_FUNC_SCOPE();
+
+    RenderGraph& graph = context->GetGraph();
+
     auto& lightList = context->cullResults.lights;
 
     /* We have fixed size resources and light indices that can only cope with a
@@ -300,17 +296,48 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context)
         lightList.resize(kDeferredMaxLightCount);
     }
 
-    /* Fill a buffer with parameters for the visible lights. TODO: Investigate
-     * performance of uploading this buffer each frame, may be a problem for
-     * larger light counts. */
+    /* Fill a buffer with parameters for the visible lights. */
     GPUStagingBuffer stagingBuffer(kGPUStagingAccess_Write, sizeof(LightParams) * lightList.size());
     auto lightParams = stagingBuffer.MapWrite<LightParams>();
+
+    context->shadowLights.reserve(this->maxShadowLights);
 
     for (size_t i = 0; i < lightList.size(); i++)
     {
         const RenderLight* const light = lightList[i];
+        const LightType type           = light->GetType();
 
         light->GetLightParams(lightParams[i]);
+
+        /* Prepare shadow state for shadow casting lights */
+        if (light->GetCastShadows())
+        {
+            if (context->shadowLights.size() < this->maxShadowLights)
+            {
+                lightParams[i].shadowMaskIndex = context->shadowLights.size();
+
+                context->shadowLights.emplace_back();
+                auto& shadowLight = context->shadowLights.back();
+
+                shadowLight.light = light;
+
+                if (!context->shadowMapTextures[type])
+                {
+                    context->shadowMapTextures[type] = CreateShadowMap(graph,
+                                                                       type,
+                                                                       this->shadowMapResolution);
+                }
+
+                CreateShadowView(light,
+                                 this->shadowMapResolution,
+                                 shadowLight.view);
+            }
+            else
+            {
+                LogWarning("Visible shadow casting light count exceeds limit %u, some shadows will be missing",
+                           this->maxShadowLights);
+            }
+        }
 
         if (mDebugLightVolumes)
         {
@@ -320,11 +347,80 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context)
 
     stagingBuffer.Finalise();
 
-    context->GetGraph().AddUploadPass("DeferredLightParamsUpload",
-                                      context->lightParamsBuffer,
-                                      0,
-                                      std::move(stagingBuffer),
-                                      &context->lightParamsBuffer);
+    graph.AddUploadPass("DeferredLightParamsUpload",
+                        context->lightParamsBuffer,
+                        0,
+                        std::move(stagingBuffer),
+                        &context->lightParamsBuffer);
+
+    /* If we have any shadow casting lights, we need a shadow mask. */
+    if (!context->shadowLights.empty())
+    {
+        const RenderTextureDesc& outputDesc = graph.GetTextureDesc(context->colourTexture);
+
+        RenderTextureDesc maskDesc;
+        maskDesc.name      = "DeferredShadowMask";
+        maskDesc.type      = kGPUResourceType_Texture2D;
+        maskDesc.format    = kShadowMaskFormat;
+        maskDesc.width     = outputDesc.width;
+        maskDesc.height    = outputDesc.height;
+        maskDesc.arraySize = this->maxShadowLights;
+
+        context->shadowMaskTexture = graph.CreateTexture(maskDesc);
+    }
+}
+
+void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context) const
+{
+    RENDER_PROFILER_FUNC_SCOPE();
+
+    /* Build a draw list for the opaque G-Buffer pass. */
+    context->opaqueDrawList.Reserve(context->cullResults.entities.size());
+
+    for (const RenderEntity* entity : context->cullResults.entities)
+    {
+        if (entity->SupportsPassType(kShaderPassType_DeferredOpaque))
+        {
+            const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_DeferredOpaque);
+
+            const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
+            EntityDrawCall& drawCall = context->opaqueDrawList.Add(sortKey);
+
+            entity->GetDrawCall(kShaderPassType_DeferredOpaque, context->GetView(), drawCall);
+
+            if (mDebugEntityBoundingBoxes)
+            {
+                DebugManager::Get().DrawPrimitive(entity->GetWorldBoundingBox(), glm::vec3(0.0f, 0.0f, 1.0f));
+            }
+        }
+    }
+
+    context->opaqueDrawList.Sort();
+
+    /* Build shadow map draw lists. */
+    for (auto& shadowLight : context->shadowLights)
+    {
+        CullResults cullResults;
+        context->GetWorld().Cull(shadowLight.view, kCullFlags_NoLights, cullResults);
+
+        shadowLight.drawList.Reserve(cullResults.entities.size());
+
+        for (const RenderEntity* entity : cullResults.entities)
+        {
+            if (entity->SupportsPassType(kShaderPassType_ShadowMap))
+            {
+                const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_ShadowMap);
+
+                // TODO: Sort based on depth instead.
+                const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
+                EntityDrawCall& drawCall = shadowLight.drawList.Add(sortKey);
+
+                entity->GetDrawCall(kShaderPassType_ShadowMap, shadowLight.view, drawCall);
+            }
+        }
+
+        shadowLight.drawList.Sort();
+    }
 }
 
 void DeferredRenderPipeline::AddGBufferPasses(DeferredRenderContext* const context) const
@@ -351,6 +447,35 @@ void DeferredRenderPipeline::AddGBufferPasses(DeferredRenderContext* const conte
     opaquePass.ClearDepth(1.0f);
 
     context->opaqueDrawList.Draw(opaquePass);
+}
+
+void DeferredRenderPipeline::AddShadowPasses(DeferredRenderContext* const context) const
+{
+    RenderGraph& graph = context->GetGraph();
+
+    for (size_t i = 0; i < context->shadowLights.size(); i++)
+    {
+        const auto& shadowLight = context->shadowLights[i];
+
+        RenderResourceHandle& shadowMapTexture = context->shadowMapTextures[shadowLight.light->GetType()];
+
+        /* Render the shadow map. */
+        {
+            RenderGraphPass& mapPass = graph.AddPass(StringUtils::Format("ShadowMap_%zu", i), kRenderGraphPassType_Render);
+
+            mapPass.SetDepthStencil(shadowMapTexture, kGPUResourceState_DepthStencilWrite, &shadowMapTexture);
+
+            mapPass.ClearDepth(1.0f);
+
+            shadowLight.drawList.Draw(mapPass);
+mapPass.ForceRequired();  
+        }
+
+        /* Project the shadow map into the shadow mask. */
+        {
+            // TODO
+        }
+    }
 }
 
 void DeferredRenderPipeline::AddCullingPass(DeferredRenderContext* const context) const

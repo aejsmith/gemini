@@ -75,6 +75,11 @@ public:
     Degrees                     GetOuterConeAngle() const { return mOuterConeAngle; }
     void                        SetOuterConeAngle(const Degrees outerConeAngle);
 
+    /** Whether the light casts shadows. */
+    VPROPERTY(bool, castShadows);
+    bool                        GetCastShadows() const { return mCastShadows; }
+    void                        SetCastShadows(const bool castShadows);
+
 protected:
     void                        Activated() override;
     void                        Deactivated() override;
@@ -90,6 +95,7 @@ private:
     float                       mRange;
     Degrees                     mInnerConeAngle;
     Degrees                     mOuterConeAngle;
+    bool                        mCastShadows;
 
     RenderLight                 mRenderLight;
 

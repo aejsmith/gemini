@@ -211,7 +211,8 @@
             "intensity": 200.0,
             "range": 40.0,
             "innerConeAngle": 35.0,
-            "outerConeAngle": 45.0
+            "outerConeAngle": 45.0,
+            "castShadows": false
         }
     },
     {
@@ -267,7 +268,8 @@
             "intensity": 200.0,
             "range": 40.0,
             "innerConeAngle": 35.0,
-            "outerConeAngle": 45.0
+            "outerConeAngle": 45.0,
+            "castShadows": false
         }
     },
     {
@@ -645,7 +647,8 @@
             "intensity": 500.0,
             "range": 60.0,
             "innerConeAngle": 20.0,
-            "outerConeAngle": 35.0
+            "outerConeAngle": 35.0,
+            "castShadows": true
         }
     }
 ]
