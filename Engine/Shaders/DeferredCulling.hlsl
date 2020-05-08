@@ -112,22 +112,17 @@ bool IsLightVisible(Frustum frustum,
     /* Directional lights are always visible. */
     bool visible = true;
 
-    if (light.type == kShaderLightType_Point)
+    if (light.type != kShaderLightType_Directional)
     {
         /* Sphere/frustum intersection test. */
-        float3 position = light.position;
-        float dist      = -light.range;
+        float3 position = light.boundingSphere.xyz;
+        float dist      = -light.boundingSphere.w;
 
         [unroll]
         for (uint i = 0; i < kNumPlanes; i++)
         {
             visible = visible && DistanceToPlane(position, frustum.planes[i]) >= dist;
         }
-    }
-    else if (light.type == kShaderLightType_Spot)
-    {
-        // TODO: Fit a sphere tightly around the spot light and use same method
-        // as for point.
     }
 
     return visible;

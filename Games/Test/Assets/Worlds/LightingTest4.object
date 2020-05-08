@@ -1,0 +1,651 @@
+[
+    {
+        "objectClass": "World",
+        "objectID": 0,
+        "objectProperties": {},
+        "root": {
+            "objectID": 1
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 1,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {},
+        "components": [],
+        "children": [
+            {
+                "objectID": 2
+            },
+            {
+                "objectID": 7
+            },
+            {
+                "objectID": 9
+            },
+            {
+                "objectID": 11
+            },
+            {
+                "objectID": 13
+            },
+            {
+                "objectID": 15
+            },
+            {
+                "objectID": 17
+            },
+            {
+                "objectID": 19
+            },
+            {
+                "objectID": 21
+            },
+            {
+                "objectID": 23
+            }
+        ]
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 2,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Player",
+            "active": true,
+            "position": [
+                0.0,
+                16.0,
+                39.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 3
+            }
+        ],
+        "children": [
+            {
+                "objectID": 5
+            }
+        ]
+    },
+    {
+        "objectClass": "PlayerController",
+        "objectID": 3,
+        "entity": {
+            "objectID": 2
+        },
+        "objectProperties": {
+            "active": true,
+            "camera": {
+                "objectID": 4
+            }
+        }
+    },
+    {
+        "objectClass": "Camera",
+        "objectID": 4,
+        "entity": {
+            "objectID": 5
+        },
+        "objectProperties": {
+            "active": true,
+            "renderPipeline": {
+                "objectID": 6
+            },
+            "verticalFOV": 60.0,
+            "zNear": 0.10000000149011612,
+            "zFar": 500.0
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 5,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 2
+        },
+        "objectProperties": {
+            "name": "Camera",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 4
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "DeferredRenderPipeline",
+        "objectID": 6,
+        "objectProperties": {}
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 7,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Light_0",
+            "active": true,
+            "position": [
+                -12.0,
+                16.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 8
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "Light",
+        "objectID": 8,
+        "entity": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "active": true,
+            "type": "Point",
+            "colour": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "intensity": 200.0,
+            "range": 40.0,
+            "innerConeAngle": 35.0,
+            "outerConeAngle": 45.0
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 9,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Light_1",
+            "active": true,
+            "position": [
+                12.0,
+                16.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 10
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "Light",
+        "objectID": 10,
+        "entity": {
+            "objectID": 9
+        },
+        "objectProperties": {
+            "active": true,
+            "type": "Point",
+            "colour": [
+                0.0,
+                0.0,
+                1.0
+            ],
+            "intensity": 200.0,
+            "range": 40.0,
+            "innerConeAngle": 35.0,
+            "outerConeAngle": 45.0
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 11,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Plane_Back",
+            "active": true,
+            "position": [
+                0.0,
+                16.0,
+                -20.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                20.0,
+                20.0,
+                20.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 12
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 12,
+        "entity": {
+            "objectID": 11
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Engine/Meshes/Plane"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/Materials/Tiles36"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 13,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Plane_Bottom",
+            "active": true,
+            "position": [
+                0.0,
+                -4.0,
+                0.0
+            ],
+            "orientation": [
+                0.7071067690849304,
+                -0.7071067690849304,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                20.0,
+                20.0,
+                20.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 14
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 14,
+        "entity": {
+            "objectID": 13
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Engine/Meshes/Plane"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/Materials/Tiles36"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 15,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Plane_Left",
+            "active": true,
+            "position": [
+                -20.0,
+                16.0,
+                0.0
+            ],
+            "orientation": [
+                0.7071067690849304,
+                0.0,
+                0.7071067690849304,
+                0.0
+            ],
+            "scale": [
+                20.0,
+                20.0,
+                20.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 16
+            }
+        ]
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 16,
+        "entity": {
+            "objectID": 15
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Engine/Meshes/Plane"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/Materials/Tiles36"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 17,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Plane_Right",
+            "active": true,
+            "position": [
+                20.0,
+                16.0,
+                0.0
+            ],
+            "orientation": [
+                0.7071067690849304,
+                0.0,
+                -0.7071067690849304,
+                0.0
+            ],
+            "scale": [
+                20.0,
+                20.0,
+                20.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 18
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 18,
+        "entity": {
+            "objectID": 17
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Engine/Meshes/Plane"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/Materials/Tiles36"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 19,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Plane_Top",
+            "active": true,
+            "position": [
+                0.0,
+                36.0,
+                0.0
+            ],
+            "orientation": [
+                0.7071067690849304,
+                0.7071067690849304,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                20.0,
+                20.0,
+                20.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 20
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 20,
+        "entity": {
+            "objectID": 19
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Engine/Meshes/Plane"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/Materials/Tiles36"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 21,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Cube",
+            "active": true,
+            "position": [
+                0.0,
+                9.0,
+                -6.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                8.0,
+                8.0,
+                8.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 22
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 22,
+        "entity": {
+            "objectID": 21
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Engine/Meshes/Cube"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Engine/Materials/White"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 23,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Light_2",
+            "active": true,
+            "position": [
+                0.0,
+                36.0,
+                0.0
+            ],
+            "orientation": [
+                0.7071067690849304,
+                -0.7071067690849304,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 24
+            }
+        ]
+    },
+    {
+        "objectClass": "Light",
+        "objectID": 24,
+        "entity": {
+            "objectID": 23
+        },
+        "objectProperties": {
+            "active": true,
+            "type": "Spot",
+            "colour": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "intensity": 500.0,
+            "range": 60.0,
+            "innerConeAngle": 20.0,
+            "outerConeAngle": 35.0
+        }
+    }
+]

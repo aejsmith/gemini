@@ -31,7 +31,7 @@ struct LightParams
     /** Light type (kShaderLightType_*). */
     shader_int      type;
 
-    /** World space direction (for directional/spot). */
+    /** World space normalized direction (for directional/spot). */
     shader_float3   direction;
 
     /** Range of the light (for point/spot). */
@@ -47,8 +47,10 @@ struct LightParams
     shader_float    spotAngleScale;
     shader_float    spotAngleOffset;
 
-    /** Padding for 16-byte alignment. */
     shader_float2   _pad0;
+
+    /** Point/spot light bounding sphere parameters. */
+    shader_float4   boundingSphere;
 };
 
 #ifdef __cplusplus

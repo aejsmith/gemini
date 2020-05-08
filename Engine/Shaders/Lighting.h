@@ -192,11 +192,10 @@ float Vis_SmithJointGGX(const BRDFParams material,
 float3 CookTorranceBRDF(const LightParams   light,
                         const BRDFParams    material,
                         const SurfaceParams surface,
-                        const float3        toLight)
+                        const float3        L)
 {
     const float3 N = surface.N;
     const float3 V = surface.V;
-    const float3 L = normalize(toLight);
     const float3 H = normalize(L + V);
 
     const float NdotL = saturate(dot(N, L));
@@ -236,31 +235,53 @@ float CalculateLightAttenuation(const float range,
     return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
 
-float3 CalculatePointLight(const LightParams   light,
-                           const BRDFParams    material,
-                           const SurfaceParams surface)
+float CalculateSpotAttenuation(const LightParams light,
+                               const float3      toLight)
 {
-    const float3 toLight    = light.position - surface.position;
-    const float distance    = length(toLight);
-    const float attenuation = CalculateLightAttenuation(light.range, distance);
-    const float3 brdfResult = CookTorranceBRDF(light, material, surface, toLight);
+    /* https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#inner-and-outer-cone-angles */
 
-    return attenuation * light.intensity * light.colour * brdfResult;
+    float cd = dot(light.direction, -toLight);
+    float attenuation = saturate((cd * light.spotAngleScale) + light.spotAngleOffset);
+    attenuation *= attenuation;
+    return attenuation;
 }
 
 float3 CalculateLight(const LightParams   light,
                       const BRDFParams    material,
                       const SurfaceParams surface)
 {
-    if (light.type == kShaderLightType_Point)
+    float3 toLight;
+    float attenuation;
+
+    if (light.type == kShaderLightType_Directional)
     {
-        return CalculatePointLight(light, material, surface);
+        toLight     = -light.direction;
+        attenuation = 1.0f;
     }
     else
     {
-        // TODO: Spot/directional
-        return float3(0.0f, 0.0f, 0.0f);
+        toLight = light.position - surface.position;
+
+        const float distance = length(toLight);
+
+        toLight     = normalize(toLight);
+        attenuation = CalculateLightAttenuation(light.range, distance);
+
+        if (light.type == kShaderLightType_Spot)
+        {
+            attenuation *= CalculateSpotAttenuation(light, toLight);
+        }
     }
+
+    float3 result = float3(0.0f);
+
+    if (attenuation != 0.0f)
+    {
+        const float3 brdfResult = CookTorranceBRDF(light, material, surface, toLight);
+        result = attenuation * light.intensity * light.colour * brdfResult;
+    }
+
+    return result;
 }
 
 #endif /* SHADERS_LIGHTING_H */

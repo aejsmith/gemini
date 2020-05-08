@@ -75,7 +75,7 @@ void RenderLight::SetPosition(const glm::vec3& position)
 
 void RenderLight::SetDirection(const glm::vec3& direction)
 {
-    mDirection = direction;
+    mDirection = glm::normalize(direction);
 
     UpdateBoundingSphere();
 }
@@ -107,6 +107,7 @@ void RenderLight::GetLightParams(LightParams& outParams) const
     outParams.spotAngleScale  = mConeAngleScale;
     outParams.spotAngleOffset = mConeAngleOffset;
     outParams._pad0           = glm::vec2(0.0f, 0.0f);
+    outParams.boundingSphere  = glm::vec4(mBoundingSphere.GetCentre(), mBoundingSphere.GetRadius());
 }
 
 void RenderLight::UpdateBoundingSphere()
