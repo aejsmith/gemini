@@ -33,11 +33,6 @@
 /**
  * TODO:
  *  - GPU memory aliasing/reuse based on required resource lifetimes.
- *  - Reading depth from shader while bound as depth target doesn't work
- *    currently: have to declare 2 uses, they will conflict. Should combine
- *    them into one use with the union of the states.
- *  - Could add some helper functions for transfer passes for common cases,
- *    e.g. just copying a texture.
  *  - Optimisation of barriers. Initial implementation just does barriers
  *    as needed before each pass during execution, but since we have a view of
  *    the whole frame, we should be able to move them earlier and batch them
@@ -140,22 +135,50 @@ void RenderGraphPass::UseResource(const RenderResourceHandle handle,
 
     GPUUtils::ValidateResourceState(state, resource->type == kRenderResourceType_Texture);
 
+    /* Add required usage flags for this resource state. */
+    resource->usage |= ResourceUsageFromState(state);
+
     bool needSplitState = false;
 
     for (RenderGraphPass::UsedResource& otherUse : mUsedResources)
     {
         if (otherUse.handle.index == handle.index)
         {
-            AssertMsg(!otherUse.range.Overlaps(range),
-                      "Subresources cannot be used multiple times in the same pass");
-
-            /* If we have uses of multiple different subresources in this
-             * resource with conflicting states, we'll need split state
-             * tracking. */
-            if (otherUse.state != state)
+            /*
+             * The one case where we do allow multiple uses of the same range
+             * is for depth textures, which can be bound as the depth target
+             * read-only and then also be read from a shader.
+             *
+             * For this case, we'll merge the uses together (DepthStencilRead
+             * can be combined with *ShaderRead states). TODO: Handle
+             * DepthReadStencilWrite/DepthWriteStencilRead.
+             *
+             * Otherwise, assert that there's no overlap.
+             */
+            if (otherUse.range == range &&
+                !isWrite &&
+                !(otherUse.state & kGPUResourceState_AllWrite))
             {
-                otherUse.needSplitState = true;
-                needSplitState          = true;
+                otherUse.state |= state;
+
+                /* Ensure the combined state is valid. */
+                GPUUtils::ValidateResourceState(otherUse.state, resource->type == kRenderResourceType_Texture);
+
+                return;
+            }
+            else
+            {
+                AssertMsg(!otherUse.range.Overlaps(range),
+                          "Subresources cannot be used multiple times in the same pass");
+
+                /* If we have uses of multiple different subresources in this
+                * resource with conflicting states, we'll need split state
+                * tracking. */
+                if (otherUse.state != state)
+                {
+                    otherUse.needSplitState = true;
+                    needSplitState          = true;
+                }
             }
         }
     }
@@ -166,9 +189,6 @@ void RenderGraphPass::UseResource(const RenderResourceHandle handle,
     use.range          = range;
     use.state          = state;
     use.needSplitState = needSplitState;
-
-    /* Add required usage flags for this resource state. */
-    resource->usage |= ResourceUsageFromState(state);
 
     if (isWrite)
     {
@@ -934,7 +954,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
             {
                 RenderGraphPass::View& view = pass.mViews[depthAtt.view.index];
 
-                renderPass.SetDepthStencil(view.view);
+                renderPass.SetDepthStencil(view.view, view.desc.state);
 
                 Resource* const resource = mResources[view.resource.index];
 
@@ -1473,10 +1493,10 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& graph)
                 typeStr = "Buffer";
             }
 
-            ImGui::Text("Type:     %s", typeStr);
-            ImGui::Text("Imported: %s", (currentResource->imported) ? "Yes" : "No");
-            ImGui::Text("Required: %s", (currentResource->required) ? "Yes" : "No");
-            ImGui::Text("Usage:   ");
+            ImGui::Text("Type:       %s", typeStr);
+            ImGui::Text("Imported:   %s", (currentResource->imported) ? "Yes" : "No");
+            ImGui::Text("Required:   %s", (currentResource->required) ? "Yes" : "No");
+            ImGui::Text("Usage:     ");
 
             if (currentResource->usage == kGPUResourceUsage_Standard)
             {
@@ -1502,17 +1522,17 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& graph)
             {
                 const RenderTextureDesc& texture = currentResource->texture;
 
-                ImGui::Text("Layers:   %u", texture.arraySize);
-                ImGui::Text("Mips:     %u", texture.numMipLevels);
-                ImGui::Text("Width:    %u", texture.width);
+                ImGui::Text("Layers:     %u", texture.arraySize);
+                ImGui::Text("Mips:       %u", texture.numMipLevels);
+                ImGui::Text("Dimensions: %u", texture.width);
 
                 if (texture.type >= kGPUResourceType_Texture2D)
                 {
-                    ImGui::Text("Height:   %u", texture.height);
+                    ImGui::SameLine(); ImGui::Text("x %u", texture.height);
 
                     if (texture.type >= kGPUResourceType_Texture3D)
                     {
-                        ImGui::Text("Depth:    %u", texture.depth);
+                        ImGui::SameLine(); ImGui::Text("x %u", texture.depth);
                     }
                 }
             }
@@ -1520,7 +1540,7 @@ void RenderGraphWindow::RenderWindow(const RenderGraph& graph)
             {
                 const RenderBufferDesc& buffer = currentResource->buffer;
 
-                ImGui::Text("Size:     %zu (%.2f KiB)",
+                ImGui::Text("Size:       %zu (%.2f KiB)",
                             buffer.size,
                             static_cast<float>(buffer.size) / 1024);
             }
