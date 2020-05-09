@@ -153,15 +153,35 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
     uint2 targetPos = min(dispatchThreadID.xy, view.targetSize - 1);
     float depth     = depthTexture.Load(uint3(targetPos, 0)).x;
 
-    /* Compute min/max depth for the tile. TODO: Subgroup-based implementation. */
-    uint depthInt = asuint(depth);
-    InterlockedMin(tileMinDepth, depthInt);
-    InterlockedMax(tileMaxDepth, depthInt);
+    /* Compute min/max depth for the tile. */
+    float waveMinDepth = WaveActiveMin(depth);
+    float waveMaxDepth = WaveActiveMax(depth);
 
-    GroupMemoryBarrierWithGroupSync();
+    float minDepth;
+    float maxDepth;
 
-    float minDepth = clamp(asfloat(tileMinDepth), 0.0f, 1.0f);
-    float maxDepth = clamp(asfloat(tileMaxDepth), 0.0f, 1.0f);
+    if (WaveGetLaneCount() == kDeferredTileSize * kDeferredTileSize)
+    {
+        minDepth = waveMinDepth;
+        maxDepth = waveMaxDepth;
+    }
+    else
+    {
+        if (WaveIsFirstLane())
+        {
+            uint depthInt = asuint(depth);
+            InterlockedMin(tileMinDepth, asuint(waveMinDepth));
+            InterlockedMax(tileMaxDepth, asuint(waveMaxDepth));
+        }
+
+        GroupMemoryBarrierWithGroupSync();
+
+        minDepth = asfloat(tileMinDepth);
+        maxDepth = asfloat(tileMaxDepth);
+    }
+
+    minDepth = clamp(minDepth, 0.0f, 1.0f);
+    maxDepth = clamp(maxDepth, 0.0f, 1.0f);
 
     /* Calculate tile frustum planes. */
     Frustum frustum;
