@@ -18,10 +18,12 @@
 
 #include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUShader.h"
+#include "GPU/GPUState.h"
 
 #include "Render/RenderPipeline.h"
 
 class DeferredRenderPipelineWindow;
+class GPUBuffer;
 class GPUComputePipeline;
 class TonemapPass;
 
@@ -105,6 +107,7 @@ protected:
 
 private:
     void                                CreateShaders();
+    void                                CreatePersistentResources();
 
     void                                CreateResources(DeferredRenderContext* const context,
                                                         const RenderResourceHandle   outputTexture) const;
@@ -119,11 +122,24 @@ private:
     void                                AddCullingDebugPass(DeferredRenderContext* const context,
                                                             RenderResourceHandle&        ioNewTexture) const;
 
+    void                                DrawLightVolume(DeferredRenderContext* const context,
+                                                        const RenderLight* const     light,
+                                                        GPUGraphicsCommandList&      cmdList) const;
+
 private:
     GPUShaderPtr                        mCullingShader;
     GPUShaderPtr                        mLightingShader;
+    GPUShaderPtr                        mShadowMaskVertexShader;
+    GPUShaderPtr                        mShadowMaskPixelShaders[kLightTypeCount];
+
     UPtr<GPUComputePipeline>            mCullingPipeline;
     UPtr<GPUComputePipeline>            mLightingPipeline;
+    GPUPipeline*                        mShadowMaskPipelines[kLightTypeCount];
+
+    UPtr<GPUBuffer>                     mConeVertexBuffer;
+    UPtr<GPUBuffer>                     mConeIndexBuffer;
+
+    GPUSamplerRef                       mShadowMapSampler;
 
     UPtr<TonemapPass>                   mTonemapPass;
 

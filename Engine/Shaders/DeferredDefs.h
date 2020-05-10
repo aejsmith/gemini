@@ -60,16 +60,45 @@ struct DeferredCullingConstants
 #define kDeferredLightingArguments_GBuffer1Texture      1
 #define kDeferredLightingArguments_GBuffer2Texture      2
 #define kDeferredLightingArguments_DepthTexture         3
-#define kDeferredLightingArguments_LightParams          4
-#define kDeferredLightingArguments_VisibleLightCount    5
-#define kDeferredLightingArguments_VisibleLights        6
-#define kDeferredLightingArguments_ColourTexture        7
-#define kDeferredLightingArguments_Constants            8
-#define kDeferredLightingArgumentsCount                 9
+#define kDeferredLightingArguments_ShadowMaskTexture    4
+#define kDeferredLightingArguments_LightParams          5
+#define kDeferredLightingArguments_VisibleLightCount    6
+#define kDeferredLightingArguments_VisibleLights        7
+#define kDeferredLightingArguments_ColourTexture        8
+#define kDeferredLightingArguments_Constants            9
+#define kDeferredLightingArgumentsCount                 10
 
 struct DeferredLightingConstants
 {
     shader_uint2    tileDimensions;
+};
+
+/**
+ * Shadow mask shader arguments.
+ */
+
+/** Shadow mask uses the ViewEntity set at index 0. */
+#define kArgumentSet_DeferredShadowMask                     1
+
+#define kDeferredShadowMaskArguments_DepthTexture           0
+#define kDeferredShadowMaskArguments_ShadowMapTexture       1
+#define kDeferredShadowMaskArguments_ShadowMapSampler       2
+#define kDeferredShadowMaskArguments_Constants              3
+#define kDeferredShadowMaskArgumentsCount                   4
+
+struct DeferredShadowMaskConstants
+{
+    /**
+     * Light parameters. What we need here is small enough that it's better to
+     * just pass a copy here rather than having an extra indirection to the
+     * light parameters buffer.
+     */
+    shader_float3   position;
+    shader_float    range;
+    shader_float3   direction;
+    shader_float    cosSpotAngle;
+
+    shader_float4x4 worldToShadowMatrix;
 };
 
 /**

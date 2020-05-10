@@ -78,6 +78,17 @@ void RenderManager::InitAssets(OnlyCalledBy<Engine>)
 
     mDummyWhiteTexture2D = AssetManager::Get().Load<Texture2D>("Engine/Textures/DummyWhite2D");
     Assert(mDummyWhiteTexture2D);
+
+    mDummyBlackTexture2DView = mDummyBlackTexture2D->GetResourceView();
+    mDummyWhiteTexture2DView = mDummyWhiteTexture2D->GetResourceView();
+
+    GPUResourceViewDesc arrayDesc;
+    arrayDesc.type   = kGPUResourceViewType_Texture2DArray;
+    arrayDesc.usage  = kGPUResourceUsage_ShaderRead;
+    arrayDesc.format = mDummyBlackTexture2D->GetFormat();
+
+    mDummyBlackTexture2DArrayView = GPUDevice::Get().CreateResourceView(mDummyBlackTexture2D->GetTexture(), arrayDesc);
+    mDummyWhiteTexture2DArrayView = GPUDevice::Get().CreateResourceView(mDummyWhiteTexture2D->GetTexture(), arrayDesc);
 }
 
 void RenderManager::Render(OnlyCalledBy<Engine>)

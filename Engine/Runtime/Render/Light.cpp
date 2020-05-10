@@ -34,6 +34,7 @@ Light::Light() :
     mRenderLight.SetIntensity(mIntensity);
     mRenderLight.SetRange(mRange);
     mRenderLight.SetConeAngles(glm::radians(mInnerConeAngle), glm::radians(mOuterConeAngle));
+    mRenderLight.SetCastShadows(mCastShadows);
 }
 
 Light::~Light()

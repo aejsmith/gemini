@@ -20,6 +20,7 @@ Texture2D                     GBuffer0Texture   : SRV(DeferredLighting, GBuffer0
 Texture2D                     GBuffer1Texture   : SRV(DeferredLighting, GBuffer1Texture);
 Texture2D                     GBuffer2Texture   : SRV(DeferredLighting, GBuffer2Texture);
 Texture2D                     depthTexture      : SRV(DeferredLighting, DepthTexture);
+Texture2DArray                shadowMaskTexture : SRV(DeferredLighting, ShadowMaskTexture);
 StructuredBuffer<LightParams> lightParams       : SRV(DeferredLighting, LightParams);
 StructuredBuffer<uint>        visibleLightCount : SRV(DeferredLighting, VisibleLightCount);
 StructuredBuffer<uint>        visibleLights     : SRV(DeferredLighting, VisibleLights);
@@ -107,7 +108,16 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
     for (uint i = 0; i < tileLightCount; i++)
     {
         LightParams light = lightParams.Load(tileLightIndices[i]);
-        result += CalculateLight(light, brdf, surface);
+
+        float3 lightResult = CalculateLight(light, brdf, surface);
+
+        if (light.shadowMaskIndex != kShaderLight_NoShadows)
+        {
+            float attenuation = shadowMaskTexture.Load(uint4(targetPos, light.shadowMaskIndex, 0)).r;
+            lightResult *= attenuation;
+        }
+
+        result += lightResult;
     }
 
     /* Apply occlusion and add on emissive factor from the G-Buffer pass. */

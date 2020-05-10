@@ -27,6 +27,7 @@
 #include <list>
 
 class Engine;
+class GPUResourceView;
 class RenderGraph;
 class RenderOutput;
 class Texture2D;
@@ -61,8 +62,10 @@ public:
     GPUArgumentSetLayoutRef     GetViewArgumentSetLayout() const        { return mViewArgumentSetLayout; }
 
     /** Dummy resources. */
-    const Texture2D*            GetDummyBlackTexture2D() const          { return mDummyBlackTexture2D; }
-    const Texture2D*            GetDummyWhiteTexture2D() const          { return mDummyWhiteTexture2D; }
+    GPUResourceView*            GetDummyBlackTexture2D() const          { return mDummyBlackTexture2DView; }
+    GPUResourceView*            GetDummyBlackTexture2DArray() const     { return mDummyBlackTexture2DArrayView; }
+    GPUResourceView*            GetDummyWhiteTexture2D() const          { return mDummyWhiteTexture2DView; }
+    GPUResourceView*            GetDummyWhiteTexture2DArray() const     { return mDummyWhiteTexture2DArrayView; }
 
     /**
      * Interface with RenderOutput.
@@ -127,5 +130,10 @@ private:
 
     ObjPtr<Texture2D>           mDummyBlackTexture2D;
     ObjPtr<Texture2D>           mDummyWhiteTexture2D;
+
+    GPUResourceView*            mDummyBlackTexture2DView;
+    GPUResourceView*            mDummyBlackTexture2DArrayView;
+    GPUResourceView*            mDummyWhiteTexture2DView;
+    GPUResourceView*            mDummyWhiteTexture2DArrayView;
 
 };
