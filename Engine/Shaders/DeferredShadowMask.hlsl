@@ -51,7 +51,7 @@ float4 PSSpotLight(float4 position : SV_Position) : SV_Target0
     /* Transform to shadow map UV coordinates. */
     float4 shadowPos  = mul(constants.worldToShadowMatrix, float4(surfacePos, 1.0f));
     float2 shadowUV   = ((shadowPos.xy / shadowPos.w) * float2(0.5f, -0.5f)) + 0.5f;
-    float shadowDepth = shadowPos.z / shadowPos.w;
+    float shadowDepth = (shadowPos.z / shadowPos.w) - constants.biasConstant;
 
     #if ENABLE_PCF
         float width, height;

@@ -102,6 +102,13 @@ public:
      */
     PROPERTY() uint16_t                 maxShadowLights;
 
+    /**
+     * Constant bias value applied to values sampled from the shadow map, used
+     * to eliminate shadow acne. TODO: More biasing options (slope scaled, or
+     * normal offset), make this per-light?
+     */
+    PROPERTY() float                    shadowBiasConstant;
+
 protected:
                                         ~DeferredRenderPipeline();
 

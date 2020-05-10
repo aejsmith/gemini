@@ -99,6 +99,8 @@ struct DeferredShadowMaskConstants
     shader_float    cosSpotAngle;
 
     shader_float4x4 worldToShadowMatrix;
+
+    shader_float    biasConstant;
 };
 
 /**

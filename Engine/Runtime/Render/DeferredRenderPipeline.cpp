@@ -101,6 +101,7 @@ struct DeferredRenderContext : public RenderContext
 DeferredRenderPipeline::DeferredRenderPipeline() :
     shadowMapResolution         (512),
     maxShadowLights             (4),
+    shadowBiasConstant          (0.0005f),
 
     mTonemapPass                (new TonemapPass),
 
@@ -687,9 +688,10 @@ void DeferredRenderPipeline::AddShadowPasses(DeferredRenderContext* const contex
                 cmdList.SetArguments(kArgumentSet_DeferredShadowMask, arguments);
 
                 DeferredShadowMaskConstants constants;
-                constants.position  = shadowLight.light->GetPosition();
-                constants.range     = shadowLight.light->GetRange();
-                constants.direction = shadowLight.light->GetDirection();
+                constants.position     = shadowLight.light->GetPosition();
+                constants.range        = shadowLight.light->GetRange();
+                constants.direction    = shadowLight.light->GetDirection();
+                constants.biasConstant = this->shadowBiasConstant;
 
                 if (shadowLight.light->GetType() == kShaderLightType_Spot)
                 {
