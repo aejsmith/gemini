@@ -18,8 +18,6 @@
 
 #include "Core/Math/Transform.h"
 
-#include <glm/gtx/quaternion.hpp>
-
 void Cone::CreateGeometry(const uint32_t          baseVertices,
                           std::vector<glm::vec3>& outVertices,
                           std::vector<uint16_t>&  outIndices) const
@@ -61,8 +59,8 @@ void Cone::CreateGeometry(const uint32_t          baseVertices,
     for (uint32_t i = 0; i < baseVertices; i++)
     {
         outIndices.emplace_back(1);
-        outIndices.emplace_back(i + 2);
         outIndices.emplace_back(((i + 1) % baseVertices) + 2);
+        outIndices.emplace_back(i + 2);
     }
 }
 
