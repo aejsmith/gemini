@@ -280,8 +280,7 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const barriers,
                 /* Overwrite the image layout. The most preferential layout is
                  * handled last below. The only case where this matters is depth
                  * read-only states + shader read states, where we want to use
-                 * the depth/stencil layout as opposed to
-                 * SHADER_READ_ONLY. */
+                 * the specific depth/stencil layout needed. */
                 oldImageLayout = layout;
             }
 
@@ -293,18 +292,24 @@ void VulkanContext::ResourceBarrier(const GPUResourceBarrier* const barriers,
             }
         };
 
+        /* See VulkanArgumentSet::Write() regarding depth read layouts. */
+        const VkImageLayout readOnlyLayout =
+            (barriers[i].resource->GetUsage() & kGPUResourceUsage_DepthStencil)
+                ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
         HandleState(kGPUResourceState_VertexShaderRead,
                     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
                     VK_ACCESS_SHADER_READ_BIT,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                    readOnlyLayout);
         HandleState(kGPUResourceState_PixelShaderRead,
                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     VK_ACCESS_SHADER_READ_BIT,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                    readOnlyLayout);
         HandleState(kGPUResourceState_ComputeShaderRead,
                     VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                     VK_ACCESS_SHADER_READ_BIT,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                    readOnlyLayout);
         HandleState(kGPUResourceState_VertexShaderWrite,
                     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
                     VK_ACCESS_SHADER_WRITE_BIT,

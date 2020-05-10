@@ -185,12 +185,36 @@ void VulkanArgumentSet::Write(const VkDescriptorSet                handle,
                 case kGPUArgumentType_Texture:
                 case kGPUArgumentType_RWTexture:
                 {
-                    // FIXME: Depth sampling layout is wrong.
-                    imageInfo.imageView   = view->GetImageView();
-                    imageInfo.imageLayout = (argumentTypes[i] == kGPUArgumentType_RWTexture)
-                                                ? VK_IMAGE_LAYOUT_GENERAL
-                                                : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    imageInfo.sampler     = VK_NULL_HANDLE;
+                    imageInfo.imageView = view->GetImageView();
+                    imageInfo.sampler   = VK_NULL_HANDLE;
+
+                    if (argumentTypes[i] == kGPUArgumentType_RWTexture)
+                    {
+                        imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    }
+                    else if (view->GetResource().GetUsage() & kGPUResourceUsage_DepthStencil)
+                    {
+                        /*
+                         * We always use DEPTH_STENCIL_READ_ONLY for sampling
+                         * depth/stencil textures, which means we don't need to
+                         * know whether or not the texture will also be bound as
+                         * the depth/stencil target while it is being sampled.
+                         *
+                         * The image layout matching rules in the spec for
+                         * depth/stencil layouts means this only needs to match
+                         * the actual current layout of the image at draw time
+                         * in the aspect that the view refers to. Therefore we
+                         * can always use this here and it will still be correct
+                         * if the layout is DEPTH_READ_ONLY_STENCIL_ATTACHMENT
+                         * or DEPTH_ATTACHMENT_STENCIL_READ_ONLY and this view
+                         * refers to the read-only aspect.
+                         */
+                        imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                    }
+                    else
+                    {
+                        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    }
 
                     descriptorWrite.pImageInfo = &imageInfo;
 
