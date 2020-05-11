@@ -34,6 +34,8 @@
 
 #include "../../Shaders/DebugPrimitive.h"
 
+#include "imgui_internal.h"
+
 SINGLETON_IMPL(DebugManager);
 
 static constexpr char kDebugTextWindowName[] = "Debug Text";
@@ -158,17 +160,8 @@ void DebugManager::BeginFrame(OnlyCalledBy<Engine>)
         mPrimitives.clear();
     }
 
-    /* Begin the debug text window. */
-    const glm::uvec2 size = MainWindow::Get().GetSize();
-    const uint32_t offset = (mOverlayState >= kOverlayState_Active) ? kMenuBarHeight : 0;
-    ImGui::SetNextWindowSize(ImVec2(size.x - 20, size.y - 20 - offset));
-    ImGui::SetNextWindowPos(ImVec2(10, 10 + offset));
-    ImGui::Begin(kDebugTextWindowName,
-                 nullptr,
-                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground);
-    ImGui::End();
-
     /* Begin the docking space. */
+    ImGuiID dockSpaceID = 0;
     if (mOverlayState >= kOverlayState_Visible)
     {
         ImGuiWindowFlags windowFlags =
@@ -198,7 +191,8 @@ void DebugManager::BeginFrame(OnlyCalledBy<Engine>)
 
         ImGui::PopStyleVar(2);
 
-        ImGui::DockSpace(ImGui::GetID("OverlayDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        dockSpaceID = ImGui::GetID("OverlayDockSpace");
+        ImGui::DockSpace(dockSpaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
         if (mOverlayState >= kOverlayState_Active && ImGui::BeginMenuBar())
         {
@@ -220,6 +214,29 @@ void DebugManager::BeginFrame(OnlyCalledBy<Engine>)
 
         ImGui::End();
     }
+
+    /* Begin the debug text window. This lives in the remaining space that
+     * nothing is docked in. */
+    glm::uvec2 textRegionPos;
+    glm::uvec2 textRegionSize;
+    if (mOverlayState >= kOverlayState_Visible)
+    {
+        const ImGuiDockNode* node = ImGui::DockBuilderGetCentralNode(dockSpaceID);
+        textRegionPos  = glm::vec2(node->Pos);
+        textRegionSize = glm::vec2(node->Size);
+    }
+    else
+    {
+        textRegionPos  = glm::uvec2(0, 0);
+        textRegionSize = MainWindow::Get().GetSize();
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(textRegionSize.x - 20, textRegionSize.y - 20));
+    ImGui::SetNextWindowPos(ImVec2(textRegionPos.x + 10, textRegionPos.y + 10));
+    ImGui::Begin(kDebugTextWindowName,
+                 nullptr,
+                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground);
+    ImGui::End();
 }
 
 void DebugManager::RenderOverlay(OnlyCalledBy<Engine>)

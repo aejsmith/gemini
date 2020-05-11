@@ -6,23 +6,27 @@ Import('manager')
 depends = ['3rdParty/glm']
 env = manager.CreateEnvironment(depends = depends)
 
-Util.Copy(env, 'Include/imgui.h', 'Repo/imgui.h')
 env['CPPPATH'].append('Include')
 env['CPPPATH'].append(Dir('Include'))
 
 # We have our own imconfig.h so we have to copy here to ensure that our version
 # is included.
-copy = [
+copySource = [
     'imgui.cpp',
     'imgui_draw.cpp',
     'imgui_widgets.cpp',
+]
+copyHeader = [
+    'imgui.h',
     'imgui_internal.h',
     'imstb_rectpack.h',
     'imstb_textedit.h',
     'imstb_truetype.h',
 ]
-for f in copy:
+for f in copySource:
     Util.Copy(env, f, 'Repo/%s' % (f))
+for f in copyHeader:
+    Util.Copy(env, 'Include/%s' % (f), 'Repo/%s' % (f))
 
 manager.AddComponent(
     name = '3rdParty/imgui',
