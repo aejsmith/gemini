@@ -30,6 +30,8 @@
 
 #include "Render/ShaderManager.h"
 
+#include "../../Shaders/ImGUI.h"
+
 SINGLETON_IMPL(ImGUIManager);
 
 class ImGUIInputHandler final : public InputHandler
@@ -60,8 +62,8 @@ private:
     GPUShaderPtr            mVertexShader;
     GPUShaderPtr            mPixelShader;
     GPUPipeline*            mPipeline;
-    GPUTexture*             mFontTexture;
-    GPUResourceView*        mFontView;
+    UPtr<GPUTexture>        mFontTexture;
+    UPtr<GPUResourceView>   mFontView;
     GPUSamplerRef           mSampler;
 
 };
@@ -230,13 +232,13 @@ ImGUIRenderer::ImGUIRenderer()
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    mVertexShader = ShaderManager::Get().GetShader("Engine/ImGui.hlsl", "VSMain", kGPUShaderStage_Vertex);
-    mPixelShader  = ShaderManager::Get().GetShader("Engine/ImGui.hlsl", "PSMain", kGPUShaderStage_Pixel);
+    mVertexShader = ShaderManager::Get().GetShader("Engine/ImGUI.hlsl", "VSMain", kGPUShaderStage_Vertex);
+    mPixelShader  = ShaderManager::Get().GetShader("Engine/ImGUI.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
-    GPUArgumentSetLayoutDesc argumentLayoutDesc(3);
-    argumentLayoutDesc.arguments[0] = kGPUArgumentType_Texture;
-    argumentLayoutDesc.arguments[1] = kGPUArgumentType_Sampler;
-    argumentLayoutDesc.arguments[2] = kGPUArgumentType_Constants;
+    GPUArgumentSetLayoutDesc argumentLayoutDesc(kImGUIArgumentsCount);
+    argumentLayoutDesc.arguments[kImGUIArguments_FontTexture] = kGPUArgumentType_Texture;
+    argumentLayoutDesc.arguments[kImGUIArguments_FontSampler] = kGPUArgumentType_Sampler;
+    argumentLayoutDesc.arguments[kImGUIArguments_Constants]   = kGPUArgumentType_Constants;
 
     const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
@@ -272,15 +274,15 @@ ImGUIRenderer::ImGUIRenderer()
     blendDesc.attachments[0].alphaOp         = kGPUBlendOp_Add;
 
     GPUPipelineDesc pipelineDesc;
-    pipelineDesc.shaders[kGPUShaderStage_Vertex] = mVertexShader;
-    pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mPixelShader;
-    pipelineDesc.argumentSetLayouts[0]           = argumentLayout;
-    pipelineDesc.blendState                      = GPUBlendState::Get(blendDesc);
-    pipelineDesc.depthStencilState               = GPUDepthStencilState::GetDefault();
-    pipelineDesc.rasterizerState                 = GPURasterizerState::Get(rasterizerDesc);
-    pipelineDesc.renderTargetState               = GPURenderTargetState::Get(renderTargetDesc);
-    pipelineDesc.vertexInputState                = GPUVertexInputState::Get(vertexInputDesc);
-    pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
+    pipelineDesc.shaders[kGPUShaderStage_Vertex]        = mVertexShader;
+    pipelineDesc.shaders[kGPUShaderStage_Pixel]         = mPixelShader;
+    pipelineDesc.argumentSetLayouts[kArgumentSet_ImGUI] = argumentLayout;
+    pipelineDesc.blendState                             = GPUBlendState::Get(blendDesc);
+    pipelineDesc.depthStencilState                      = GPUDepthStencilState::GetDefault();
+    pipelineDesc.rasterizerState                        = GPURasterizerState::Get(rasterizerDesc);
+    pipelineDesc.renderTargetState                      = GPURenderTargetState::Get(renderTargetDesc);
+    pipelineDesc.vertexInputState                       = GPUVertexInputState::Get(vertexInputDesc);
+    pipelineDesc.topology                               = kGPUPrimitiveTopology_TriangleList;
 
     mPipeline = GPUDevice::Get().GetPipeline(pipelineDesc);
 
@@ -297,7 +299,7 @@ ImGUIRenderer::ImGUIRenderer()
     textureDesc.width  = width;
     textureDesc.height = height;
 
-    mFontTexture = GPUDevice::Get().CreateTexture(textureDesc);
+    mFontTexture.reset(GPUDevice::Get().CreateTexture(textureDesc));
 
     GPUResourceViewDesc viewDesc;
     viewDesc.type     = kGPUResourceViewType_Texture2D;
@@ -305,7 +307,7 @@ ImGUIRenderer::ImGUIRenderer()
     viewDesc.format   = textureDesc.format;
     viewDesc.mipCount = mFontTexture->GetNumMipLevels();
 
-    mFontView = GPUDevice::Get().CreateResourceView(mFontTexture, viewDesc);
+    mFontView.reset(GPUDevice::Get().CreateResourceView(mFontTexture.get(), viewDesc));
 
     GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
 
@@ -313,9 +315,9 @@ ImGUIRenderer::ImGUIRenderer()
     memcpy(stagingTexture.MapWrite({0, 0}), pixels, width * height * 4);
     stagingTexture.Finalise();
 
-    graphicsContext.ResourceBarrier(mFontTexture, kGPUResourceState_None, kGPUResourceState_TransferWrite);
-    graphicsContext.UploadTexture(mFontTexture, stagingTexture);
-    graphicsContext.ResourceBarrier(mFontTexture, kGPUResourceState_TransferWrite, kGPUResourceState_AllShaderRead);
+    graphicsContext.ResourceBarrier(mFontTexture.get(), kGPUResourceState_None, kGPUResourceState_TransferWrite);
+    graphicsContext.UploadTexture(mFontTexture.get(), stagingTexture);
+    graphicsContext.ResourceBarrier(mFontTexture.get(), kGPUResourceState_TransferWrite, kGPUResourceState_AllShaderRead);
 
     GPUSamplerDesc samplerDesc;
     samplerDesc.minFilter = samplerDesc.magFilter = kGPUFilter_Linear;
@@ -325,8 +327,6 @@ ImGUIRenderer::ImGUIRenderer()
 
 ImGUIRenderer::~ImGUIRenderer()
 {
-    delete mFontView;
-    delete mFontTexture;
 }
 
 void ImGUIRenderer::Render() const
@@ -361,22 +361,26 @@ void ImGUIRenderer::Render() const
 
     cmdList->SetPipeline(mPipeline);
 
-    GPUArgument arguments[3] = {};
-    arguments[0].view    = mFontView;
-    arguments[1].sampler = mSampler;
+    GPUArgument arguments[kImGUIArgumentsCount] = {};
+    arguments[kImGUIArguments_FontTexture].view    = mFontView.get();
+    arguments[kImGUIArguments_FontSampler].sampler = mSampler;
 
-    cmdList->SetArguments(0, arguments);
+    cmdList->SetArguments(kArgumentSet_ImGUI, arguments);
 
     const int32_t width  = texture->GetWidth();
     const int32_t height = texture->GetHeight();
 
-    const glm::mat4 projectionMatrix(
+    ImGUIConstants constants;
+    constants.projectionMatrix = glm::mat4(
         2.0f / width, 0.0f,            0.0f, 0.0f,
         0.0f,         2.0f / -height,  0.0f, 0.0f,
         0.0f,         0.0f,           -1.0f, 0.0f,
         -1.0f,        1.0f,            0.0f, 1.0f);
 
-    cmdList->WriteConstants(0, 2, &projectionMatrix, sizeof(projectionMatrix));
+    cmdList->WriteConstants(kArgumentSet_ImGUI,
+                            kImGUIArguments_Constants,
+                            &constants,
+                            sizeof(constants));
 
     for (int i = 0; i < drawData->CmdListsCount; i++)
     {

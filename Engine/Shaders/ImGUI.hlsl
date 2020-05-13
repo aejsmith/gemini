@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ImGUI.h"
+
 struct VSInput
 {
     float2      position    : POSITION;
@@ -23,23 +25,20 @@ struct VSInput
 
 struct PSInput
 {
-    float4      position    : SV_POSITION;
+    float4      position    : SV_Position;
     float2      uv          : TEXCOORD;
     float4      colour      : COLOR;
 };
 
-Texture2D mainTexture : register(t0, space0);
-SamplerState mainSampler : register(s1, space0);
+Texture2D fontTexture    : SRV(ImGUI, FontTexture);
+SamplerState fontSampler : SMP(ImGUI, FontSampler);
 
-cbuffer Constants : register(b2, space0)
-{
-    float4x4    projectionMatrix;
-};
+CBUFFER(ImGUIConstants, constants, ImGUI, Constants);
 
 PSInput VSMain(VSInput input)
 {
     PSInput output;
-    output.position = mul(projectionMatrix, float4(input.position, 0.0, 1.0));
+    output.position = mul(constants.projectionMatrix, float4(input.position, 0.0, 1.0));
     output.uv       = input.uv;
     output.colour   = input.colour;
     return output;
@@ -47,5 +46,5 @@ PSInput VSMain(VSInput input)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    return input.colour * mainTexture.Sample(mainSampler, input.uv);
+    return input.colour * fontTexture.Sample(fontSampler, input.uv);
 }
