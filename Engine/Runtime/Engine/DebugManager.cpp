@@ -39,7 +39,6 @@
 SINGLETON_IMPL(DebugManager);
 
 static constexpr char kDebugTextWindowName[] = "Debug Text";
-static constexpr uint32_t kMenuBarHeight     = 19;
 
 class DebugInputHandler final : public InputHandler
 {
