@@ -54,18 +54,13 @@ float4 PSSpotLight(float4 position : SV_Position) : SV_Target0
     float shadowDepth = (shadowPos.z / shadowPos.w) - constants.biasConstant;
 
     #if ENABLE_PCF
-        float width, height;
-        shadowMapTexture.GetDimensions(width, height);
-        float2 texelSize = 1.0f / float2(width, height);
-
         /* 3x3 PCF. */
         float attenuation = 0.0f;
         for (int x = -1; x <= 1; x++)
         {
             for (int y = -1; y <= 1; y++)
             {
-                float2 uv = shadowUV + (float2(x, y) * texelSize);
-                attenuation += shadowMapTexture.SampleCmp(shadowMapSampler, uv, shadowDepth);
+                attenuation += shadowMapTexture.SampleCmp(shadowMapSampler, shadowUV, shadowDepth, int2(x, y));
             }
         }
 
