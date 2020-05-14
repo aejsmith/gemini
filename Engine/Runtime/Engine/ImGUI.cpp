@@ -379,8 +379,7 @@ void ImGUIRenderer::Render() const
 
     cmdList->WriteConstants(kArgumentSet_ImGUI,
                             kImGUIArguments_Constants,
-                            &constants,
-                            sizeof(constants));
+                            constants);
 
     for (int i = 0; i < drawData->CmdListsCount; i++)
     {

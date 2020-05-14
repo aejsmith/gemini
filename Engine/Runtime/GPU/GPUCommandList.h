@@ -183,6 +183,11 @@ public:
                                                    const void* const data,
                                                    const size_t      size);
 
+    template <typename T>
+    void                            WriteConstants(const uint8_t     setIndex,
+                                                   const uint8_t     argumentIndex,
+                                                   const T&          data);
+
 protected:
     struct ArgumentState
     {
@@ -467,4 +472,12 @@ inline void GPUCommandList::SubmitChildren(GPUCommandList** const children,
     #endif
 
     SubmitChildrenImpl(children, count);
+}
+
+template <typename T>
+inline void GPUCommandList::WriteConstants(const uint8_t     setIndex,
+                                           const uint8_t     argumentIndex,
+                                           const T&          data)
+{
+    WriteConstants(setIndex, argumentIndex, &data, sizeof(T));
 }

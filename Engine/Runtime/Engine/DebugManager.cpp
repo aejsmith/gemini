@@ -415,8 +415,7 @@ void DebugManager::RenderPrimitives(const RenderView&          view,
 
                 cmdList.WriteConstants(kArgumentSet_ViewEntity,
                                        kViewEntityArguments_EntityConstants,
-                                       &constants,
-                                       sizeof(constants));
+                                       constants);
             }
 
             cmdList.WriteVertexBuffer(0, vertices.data(), vertices.size() * sizeof(vertices[0]));

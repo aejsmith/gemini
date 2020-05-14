@@ -608,8 +608,7 @@ void DeferredRenderPipeline::DrawLightVolume(DeferredRenderContext* const contex
 
     cmdList.WriteConstants(kArgumentSet_ViewEntity,
                            kViewEntityArguments_EntityConstants,
-                           &entityConstants,
-                           sizeof(entityConstants));
+                           entityConstants);
 
     cmdList.SetConstants(kArgumentSet_ViewEntity,
                          kViewEntityArguments_ViewConstants,
@@ -701,8 +700,7 @@ void DeferredRenderPipeline::AddShadowPasses(DeferredRenderContext* const contex
 
                 cmdList.WriteConstants(kArgumentSet_DeferredShadowMask,
                                        kDeferredShadowMaskArguments_Constants,
-                                       &constants,
-                                       sizeof(constants));
+                                       constants);
 
                 DrawLightVolume(context, shadowLight.light, cmdList);
             });
@@ -753,8 +751,7 @@ void DeferredRenderPipeline::AddCullingPass(DeferredRenderContext* const context
 
         cmdList.WriteConstants(kArgumentSet_DeferredCulling,
                                kDeferredCullingArguments_Constants,
-                               &constants,
-                               sizeof(constants));
+                               constants);
 
         cmdList.SetConstants(kArgumentSet_ViewEntity,
                              kViewEntityArguments_ViewConstants,
@@ -840,8 +837,7 @@ void DeferredRenderPipeline::AddLightingPass(DeferredRenderContext* const contex
 
         cmdList.WriteConstants(kArgumentSet_DeferredLighting,
                                kDeferredLightingArguments_Constants,
-                               &constants,
-                               sizeof(constants));
+                               constants);
 
         cmdList.SetConstants(kArgumentSet_ViewEntity,
                              kViewEntityArguments_ViewConstants,
@@ -903,8 +899,7 @@ void DeferredRenderPipeline::AddCullingDebugPass(DeferredRenderContext* const co
 
         cmdList.WriteConstants(kArgumentSet_DeferredCullingDebug,
                                kDeferredCullingDebugArguments_Constants,
-                               &constants,
-                               sizeof(constants));
+                               constants);
 
         cmdList.Draw(3);
     });
