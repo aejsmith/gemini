@@ -58,7 +58,7 @@ void BasicRenderPipeline::Render(const RenderWorld&         world,
     {
         if (entity->SupportsPassType(kShaderPassType_Basic))
         {
-            const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_Basic);
+            const GPUPipelineRef pipeline = entity->GetPipeline(kShaderPassType_Basic);
 
             const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
             EntityDrawCall& drawCall = context->drawList.Add(sortKey);

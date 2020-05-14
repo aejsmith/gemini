@@ -105,7 +105,7 @@ GPUArgumentSetLayoutRef GPUDevice::GetArgumentSetLayout(GPUArgumentSetLayoutDesc
     return layout;
 }
 
-GPUPipeline* GPUDevice::GetPipeline(const GPUPipelineDesc& desc)
+GPUPipelineRef GPUDevice::GetPipeline(const GPUPipelineDesc& desc)
 {
     const size_t hash = HashValue(desc);
 

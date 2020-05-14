@@ -272,7 +272,7 @@ void DeferredRenderPipeline::CreatePersistentResources()
         context.UploadBuffer(mConeVertexBuffer.get(), stagingBuffer, bufferDesc.size);
         context.ResourceBarrier(mConeVertexBuffer.get(), kGPUResourceState_TransferWrite, kGPUResourceState_VertexBufferRead);
 
-        bufferDesc.size  = indices.size() * sizeof(indices[0]);
+        bufferDesc.size = indices.size() * sizeof(indices[0]);
 
         mConeIndexBuffer.reset(GPUDevice::Get().CreateBuffer(bufferDesc));
 
@@ -429,7 +429,7 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context)
 
         light->GetLightParams(lightParams[i]);
 
-        /* Prepare shadow state for shadow casting lights */
+        /* Prepare shadow state for shadow casting lights. */
         if (light->GetCastShadows())
         {
             if (context->shadowLights.size() < this->maxShadowLights)
@@ -501,7 +501,7 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
     {
         if (entity->SupportsPassType(kShaderPassType_DeferredOpaque))
         {
-            const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_DeferredOpaque);
+            const GPUPipelineRef pipeline = entity->GetPipeline(kShaderPassType_DeferredOpaque);
 
             const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
             EntityDrawCall& drawCall = context->opaqueDrawList.Add(sortKey);
@@ -529,7 +529,7 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
         {
             if (entity->SupportsPassType(kShaderPassType_ShadowMap))
             {
-                const GPUPipeline* const pipeline = entity->GetPipeline(kShaderPassType_ShadowMap);
+                const GPUPipelineRef pipeline = entity->GetPipeline(kShaderPassType_ShadowMap);
 
                 // TODO: Sort based on depth instead.
                 const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);

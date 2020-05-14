@@ -19,6 +19,7 @@
 #include "Core/Thread.h"
 
 #include "GPU/GPUArgumentSet.h"
+#include "GPU/GPUPipeline.h"
 #include "GPU/GPURenderPass.h"
 
 #include <atomic>
@@ -26,11 +27,7 @@
 class GPUBuffer;
 class GPUContext;
 class GPUComputeContext;
-class GPUComputePipeline;
 class GPUGraphicsContext;
-class GPUPipeline;
-
-struct GPUPipelineDesc;
 
 /**
  * This class and its derived classes provide the interface for recording
@@ -322,7 +319,7 @@ public:
      * differs from the old pipeline's, then any bound arguments at that index
      * will be unbound. Otherwise, bound arguments will remain bound.
      */
-    void                            SetPipeline(GPUPipeline* const pipeline);
+    void                            SetPipeline(const GPUPipelineRef pipeline);
     void                            SetPipeline(const GPUPipelineDesc& desc);
 
     void                            SetViewport(const GPUViewport& viewport);
@@ -401,7 +398,7 @@ protected:
 
     uint32_t                        mDirtyState;
 
-    GPUPipeline*                    mPipeline;
+    GPUPipelineRef                  mPipeline;
     GPUViewport                     mViewport;
     IntRect                         mScissor;
     VertexBuffer                    mVertexBuffers[kMaxVertexAttributes];

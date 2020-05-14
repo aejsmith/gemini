@@ -61,7 +61,7 @@ public:
 private:
     GPUShaderPtr            mVertexShader;
     GPUShaderPtr            mPixelShader;
-    GPUPipeline*            mPipeline;
+    GPUPipelineRef          mPipeline;
     UPtr<GPUTexture>        mFontTexture;
     UPtr<GPUResourceView>   mFontView;
     GPUSamplerRef           mSampler;

@@ -21,7 +21,7 @@
 
 #include "Render/RenderGraph.h"
 
-EntityDrawSortKey EntityDrawSortKey::GetOpaque(const GPUPipeline* const pipeline)
+EntityDrawSortKey EntityDrawSortKey::GetOpaque(const GPUPipelineRef pipeline)
 {
     /*
      * Currently we have:

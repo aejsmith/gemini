@@ -222,7 +222,7 @@ GPUGraphicsCommandList::~GPUGraphicsCommandList()
 {
 }
 
-void GPUGraphicsCommandList::SetPipeline(GPUPipeline* const pipeline)
+void GPUGraphicsCommandList::SetPipeline(const GPUPipelineRef pipeline)
 {
     Assert(pipeline);
 

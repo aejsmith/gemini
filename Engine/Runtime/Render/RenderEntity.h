@@ -20,12 +20,12 @@
 #include "Core/Math/BoundingBox.h"
 #include "Core/Math/Transform.h"
 
+#include "GPU/GPUPipeline.h"
 #include "GPU/GPUState.h"
 
 #include "Render/RenderDefs.h"
 
 class EntityRenderer;
-class GPUPipeline;
 class Material;
 class RenderView;
 
@@ -57,7 +57,7 @@ public:
                                         { return mPipelines[passType] != nullptr; }
 
     /** Get the pipeline for a pass type. */
-    GPUPipeline*                    GetPipeline(const ShaderPassType passType) const
+    GPUPipelineRef                  GetPipeline(const ShaderPassType passType) const
                                         { return mPipelines[passType]; }
 
     /**
@@ -104,7 +104,7 @@ private:
      * Pipelines for each pass type supported by the material's shader
      * technique.
      */
-    GPUPipeline*                    mPipelines[kShaderPassTypeCount];
+    GPUPipelineRef                  mPipelines[kShaderPassTypeCount];
 
 public:
     IntrusiveListNode               mWorldListNode;

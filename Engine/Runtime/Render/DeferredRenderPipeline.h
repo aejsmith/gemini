@@ -17,6 +17,7 @@
 #pragma once
 
 #include "GPU/GPUArgumentSet.h"
+#include "GPU/GPUPipeline.h"
 #include "GPU/GPUShader.h"
 #include "GPU/GPUState.h"
 
@@ -24,7 +25,6 @@
 
 class DeferredRenderPipelineWindow;
 class GPUBuffer;
-class GPUComputePipeline;
 class TonemapPass;
 
 struct DeferredRenderContext;
@@ -141,7 +141,7 @@ private:
 
     UPtr<GPUComputePipeline>            mCullingPipeline;
     UPtr<GPUComputePipeline>            mLightingPipeline;
-    GPUPipeline*                        mShadowMaskPipelines[kLightTypeCount];
+    GPUPipelineRef                      mShadowMaskPipelines[kLightTypeCount];
 
     UPtr<GPUBuffer>                     mConeVertexBuffer;
     UPtr<GPUBuffer>                     mConeIndexBuffer;

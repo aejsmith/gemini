@@ -365,7 +365,7 @@ GPUCommandList* VulkanGraphicsCommandList::CreateChildImpl()
 
 void VulkanGraphicsCommandList::PreDraw(const bool isIndexed)
 {
-    const auto pipeline = static_cast<VulkanPipeline*>(mPipeline);
+    const auto pipeline = static_cast<const VulkanPipeline*>(mPipeline);
 
     if (mDirtyState & kDirtyState_Pipeline)
     {

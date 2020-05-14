@@ -105,6 +105,8 @@ protected:
     GPUShaderID                     mShaderIDs[kGPUShaderStage_NumGraphics];
 };
 
+using GPUPipelineRef = const GPUPipeline*;
+
 struct GPUComputePipelineDesc
 {
     GPUShader*                      shader;

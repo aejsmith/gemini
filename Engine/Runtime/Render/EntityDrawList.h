@@ -18,10 +18,11 @@
 
 #include "Render/RenderDefs.h"
 
+#include "GPU/GPUPipeline.h"
+
 class GPUArgumentSet;
 class GPUBuffer;
 class GPUGraphicsCommandList;
-class GPUPipeline;
 class RenderGraphPass;
 
 struct CullResults;
@@ -53,7 +54,7 @@ struct EntityDrawCall
     };
 
     /** Pipeline state. */
-    GPUPipeline*                    pipeline;
+    GPUPipelineRef                  pipeline;
 
     /**
      * Shader arguments. Specifies an argument set to bind at each index, and
@@ -98,7 +99,7 @@ public:
     uint64_t                        GetValue() const    { return mValue; }
 
     /** Get a sort key for a standard opaque entity. */
-    static EntityDrawSortKey        GetOpaque(const GPUPipeline* const pipeline);
+    static EntityDrawSortKey        GetOpaque(const GPUPipelineRef pipeline);
 
 private:
     uint64_t                        mValue;

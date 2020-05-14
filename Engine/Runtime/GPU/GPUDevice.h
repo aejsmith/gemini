@@ -131,7 +131,7 @@ public:
      * destroyed, the pipeline will be destroyed. Therefore, users of this must
      * keep a reference to their shaders to ensure the pipeline remains alive.
      */
-    GPUPipeline*                    GetPipeline(const GPUPipelineDesc& desc);
+    GPUPipelineRef                  GetPipeline(const GPUPipelineDesc& desc);
 
     GPUSamplerRef                   GetSampler(const GPUSamplerDesc& desc);
 
