@@ -1,0 +1,31 @@
+import os
+
+Import('manager')
+
+# Vulkan SDK. Just need headers, we load dynamically at runtime.
+manager.AddComponent(
+    name = 'External/Vulkan',
+    includePath = "${ENV['VULKAN_SDK']}\Include")
+
+# SDL.
+manager.AddComponent(
+    name = 'External/SDL',
+    includePath = Dir('SDL2-2.0.12/include'),
+    libPath = Dir('SDL2-2.0.12/lib/x64'),
+    libs = ['SDL2', 'SDL2main'],
+    dlls = File('SDL2-2.0.12/lib/x64/SDL2.dll'))
+
+# libclang.
+manager.AddComponent(
+    name = 'External/libclang',
+    includePath = Dir('LLVM-10.0.0/include'),
+    libPath = Dir('LLVM-10.0.0/lib/x64'),
+    libs = ['libclang'],
+    dlls = File('LLVM-10.0.0/lib/x64/libclang.dll'))
+
+# shaderc.
+manager.AddComponent(
+    name = 'External/shaderc',
+    includePath = Dir('../Common/shaderc/Include'),
+    libPath = Dir('shaderc/Lib'),
+    libs = ['shaderc_combined'])

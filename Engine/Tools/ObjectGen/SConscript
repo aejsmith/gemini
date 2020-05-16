@@ -49,10 +49,18 @@ manager.baseEnv['OBJECTGEN'] = env.GeminiTool(
     name = 'ObjectGen',
     sources = ['ObjectGen.cpp'])
 
-# libclang doesn't add the compiler's built-in include directory to the default
-# path. Therefore we must get this manually and pass it to ObjectGen.
-incdir = Popen([env['CC'], '-print-file-name=include'], stdout=PIPE).communicate()[0].decode('ascii').strip()
-manager.baseEnv['OBJECTGENFLAGS'] = '$_CPPDEFFLAGS -I%s $_CPPINCFLAGS' % (incdir)
+if env['PLATFORM'] == 'Win32':
+    # SCons will give us MSVC-style arguments, but ObjectGen takes GCC-style.
+    manager.baseEnv['OBJECTGENDEFPREFIX'] = '-D'
+    manager.baseEnv['OBJECTGENINCPREFIX'] = '-I'
+    manager.baseEnv['OBJECTGENFLAGS'] = \
+        '${_defines(OBJECTGENDEFPREFIX, CPPDEFINES, CPPDEFSUFFIX, __env__)} ' + \
+        '$( ${_concat(OBJECTGENINCPREFIX, CPPPATH, INCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
+else:
+    # libclang doesn't add the compiler's built-in include directory to the
+    # default path. Therefore we must get this manually and pass it to ObjectGen.
+    incdir = Popen([env['CC'], '-print-file-name=include'], stdout=PIPE).communicate()[0].decode('ascii').strip()
+    manager.baseEnv['OBJECTGENFLAGS'] = '$_CPPDEFFLAGS -I%s $_CPPINCFLAGS' % (incdir)
 
 #
 # Define builders to run ObjectGen.

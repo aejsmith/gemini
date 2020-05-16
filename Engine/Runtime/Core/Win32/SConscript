@@ -1,0 +1,6 @@
+Import('env')
+
+objects = list(map(env.Object, [
+]))
+
+Return('objects')

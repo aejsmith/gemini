@@ -49,6 +49,7 @@ depends = [
     '3rdParty/stb',
     '3rdParty/VulkanMemoryAllocator',
     'External/shaderc',
+    'External/Vulkan',
 ]
 
 if manager.baseEnv['BUILD'] != 'Release':

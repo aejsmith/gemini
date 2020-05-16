@@ -131,7 +131,7 @@ if sys.platform.startswith('linux'):
     env['LINKFLAGS'] += ['-pthread']
     env['LIBS'] += ['dl']
 elif sys.platform.startswith('win32'):
-    env['PLATFORM'] = 'win32'
+    env['PLATFORM'] = 'Win32'
     env['CPPDEFINES'] = {'GEMINI_PLATFORM_WIN32': 1}
 
     platformBuildTypes = {
