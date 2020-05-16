@@ -1,3 +1,3 @@
-Component Repository                               Branch      Revision
---------- ----------                               ------      --------
-shaderc   https://github.com/aejsmith/shaderc.git  debug-info  3f1419c7c162f2e1b770a6461cd0035cd0d04109
+Component Repository                               Branch/Tag/Revision
+--------- ----------                               -------------------
+shaderc   https://github.com/google/shaderc.git    v2020.0
