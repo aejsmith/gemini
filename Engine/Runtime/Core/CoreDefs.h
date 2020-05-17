@@ -34,6 +34,12 @@
     #define Likely(x)               __builtin_expect(!!(x), 1)
     #define Unlikely(x)             __builtin_expect(!!(x), 0)
     #define CompilerUnreachable()   __builtin_unreachable()
+#elif defined(_MSC_VER)
+    #define FORCEINLINE             __forceinline
+    #define NOINLINE                __declspec(noinline)
+    #define Likely(x)               (x)
+    #define Unlikely(x)             (x)
+    #define CompilerUnreachable()   abort()
 #else
     #error "Compiler is not supported"
 #endif
@@ -56,8 +62,11 @@ using UPtr = std::unique_ptr<T>;
 
 /** Break into the debugger. */
 #if GEMINI_BUILD_DEBUG
-    #define DebugBreak() \
-        __asm__ volatile("int3")
+    #if GEMINI_PLATFORM_WIN32
+        #define DebugBreak()        __debugbreak()
+    #else
+        #define DebugBreak()        __asm__ volatile("int3")
+    #endif
 #else
     #define DebugBreak()
 #endif

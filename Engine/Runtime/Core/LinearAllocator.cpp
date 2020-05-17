@@ -27,12 +27,20 @@ LinearAllocator::LinearAllocator(const size_t maxSize) :
     mCurrentOffset  (0),
     mMaxSize        (maxSize)
 {
-    mAllocation = std::aligned_alloc(kMaxAlignment, maxSize);
+    #if GEMINI_PLATFORM_WIN32
+        mAllocation = _aligned_malloc(maxSize, kMaxAlignment);
+    #else
+        mAllocation = std::aligned_alloc(kMaxAlignment, maxSize);
+    #endif
 }
 
 LinearAllocator::~LinearAllocator()
 {
-    std::free(mAllocation);
+    #if GEMINI_PLATFORM_WIN32
+        _aligned_free(mAllocation);
+    #else
+        std::free(mAllocation);
+    #endif
 }
 
 void* LinearAllocator::Allocate(const size_t size,

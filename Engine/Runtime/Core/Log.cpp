@@ -18,10 +18,13 @@
 
 #include "Core/Path.h"
 
-#include <sys/ioctl.h>
+#if !GEMINI_PLATFORM_WIN32
+    #include <sys/ioctl.h>
+#endif
 
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 
 void FatalLogImpl(const char* const file,
                   const int         line,
@@ -56,13 +59,17 @@ void LogVImpl(const LogLevel    level,
 
     time_t t = time(nullptr);
     struct tm local;
-    localtime_r(&t, &local);
+    #if GEMINI_PLATFORM_WIN32
+        localtime_s(&local, &t);
+    #else
+        localtime_r(&t, &local);
+    #endif
 
     char timeString[20];
     strftime(timeString,
              sizeof(timeString),
-            "%Y-%m-%d %H:%M:%S",
-            &local);
+             "%Y-%m-%d %H:%M:%S",
+             &local);
 
     std::string fileDetails;
     if (file)
@@ -73,50 +80,74 @@ void LogVImpl(const LogLevel    level,
                                           line);
     }
 
+    FILE* stream = (level < kLogLevel_Error) ? stdout : stderr;
     const char* levelString = "";
 
-    switch (level)
-    {
-        case kLogLevel_Debug:
-            levelString = "\033[1;30m";
-            break;
-
-        case kLogLevel_Info:
-            levelString = "\033[1;34m";
-            break;
-
-        case kLogLevel_Warning:
-            levelString = "\033[1;33m";
-            break;
-
-        case kLogLevel_Error:
-            levelString = "\033[1;31m";
-            break;
-
-    }
-
-    FILE* stream = (level < kLogLevel_Error) ? stdout : stderr;
-
-    fprintf(stream,
-            "%s%s \033[0m%s",
-            levelString,
-            timeString,
-            message.c_str());
-
-    if (file)
-    {
-        struct winsize w;
-        ioctl(0, TIOCGWINSZ, &w);
+    #if GEMINI_PLATFORM_WIN32
+        switch (level)
+        {
+            case kLogLevel_Debug:
+                levelString = "[DEBUG  ]";
+                break;
+            case kLogLevel_Info:
+                levelString = "[INFO   ]";
+                break;
+            case kLogLevel_Warning:
+                levelString = "[WARNING]";
+                break;
+            case kLogLevel_Error:
+                levelString = "[ERROR  ]";
+                break;
+        }
 
         fprintf(stream,
-                "\033[0;34m%*s\033[0m\n",
-                w.ws_col - std::strlen(timeString) - message.length() - 2,
+                "%s %s %s (%s)\n",
+                timeString,
+                levelString,
+                message.c_str(),
                 fileDetails.c_str());
-    }
-    else
-    {
-        fprintf(stream, "\n");
-    }
+    #else
+        switch (level)
+        {
+            case kLogLevel_Debug:
+                levelString = "\033[1;30m";
+                break;
+
+            case kLogLevel_Info:
+                levelString = "\033[1;34m";
+                break;
+
+            case kLogLevel_Warning:
+                levelString = "\033[1;33m";
+                break;
+
+            case kLogLevel_Error:
+                levelString = "\033[1;31m";
+                break;
+
+        }
+
+        fprintf(stream,
+                "%s%s \033[0m%s",
+                levelString,
+                timeString,
+                message.c_str());
+
+        if (file)
+        {
+            struct winsize w;
+            ioctl(0, TIOCGWINSZ, &w);
+
+            fprintf(stream,
+                    "\033[0;34m%*s\033[0m\n",
+                    w.ws_col - std::strlen(timeString) - message.length() - 2,
+                    fileDetails.c_str());
+        }
+        else
+        {
+            fprintf(stream, "\n");
+        }
+    #endif
 }
 
 void LogImpl(const LogLevel    level,

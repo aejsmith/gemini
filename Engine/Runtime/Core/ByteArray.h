@@ -18,6 +18,7 @@
 
 #include "Core/CoreDefs.h"
 
+#include <algorithm>
 #include <cstring>
 
 /**

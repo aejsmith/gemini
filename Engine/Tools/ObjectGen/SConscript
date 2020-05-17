@@ -11,6 +11,13 @@ env = manager.CreateEnvironment(depends = [
     'Engine/Core',
 ])
 
+if env['PLATFORM'] == 'Win32':
+    # No getopt on Windows, pull in an implementation of it.
+    env['CPPPATH'].append('../../3rdParty/getopt')
+    extraSources = ['../../3rdParty/getopt/getopt.c']
+else:
+    extraSources = []
+
 # Compile the Mustache template into the ObjectGen binary so we don't have to find
 # it at runtime.
 def GenMustacheHeader(target, source, env):
@@ -47,7 +54,7 @@ if env['BUILD'] == 'Sanitize':
 
 manager.baseEnv['OBJECTGEN'] = env.GeminiTool(
     name = 'ObjectGen',
-    sources = ['ObjectGen.cpp'])
+    sources = ['ObjectGen.cpp'] + extraSources)
 
 if env['PLATFORM'] == 'Win32':
     # SCons will give us MSVC-style arguments, but ObjectGen takes GCC-style.
