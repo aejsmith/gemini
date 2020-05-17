@@ -32,7 +32,7 @@ public:
     /** Return whether the calling thread is the main thread. */
     static bool             IsMain();
 
-    static void             Init(OnlyCalledBy<Engine>);
+    static void             Init();
 
 private:
     static ThreadID         mMainID;

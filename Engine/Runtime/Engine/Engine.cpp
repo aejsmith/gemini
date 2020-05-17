@@ -57,7 +57,8 @@ Engine::Engine() :
     mFramesSinceFPSUpdate   (0),
     mFPS                    (0.0f)
 {
-    Thread::Init({});
+    Platform::Init();
+    Thread::Init();
 
     LogInfo("Hello, World!");
 

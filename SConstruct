@@ -132,7 +132,7 @@ if sys.platform.startswith('linux'):
     env['LIBS'] += ['dl']
 elif sys.platform.startswith('win32'):
     env['PLATFORM'] = 'Win32'
-    env['CPPDEFINES'] = {'GEMINI_PLATFORM_WIN32': 1}
+    env['CPPDEFINES'] = {'GEMINI_PLATFORM_WIN32': 1, 'UNICODE': 1, '_UNICODE': 1}
 
     platformBuildTypes = {
         'Debug': {
@@ -151,6 +151,7 @@ elif sys.platform.startswith('win32'):
 
     env['CCFLAGS'] += ['/W2', '/EHsc', '/MT']
     env['LINKFLAGS'] += ['/SUBSYSTEM:CONSOLE']
+    env['LIBS'] += ['Shell32', 'Ole32']
 else:
     Util.StopError("Unsupported platform.")
 

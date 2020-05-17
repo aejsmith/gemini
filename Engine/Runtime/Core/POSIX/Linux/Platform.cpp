@@ -23,6 +23,10 @@
 #include <time.h>
 #include <unistd.h>
 
+void Platform::Init()
+{
+}
+
 std::string Platform::GetProgramName()
 {
     std::string str;

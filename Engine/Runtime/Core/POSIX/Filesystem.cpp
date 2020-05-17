@@ -195,7 +195,8 @@ bool POSIXDirectory::Next(Entry& outEntry)
 }
 
 File* Filesystem::OpenFile(const Path&    path,
-                           const FileMode mode) {
+                           const FileMode mode)
+{
     int flags = 0;
 
     if (mode & kFileMode_Read)

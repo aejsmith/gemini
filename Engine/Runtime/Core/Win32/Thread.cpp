@@ -16,9 +16,9 @@
 
 #include "Core/Thread.h"
 
-ThreadID Thread::mMainID;
+#include "Win32.h"
 
-void Thread::Init()
+ThreadID Thread::GetCurrentID()
 {
-    mMainID = GetCurrentID();
+    return GetCurrentThreadId();
 }

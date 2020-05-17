@@ -1,6 +1,9 @@
 Import('env')
 
 objects = list(map(env.Object, [
+    'Filesystem.cpp',
+    'Platform.cpp',
+    'Thread.cpp',
 ]))
 
 Return('objects')

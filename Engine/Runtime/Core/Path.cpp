@@ -16,7 +16,11 @@
 
 #include "Core/Path.h"
 
-static const char kPlatformPathSeparator = '/';
+#if GEMINI_PLATFORM_WIN32
+    static const char kPlatformPathSeparator = '\\';
+#else
+    static const char kPlatformPathSeparator = '/';
+#endif
 
 size_t Path::CountComponents() const
 {

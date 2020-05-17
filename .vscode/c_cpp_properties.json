@@ -53,7 +53,9 @@
             ],
             "defines": [
                 "GEMINI_BUILD_DEBUG=1",
-                "GEMINI_PLATFORM_WIN32=1"
+                "GEMINI_PLATFORM_WIN32=1",
+                "UNICODE=1",
+                "_UNICODE=1"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",

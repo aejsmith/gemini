@@ -22,53 +22,53 @@
  * Unshared code should prefer the native types of the language.
  */
 #if __HLSL__
-    typedef float       shader_float;
-    typedef float2      shader_float2;
-    typedef float3      shader_float3;
-    typedef float4      shader_float4;
+    typedef float           shader_float;
+    typedef float2          shader_float2;
+    typedef float3          shader_float3;
+    typedef float4          shader_float4;
 
-    typedef int         shader_int;
-    typedef int2        shader_int2;
-    typedef int3        shader_int3;
-    typedef int4        shader_int4;
+    typedef int             shader_int;
+    typedef int2            shader_int2;
+    typedef int3            shader_int3;
+    typedef int4            shader_int4;
 
-    typedef uint        shader_uint;
-    typedef uint2       shader_uint2;
-    typedef uint3       shader_uint3;
-    typedef uint4       shader_uint4;
+    typedef uint            shader_uint;
+    typedef uint2           shader_uint2;
+    typedef uint3           shader_uint3;
+    typedef uint4           shader_uint4;
 
-    typedef bool        shader_bool;
-    typedef bool2       shader_bool2;
-    typedef bool3       shader_bool3;
-    typedef bool4       shader_bool4;
+    typedef bool            shader_bool;
+    typedef bool2           shader_bool2;
+    typedef bool3           shader_bool3;
+    typedef bool4           shader_bool4;
 
-    typedef float2x2    shader_float2x2;
-    typedef float3x3    shader_float3x3;
-    typedef float4x4    shader_float4x4;
+    typedef float2x2        shader_float2x2;
+    typedef float3x3        shader_float3x3;
+    typedef float4x4        shader_float4x4;
 #else
-    typedef float       shader_float;
-    typedef glm::vec2   shader_float2;
-    typedef glm::vec3   shader_float3;
-    typedef glm::vec4   shader_float4;
+    typedef float           shader_float;
+    typedef glm::vec2       shader_float2;
+    typedef glm::vec3       shader_float3;
+    typedef glm::vec4       shader_float4;
 
-    typedef int         shader_int;
-    typedef glm::ivec2  shader_int2;
-    typedef glm::ivec3  shader_int3;
-    typedef glm::ivec4  shader_int4;
+    typedef int             shader_int;
+    typedef glm::ivec2      shader_int2;
+    typedef glm::ivec3      shader_int3;
+    typedef glm::ivec4      shader_int4;
 
-    typedef uint        shader_uint;
-    typedef glm::ivec2  shader_uint2;
-    typedef glm::ivec3  shader_uint3;
-    typedef glm::ivec4  shader_uint4;
+    typedef unsigned int    shader_uint;
+    typedef glm::ivec2      shader_uint2;
+    typedef glm::ivec3      shader_uint3;
+    typedef glm::ivec4      shader_uint4;
 
-    typedef bool        shader_bool;
-    typedef glm::bvec2  shader_bool2;
-    typedef glm::bvec3  shader_bool3;
-    typedef glm::bvec4  shader_bool4;
+    typedef bool            shader_bool;
+    typedef glm::bvec2      shader_bool2;
+    typedef glm::bvec3      shader_bool3;
+    typedef glm::bvec4      shader_bool4;
 
-    typedef glm::mat2   shader_float2x2;
-    typedef glm::mat3   shader_float3x3;
-    typedef glm::mat4   shader_float4x4;
+    typedef glm::mat2       shader_float2x2;
+    typedef glm::mat3       shader_float3x3;
+    typedef glm::mat4       shader_float4x4;
 #endif
 
 #define SHADER_PI 3.14159265f

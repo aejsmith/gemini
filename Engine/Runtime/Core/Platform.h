@@ -21,6 +21,8 @@
 
 namespace Platform
 {
+    void                    Init();
+
     /** Get the program executable name (without extensions). */
     std::string             GetProgramName();
 

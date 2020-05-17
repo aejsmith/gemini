@@ -14,11 +14,42 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Core/Thread.h"
+#pragma once
 
-ThreadID Thread::mMainID;
+#include "Core/CoreDefs.h"
 
-void Thread::Init()
+#include <codecvt>
+#include <string>
+
+/**
+ * Wrap Windows.h to deal with some conflicting defines. Include this header
+ * last.
+ */
+
+#undef DebugBreak
+
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+/**
+ * String conversions for Windows Unicode functions.
+ */
+
+static inline std::wstring UTF8ToWide(const std::string& str)
 {
-    mMainID = GetCurrentID();
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    return conv.from_bytes(str);
+}
+
+static inline std::string WideToUTF8(const std::wstring& str)
+{
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    return conv.to_bytes(str);
+}
+
+static inline std::string WideToUTF8(const PWSTR str)
+{
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    return conv.to_bytes(str);
 }
