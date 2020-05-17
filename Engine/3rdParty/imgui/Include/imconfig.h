@@ -15,6 +15,11 @@
 
 #include "Core/Math.h"
 
+#if IMGUI_IMPL
+// Avoid conflicts with Windows headers included by imgui.cpp
+#undef DebugBreak
+#endif
+
 //---- Define assertion handler. Defaults to calling assert().
 #define IM_ASSERT(_EXPR) Assert(_EXPR)
 

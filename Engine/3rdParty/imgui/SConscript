@@ -8,6 +8,7 @@ env = manager.CreateEnvironment(depends = depends)
 
 env['CPPPATH'].append('Include')
 env['CPPPATH'].append(Dir('Include'))
+env['CPPDEFINES'].update({'IMGUI_IMPL': 1})
 
 # We have our own imconfig.h so we have to copy here to ensure that our version
 # is included.
