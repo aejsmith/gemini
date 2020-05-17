@@ -1,4 +1,21 @@
 {
+    "env": {
+        "engineIncludePath": [
+            "${workspaceFolder}/Engine/Runtime",
+            "${workspaceFolder}/Engine/3rdParty/xxHash/Include",
+            "${workspaceFolder}/Engine/3rdParty/glm/Include",
+            "${workspaceFolder}/Engine/3rdParty/glm/Repo",
+            "${workspaceFolder}/Engine/3rdParty/imgui/Repo",
+            "${workspaceFolder}/Engine/3rdParty/microprofile/Include",
+            "${workspaceFolder}/Engine/3rdParty/microprofile/Repo",
+            "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
+            "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
+            "${workspaceFolder}/Engine/3rdParty/stb/Repo",
+            "${workspaceFolder}/Engine/3rdParty/SPIRV-Reflect/Repo",
+            "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
+            "${workspaceFolder}/Dependencies/Common/shaderc/Include"
+        ]
+    },
     "configurations": [
         {
             "name": "Linux",
@@ -9,26 +26,38 @@
                 "limitSymbolsToIncludedHeaders": true
             },
             "includePath": [
-                "${workspaceFolder}/Engine/Runtime",
-                "${workspaceFolder}/Engine/3rdParty/xxHash/Include",
-                "${workspaceFolder}/Engine/3rdParty/glm/Include",
-                "${workspaceFolder}/Engine/3rdParty/glm/Repo",
-                "${workspaceFolder}/Engine/3rdParty/imgui/Repo",
-                "${workspaceFolder}/Engine/3rdParty/microprofile/Include",
-                "${workspaceFolder}/Engine/3rdParty/microprofile/Repo",
-                "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
-                "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
-                "${workspaceFolder}/Engine/3rdParty/stb/Repo",
-                "${workspaceFolder}/Engine/3rdParty/SPIRV-Reflect/Repo",
-                "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
-                "${workspaceFolder}/Dependencies/Common/shaderc/Include",
+                "${engineIncludePath}",
                 "/usr/include/SDL2"
             ],
-            "defines": ["GEMINI_BUILD_DEBUG=1"],
+            "defines": [
+                "GEMINI_BUILD_DEBUG=1",
+                "GEMINI_PLATFORM_LINUX=1"
+            ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64"
+        },
+        {
+            "name": "Windows",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "${engineIncludePath}",
+                "${workspaceFolder}/Dependencies/Win32/SDL2-2.0.12/include",
+                "${workspaceFolder}/Dependencies/Win32/LLVM-10.0.0/include"
+            ],
+            "defines": [
+                "GEMINI_BUILD_DEBUG=1",
+                "GEMINI_PLATFORM_WIN32=1"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64"
         }
     ],
     "version": 4
