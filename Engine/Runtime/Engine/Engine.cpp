@@ -150,7 +150,7 @@ void Engine::InitSDL()
      * acceleration prevents SDL from unnecessarily loading libGL. */
     SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0");
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
     {
         Fatal("Failed to initialize SDL: %s", SDL_GetError());
     }

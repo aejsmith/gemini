@@ -150,6 +150,7 @@ elif sys.platform.startswith('win32'):
     }
 
     env['CCFLAGS'] += ['/W2', '/EHsc', '/MT']
+    env['CXXFLAGS'] += ['/std:c++17']
     env['LINKFLAGS'] += ['/SUBSYSTEM:CONSOLE']
     env['LIBS'] += ['Shell32', 'Ole32']
 else:

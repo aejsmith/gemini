@@ -16,6 +16,9 @@
 
 #if !GEMINI_BUILD_RELEASE
 
+/* MicroProfile includes Windows.h, use our wrapper to avoid some conflicts. */
+#include "Core/Win32/Win32.h"
+
 #define MICROPROFILE_IMPL 1
 #define MICROPROFILEUI_IMPL 1
 

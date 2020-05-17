@@ -39,8 +39,7 @@
 #include <rapidjson/error/en.h>
 
 #if GEMINI_PLATFORM_WIN32
-    #include <windows.h>
-    #include <tchar.h>
+    #include "Core/Win32/Win32.h"
 #endif
 
 #include "ObjectGen.mustache.h"

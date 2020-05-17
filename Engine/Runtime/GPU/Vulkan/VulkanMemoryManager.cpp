@@ -18,15 +18,19 @@
 
 #include "VulkanDevice.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#pragma clang diagnostic ignored "-Wunused-variable"
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wmissing-field-initializers"
+    #pragma clang diagnostic ignored "-Wunused-variable"
+#endif
 
 #define VMA_ASSERT(expr)    Assert(expr)
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
-#pragma clang diagnostic pop
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
 
 VulkanMemoryManager::VulkanMemoryManager(VulkanDevice& device) :
     GPUDeviceChild (device)

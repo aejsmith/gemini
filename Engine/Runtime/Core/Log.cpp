@@ -101,7 +101,7 @@ void LogVImpl(const LogLevel    level,
         }
 
         fprintf(stream,
-                "%s %s %s (%s)\n",
+                "%s %s %s  (%s)\n",
                 timeString,
                 levelString,
                 message.c_str(),

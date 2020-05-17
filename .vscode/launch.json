@@ -8,58 +8,73 @@
             "name": "Test (Debug)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Build/Debug/Test",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "MIMode": "gdb",
             "preLaunchTask": "SCons (Debug)",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            "program": "${workspaceFolder}/Build/Debug/Test",
+            "linux": {
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            },
+            "windows": {
+                "program": "${workspaceFolder}/Build/Debug/Test.exe"
+            }
         },
         {
             "name": "Test (Profile)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Build/Profile/Test",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "MIMode": "gdb",
             "preLaunchTask": "SCons (Profile)",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            "program": "${workspaceFolder}/Build/Profile/Test",
+            "linux": {
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            },
+            "windows": {
+                "program": "${workspaceFolder}/Build/Profile/Test.exe"
+            }
         },
         {
             "name": "Test (Release)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Build/Release/Test",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "MIMode": "gdb",
             "preLaunchTask": "SCons (Release)",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            "program": "${workspaceFolder}/Build/Release/Test",
+            "linux": {
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            },
+            "windows": {
+                "program": "${workspaceFolder}/Build/Release/Test.exe"
+            }
         }
     ]
 }

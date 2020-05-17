@@ -4,7 +4,8 @@ Import('manager')
 
 env = manager.CreateEnvironment()
 
-env['CCFLAGS'] += ['-Wno-sign-compare']
+if env['PLATFORM'] != 'Win32':
+    env['CCFLAGS'] += ['-Wno-sign-compare']
 
 manager.AddComponent(
     name = '3rdParty/SPIRV-Reflect',

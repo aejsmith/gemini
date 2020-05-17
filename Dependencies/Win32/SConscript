@@ -5,7 +5,7 @@ Import('manager')
 # Vulkan SDK. Just need headers, we load dynamically at runtime.
 manager.AddComponent(
     name = 'External/Vulkan',
-    includePath = "${ENV['VULKAN_SDK']}\Include")
+    includePath = manager.baseEnv['ENV']['VULKAN_SDK'] + '/Include')
 
 # SDL.
 manager.AddComponent(

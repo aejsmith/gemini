@@ -16,20 +16,22 @@
 
 #include "../VulkanInstance.h"
 
-#include <dlfcn.h>
+#include "Core/Win32/Win32.h"
 
-static constexpr char kLoaderLibraryName[] = "libvulkan.so.1";
+static constexpr char kLoaderLibraryName[] = "vulkan-1.dll";
+static constexpr wchar_t kLoaderLibraryNameW[] = L"vulkan-1.dll";
 
 void VulkanInstance::OpenLoader()
 {
-    mLoaderHandle = dlopen(kLoaderLibraryName, RTLD_LAZY);
+    mLoaderHandle = LoadLibrary(kLoaderLibraryNameW);
     if (!mLoaderHandle)
     {
-        Fatal("Failed to open '%s': %s", kLoaderLibraryName, dlerror());
+        Fatal("Failed to open '%s': 0x%x", kLoaderLibraryName, GetLastError());
     }
 
-    vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(mLoaderHandle,
-                                                                              "vkGetInstanceProcAddr"));
+    vkGetInstanceProcAddr =
+        reinterpret_cast<PFN_vkGetInstanceProcAddr>(GetProcAddress(reinterpret_cast<HMODULE>(mLoaderHandle),
+                                                                   "vkGetInstanceProcAddr"));
     if (!vkGetInstanceProcAddr)
     {
         Fatal("'%s' does not provide vkGetInstanceProcAddr", kLoaderLibraryName);
@@ -38,5 +40,5 @@ void VulkanInstance::OpenLoader()
 
 void VulkanInstance::CloseLoader()
 {
-    dlclose(mLoaderHandle);
+    CloseHandle(mLoaderHandle);
 }
