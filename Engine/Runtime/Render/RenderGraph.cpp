@@ -172,8 +172,8 @@ void RenderGraphPass::UseResource(const RenderResourceHandle handle,
                           "Subresources cannot be used multiple times in the same pass");
 
                 /* If we have uses of multiple different subresources in this
-                * resource with conflicting states, we'll need split state
-                * tracking. */
+                 * resource with conflicting states, we'll need split state
+                 * tracking. */
                 if (otherUse.state != state)
                 {
                     otherUse.needSplitState = true;

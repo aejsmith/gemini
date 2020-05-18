@@ -67,7 +67,7 @@ public:
     static constexpr PixelFormat        kGBuffer1Format = kPixelFormat_R10G10B10A2;
     static constexpr PixelFormat        kGBuffer2Format = kPixelFormat_R8G8B8A8;
 
-    /**light
+    /**
      * In the deferred render pipeline, shadows are rendered by rendering a
      * shadow map for each shadow casting light, and then projecting this into
      * a screen-space shadow mask texture. The mask is an array texture which
