@@ -17,7 +17,7 @@
 
 #if IMGUI_IMPL
 // Avoid conflicts with Windows headers included by imgui.cpp
-#undef DebugBreak
+#include "Core/Win32/Win32.h"
 #endif
 
 //---- Define assertion handler. Defaults to calling assert().
