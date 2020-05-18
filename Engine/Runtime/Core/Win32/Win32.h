@@ -26,11 +26,14 @@
  * last.
  */
 
+#pragma push_macro("DebugBreak")
 #undef DebugBreak
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+#pragma pop_macro("DebugBreak")
 
 /**
  * String conversions for Windows Unicode functions.
