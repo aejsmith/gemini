@@ -104,3 +104,29 @@ private:
 };
 
 using Texture2DPtr = ObjPtr<Texture2D>;
+
+/** Cube texture asset class. */
+class TextureCube final : public TextureBase
+{
+    CLASS();
+
+public:
+    /**
+     * Constructs a new cube texture from a set of 2D textures (indexed by
+     * GPUCubeFace). The size of all textures must be square and equal to each
+     * other, the number of mip levels and format must match.
+     */
+                                TextureCube(const Texture2DPtr    (&textures)[kGPUCubeFaceCount],
+                                            const GPUSamplerDesc& samplerDesc);
+
+    uint32_t                    GetSize() const { return mSize; }
+
+protected:
+                                ~TextureCube();
+
+private:
+    uint32_t                    mSize;
+
+};
+
+using TextureCubePtr = ObjPtr<TextureCube>;

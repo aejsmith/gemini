@@ -69,3 +69,25 @@ protected:
     std::vector<ByteArray>      mTextureData;
 
 };
+
+class TextureCubeLoader : public TextureLoader
+{
+    CLASS();
+
+public:
+    const char*                 GetExtension() const override;
+    AssetPtr                    Load() override;
+
+public:
+    PROPERTY() Texture2DPtr     positiveXFace;
+    PROPERTY() Texture2DPtr     negativeXFace;
+    PROPERTY() Texture2DPtr     positiveYFace;
+    PROPERTY() Texture2DPtr     negativeYFace;
+    PROPERTY() Texture2DPtr     positiveZFace;
+    PROPERTY() Texture2DPtr     negativeZFace;
+
+protected:
+                                TextureCubeLoader();
+                                ~TextureCubeLoader();
+
+};
