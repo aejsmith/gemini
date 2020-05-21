@@ -117,6 +117,18 @@ enum GPUTextureFlags : uint32_t
 
 DEFINE_ENUM_BITWISE_OPS(GPUTextureFlags);
 
+enum GPUCubeFace : uint8_t
+{
+    kGPUCubeFace_PositiveX,
+    kGPUCubeFace_NegativeX,
+    kGPUCubeFace_PositiveY,
+    kGPUCubeFace_NegativeY,
+    kGPUCubeFace_PositiveZ,
+    kGPUCubeFace_NegativeZ,
+
+    kGPUCubeFaceCount
+};
+
 enum GPUResourceViewType : uint8_t
 {
     /** Untyped view of a buffer. */
