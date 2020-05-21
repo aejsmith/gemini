@@ -25,8 +25,14 @@ class AssetLoader : public Object
     CLASS();
 
 public:
-    /** Get the file extension which this loader handles. */
+    /**
+     * Get the file extension which this loader handles. If this returns null,
+     * the loader does not require a data stream.
+     */
     virtual const char*             GetExtension() const = 0;
+
+    /** Return whether the loader requires a data stream. */
+    bool                            RequiresData() const { return GetExtension() != nullptr; }
 
     AssetPtr                        Load(DataStream* const data,
                                          const char* const path);

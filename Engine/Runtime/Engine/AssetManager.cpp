@@ -122,8 +122,7 @@ AssetPtr AssetManager::Load(const Path& path)
         }
     }
 
-    /* Succeeded if we have at least a data stream. */
-    if (!data)
+    if (!data && !loaderData)
     {
         LogError("Could not find asset '%s'", path.GetCString());
         return nullptr;
@@ -198,10 +197,26 @@ AssetPtr AssetManager::Load(const Path& path)
                 return nullptr;
             }
 
-            if (type != loader->GetExtension())
+            if (data)
             {
-                LogError("%s: Asset '%s' has loader but is for a different file type", path.GetCString());
-                return nullptr;
+                if (!loader->RequiresData())
+                {
+                    LogError("%s: Asset '%s' has data but the loader does not use it", path.GetCString());
+                    return nullptr;
+                }
+                else if (type != loader->GetExtension())
+                {
+                    LogError("%s: Asset '%s' has loader but is for a different file type", path.GetCString());
+                    return nullptr;
+                }
+            }
+            else
+            {
+                if (loader->RequiresData())
+                {
+                    LogError("%s: Asset '%s' has no data but the loader requires it", path.GetCString());
+                    return nullptr;
+                }
             }
         }
         else
