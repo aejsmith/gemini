@@ -1,0 +1,26 @@
+[
+    {
+        "objectClass": "TextureCubeLoader",
+        "objectID": 0,
+        "objectProperties": {
+            "positiveXFace": {
+                "asset": "Game/Textures/Skybox/Right"
+            },
+            "negativeXFace": {
+                "asset": "Game/Textures/Skybox/Left"
+            },
+            "positiveYFace": {
+                "asset": "Game/Textures/Skybox/Top"
+            },
+            "negativeYFace": {
+                "asset": "Game/Textures/Skybox/Bottom"
+            },
+            "positiveZFace": {
+                "asset": "Game/Textures/Skybox/Front"
+            },
+            "negativeZFace": {
+                "asset": "Game/Textures/Skybox/Back"
+            }
+        }
+    }
+]
