@@ -63,19 +63,20 @@ void Material::Serialise(Serialiser& serialiser) const
 
         switch (parameter.type)
         {
-            WRITE_TYPE(kShaderParameterType_Int,       int32_t);
-            WRITE_TYPE(kShaderParameterType_Int2,      glm::ivec2);
-            WRITE_TYPE(kShaderParameterType_Int3,      glm::ivec3);
-            WRITE_TYPE(kShaderParameterType_Int4,      glm::ivec4);
-            WRITE_TYPE(kShaderParameterType_UInt,      uint32_t);
-            WRITE_TYPE(kShaderParameterType_UInt2,     glm::uvec2);
-            WRITE_TYPE(kShaderParameterType_UInt3,     glm::uvec3);
-            WRITE_TYPE(kShaderParameterType_UInt4,     glm::uvec4);
-            WRITE_TYPE(kShaderParameterType_Float,     float);
-            WRITE_TYPE(kShaderParameterType_Float2,    glm::vec2);
-            WRITE_TYPE(kShaderParameterType_Float3,    glm::vec3);
-            WRITE_TYPE(kShaderParameterType_Float4,    glm::vec4);
-            WRITE_TYPE(kShaderParameterType_Texture2D, Texture2DPtr);
+            WRITE_TYPE(kShaderParameterType_Int,         int32_t);
+            WRITE_TYPE(kShaderParameterType_Int2,        glm::ivec2);
+            WRITE_TYPE(kShaderParameterType_Int3,        glm::ivec3);
+            WRITE_TYPE(kShaderParameterType_Int4,        glm::ivec4);
+            WRITE_TYPE(kShaderParameterType_UInt,        uint32_t);
+            WRITE_TYPE(kShaderParameterType_UInt2,       glm::uvec2);
+            WRITE_TYPE(kShaderParameterType_UInt3,       glm::uvec3);
+            WRITE_TYPE(kShaderParameterType_UInt4,       glm::uvec4);
+            WRITE_TYPE(kShaderParameterType_Float,       float);
+            WRITE_TYPE(kShaderParameterType_Float2,      glm::vec2);
+            WRITE_TYPE(kShaderParameterType_Float3,      glm::vec3);
+            WRITE_TYPE(kShaderParameterType_Float4,      glm::vec4);
+            WRITE_TYPE(kShaderParameterType_Texture2D,   Texture2DPtr);
+            WRITE_TYPE(kShaderParameterType_TextureCube, TextureCubePtr);
 
             default:
                 UnreachableMsg("Unhandled parameter type %d", parameter.type);
@@ -122,19 +123,20 @@ void Material::Deserialise(Serialiser& serialiser)
 
             switch (parameter.type)
             {
-                READ_TYPE(kShaderParameterType_Int,       int32_t);
-                READ_TYPE(kShaderParameterType_Int2,      glm::ivec2);
-                READ_TYPE(kShaderParameterType_Int3,      glm::ivec3);
-                READ_TYPE(kShaderParameterType_Int4,      glm::ivec4);
-                READ_TYPE(kShaderParameterType_UInt,      uint32_t);
-                READ_TYPE(kShaderParameterType_UInt2,     glm::uvec2);
-                READ_TYPE(kShaderParameterType_UInt3,     glm::uvec3);
-                READ_TYPE(kShaderParameterType_UInt4,     glm::uvec4);
-                READ_TYPE(kShaderParameterType_Float,     float);
-                READ_TYPE(kShaderParameterType_Float2,    glm::vec2);
-                READ_TYPE(kShaderParameterType_Float3,    glm::vec3);
-                READ_TYPE(kShaderParameterType_Float4,    glm::vec4);
-                READ_TYPE(kShaderParameterType_Texture2D, Texture2DPtr);
+                READ_TYPE(kShaderParameterType_Int,         int32_t);
+                READ_TYPE(kShaderParameterType_Int2,        glm::ivec2);
+                READ_TYPE(kShaderParameterType_Int3,        glm::ivec3);
+                READ_TYPE(kShaderParameterType_Int4,        glm::ivec4);
+                READ_TYPE(kShaderParameterType_UInt,        uint32_t);
+                READ_TYPE(kShaderParameterType_UInt2,       glm::uvec2);
+                READ_TYPE(kShaderParameterType_UInt3,       glm::uvec3);
+                READ_TYPE(kShaderParameterType_UInt4,       glm::uvec4);
+                READ_TYPE(kShaderParameterType_Float,       float);
+                READ_TYPE(kShaderParameterType_Float2,      glm::vec2);
+                READ_TYPE(kShaderParameterType_Float3,      glm::vec3);
+                READ_TYPE(kShaderParameterType_Float4,      glm::vec4);
+                READ_TYPE(kShaderParameterType_Texture2D,   Texture2DPtr);
+                READ_TYPE(kShaderParameterType_TextureCube, TextureCubePtr);
 
                 default:
                     UnreachableMsg("Unhandled parameter type %d", parameter.type);
@@ -185,6 +187,13 @@ void Material::GetArgument(const ShaderParameter& parameter,
                 break;
             }
 
+            case kShaderParameterType_TextureCube:
+            {
+                auto texture = reinterpret_cast<TextureCubePtr*>(outData);
+                *texture = static_cast<TextureCube*>(resource.Get());
+                break;
+            }
+
             default:
                 UnreachableMsg("Unhandled ShaderParameterType");
 
@@ -231,6 +240,13 @@ void Material::SetArgument(const ShaderParameter& parameter,
             case kShaderParameterType_Texture2D:
             {
                 auto texture = reinterpret_cast<const Texture2DPtr*>(data);
+                resource = texture->Get();
+                break;
+            }
+
+            case kShaderParameterType_TextureCube:
+            {
+                auto texture = reinterpret_cast<const TextureCubePtr*>(data);
                 resource = texture->Get();
                 break;
             }

@@ -232,6 +232,15 @@ bool ShaderCompiler::GenerateSource()
 
                         needsSampler = true;
                         break;
+                    
+                    case kShaderParameterType_TextureCube:
+                        mSource += StringUtils::Format("TextureCube %s_texture : register(t%u, space%d);\n",
+                                                       parameter.name.c_str(),
+                                                       parameter.argumentIndex,
+                                                       kArgumentSet_Material);
+
+                        needsSampler = true;
+                        break;
 
                     default:
                         UnreachableMsg("Unhandled ShaderParameterType");

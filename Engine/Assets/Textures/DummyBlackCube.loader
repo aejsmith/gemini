@@ -1,0 +1,26 @@
+[
+    {
+        "objectClass": "TextureCubeLoader",
+        "objectID": 0,
+        "objectProperties": {
+            "positiveXFace": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            },
+            "negativeXFace": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            },
+            "positiveYFace": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            },
+            "negativeYFace": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            },
+            "positiveZFace": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            },
+            "negativeZFace": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            }
+        }
+    }
+]

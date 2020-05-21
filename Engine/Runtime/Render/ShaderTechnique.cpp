@@ -162,6 +162,18 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& serialiser)
                         break;
                     }
 
+                    case kShaderParameterType_TextureCube:
+                    {
+                        TextureCubePtr texture;
+                        if (!serialiser.Read("default", texture))
+                        {
+                            texture = AssetManager::Get().Load<TextureCube>("Engine/Textures/DummyBlackCube");
+                        }
+
+                        resource = std::move(texture);
+                        break;
+                    }
+
                     default:
                     {
                         UnreachableMsg("Unhandled parameter type %d", parameter.type);
