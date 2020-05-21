@@ -46,8 +46,11 @@ enum ENUM() ShaderPassType
     /** Basic pass without any lighting etc. (BasicRenderPipeline) */
     kShaderPassType_Basic,
 
-    /** Deferred G-Buffer opaque pass (DeferredRenderPipeline). */
+    /** Deferred opaque G-Buffer pass (DeferredRenderPipeline). */
     kShaderPassType_DeferredOpaque,
+
+    /** Deferred unlit pass (DeferredRenderPipeline). */
+    kShaderPassType_DeferredUnlit,
 
     /** Shadow map rendering. */
     kShaderPassType_ShadowMap,

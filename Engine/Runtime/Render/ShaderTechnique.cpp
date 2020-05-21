@@ -62,6 +62,18 @@ static void GetDefaultStates(const ShaderPassType      passType,
             break;
         }
 
+        case kShaderPassType_DeferredUnlit:
+        {
+            outRenderTargetDesc.colour[0]    = DeferredRenderPipeline::kColourFormat;
+            outRenderTargetDesc.depthStencil = DeferredRenderPipeline::kDepthFormat;
+
+            outDepthStencilDesc.depthTestEnable  = true;
+            outDepthStencilDesc.depthWriteEnable = true;
+            outDepthStencilDesc.depthCompareOp   = kGPUCompareOp_LessOrEqual;
+
+            break;
+        }
+
         case kShaderPassType_ShadowMap:
         {
             outRenderTargetDesc.depthStencil = RenderPipeline::kShadowMapFormat;
