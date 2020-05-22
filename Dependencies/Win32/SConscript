@@ -2,6 +2,13 @@ import os
 
 Import('manager')
 
+# Bullet.
+manager.AddComponent(
+    name = 'External/Bullet',
+    includePath = Dir('../Common/Bullet/Include'),
+    libPath = Dir('Bullet/Lib'),
+    libs = ['BulletSoftBody', 'BulletDynamics', 'BulletCollision', 'LinearMath'])
+
 # libclang.
 manager.AddComponent(
     name = 'External/libclang',

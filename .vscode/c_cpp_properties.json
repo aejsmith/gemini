@@ -13,7 +13,8 @@
             "${workspaceFolder}/Engine/3rdParty/stb/Repo",
             "${workspaceFolder}/Engine/3rdParty/SPIRV-Reflect/Repo",
             "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
-            "${workspaceFolder}/Dependencies/Common/shaderc/Include"
+            "${workspaceFolder}/Dependencies/Common/shaderc/Include",
+            "${workspaceFolder}/Dependencies/Common/Bullet/Include"
         ]
     },
     "configurations": [
@@ -48,8 +49,8 @@
             },
             "includePath": [
                 "${engineIncludePath}",
-                "${workspaceFolder}/Dependencies/Win32/SDL2-2.0.12/include",
-                "${workspaceFolder}/Dependencies/Win32/LLVM-10.0.0/include",
+                "${workspaceFolder}/Dependencies/Win32/SDL/Include",
+                "${workspaceFolder}/Dependencies/Win32/libclang/Include",
                 "${VULKAN_SDK}/Include"
             ],
             "defines": [
