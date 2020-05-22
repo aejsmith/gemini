@@ -31,8 +31,8 @@
 
 #include "Engine/Profiler.h"
 
-#define PHYSICS_PROFILER_SCOPE(timer)   PROFILER_SCOPE("Physics", timer, 0x0000ff)
-#define PHYSICS_PROFILER_FUNC_SCOPE()   PROFILER_FUNC_SCOPE("Physics", 0x0000ff)
+#define PHYSICS_PROFILER_SCOPE(timer)   PROFILER_SCOPE("Physics", timer, 0x507fff)
+#define PHYSICS_PROFILER_FUNC_SCOPE()   PROFILER_FUNC_SCOPE("Physics", 0x507fff)
 
 /**
  * Bullet helper functions (conversions, etc.)

@@ -52,6 +52,8 @@ void PhysicsWorld::SetGravity(const glm::vec3& gravity)
 
 void PhysicsWorld::Tick(const float delta)
 {
+    PHYSICS_PROFILER_FUNC_SCOPE();
+
     /* We run physics fixed at 60Hz, with interpolated motion between timesteps
      * when the framerate is variable. */
     mWorld->stepSimulation(delta, 10, 1.0f / 60.0f);
