@@ -402,6 +402,7 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context)
     RenderGraph& graph = context->GetGraph();
 
     auto& lightList = context->cullResults.lights;
+    DebugManager::Get().AddText(StringUtils::Format("Visible Lights: %zu", lightList.size()));
 
     /* We have fixed size resources and light indices that can only cope with a
      * certain number of lights, ignore any lights that exceed this. */
@@ -535,6 +536,9 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
 
     context->opaqueDrawList.Sort();
     context->unlitDrawList.Sort();
+
+    const size_t entityCount = context->opaqueDrawList.Size() + context->unlitDrawList.Size();
+    DebugManager::Get().AddText(StringUtils::Format("Visible Entities: %zu", entityCount));
 
     /* Build shadow map draw lists. */
     for (auto& shadowLight : context->shadowLights)
