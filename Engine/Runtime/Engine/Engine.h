@@ -38,6 +38,9 @@ public:
 
     EngineSettings&         GetSettings() const         { return *mSettings; }
 
+    bool                    GetPaused() const           { return mPaused; }
+    void                    SetPaused(const bool paused);
+
     /**
      * Per-frame state.
      */
@@ -71,10 +74,13 @@ private:
     void                    InitSDL();
     void                    InitSettings();
 
+    void                    OverlayMenu();
+
 private:
     Path                    mUserDirectoryPath;
     ObjPtr<EngineSettings>  mSettings;
 
+    bool                    mPaused;
     uint64_t                mFrameIndex;
     uint64_t                mFrameStartTime;
     uint64_t                mLastFrameTime;

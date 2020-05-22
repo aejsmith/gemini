@@ -18,6 +18,7 @@
 
 EngineSettings::EngineSettings() :
     profilerWebServer       (false),
+    startPaused             (false),
     mMainWindowSize         (1600, 900),
     mMainWindowFullscreen   (false)
 {

@@ -49,6 +49,7 @@ SINGLETON_IMPL(Engine);
 SINGLETON_IMPL(Game);
 
 Engine::Engine() :
+    mPaused                 (false),
     mFrameIndex             (0),
     mFrameStartTime         (0),
     mLastFrameTime          (0),
@@ -134,6 +135,8 @@ Engine::Engine() :
     RenderManager::Get().InitAssets({});
 
     Game::Get().Init();
+
+    DebugManager::Get().AddOverlayMenu("Engine", [this] { OverlayMenu(); });
 }
 
 Engine::~Engine()
@@ -177,6 +180,8 @@ void Engine::InitSettings()
     {
         mSettings = new EngineSettings;
     }
+
+    SetPaused(mSettings->startPaused);
 }
 
 void Engine::Run()
@@ -231,7 +236,10 @@ void Engine::Run()
         debugManager.AddText(StringUtils::Format("Frame time: %.2f ms", static_cast<double>(mLastFrameTime) / static_cast<double>(kNanosecondsPerMillisecond)));
         debugManager.AddText("F1 = Overlay  F2 = Focus");
 
-        mWorld->Tick(mDeltaTime);
+        if (!mPaused)
+        {
+            mWorld->Tick(mDeltaTime);
+        }
 
         RenderManager::Get().Render({});
 
@@ -256,6 +264,11 @@ void Engine::Run()
     }
 }
 
+void Engine::SetPaused(const bool paused)
+{
+    mPaused = paused;
+}
+
 void Engine::CreateWorld()
 {
     mWorld.Reset();
@@ -266,4 +279,13 @@ void Engine::LoadWorld(const Path& path)
 {
     mWorld.Reset();
     mWorld = AssetManager::Get().Load<World>(path);
+}
+
+void Engine::OverlayMenu()
+{
+    bool paused = GetPaused();
+    if (ImGui::MenuItem("Paused?", nullptr, &paused))
+    {
+        SetPaused(paused);
+    }
 }

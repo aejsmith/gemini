@@ -195,11 +195,19 @@ void DebugManager::BeginFrame(OnlyCalledBy<Engine>)
 
         if (mOverlayState >= kOverlayState_Active && ImGui::BeginMenuBar())
         {
-            for (const auto& it : mWindows)
+            for (const auto& it : mOverlayCategories)
             {
-                if (!it.second.empty() && ImGui::BeginMenu(it.first.c_str()))
+                const bool empty = it.second.windows.empty() && !it.second.menuFunction;
+
+                if (!empty && ImGui::BeginMenu(it.first.c_str()))
                 {
-                    for (DebugWindow* const window : it.second)
+                    if (it.second.menuFunction)
+                    {
+                        it.second.menuFunction();
+                        ImGui::Separator();
+                    }
+
+                    for (DebugWindow* const window : it.second.windows)
                     {
                         ImGui::MenuItem(window->GetTitle().c_str(), nullptr, &window->mOpen);
                     }
@@ -242,9 +250,9 @@ void DebugManager::RenderOverlay(OnlyCalledBy<Engine>)
 {
     if (mOverlayState >= kOverlayState_Visible)
     {
-        for (const auto& it : mWindows)
+        for (const auto& it : mOverlayCategories)
         {
-            for (DebugWindow* const window : it.second)
+            for (DebugWindow* const window : it.second.windows)
             {
                 if (window->mOpen)
                 {
@@ -269,15 +277,22 @@ void DebugManager::AddText(const char* const text,
 void DebugManager::RegisterWindow(DebugWindow* const window,
                                   OnlyCalledBy<DebugWindow>)
 {
-    WindowList& windowList = mWindows[window->GetCategory()];
-    windowList.emplace_back(window);
+    OverlayCategory& category = mOverlayCategories[window->GetCategory()];
+    category.windows.emplace_back(window);
 }
 
 void DebugManager::UnregisterWindow(DebugWindow* const window,
                                     OnlyCalledBy<DebugWindow>)
 {
-    WindowList& windowList = mWindows[window->GetCategory()];
-    windowList.remove(window);
+    OverlayCategory& category = mOverlayCategories[window->GetCategory()];
+    category.windows.remove(window);
+}
+
+void DebugManager::AddOverlayMenu(const char* const     name,
+                                  std::function<void()> function)
+{
+    OverlayCategory& category = mOverlayCategories[name];
+    category.menuFunction = std::move(function);
 }
 
 void DebugManager::RenderPrimitives(const RenderView&          view,

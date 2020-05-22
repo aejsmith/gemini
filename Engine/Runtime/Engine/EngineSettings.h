@@ -41,6 +41,9 @@ public:
     /** Whether to enable the profiler web server. */
     PROPERTY() bool         profilerWebServer;
 
+    /** Whether to pause at startup. */
+    PROPERTY() bool         startPaused;
+
 private:
                             ~EngineSettings();
 

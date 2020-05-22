@@ -67,6 +67,9 @@ public:
     void                        UnregisterWindow(DebugWindow* const window,
                                                  OnlyCalledBy<DebugWindow>);
 
+    void                        AddOverlayMenu(const char* const     name,
+                                               std::function<void()> function);
+
     bool                        IsOverlayVisible() const
                                     { return mOverlayState >= kOverlayState_Visible; }
 
@@ -127,14 +130,19 @@ private:
 
     };
 
-    using WindowList          = std::list<DebugWindow*>;
-    using WindowCategoryMap   = std::map<std::string, WindowList>;
+    struct OverlayCategory
+    {
+        std::list<DebugWindow*> windows;
+        std::function<void()>   menuFunction;
+    };
+
+    using OverlayCategoryMap  = std::map<std::string, OverlayCategory>;
 
 private:
                                 ~DebugManager();
 
 private:
-    WindowCategoryMap           mWindows;
+    OverlayCategoryMap          mOverlayCategories;
     DebugInputHandler*          mInputHandler;
     OverlayState                mOverlayState;
 
