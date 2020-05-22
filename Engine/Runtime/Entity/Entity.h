@@ -92,6 +92,8 @@ public:
 
     Entity*                 CreateChild(std::string name);
 
+    Entity*                 FindChild(const std::string& name);
+
     /** Call the specified function on all active children. */
     template <typename Function>
     void                    VisitActiveChildren(Function function);

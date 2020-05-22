@@ -255,6 +255,19 @@ Entity* Entity::CreateChild(std::string name)
     return entity;
 }
 
+Entity* Entity::FindChild(const std::string& name)
+{
+    for (Entity* entity : mChildren)
+    {
+        if (entity->mName == name)
+        {
+            return entity;
+        }
+    }
+
+    return nullptr;
+}
+
 void Entity::AddChild(Entity* const entity)
 {
     entity->mWorld  = mWorld;

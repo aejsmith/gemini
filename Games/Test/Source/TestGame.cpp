@@ -30,6 +30,9 @@
 
 #include "Loaders/GLTFImporter.h"
 
+#include "Physics/CollisionShape.h"
+#include "Physics/RigidBody.h"
+
 #include "Render/Camera.h"
 #include "Render/Light.h"
 #include "Render/Material.h"
@@ -88,7 +91,28 @@ void TestGame::Init()
                     "Game/glTF/DamagedHelmet/World");
 #endif
 
-    Engine::Get().LoadWorld("Game/Worlds/LightingTest4");
+    Engine::Get().LoadWorld("Game/Worlds/PhysicsTest");
+
+#if 0
+    Entity* cubes = Engine::Get().GetWorld()->GetRoot()->FindChild("Cubes");
+    Assert(cubes);
+
+    cubes->VisitActiveChildren(
+        [] (Entity* const entity)
+        {
+            BoxCollisionShape* const shape = entity->CreateComponent<BoxCollisionShape>();
+            shape->SetHalfExtents(glm::vec3(0.5f, 0.5f, 0.5f));
+            shape->SetActive(true);
+
+            RigidBody* const body = entity->CreateComponent<RigidBody>();
+            body->SetMass(20.0f);
+            body->SetActive(true);
+
+            entity->Rotate(rand() * 45.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            entity->Rotate(rand() * 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+            entity->Rotate(rand() * 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+        });
+#endif
 
 #if 0
     Entity* parent = Engine::Get().GetWorld()->CreateEntity("Lights");
