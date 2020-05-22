@@ -1,0 +1,16 @@
+Import('env')
+
+objects = list(map(env.ObjectGenHeader, [
+    'CollisionShape.h',
+    'PhysicsMaterial.h',
+    'RigidBody.h',
+]))
+
+objects += list(map(env.Object, [
+    'CollisionShape.cpp',
+    'PhysicsMaterial.cpp',
+    'PhysicsWorld.cpp',
+    'RigidBody.cpp',
+]))
+
+Return('objects')

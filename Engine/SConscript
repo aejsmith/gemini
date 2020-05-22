@@ -10,6 +10,7 @@ baseComponents = [
 	'Entity',
     'GPU',
     'Input',
+    'Physics',
     'Render',
 ]
 
@@ -48,6 +49,7 @@ depends = [
     '3rdParty/SPIRV-Reflect',
     '3rdParty/stb',
     '3rdParty/VulkanMemoryAllocator',
+    'External/Bullet',
     'External/shaderc',
     'External/Vulkan',
 ]

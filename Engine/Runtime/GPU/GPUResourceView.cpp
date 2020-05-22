@@ -56,16 +56,16 @@ GPUResourceView::GPUResourceView(GPUResource&               resource,
             Assert(GetMipOffset() + GetMipCount() <= texture.GetNumMipLevels());
 
             const bool isArray = GetType() == kGPUResourceViewType_Texture1DArray ||
-                                GetType() == kGPUResourceViewType_Texture2DArray ||
-                                GetType() == kGPUResourceViewType_TextureCubeArray;
+                                 GetType() == kGPUResourceViewType_Texture2DArray ||
+                                 GetType() == kGPUResourceViewType_TextureCubeArray;
 
-            Assert(isArray || GetElementCount() == 1);
+            Assert(isArray || GetElementCount() == ((GetType() == kGPUResourceViewType_TextureCube) ? kGPUCubeFaceCount : 1));
             Assert(GetElementOffset() + GetElementCount() <= texture.GetArraySize());
 
             const bool isCube = GetType() == kGPUResourceViewType_TextureCube ||
                                 GetType() == kGPUResourceViewType_TextureCubeArray;
 
-            Assert(!isCube || ((GetElementOffset() % 6) == 0 && (GetElementCount() % 6) == 0));
+            Assert(!isCube || ((GetElementOffset() % kGPUCubeFaceCount) == 0 && (GetElementCount() % kGPUCubeFaceCount) == 0));
 
             if (texture.IsSwapchain())
             {

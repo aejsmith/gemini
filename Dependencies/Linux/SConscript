@@ -14,20 +14,12 @@ def AddExternalComponent(name, env):
         libPath = env['LIBPATH'],
         libs = env['LIBS'])
 
-# Vulkan SDK. Expect to find the headers in the default system include path,
-# and we load it dynamically at runtime, so just add the component as empty to
-# satisfy the dependency.
-AddExternalComponent('External/Vulkan', dummyEnv)
-
-# SDL.
-sdlEnv = dummyEnv.Clone()
-sdlEnv.ParseConfig('sdl2-config --cflags --libs')
-AddExternalComponent('External/SDL', sdlEnv)
-
-# XCB.
-xcbEnv = dummyEnv.Clone()
-xcbEnv.ParseConfig('pkg-config --cflags --libs x11-xcb')
-AddExternalComponent('External/XCB', xcbEnv)
+# Bullet.
+manager.AddComponent(
+    name = 'External/Bullet',
+    includePath = Dir('../Common/Bullet/Include'),
+    libPath = Dir('Bullet/Lib'),
+    libs = ['BulletSoftBody', 'BulletDynamics', 'BulletCollision', 'LinearMath'])
 
 # libclang.
 llvmEnv = dummyEnv.Clone()
@@ -35,9 +27,26 @@ llvmEnv.ParseConfig('llvm-config --cflags --ldflags')
 llvmEnv['LIBS'] = ['clang']
 AddExternalComponent('External/libclang', llvmEnv)
 
+# SDL.
+sdlEnv = dummyEnv.Clone()
+sdlEnv.ParseConfig('sdl2-config --cflags --libs')
+AddExternalComponent('External/SDL', sdlEnv)
+
 # shaderc.
 manager.AddComponent(
     name = 'External/shaderc',
     includePath = Dir('../Common/shaderc/Include'),
     libPath = Dir('shaderc/Lib'),
     libs = ['shaderc_combined'])
+
+# Vulkan SDK.
+#
+# Expect to find the headers in the default system include path, and we load it
+# dynamically at runtime, so just add the component as empty to satisfy the
+# dependency.
+AddExternalComponent('External/Vulkan', dummyEnv)
+
+# XCB.
+xcbEnv = dummyEnv.Clone()
+xcbEnv.ParseConfig('pkg-config --cflags --libs x11-xcb')
+AddExternalComponent('External/XCB', xcbEnv)

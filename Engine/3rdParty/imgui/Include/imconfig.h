@@ -15,7 +15,7 @@
 
 #include "Core/Math.h"
 
-#if IMGUI_IMPL
+#if IMGUI_IMPL && GEMINI_PLATFORM_WIN32
 // Avoid conflicts with Windows headers included by imgui.cpp
 #include "Core/Win32/Win32.h"
 #endif

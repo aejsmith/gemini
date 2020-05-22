@@ -130,6 +130,8 @@ public:
                                     EntityDrawList();
                                     ~EntityDrawList();
 
+    bool                            IsEmpty() const { return mDrawCalls.empty(); }
+
     /** Allocate space for an expected number of draw calls. */
     void                            Reserve(const size_t expectedCount);
 

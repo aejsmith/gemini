@@ -12,6 +12,7 @@ objects = list(map(env.ObjectGenHeader, [
     'RenderPipeline.h',
     'ShaderParameter.h',
     'ShaderTechnique.h',
+    'SkyboxRenderer.h',
 ]))
 
 objects += list(map(env.Object, [
@@ -37,6 +38,7 @@ objects += list(map(env.Object, [
     'ShaderManager.cpp',
     'ShaderParameter.cpp',
     'ShaderTechnique.cpp',
+    'SkyboxRenderer.cpp',
     'TonemapPass.cpp',
 ]))
 

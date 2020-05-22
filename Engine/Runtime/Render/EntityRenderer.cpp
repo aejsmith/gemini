@@ -36,8 +36,6 @@ void EntityRenderer::Activated()
 
     mRenderEntities = CreateRenderEntities();
 
-    Assert(!mRenderEntities.empty());
-
     RenderWorld* const renderWorld = GetEntity()->GetWorld()->GetRenderWorld();
     for (RenderEntity* renderEntity : mRenderEntities)
     {
@@ -50,8 +48,6 @@ void EntityRenderer::Activated()
 
 void EntityRenderer::Deactivated()
 {
-    Assert(!mRenderEntities.empty());
-
     RenderWorld* const renderWorld = GetEntity()->GetWorld()->GetRenderWorld();
     for (RenderEntity* renderEntity : mRenderEntities)
     {

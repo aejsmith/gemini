@@ -62,6 +62,18 @@ static void GetDefaultStates(const ShaderPassType      passType,
             break;
         }
 
+        case kShaderPassType_DeferredUnlit:
+        {
+            outRenderTargetDesc.colour[0]    = DeferredRenderPipeline::kColourFormat;
+            outRenderTargetDesc.depthStencil = DeferredRenderPipeline::kDepthFormat;
+
+            outDepthStencilDesc.depthTestEnable  = true;
+            outDepthStencilDesc.depthWriteEnable = true;
+            outDepthStencilDesc.depthCompareOp   = kGPUCompareOp_LessOrEqual;
+
+            break;
+        }
+
         case kShaderPassType_ShadowMap:
         {
             outRenderTargetDesc.depthStencil = RenderPipeline::kShadowMapFormat;
@@ -156,6 +168,18 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& serialiser)
                         if (!serialiser.Read("default", texture))
                         {
                             texture = AssetManager::Get().Load<Texture2D>("Engine/Textures/DummyBlack2D");
+                        }
+
+                        resource = std::move(texture);
+                        break;
+                    }
+
+                    case kShaderParameterType_TextureCube:
+                    {
+                        TextureCubePtr texture;
+                        if (!serialiser.Read("default", texture))
+                        {
+                            texture = AssetManager::Get().Load<TextureCube>("Engine/Textures/DummyBlackCube");
                         }
 
                         resource = std::move(texture);

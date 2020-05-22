@@ -21,12 +21,15 @@
 #include "Entity/Entity.h"
 #include "Entity/WorldEditorWindow.h"
 
+#include "Physics/PhysicsWorld.h"
+
 #include "Render/RenderWorld.h"
 
 static constexpr char kRootEntityName[] = "Root";
 
 World::World() :
     mRenderWorld    (new RenderWorld),
+    mPhysicsWorld   (new PhysicsWorld),
     mEditorWindow   (new WorldEditorWindow(this))
 {
     mRoot         = new Entity();
@@ -39,8 +42,6 @@ World::World() :
 World::~World()
 {
     mRoot->Destroy();
-
-    delete mRenderWorld;
 }
 
 void World::Serialise(Serialiser& serialiser) const
@@ -80,6 +81,8 @@ Entity* World::CreateEntity(std::string name)
 void World::Tick(const float delta)
 {
     ENTITY_PROFILER_FUNC_SCOPE();
+
+    mPhysicsWorld->Tick(delta);
 
     mRoot->Tick(delta);
 }

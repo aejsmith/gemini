@@ -97,11 +97,11 @@ Texture2D::Texture2D(const uint32_t                width,
     Assert(data.size() <= mNumMipLevels);
 
     /* Upload what we have data for. */
-    GPUGraphicsContext& graphicsContext = GPUGraphicsContext::Get();
+    GPUGraphicsContext& context = GPUGraphicsContext::Get();
 
-    graphicsContext.ResourceBarrier(mTexture,
-                                    kGPUResourceState_None,
-                                    kGPUResourceState_TransferWrite);
+    context.ResourceBarrier(mTexture,
+                            kGPUResourceState_None,
+                            kGPUResourceState_TransferWrite);
 
     for (uint8_t mipLevel = 0; mipLevel < data.size(); mipLevel++)
     {
@@ -123,13 +123,13 @@ Texture2D::Texture2D(const uint32_t                width,
 
         stagingTexture.Finalise();
 
-        graphicsContext.UploadTexture(mTexture,
-                                      GPUSubresource{mipLevel, 0},
-                                      glm::ivec3(0, 0, 0),
-                                      stagingTexture,
-                                      GPUSubresource{0, 0},
-                                      glm::ivec3(0, 0, 0),
-                                      glm::ivec3(textureDesc.width, textureDesc.height, 1));
+        context.UploadTexture(mTexture,
+                              GPUSubresource{mipLevel, 0},
+                              glm::ivec3(0, 0, 0),
+                              stagingTexture,
+                              GPUSubresource{0, 0},
+                              glm::ivec3(0, 0, 0),
+                              glm::ivec3(textureDesc.width, textureDesc.height, 1));
     }
 
     /* Generate mips for the rest. */
@@ -143,27 +143,97 @@ Texture2D::Texture2D(const uint32_t                width,
         sourceBarrier.currentState = kGPUResourceState_TransferWrite;
         sourceBarrier.newState     = kGPUResourceState_TransferRead;
 
-        graphicsContext.ResourceBarrier(&sourceBarrier, 1);
+        context.ResourceBarrier(&sourceBarrier, 1);
 
         /* Scaled blit from previous mip level. */
-        graphicsContext.BlitTexture(mTexture,
-                                    GPUSubresource{mipLevel, 0},
-                                    mTexture,
-                                    GPUSubresource{sourceMipLevel, 0});
+        context.BlitTexture(mTexture,
+                            GPUSubresource{mipLevel, 0},
+                            mTexture,
+                            GPUSubresource{sourceMipLevel, 0});
 
         /* Swap back to TransferWrite so that everything can be transitioned in
          * one go at the end. */
         std::swap(sourceBarrier.currentState, sourceBarrier.newState);
 
-        graphicsContext.ResourceBarrier(&sourceBarrier, 1);
+        context.ResourceBarrier(&sourceBarrier, 1);
     }
 
     /* After creation, we always keep the texture in AllShaderRead. */
-    graphicsContext.ResourceBarrier(mTexture,
-                                    kGPUResourceState_TransferWrite,
-                                    kGPUResourceState_AllShaderRead);
+    context.ResourceBarrier(mTexture,
+                            kGPUResourceState_TransferWrite,
+                            kGPUResourceState_AllShaderRead);
 }
 
 Texture2D::~Texture2D()
+{
+}
+
+TextureCube::TextureCube(const Texture2DPtr    (&textures)[kGPUCubeFaceCount],
+                         const GPUSamplerDesc& samplerDesc)
+{
+    GPUTextureDesc textureDesc;
+    textureDesc.type      = kGPUResourceType_Texture2D;
+    textureDesc.usage     = kGPUResourceUsage_ShaderRead;
+    textureDesc.flags     = kGPUTexture_CubeCompatible;
+    textureDesc.depth     = 1;
+    textureDesc.arraySize = 6;
+
+    for (unsigned face = 0; face < kGPUCubeFaceCount; face++)
+    {
+        Assert(textures[face]);
+        Assert(textures[face]->GetWidth() == textures[face]->GetHeight());
+
+        if (face == 0)
+        {
+            mSize = textures[face]->GetWidth();
+
+            textureDesc.width        = mSize;
+            textureDesc.height       = mSize;
+            textureDesc.numMipLevels = textures[face]->GetNumMipLevels();
+            textureDesc.format       = textures[face]->GetFormat();
+        }
+        else
+        {
+            Assert(textures[face]->GetWidth() == mSize);
+            Assert(textures[face]->GetNumMipLevels() == textureDesc.numMipLevels);
+            Assert(textures[face]->GetFormat() == textureDesc.format);
+        }
+    }
+
+    CreateTexture(textureDesc, samplerDesc, kGPUResourceViewType_TextureCube);
+
+    GPUGraphicsContext& context = GPUGraphicsContext::Get();
+
+    context.ResourceBarrier(mTexture,
+                            kGPUResourceState_None,
+                            kGPUResourceState_TransferWrite);
+
+    for (unsigned face = 0; face < kGPUCubeFaceCount; face++)
+    {
+        GPUTexture* const sourceTexture = textures[face]->GetTexture();
+
+        context.ResourceBarrier(sourceTexture,
+                                kGPUResourceState_AllShaderRead,
+                                kGPUResourceState_TransferRead);
+
+        for (unsigned mipLevel = 0; mipLevel < mNumMipLevels; mipLevel++)
+        {
+            context.BlitTexture(mTexture,
+                                { mipLevel, face },
+                                sourceTexture,
+                                { mipLevel, 0 });
+        }
+
+        context.ResourceBarrier(sourceTexture,
+                                kGPUResourceState_TransferRead,
+                                kGPUResourceState_AllShaderRead);
+    }
+
+    context.ResourceBarrier(mTexture,
+                            kGPUResourceState_TransferWrite,
+                            kGPUResourceState_AllShaderRead);
+}
+
+TextureCube::~TextureCube()
 {
 }

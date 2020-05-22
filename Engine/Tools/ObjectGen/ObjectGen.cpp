@@ -985,14 +985,22 @@ void ParsedEnum::HandleChild(CXCursor     cursor,
         clang_disposeString(str);
 
         /* Shorten names based on our naming convention,
-         * e.g. kEnumName_Foo -> Foo. */
-        std::string prefix("k" + mName + "_");
+         * e.g. for enum EnumName, kEnumName_Foo -> Foo. */
+        const std::string prefix("k" + mName + "_");
         if (name.rfind(prefix, 0) == 0)
         {
             name = name.substr(prefix.length());
         }
 
-        mConstants.push_back(std::make_pair(name, value));
+        /* Ignore special count values, again based on our naming convention,
+         * e.g. for enum EnumName, ignore kEnumNameCount. These are typically
+         * used in code for knowing the maximum value of an enum and are not
+         * actually a valid value. */
+        const std::string countName("k" + mName + "Count");
+        if (name != countName)
+        {
+            mConstants.push_back(std::make_pair(name, value));
+        }
     }
 }
 

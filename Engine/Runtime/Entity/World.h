@@ -22,6 +22,7 @@
 
 class Entity;
 class RenderWorld;
+class PhysicsWorld;
 class WorldEditorWindow;
 
 /**
@@ -36,29 +37,31 @@ class World final : public Asset
     CLASS();
 
 public:
-    Entity*                     GetRoot()           { return mRoot; }
-    const Entity*               GetRoot() const     { return mRoot; }
+    Entity*                         GetRoot()           { return mRoot; }
+    const Entity*                   GetRoot() const     { return mRoot; }
 
     /** Create a new entity at the root of the hierarchy. */
-    Entity*                     CreateEntity(std::string name);
+    Entity*                         CreateEntity(std::string name);
 
-    RenderWorld*                GetRenderWorld()    { return mRenderWorld; }
+    RenderWorld*                    GetRenderWorld()    { return mRenderWorld.get(); }
+    PhysicsWorld*                   GetPhysicsWorld()   { return mPhysicsWorld.get(); }
 
-    void                        Tick(const float delta);
+    void                            Tick(const float delta);
 
 protected:
-                                World();
-                                ~World();
+                                    World();
+                                    ~World();
 
-    void                        Serialise(Serialiser& serialiser) const override;
-    void                        Deserialise(Serialiser& serialiser) override;
+    void                            Serialise(Serialiser& serialiser) const override;
+    void                            Deserialise(Serialiser& serialiser) override;
 
 private:
-    ObjPtr<Entity>              mRoot;
+    ObjPtr<Entity>                  mRoot;
 
-    RenderWorld* const          mRenderWorld;
+    const UPtr<RenderWorld>         mRenderWorld;
+    const UPtr<PhysicsWorld>        mPhysicsWorld;
 
-    UPtr<WorldEditorWindow>     mEditorWindow;
+    const UPtr<WorldEditorWindow>   mEditorWindow;
 
     friend class Engine;
 };

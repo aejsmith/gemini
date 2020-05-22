@@ -65,6 +65,7 @@ struct DeferredRenderContext : public RenderContext
 
     CullResults                 cullResults;
     EntityDrawList              opaqueDrawList;
+    EntityDrawList              unlitDrawList;
 
     uint32_t                    tilesWidth;
     uint32_t                    tilesHeight;
@@ -322,6 +323,7 @@ void DeferredRenderPipeline::Render(const RenderWorld&         world,
     AddShadowPasses(context);
     AddCullingPass(context);
     AddLightingPass(context);
+    AddUnlitPass(context);
 
     /* Tonemap and gamma correct onto the output texture. */
     mTonemapPass->AddPass(graph,
@@ -494,7 +496,9 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
 {
     RENDER_PROFILER_FUNC_SCOPE();
 
-    /* Build a draw list for the opaque G-Buffer pass. */
+    /* Build draw lists for the opaque and unlit passes. Don't bother pre-
+     * reserving space for the unlit draw list since there won't be many things
+     * in there. */
     context->opaqueDrawList.Reserve(context->cullResults.entities.size());
 
     for (const RenderEntity* entity : context->cullResults.entities)
@@ -507,15 +511,30 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
             EntityDrawCall& drawCall = context->opaqueDrawList.Add(sortKey);
 
             entity->GetDrawCall(kShaderPassType_DeferredOpaque, context->GetView(), drawCall);
+        }
+        else if (entity->SupportsPassType(kShaderPassType_DeferredUnlit))
+        {
+            const GPUPipelineRef pipeline = entity->GetPipeline(kShaderPassType_DeferredUnlit);
 
-            if (mDebugEntityBoundingBoxes)
+            const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
+            EntityDrawCall& drawCall = context->unlitDrawList.Add(sortKey);
+
+            entity->GetDrawCall(kShaderPassType_DeferredUnlit, context->GetView(), drawCall);
+        }
+
+        if (mDebugEntityBoundingBoxes)
+        {
+            const BoundingBox& box = entity->GetWorldBoundingBox();
+
+            if (box.GetMaximum() != glm::vec3(FLT_MAX))
             {
-                DebugManager::Get().DrawPrimitive(entity->GetWorldBoundingBox(), glm::vec3(0.0f, 0.0f, 1.0f));
+                DebugManager::Get().DrawPrimitive(box, glm::vec3(0.0f, 0.0f, 1.0f));
             }
         }
     }
 
     context->opaqueDrawList.Sort();
+    context->unlitDrawList.Sort();
 
     /* Build shadow map draw lists. */
     for (auto& shadowLight : context->shadowLights)
@@ -545,28 +564,45 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
 
 void DeferredRenderPipeline::AddGBufferPasses(DeferredRenderContext* const context) const
 {
-    RenderGraphPass& opaquePass = context->GetGraph().AddPass("DeferredOpaque", kRenderGraphPassType_Render);
+    /* Pass is added even if the draw list is empty to clear the targets. */
+    RenderGraphPass& pass = context->GetGraph().AddPass("DeferredOpaque", kRenderGraphPassType_Render);
 
-    /* Colour output is bound as target 3 for emissive materials to output
+    /*
+     * Colour output is bound as target 3 for emissive materials to output
      * directly to.
      *
      * TODO: We should mask output 3 in the pipeline state for non-emissive
-     * materials. */
-    opaquePass.SetColour(0, context->GBuffer0Texture, &context->GBuffer0Texture);
-    opaquePass.SetColour(1, context->GBuffer1Texture, &context->GBuffer1Texture);
-    opaquePass.SetColour(2, context->GBuffer2Texture, &context->GBuffer2Texture);
-    opaquePass.SetColour(3, context->colourTexture,   &context->colourTexture);
+     * materials.
+     */
+    pass.SetColour(0, context->GBuffer0Texture, &context->GBuffer0Texture);
+    pass.SetColour(1, context->GBuffer1Texture, &context->GBuffer1Texture);
+    pass.SetColour(2, context->GBuffer2Texture, &context->GBuffer2Texture);
+    pass.SetColour(3, context->colourTexture,   &context->colourTexture);
 
-    opaquePass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
-    opaquePass.ClearColour(1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
-    opaquePass.ClearColour(2, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
-    opaquePass.ClearColour(3, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    pass.ClearColour(0, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    pass.ClearColour(1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    pass.ClearColour(2, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    pass.ClearColour(3, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-    opaquePass.SetDepthStencil(context->depthTexture, kGPUResourceState_DepthStencilWrite, &context->depthTexture);
+    pass.SetDepthStencil(context->depthTexture, kGPUResourceState_DepthStencilWrite, &context->depthTexture);
 
-    opaquePass.ClearDepth(1.0f);
+    pass.ClearDepth(1.0f);
 
-    context->opaqueDrawList.Draw(opaquePass);
+    context->opaqueDrawList.Draw(pass);
+}
+
+void DeferredRenderPipeline::AddUnlitPass(DeferredRenderContext* const context) const
+{
+    if (!context->unlitDrawList.IsEmpty())
+    {
+        RenderGraphPass& pass = context->GetGraph().AddPass("DeferredUnlit", kRenderGraphPassType_Render);
+
+        pass.SetColour(0, context->colourTexture, &context->colourTexture);
+
+        pass.SetDepthStencil(context->depthTexture, kGPUResourceState_DepthStencilWrite, &context->depthTexture);
+
+        context->unlitDrawList.Draw(pass);
+    }
 }
 
 void DeferredRenderPipeline::DrawLightVolume(DeferredRenderContext* const context,

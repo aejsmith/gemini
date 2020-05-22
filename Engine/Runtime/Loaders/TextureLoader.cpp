@@ -78,3 +78,30 @@ AssetPtr Texture2DLoader::Load()
                          GetSamplerDesc(),
                          mTextureData);
 }
+
+TextureCubeLoader::TextureCubeLoader()
+{
+}
+
+TextureCubeLoader::~TextureCubeLoader()
+{
+}
+
+const char* TextureCubeLoader::GetExtension() const
+{
+    /* Our data comes from other assets. */
+    return nullptr;
+}
+
+AssetPtr TextureCubeLoader::Load()
+{
+    Texture2DPtr textures[kGPUCubeFaceCount];
+    textures[kGPUCubeFace_PositiveX] = this->positiveXFace;
+    textures[kGPUCubeFace_NegativeX] = this->negativeXFace;
+    textures[kGPUCubeFace_PositiveY] = this->positiveYFace;
+    textures[kGPUCubeFace_NegativeY] = this->negativeYFace;
+    textures[kGPUCubeFace_PositiveZ] = this->positiveZFace;
+    textures[kGPUCubeFace_NegativeZ] = this->negativeZFace;
+
+    return new TextureCube(textures, GetSamplerDesc());
+}

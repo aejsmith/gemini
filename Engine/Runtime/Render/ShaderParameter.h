@@ -21,6 +21,7 @@
 #include "Render/RenderDefs.h"
 
 class Texture2D;
+class TextureCube;
 
 /** Types of parameters for a shader technique. */
 enum ENUM() ShaderParameterType
@@ -45,6 +46,7 @@ enum ENUM() ShaderParameterType
      * Resource types.
      */
     kShaderParameterType_Texture2D,         /**< 2D texture. */
+    kShaderParameterType_TextureCube,       /**< Cube texture. */
 
     kShaderParameterTypeCount
 };
@@ -87,18 +89,19 @@ struct ShaderParameterTypeTraits;
         static constexpr ShaderParameterType kType = Enum; \
     }
 
-SHADER_PARAMETER_TYPE_TRAIT(int32_t,            kShaderParameterType_Int);
-SHADER_PARAMETER_TYPE_TRAIT(glm::ivec2,         kShaderParameterType_Int2);
-SHADER_PARAMETER_TYPE_TRAIT(glm::ivec3,         kShaderParameterType_Int3);
-SHADER_PARAMETER_TYPE_TRAIT(glm::ivec4,         kShaderParameterType_Int4);
-SHADER_PARAMETER_TYPE_TRAIT(uint32_t,           kShaderParameterType_UInt);
-SHADER_PARAMETER_TYPE_TRAIT(glm::uvec2,         kShaderParameterType_UInt2);
-SHADER_PARAMETER_TYPE_TRAIT(glm::uvec3,         kShaderParameterType_UInt3);
-SHADER_PARAMETER_TYPE_TRAIT(glm::uvec4,         kShaderParameterType_UInt4);
-SHADER_PARAMETER_TYPE_TRAIT(float,              kShaderParameterType_Float);
-SHADER_PARAMETER_TYPE_TRAIT(glm::vec2,          kShaderParameterType_Float2);
-SHADER_PARAMETER_TYPE_TRAIT(glm::vec3,          kShaderParameterType_Float3);
-SHADER_PARAMETER_TYPE_TRAIT(glm::vec4,          kShaderParameterType_Float4);
-SHADER_PARAMETER_TYPE_TRAIT(ObjPtr<Texture2D>,  kShaderParameterType_Texture2D);
+SHADER_PARAMETER_TYPE_TRAIT(int32_t,             kShaderParameterType_Int);
+SHADER_PARAMETER_TYPE_TRAIT(glm::ivec2,          kShaderParameterType_Int2);
+SHADER_PARAMETER_TYPE_TRAIT(glm::ivec3,          kShaderParameterType_Int3);
+SHADER_PARAMETER_TYPE_TRAIT(glm::ivec4,          kShaderParameterType_Int4);
+SHADER_PARAMETER_TYPE_TRAIT(uint32_t,            kShaderParameterType_UInt);
+SHADER_PARAMETER_TYPE_TRAIT(glm::uvec2,          kShaderParameterType_UInt2);
+SHADER_PARAMETER_TYPE_TRAIT(glm::uvec3,          kShaderParameterType_UInt3);
+SHADER_PARAMETER_TYPE_TRAIT(glm::uvec4,          kShaderParameterType_UInt4);
+SHADER_PARAMETER_TYPE_TRAIT(float,               kShaderParameterType_Float);
+SHADER_PARAMETER_TYPE_TRAIT(glm::vec2,           kShaderParameterType_Float2);
+SHADER_PARAMETER_TYPE_TRAIT(glm::vec3,           kShaderParameterType_Float3);
+SHADER_PARAMETER_TYPE_TRAIT(glm::vec4,           kShaderParameterType_Float4);
+SHADER_PARAMETER_TYPE_TRAIT(ObjPtr<Texture2D>,   kShaderParameterType_Texture2D);
+SHADER_PARAMETER_TYPE_TRAIT(ObjPtr<TextureCube>, kShaderParameterType_TextureCube);
 
 #undef SHADER_PARAMETER_TYPE_TRAIT

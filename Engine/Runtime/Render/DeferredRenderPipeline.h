@@ -125,6 +125,7 @@ private:
     void                                AddShadowPasses(DeferredRenderContext* const context) const;
     void                                AddCullingPass(DeferredRenderContext* const context) const;
     void                                AddLightingPass(DeferredRenderContext* const context) const;
+    void                                AddUnlitPass(DeferredRenderContext* const context) const;
 
     void                                AddCullingDebugPass(DeferredRenderContext* const context,
                                                             RenderResourceHandle&        ioNewTexture) const;

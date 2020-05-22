@@ -1,0 +1,45 @@
+[
+    {
+        "objectClass": "ShaderTechnique",
+        "objectID": 0,
+        "objectProperties": {},
+        "parameters": [
+            {
+                "name": "texture",
+                "type": "TextureCube"
+            }
+        ],
+        "passes": [
+            {
+                "type": "Basic",
+                "shaders": [
+                    {
+                        "stage": "Vertex",
+                        "source": "Engine/Skybox.hlsl",
+                        "function": "VSMain"
+                    },
+                    {
+                        "stage": "Pixel",
+                        "source": "Engine/Skybox.hlsl",
+                        "function": "PSMain"
+                    }
+                ]
+            },
+            {
+                "type": "DeferredUnlit",
+                "shaders": [
+                    {
+                        "stage": "Vertex",
+                        "source": "Engine/Skybox.hlsl",
+                        "function": "VSMain"
+                    },
+                    {
+                        "stage": "Pixel",
+                        "source": "Engine/Skybox.hlsl",
+                        "function": "PSMain"
+                    }
+                ]
+            }
+        ]
+    }
+]

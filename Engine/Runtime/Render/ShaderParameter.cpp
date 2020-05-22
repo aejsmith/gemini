@@ -26,6 +26,7 @@ bool ShaderParameter::IsResource(const ShaderParameterType type)
     switch (type)
     {
         case kShaderParameterType_Texture2D:
+        case kShaderParameterType_TextureCube:
             return true;
 
         default:
@@ -95,6 +96,7 @@ GPUArgumentType ShaderParameter::GetGPUArgumentType(const ShaderParameterType ty
     switch (type)
     {
         case kShaderParameterType_Texture2D:    return kGPUArgumentType_Texture;
+        case kShaderParameterType_TextureCube:  return kGPUArgumentType_Texture;
 
         default:
             UnreachableMsg("Invalid ShaderParameterType");

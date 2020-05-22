@@ -25,7 +25,8 @@ static void {{mangledName}}_get_{{propertyName}}(const Object* base, void* value
 {{/propertyGet}}
 }
 
-static void {{mangledName}}_set_{{propertyName}}(Object* base, const void* value) {
+static void {{mangledName}}_set_{{propertyName}}(Object* base, const void* value)
+{
     auto object = static_cast<{{name}}*>(base);
 {{#propertySet}}
     object->{{propertySet}}(*reinterpret_cast<const {{{propertyType}}}*>(value));
