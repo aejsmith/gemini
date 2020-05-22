@@ -25,6 +25,7 @@
                 ]
             },
             "windows": {
+                "type": "cppvsdbg",
                 "program": "${workspaceFolder}/Build/Debug/Test.exe"
             }
         },
@@ -49,6 +50,7 @@
                 ]
             },
             "windows": {
+                "type": "cppvsdbg",
                 "program": "${workspaceFolder}/Build/Profile/Test.exe"
             }
         },
@@ -73,6 +75,7 @@
                 ]
             },
             "windows": {
+                "type": "cppvsdbg",
                 "program": "${workspaceFolder}/Build/Release/Test.exe"
             }
         }
