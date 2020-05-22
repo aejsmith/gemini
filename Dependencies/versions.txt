@@ -8,6 +8,7 @@ they are built using Visual Studio 2019.
 
 Component  Platforms  Repository/URL                                Branch/Tag/Revision
 ---------  ---------  --------------                                -------------------
+Bullet     All        https://github.com/bulletphysics/bullet3.git  2.89
 libclang   Win32      https://releases.llvm.org/download.html       10.0.0
 SDL        Win32      http://libsdl.org/download-2.0.php            2.0.12
 shaderc    All        https://github.com/google/shaderc.git         v2020.0

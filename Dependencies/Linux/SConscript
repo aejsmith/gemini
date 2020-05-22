@@ -14,6 +14,13 @@ def AddExternalComponent(name, env):
         libPath = env['LIBPATH'],
         libs = env['LIBS'])
 
+# Bullet.
+manager.AddComponent(
+    name = 'External/Bullet',
+    includePath = Dir('../Common/Bullet/Include'),
+    libPath = Dir('Bullet/Lib'),
+    libs = ['BulletSoftBody', 'BulletDynamics', 'BulletCollision', 'LinearMath'])
+
 # libclang.
 llvmEnv = dummyEnv.Clone()
 llvmEnv.ParseConfig('llvm-config --cflags --ldflags')
