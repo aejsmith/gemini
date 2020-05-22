@@ -56,6 +56,7 @@ public:
     void                    Destroy();
 
     Entity*                 GetEntity() const { return mEntity; }
+    World*                  GetWorld() const  { return mEntity->GetWorld(); }
 
     /**
      * Whether the component is active. Even if a component is marked active,

@@ -31,3 +31,15 @@
  */
 using Degrees = float;
 using Radians = float;
+
+namespace Math
+{
+    /**
+     * Given two quaternions, a and b, returns the quaternion d such that
+     * d * a = b.
+     */
+    static inline glm::quat QuatDifference(const glm::quat& a, const glm::quat& b)
+    {
+        return b * glm::inverse(a);
+    }
+}

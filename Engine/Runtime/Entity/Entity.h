@@ -92,6 +92,10 @@ public:
 
     Entity*                 CreateChild(std::string name);
 
+    /** Call the specified function on all active children. */
+    template <typename Function>
+    void                    VisitActiveChildren(Function function);
+
     /**
      * Components.
      */
@@ -205,6 +209,18 @@ private:
 
 using EntityPtr = ObjPtr<Entity>;
 
+template <typename Function>
+inline void Entity::VisitActiveChildren(Function function)
+{
+    for (Entity* const child : mChildren)
+    {
+        if (child->GetActiveInWorld())
+        {
+            function(child);
+        }
+    }
+}
+
 template <typename T, typename... Args>
 inline T* Entity::CreateComponent(Args&&... args)
 {
@@ -219,5 +235,5 @@ inline T* Entity::FindComponent(const bool exactClass) const
     static_assert(std::is_base_of<Component, T>::value,
                   "Type must be derived from Component");
 
-    return static_cast<T*>(FindComponent(T::staticMetaClass), exactClass);
+    return static_cast<T*>(FindComponent(T::staticMetaClass, exactClass));
 }
