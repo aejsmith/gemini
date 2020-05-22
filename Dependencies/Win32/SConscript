@@ -2,26 +2,21 @@ import os
 
 Import('manager')
 
-# Vulkan SDK. Just need headers, we load dynamically at runtime.
+# libclang.
 manager.AddComponent(
-    name = 'External/Vulkan',
-    includePath = manager.baseEnv['ENV']['VULKAN_SDK'] + '/Include')
+    name = 'External/libclang',
+    includePath = Dir('libclang/Include'),
+    libPath = Dir('libclang/Lib'),
+    libs = ['libclang'],
+    dlls = File('libclang/Lib/libclang.dll'))
 
 # SDL.
 manager.AddComponent(
     name = 'External/SDL',
-    includePath = Dir('SDL2-2.0.12/include'),
-    libPath = Dir('SDL2-2.0.12/lib/x64'),
+    includePath = Dir('SDL/Include'),
+    libPath = Dir('SDL/Lib'),
     libs = ['SDL2', 'SDL2main'],
-    dlls = File('SDL2-2.0.12/lib/x64/SDL2.dll'))
-
-# libclang.
-manager.AddComponent(
-    name = 'External/libclang',
-    includePath = Dir('LLVM-10.0.0/include'),
-    libPath = Dir('LLVM-10.0.0/lib/x64'),
-    libs = ['libclang'],
-    dlls = File('LLVM-10.0.0/lib/x64/libclang.dll'))
+    dlls = File('SDL/Lib/SDL2.dll'))
 
 # shaderc.
 manager.AddComponent(
@@ -29,3 +24,10 @@ manager.AddComponent(
     includePath = Dir('../Common/shaderc/Include'),
     libPath = Dir('shaderc/Lib'),
     libs = ['shaderc_combined'])
+
+# Vulkan SDK.
+#
+# Just need headers, we load dynamically at runtime.
+manager.AddComponent(
+    name = 'External/Vulkan',
+    includePath = manager.baseEnv['ENV']['VULKAN_SDK'] + '/Include')
