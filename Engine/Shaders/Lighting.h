@@ -89,8 +89,7 @@ float3 PerturbNormal(const float3 vertexNormal,
     float2 dyUV  = ddy(uv);
 
     float3 N = normalize(vertexNormal);
-    float3 T = ((dyUV.y * dxPos) - (dxUV.y * dyPos)) / ((dxUV.x * dyUV.y) - (dyUV.x * dxUV.y));
-           T = normalize(T - (N * dot(N, T)));
+    float3 T = normalize((dyUV.y * dxPos) - (dxUV.y * dyPos));
     float3 B = normalize(cross(N, T));
 
     float3 tangentNormal = (sampledNormal * 2.0f) - 1.0f;
