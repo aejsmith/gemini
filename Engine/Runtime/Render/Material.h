@@ -56,21 +56,6 @@ public:
     /** Get GPU constants based on current argument values. */
     GPUConstants                GetGPUConstants();
 
-    // TODO: This is in the public API for now, and is used when creating a
-    // material from scratch at runtime - we can't create an argument set until
-    // all the resource arguments have been initialised.
-    //
-    // When changing individual resource arguments after creating for the first
-    // time, it will be recreated automatically so there's no need to call this
-    // explicitly more than once.
-    //
-    // Should probably revisit this at some point. Maybe initialise all
-    // resource arguments to non-null dummy resources? However, updating
-    // automatically after every resource SetArgument() could also be bad if
-    // we wanted to update multiple resource parameters at once - each would
-    // create a new set.
-    void                        UpdateArgumentSet();
-
 private:
                                 Material();
                                 ~Material();
@@ -78,13 +63,16 @@ private:
     void                        Serialise(Serialiser& serialiser) const override;
     void                        Deserialise(Serialiser& serialiser) override;
 
-    void                        SetShaderTechnique(ShaderTechnique* const shaderTechnique);
+    void                        SetShaderTechnique(ShaderTechnique* const shaderTechnique,
+                                                   const bool             createArguments);
 
     void                        GetArgument(const ShaderParameter& parameter,
                                             void* const            outData) const;
 
     void                        SetArgument(const ShaderParameter& parameter,
                                             const void* const      data);
+
+    void                        UpdateArgumentSet();
 
 private:
     ShaderTechniquePtr          mShaderTechnique;

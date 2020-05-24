@@ -80,15 +80,9 @@ SkyboxRenderer::~SkyboxRenderer()
 
 void SkyboxRenderer::SetTexture(TextureCube* const texture)
 {
-    TextureCube* const oldTexture = mTexture;
-
     mTexture = texture;
     mMaterial->SetArgument("texture", mTexture);
 
-    if (!oldTexture)
-    {
-        mMaterial->UpdateArgumentSet();
-    }
 }
 
 EntityRenderer::RenderEntityArray SkyboxRenderer::CreateRenderEntities()

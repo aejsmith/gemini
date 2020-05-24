@@ -34,7 +34,9 @@ Material::Material() :
 Material::Material(ShaderTechnique* const shaderTechnique) :
     Material ()
 {
-    SetShaderTechnique(shaderTechnique);
+    /* Create initial argument set from defaults when we create a material at
+     * runtime. */
+    SetShaderTechnique(shaderTechnique, true);
 }
 
 Material::~Material()
@@ -100,7 +102,9 @@ void Material::Deserialise(Serialiser& serialiser)
     found = serialiser.Read("shaderTechnique", shaderTechnique);
     Assert(found);
 
-    SetShaderTechnique(shaderTechnique);
+    /* Defer argument set creation until the end so we don't end up recreating
+     * the set for each argument we deserialise. */
+    SetShaderTechnique(shaderTechnique, false);
 
     if (serialiser.BeginGroup("arguments"))
     {
@@ -153,7 +157,8 @@ void Material::Deserialise(Serialiser& serialiser)
     UpdateArgumentSet();
 }
 
-void Material::SetShaderTechnique(ShaderTechnique* const shaderTechnique)
+void Material::SetShaderTechnique(ShaderTechnique* const shaderTechnique,
+                                  const bool             createArguments)
 {
     mShaderTechnique = shaderTechnique;
 
@@ -163,6 +168,11 @@ void Material::SetShaderTechnique(ShaderTechnique* const shaderTechnique)
     memcpy(mConstantData.Get(),
            mShaderTechnique->GetDefaultConstantData().Get(),
            mConstantData.GetSize());
+
+    if (createArguments)
+    {
+        UpdateArgumentSet();
+    }
 }
 
 void Material::GetArgument(const ShaderParameter& parameter,

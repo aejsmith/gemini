@@ -1122,8 +1122,6 @@ bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
     asset->SetArgument("metallicFactor",   material.metallicFactor);
     asset->SetArgument("roughnessFactor",  material.roughnessFactor);
 
-    asset->UpdateArgumentSet();
-
     const Path assetPath = mAssetDir / StringUtils::Format("Material_%u", materialIndex);
     if (!AssetManager::Get().SaveAsset(asset, assetPath))
     {
