@@ -31,6 +31,11 @@
             "normalTexture": {
                 "asset": "Game/glTF/DamagedHelmet/Texture_4"
             },
+            "normalScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
             "occlusionTexture": {
                 "asset": "Game/glTF/DamagedHelmet/Texture_3"
             },
