@@ -1,0 +1,103 @@
+[
+    {
+        "objectClass": "Mesh",
+        "objectID": 0,
+        "objectProperties": {},
+        "vertexCount": 48,
+        "vertexInputState": {
+            "attributes": [
+                {
+                    "semantic": "Position",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 0,
+                    "offset": 0
+                },
+                {
+                    "semantic": "TexCoord",
+                    "index": 0,
+                    "format": "R32G32_Float",
+                    "buffer": 1,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Normal",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 2,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Tangent",
+                    "index": 0,
+                    "format": "R32G32B32A32_Float",
+                    "buffer": 3,
+                    "offset": 0
+                }
+            ],
+            "buffers": [
+                {
+                    "index": 0,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 1,
+                    "stride": 8,
+                    "perInstance": false
+                },
+                {
+                    "index": 2,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 3,
+                    "stride": 16,
+                    "perInstance": false
+                }
+            ]
+        },
+        "materials": [
+            "Material"
+        ],
+        "vertexData": [
+            {
+                "index": 0,
+                "data": {
+                    "base64": "gw/AQzac70KqRg9Ehw/AQzac70IF6xFEy5BnQzac70IF6xFEvpBnQzac70KoRg9EvpBnQzac70KoRg9Ey5BnQzac70IF6xFEvpBnQ/emikMF6xFEvpBnQ/qmikOqRg9Egw/AQ2Y+i0OqRg9Ehw/AQ2Y+i0MF6xFEhw/AQzac70IF6xFEgw/AQzac70KqRg9E+9K2Qz4Qi0OqRg9E/9K2Qz4Qi0MF6xFEhw/AQ2Y+i0MF6xFEgw/AQ2Y+i0OqRg9Ej7OwQ4dOjUOqRg9Ej7OwQ4dOjUMF6xFE/9K2Qz4Qi0MF6xFE+9K2Qz4Qi0OqRg9EVrenQ5ppj0OqRg9EVrenQ5ppj0MF6xFEj7OwQ4dOjUMF6xFEj7OwQ4dOjUOqRg9EKWSbQ6eokEOqRg9ELGSbQ6eokEMF6xFEVrenQ5ppj0MF6xFEVrenQ5ppj0OqRg9EaeeVQ6eokEOqRg9EaeeVQ6eokEMF6xFELGSbQ6eokEMF6xFEKWSbQ6eokEOqRg9EN5GLQ09oj0OqRg9EN5GLQ09oj0MF6xFEaeeVQ6eokEMF6xFEaeeVQ6eokEOqRg9E1xqCQ2srjUOqRg9E1xqCQ2srjUMF6xFEN5GLQ09oj0MF6xFEN5GLQ09oj0OqRg9Ejch0QxueikOqRg9Ejch0QxueikMF6xFE1xqCQ2srjUMF6xFE1xqCQ2srjUOqRg9EvpBnQ/qmikOqRg9EvpBnQ/emikMF6xFEjch0QxueikMF6xFEjch0QxueikOqRg9E"
+                }
+            },
+            {
+                "index": 1,
+                "data": {
+                    "base64": "P8b8PgAAgD8/xvw+AACAPxUdWT8AAIA/FR1ZPwAAgD8VHVk/AACAPxUdWT8AAIA/FR1ZP40oHT8VHVk/jSgdPz/G/D5/ahw/P8b8Pn9qHD8/xvw+AACAPz/G/D4AAIA/nl4JP3qlHD+eXgk/eqUcPz/G/D5/ahw/P8b8Pn9qHD9lqhA/ldQZP2WqED+V1Bk/nl4JP3qlHD+eXgk/eqUcPz9XGz+QMRc/P1cbP5AxFz9lqhA/ldQZP2WqED+V1Bk/dQIqP8uhFT91Aio/y6EVPz9XGz+QMRc/P1cbP5AxFz+giTA/y6EVP6CJMD/LoRU/dQIqP8uhFT91Aio/y6EVP1vTPD+QMRc/W9M8P5AxFz+giTA/y6EVP6CJMD/LoRU/8BZIP3UCGj/wFkg/dQIaP1vTPD+QMRc/W9M8P5AxFz8gQVE/qDUdPyBBUT+oNR0/8BZIP3UCGj/wFkg/dQIaPxUdWT+NKB0/FR1ZP40oHT8gQVE/qDUdPyBBUT+oNR0/"
+                }
+            },
+            {
+                "index": 2,
+                "data": {
+                    "base64": "AAAAAAAAgL8AAACAAAAAAAAAgL8AAACAAAAAAAAAgL8AAACAAAAAAAAAgL8AAACAAACAvwAAAIAAAAAAAACAvwAAAIAAAAAAAACAvwAAAIAAAAAAAACAvwAAAIAAAAAAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACA376fvIvzfz8AAAAA376fvIvzfz8AAAAA376fvIvzfz8AAAAA376fvIvzfz8AAAAAfB+wPo1gcD8AAACAfB+wPo1gcD8AAACAfB+wPo1gcD8AAACAfB+wPo1gcD8AAACAGa5pPr0+eT8AAAAAGa5pPr0+eT8AAAAAGa5pPr0+eT8AAAAAGa5pPr0+eT8AAAAAywjOPYazfj8AAACAywjOPYazfj8AAACAywjOPYazfj8AAACAywjOPYazfj8AAACAAAAAgAAAgD8AAAAAAAAAgAAAgD8AAAAAAAAAgAAAgD8AAAAAAAAAgAAAgD8AAAAARSj2veQkfj8AAAAARSj2veQkfj8AAAAARSj2veQkfj8AAAAARSj2veQkfj8AAAAAZ51rvpcheT8AAAAAZ51rvpcheT8AAAAAZ51rvpcheT8AAAAAZ51rvpcheT8AAAAAUtGgvkkLcz8AAACAUtGgvkkLcz8AAACAUtGgvkkLcz8AAACAUtGgvkkLcz8AAACALWSqOx7/fz8AAACALWSqOx7/fz8AAACALWSqOx7/fz8AAACALWSqOx7/fz8AAACA"
+                }
+            },
+            {
+                "index": 3,
+                "data": {
+                    "base64": "AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/"
+                }
+            }
+        ],
+        "subMeshes": [
+            {
+                "material": 0,
+                "topology": "TriangleList",
+                "indexed": true,
+                "count": 72,
+                "indexType": "16",
+                "indexData": {
+                    "base64": "AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAGAAZABoAGAAaABsAHAAdAB4AHAAeAB8AIAAhACIAIAAiACMAJAAlACYAJAAmACcAKAApACoAKAAqACsALAAtAC4ALAAuAC8A"
+                }
+            }
+        ]
+    }
+]

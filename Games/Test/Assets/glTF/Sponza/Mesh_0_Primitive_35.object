@@ -1,0 +1,103 @@
+[
+    {
+        "objectClass": "Mesh",
+        "objectID": 0,
+        "objectProperties": {},
+        "vertexCount": 56,
+        "vertexInputState": {
+            "attributes": [
+                {
+                    "semantic": "Position",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 0,
+                    "offset": 0
+                },
+                {
+                    "semantic": "TexCoord",
+                    "index": 0,
+                    "format": "R32G32_Float",
+                    "buffer": 1,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Normal",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 2,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Tangent",
+                    "index": 0,
+                    "format": "R32G32B32A32_Float",
+                    "buffer": 3,
+                    "offset": 0
+                }
+            ],
+            "buffers": [
+                {
+                    "index": 0,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 1,
+                    "stride": 8,
+                    "perInstance": false
+                },
+                {
+                    "index": 2,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 3,
+                    "stride": 16,
+                    "perInstance": false
+                }
+            ]
+        },
+        "materials": [
+            "Material"
+        ],
+        "vertexData": [
+            {
+                "index": 0,
+                "data": {
+                    "base64": "iM2HxGpHo0RNc59DvK+CxLBPpERECXtDRcBpRK9PpERECXtDKGZ5RGpHo0RNc59DKGZ5RGpHo0RNc59DRcBpRK9PpERECXtDRcBpRK9PpETFBqbDKGZ5RGpHo0TKEszDRcBpRK9PpETFBqbDvK+CxK9PpETFBqbDiM2HxGpHo0TKEszDKGZ5RGpHo0TKEszDvK+CxK9PpETFBqbDvK+CxLBPpERECXtDiM2HxGpHo0RNc59DiM2HxGpHo0TKEszDiM2HxJ/vYkRNc59DiM2HxJ/vYkTKEszDiM2HxGpHo0TKEszDiM2HxGpHo0RNc59DiM2HxJ/vYkRNc59DJ2Z5RJ/vYkRNc59DYBpaRJ/vYkTnKzdD3yN7xJ/vYkTnKzdDYBpaRJ/vYkSI9X/D3yN7xJ/vYkSI9X/DJ2Z5RJ/vYkTKEszDiM2HxJ/vYkTKEszDJ2Z5RJ/vYkRNc59DiM2HxJ/vYkRNc59DiM2HxGpHo0RNc59DKGZ5RGpHo0RNc59DJ2Z5RJ/vYkTKEszDJ2Z5RJ/vYkRNc59DKGZ5RGpHo0RNc59DKGZ5RGpHo0TKEszDiM2HxJ/vYkTKEszDJ2Z5RJ/vYkTKEszDKGZ5RGpHo0TKEszDiM2HxGpHo0TKEszDvK+CxLBPpERECXtD3yN7xFHmokTnKzdDYBpaRFHmokTnKzdDRcBpRK9PpERECXtDRcBpRK9PpERECXtDYBpaRFHmokTnKzdDYBpaRFHmokSI9X/DRcBpRK9PpETFBqbDYBpaRFHmokSI9X/D3yN7xFHmokSI9X/DvK+CxK9PpETFBqbDRcBpRK9PpETFBqbD3yN7xFHmokSI9X/D3yN7xFHmokTnKzdDvK+CxLBPpERECXtDvK+CxK9PpETFBqbD"
+                }
+            },
+            {
+                "index": 1,
+                "data": {
+                    "base64": "EqVNP9S8q7990GM/UB6+v3WTokBQHr6/5dCmQNS8q7/l0KZA1Lyrv3WTokBQHr6/dZOiQLwFLsDl0KZAj1M4wHWTokC8BS7AfdBjP7wFLsASpU0/j1M4wOXQpkCPUzjAfdBjP7wFLsB90GM/UB6+vxKlTT/UvKu/EqVNP49TOMAAAAAA1LyrvwAAAACPUzjAEqVNP49TOMASpU0/1LyrvxKlTT+W1Am/5dCmQJbUCb/WVp5ASJ2Avuf7eT9InYC+1laeQGiRLT/n+3k/aJEtP+XQpkAAAIA/EqVNPwAAgD/l0KZAltQJvxKlTT+W1Am/EqVNP9S8q7/l0KZA1Lyrv4iFwECPUzjAiIXAQNS8q7/l0KZA1Lyrv+XQpkCPUzjAEqVNP9S8a8Dl0KZA1LxrwOXQpkCPUzjAEqVNP49TOMB90GM/UB6+v+f7eT/Mf9C/1laeQMx/0L91k6JAUB6+v3WTokBQHr6/1laeQMx/0L/WVp5A6bcjwHWTokC8BS7A1laeQOm3I8Dn+3k/6bcjwH3QYz+8BS7AdZOiQLwFLsDn+3k/6bcjwOf7eT/Mf9C/fdBjP1Aevr990GM/vAUuwA=="
+                }
+            },
+            {
+                "index": 2,
+                "data": {
+                    "base64": "AAAAgBkgfr+LZPe9AAAAgBkgfr+LZPe9AAAAgBkgfr+LZPe9AAAAgBkgfr+LZPe9u/AFvvXMfb8AAACAu/AFvvXMfb8AAACAu/AFvvXMfb8AAACAu/AFvvXMfb8AAACAAAAAAGqBfr+G+Nw9AAAAAGqBfr+G+Nw9AAAAAGqBfr+G+Nw9AAAAAGqBfr+G+Nw9PY5KPg/xer8AAAAAPY5KPg/xer8AAAAAPY5KPg/xer8AAAAAPY5KPg/xer8AAAAAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAACAAACAvwAAAAAAAACAAACAvwAAAAAAAACAAACAvwAAAAAAAACAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAgICHfL+wCyg+AAAAgICHfL+wCyg+AAAAgICHfL+wCyg+AAAAgICHfL+wCyg+59w1Pifue78AAACA59w1Pifue78AAACA59w1Pifue78AAACA59w1Pifue78AAACAAAAAAAw6fb90URa+AAAAAAw6fb90URa+AAAAAAw6fb90URa+AAAAAAw6fb90URa+PzCIvhDHdr8AAAAAPzCIvhDHdr8AAAAAPzCIvhDHdr8AAAAAPzCIvhDHdr8AAAAA"
+                }
+            },
+            {
+                "index": 3,
+                "data": {
+                    "base64": "AACAP4JNbrChj/UxAACAPwAAgD8AYXawGeL9MQAAgD8AAIA/s4xmrV6S7S4AAIA/AACAPwAAAAAAAAAAAACAP/bMfT+78AW+3OFmtwAAgD/2zH0/u/AFvhnoWLYAAIA/9sx9P7vwBb4tKKu4AACAP/bMfT+88AW+yOmxuAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/D/F6PzyOSj6JiQI5AACAPxDxej8+jko+b8PGNgAAgD8P8Xo/PI5KPjQTqDcAAIA/EPF6Pz2OSj4foQU5AACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAIA/AAAAAKsh8zYAAIA/AACAPwAAAADg2wG3AACAPwAAgD8AAAAAp4PANgAAgD8AAIA/AAAAAOaeH7cAAIA/AACAPwAAAADndya4AACAPwAAgD8AAAAAl0OPOAAAgD8AAIA/AAAAAFyIG7gAAIA/AACAPwAAAADjhCo4AACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAAAAAACAvwAAAAAAAIA/AAAAAAAAgL8AAAAAAACAPwAAAAAAAIC/AAAAAAAAgD8AAAAAAACAvwAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD9D6n2u3yy+rwAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwVM4bC5vSiyAACAPwAAgD/A2eSwF2crsgAAgD8o7ns/59w1PqUXp7YAAIA/KO57P+bcNT4iwU03AACAPyjuez/n3DU+sla1uAAAgD8n7ns/59w1Pld5wLgAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPxDHdj8/MIi+JPQJOQAAgD8Qx3Y/PzCIvm08lbcAAIA/Ecd2P0AwiL6KkbA2AACAPxHHdj9AMIi+RxYPOQAAgD8="
+                }
+            }
+        ],
+        "subMeshes": [
+            {
+                "material": 0,
+                "topology": "TriangleList",
+                "indexed": true,
+                "count": 96,
+                "indexType": "16",
+                "indexData": {
+                    "base64": "AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAFQAYABYAFAAXABkAFQAaABgAFAAZABsAGwAYABoAGwAZABgAHAAdAB4AHAAeAB8AIAAhACIAIAAiACMAJAAlACYAJAAmACcAKAApACoAKAAqACsALAAtAC4ALAAuAC8AMAAxADIAMAAyADMANAA1ADYANAA2ADcA"
+                }
+            }
+        ]
+    }
+]

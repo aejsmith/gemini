@@ -1,0 +1,11 @@
+[
+   {
+       "objectClass": "PNGLoader",
+       "objectID": 0,
+       "objectProperties": {
+           "addressU": "Repeat",
+           "addressV": "Repeat",
+           "sRGB": true
+       }
+   }
+]

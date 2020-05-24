@@ -1,0 +1,6122 @@
+[
+    {
+        "objectClass": "World",
+        "objectID": 0,
+        "objectProperties": {},
+        "root": {
+            "objectID": 1
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 1,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {},
+        "components": [],
+        "children": [
+            {
+                "objectID": 2
+            },
+            {
+                "objectID": 7
+            },
+            {
+                "objectID": 214
+            }
+        ]
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 2,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Player",
+            "active": true,
+            "position": [
+                -6.0,
+                1.0,
+                0.0
+            ],
+            "orientation": [
+                0.7071067690849304,
+                0.0,
+                -0.7071067690849304,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 3
+            }
+        ],
+        "children": [
+            {
+                "objectID": 5
+            }
+        ]
+    },
+    {
+        "objectClass": "PlayerController",
+        "objectID": 3,
+        "entity": {
+            "objectID": 2
+        },
+        "objectProperties": {
+            "active": true,
+            "camera": {
+                "objectID": 4
+            }
+        }
+    },
+    {
+        "objectClass": "Camera",
+        "objectID": 4,
+        "entity": {
+            "objectID": 5
+        },
+        "objectProperties": {
+            "active": true,
+            "renderPipeline": {
+                "objectID": 6
+            },
+            "verticalFOV": 60.0,
+            "zNear": 0.10000000149011612,
+            "zFar": 500.0
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 5,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 2
+        },
+        "objectProperties": {
+            "name": "Camera",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 4
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "DeferredRenderPipeline",
+        "objectID": 6,
+        "objectProperties": {
+            "shadowMapResolution": 512,
+            "maxShadowLights": 4,
+            "shadowBiasConstant": 0.0005000000237487257
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 7,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Sponza_0",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                0.00800000037997961,
+                0.00800000037997961,
+                0.00800000037997961
+            ]
+        },
+        "components": [],
+        "children": [
+            {
+                "objectID": 8
+            },
+            {
+                "objectID": 10
+            },
+            {
+                "objectID": 12
+            },
+            {
+                "objectID": 14
+            },
+            {
+                "objectID": 16
+            },
+            {
+                "objectID": 18
+            },
+            {
+                "objectID": 20
+            },
+            {
+                "objectID": 22
+            },
+            {
+                "objectID": 24
+            },
+            {
+                "objectID": 26
+            },
+            {
+                "objectID": 28
+            },
+            {
+                "objectID": 30
+            },
+            {
+                "objectID": 32
+            },
+            {
+                "objectID": 34
+            },
+            {
+                "objectID": 36
+            },
+            {
+                "objectID": 38
+            },
+            {
+                "objectID": 40
+            },
+            {
+                "objectID": 42
+            },
+            {
+                "objectID": 44
+            },
+            {
+                "objectID": 46
+            },
+            {
+                "objectID": 48
+            },
+            {
+                "objectID": 50
+            },
+            {
+                "objectID": 52
+            },
+            {
+                "objectID": 54
+            },
+            {
+                "objectID": 56
+            },
+            {
+                "objectID": 58
+            },
+            {
+                "objectID": 60
+            },
+            {
+                "objectID": 62
+            },
+            {
+                "objectID": 64
+            },
+            {
+                "objectID": 66
+            },
+            {
+                "objectID": 68
+            },
+            {
+                "objectID": 70
+            },
+            {
+                "objectID": 72
+            },
+            {
+                "objectID": 74
+            },
+            {
+                "objectID": 76
+            },
+            {
+                "objectID": 78
+            },
+            {
+                "objectID": 80
+            },
+            {
+                "objectID": 82
+            },
+            {
+                "objectID": 84
+            },
+            {
+                "objectID": 86
+            },
+            {
+                "objectID": 88
+            },
+            {
+                "objectID": 90
+            },
+            {
+                "objectID": 92
+            },
+            {
+                "objectID": 94
+            },
+            {
+                "objectID": 96
+            },
+            {
+                "objectID": 98
+            },
+            {
+                "objectID": 100
+            },
+            {
+                "objectID": 102
+            },
+            {
+                "objectID": 104
+            },
+            {
+                "objectID": 106
+            },
+            {
+                "objectID": 108
+            },
+            {
+                "objectID": 110
+            },
+            {
+                "objectID": 112
+            },
+            {
+                "objectID": 114
+            },
+            {
+                "objectID": 116
+            },
+            {
+                "objectID": 118
+            },
+            {
+                "objectID": 120
+            },
+            {
+                "objectID": 122
+            },
+            {
+                "objectID": 124
+            },
+            {
+                "objectID": 126
+            },
+            {
+                "objectID": 128
+            },
+            {
+                "objectID": 130
+            },
+            {
+                "objectID": 132
+            },
+            {
+                "objectID": 134
+            },
+            {
+                "objectID": 136
+            },
+            {
+                "objectID": 138
+            },
+            {
+                "objectID": 140
+            },
+            {
+                "objectID": 142
+            },
+            {
+                "objectID": 144
+            },
+            {
+                "objectID": 146
+            },
+            {
+                "objectID": 148
+            },
+            {
+                "objectID": 150
+            },
+            {
+                "objectID": 152
+            },
+            {
+                "objectID": 154
+            },
+            {
+                "objectID": 156
+            },
+            {
+                "objectID": 158
+            },
+            {
+                "objectID": 160
+            },
+            {
+                "objectID": 162
+            },
+            {
+                "objectID": 164
+            },
+            {
+                "objectID": 166
+            },
+            {
+                "objectID": 168
+            },
+            {
+                "objectID": 170
+            },
+            {
+                "objectID": 172
+            },
+            {
+                "objectID": 174
+            },
+            {
+                "objectID": 176
+            },
+            {
+                "objectID": 178
+            },
+            {
+                "objectID": 180
+            },
+            {
+                "objectID": 182
+            },
+            {
+                "objectID": 184
+            },
+            {
+                "objectID": 186
+            },
+            {
+                "objectID": 188
+            },
+            {
+                "objectID": 190
+            },
+            {
+                "objectID": 192
+            },
+            {
+                "objectID": 194
+            },
+            {
+                "objectID": 196
+            },
+            {
+                "objectID": 198
+            },
+            {
+                "objectID": 200
+            },
+            {
+                "objectID": 202
+            },
+            {
+                "objectID": 204
+            },
+            {
+                "objectID": 206
+            },
+            {
+                "objectID": 208
+            },
+            {
+                "objectID": 210
+            },
+            {
+                "objectID": 212
+            }
+        ]
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 8,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_0",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 9
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 9,
+        "entity": {
+            "objectID": 8
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_0"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_0"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 10,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_1",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 11
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 11,
+        "entity": {
+            "objectID": 10
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_1"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 12,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_2",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 13
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 13,
+        "entity": {
+            "objectID": 12
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_2"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 14,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_3",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 15
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 15,
+        "entity": {
+            "objectID": 14
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_3"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_4"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 16,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_4",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 17
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 17,
+        "entity": {
+            "objectID": 16
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_4"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 18,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_5",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 19
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 19,
+        "entity": {
+            "objectID": 18
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_5"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 20,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_6",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 21
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 21,
+        "entity": {
+            "objectID": 20
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_6"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 22,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_7",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 23
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 23,
+        "entity": {
+            "objectID": 22
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_7"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_8"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 24,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_8",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 25
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 25,
+        "entity": {
+            "objectID": 24
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_8"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 26,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_9",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 27
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 27,
+        "entity": {
+            "objectID": 26
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_9"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_9"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 28,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_10",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 29
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 29,
+        "entity": {
+            "objectID": 28
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_10"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 30,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_11",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 31
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 31,
+        "entity": {
+            "objectID": 30
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_11"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 32,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_12",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 33
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 33,
+        "entity": {
+            "objectID": 32
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_12"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_10"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 34,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_13",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 35
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 35,
+        "entity": {
+            "objectID": 34
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_13"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 36,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_14",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 37
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 37,
+        "entity": {
+            "objectID": 36
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_14"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 38,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_15",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 39
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 39,
+        "entity": {
+            "objectID": 38
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_15"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 40,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_16",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 41
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 41,
+        "entity": {
+            "objectID": 40
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_16"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 42,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_17",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 43
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 43,
+        "entity": {
+            "objectID": 42
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_17"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 44,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_18",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 45
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 45,
+        "entity": {
+            "objectID": 44
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_18"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 46,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_19",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 47
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 47,
+        "entity": {
+            "objectID": 46
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_19"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 48,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_20",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 49
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 49,
+        "entity": {
+            "objectID": 48
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_20"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 50,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_21",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 51
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 51,
+        "entity": {
+            "objectID": 50
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_21"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 52,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_22",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 53
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 53,
+        "entity": {
+            "objectID": 52
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_22"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 54,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_23",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 55
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 55,
+        "entity": {
+            "objectID": 54
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_23"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 56,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_24",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 57
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 57,
+        "entity": {
+            "objectID": 56
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_24"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 58,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_25",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 59
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 59,
+        "entity": {
+            "objectID": 58
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_25"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 60,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_26",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 61
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 61,
+        "entity": {
+            "objectID": 60
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_26"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 62,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_27",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 63
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 63,
+        "entity": {
+            "objectID": 62
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_27"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 64,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_28",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 65
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 65,
+        "entity": {
+            "objectID": 64
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_28"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 66,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_29",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 67
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 67,
+        "entity": {
+            "objectID": 66
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_29"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 68,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_30",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 69
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 69,
+        "entity": {
+            "objectID": 68
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_30"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 70,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_31",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 71
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 71,
+        "entity": {
+            "objectID": 70
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_31"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 72,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_32",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 73
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 73,
+        "entity": {
+            "objectID": 72
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_32"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 74,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_33",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 75
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 75,
+        "entity": {
+            "objectID": 74
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_33"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_7"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 76,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_34",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 77
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 77,
+        "entity": {
+            "objectID": 76
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_34"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 78,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_35",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 79
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 79,
+        "entity": {
+            "objectID": 78
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_35"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 80,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_36",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 81
+            }
+        ]
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 81,
+        "entity": {
+            "objectID": 80
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_36"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 82,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_37",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 83
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 83,
+        "entity": {
+            "objectID": 82
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_37"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 84,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_38",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 85
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 85,
+        "entity": {
+            "objectID": 84
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_38"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_11"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 86,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_39",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 87
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 87,
+        "entity": {
+            "objectID": 86
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_39"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 88,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_40",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 89
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 89,
+        "entity": {
+            "objectID": 88
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_40"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_11"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 90,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_41",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 91
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 91,
+        "entity": {
+            "objectID": 90
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_41"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 92,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_42",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 93
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 93,
+        "entity": {
+            "objectID": 92
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_42"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_11"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 94,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_43",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 95
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 95,
+        "entity": {
+            "objectID": 94
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_43"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 96,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_44",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 97
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 97,
+        "entity": {
+            "objectID": 96
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_44"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_10"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 98,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_45",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 99
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 99,
+        "entity": {
+            "objectID": 98
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_45"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 100,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_46",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 101
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 101,
+        "entity": {
+            "objectID": 100
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_46"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_9"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 102,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_47",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 103
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 103,
+        "entity": {
+            "objectID": 102
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_47"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_8"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 104,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_48",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 105
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 105,
+        "entity": {
+            "objectID": 104
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_48"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_6"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 106,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_49",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 107
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 107,
+        "entity": {
+            "objectID": 106
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_49"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_12"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 108,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_50",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 109
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 109,
+        "entity": {
+            "objectID": 108
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_50"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_2"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 110,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_51",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 111
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 111,
+        "entity": {
+            "objectID": 110
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_51"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 112,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_52",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 113
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 113,
+        "entity": {
+            "objectID": 112
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_52"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_13"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 114,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_53",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 115
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 115,
+        "entity": {
+            "objectID": 114
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_53"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_0"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 116,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_54",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 117
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 117,
+        "entity": {
+            "objectID": 116
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_54"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_14"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 118,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_55",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 119
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 119,
+        "entity": {
+            "objectID": 118
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_55"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_15"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 120,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_56",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 121
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 121,
+        "entity": {
+            "objectID": 120
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_56"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_16"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 122,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_57",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 123
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 123,
+        "entity": {
+            "objectID": 122
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_57"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_14"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 124,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_58",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 125
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 125,
+        "entity": {
+            "objectID": 124
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_58"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_15"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 126,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_59",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 127
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 127,
+        "entity": {
+            "objectID": 126
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_59"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_14"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 128,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_60",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 129
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 129,
+        "entity": {
+            "objectID": 128
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_60"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_16"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 130,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_61",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 131
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 131,
+        "entity": {
+            "objectID": 130
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_61"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_15"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 132,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_62",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 133
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 133,
+        "entity": {
+            "objectID": 132
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_62"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_13"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 134,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_63",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 135
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 135,
+        "entity": {
+            "objectID": 134
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_63"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_17"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 136,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_64",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 137
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 137,
+        "entity": {
+            "objectID": 136
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_64"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_18"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 138,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_65",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 139
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 139,
+        "entity": {
+            "objectID": 138
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_65"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_19"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 140,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_66",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 141
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 141,
+        "entity": {
+            "objectID": 140
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_66"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_18"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 142,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_67",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 143
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 143,
+        "entity": {
+            "objectID": 142
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_67"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_19"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 144,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_68",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 145
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 145,
+        "entity": {
+            "objectID": 144
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_68"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_18"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 146,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_69",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 147
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 147,
+        "entity": {
+            "objectID": 146
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_69"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_17"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 148,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_70",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 149
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 149,
+        "entity": {
+            "objectID": 148
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_70"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_19"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 150,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_71",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 151
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 151,
+        "entity": {
+            "objectID": 150
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_71"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_18"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 152,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_72",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 153
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 153,
+        "entity": {
+            "objectID": 152
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_72"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_17"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 154,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_73",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 155
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 155,
+        "entity": {
+            "objectID": 154
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_73"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_20"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 156,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_74",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 157
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 157,
+        "entity": {
+            "objectID": 156
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_74"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_21"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 158,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_75",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 159
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 159,
+        "entity": {
+            "objectID": 158
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_75"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_20"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 160,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_76",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 161
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 161,
+        "entity": {
+            "objectID": 160
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_76"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_21"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 162,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_77",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 163
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 163,
+        "entity": {
+            "objectID": 162
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_77"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_20"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 164,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_78",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 165
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 165,
+        "entity": {
+            "objectID": 164
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_78"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_21"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 166,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_79",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 167
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 167,
+        "entity": {
+            "objectID": 166
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_79"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_20"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 168,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_80",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 169
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 169,
+        "entity": {
+            "objectID": 168
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_80"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_21"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 170,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_81",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 171
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 171,
+        "entity": {
+            "objectID": 170
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_81"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 172,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_82",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 173
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 173,
+        "entity": {
+            "objectID": 172
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_82"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 174,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_83",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 175
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 175,
+        "entity": {
+            "objectID": 174
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_83"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 176,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_84",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 177
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 177,
+        "entity": {
+            "objectID": 176
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_84"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 178,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_85",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 179
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 179,
+        "entity": {
+            "objectID": 178
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_85"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 180,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_86",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 181
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 181,
+        "entity": {
+            "objectID": 180
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_86"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 182,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_87",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 183
+            }
+        ]
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 183,
+        "entity": {
+            "objectID": 182
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_87"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 184,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_88",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 185
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 185,
+        "entity": {
+            "objectID": 184
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_88"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 186,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_89",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 187
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 187,
+        "entity": {
+            "objectID": 186
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_89"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 188,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_90",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 189
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 189,
+        "entity": {
+            "objectID": 188
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_90"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 190,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_91",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 191
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 191,
+        "entity": {
+            "objectID": 190
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_91"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 192,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_92",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 193
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 193,
+        "entity": {
+            "objectID": 192
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_92"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 194,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_93",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 195
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 195,
+        "entity": {
+            "objectID": 194
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_93"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_3"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 196,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_94",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 197
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 197,
+        "entity": {
+            "objectID": 196
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_94"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_1"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 198,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_95",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 199
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 199,
+        "entity": {
+            "objectID": 198
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_95"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_22"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 200,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_96",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 201
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 201,
+        "entity": {
+            "objectID": 200
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_96"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_23"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 202,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_97",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 203
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 203,
+        "entity": {
+            "objectID": 202
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_97"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_4"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 204,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_98",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 205
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 205,
+        "entity": {
+            "objectID": 204
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_98"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_23"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 206,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_99",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 207
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 207,
+        "entity": {
+            "objectID": 206
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_99"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_4"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 208,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_100",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 209
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 209,
+        "entity": {
+            "objectID": 208
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_100"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 210,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_101",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 211
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 211,
+        "entity": {
+            "objectID": 210
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_101"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_24"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 212,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 7
+        },
+        "objectProperties": {
+            "name": "Primitive_102",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 213
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "MeshRenderer",
+        "objectID": 213,
+        "entity": {
+            "objectID": 212
+        },
+        "objectProperties": {
+            "active": true,
+            "mesh": {
+                "asset": "Game/glTF/Sponza/Mesh_0_Primitive_102"
+            }
+        },
+        "materials": {
+            "Material": {
+                "asset": "Game/glTF/Sponza/Material_5"
+            }
+        }
+    },
+    {
+        "objectClass": "Entity",
+        "objectID": 214,
+        "world": {
+            "objectID": 0
+        },
+        "parent": {
+            "objectID": 1
+        },
+        "objectProperties": {
+            "name": "Sky",
+            "active": true,
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orientation": [
+                0.8121440410614014,
+                -0.5686694979667664,
+                -0.10692048817873001,
+                -0.07486723363399506
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "components": [
+            {
+                "objectID": 215
+            },
+            {
+                "objectID": 216
+            }
+        ],
+        "children": []
+    },
+    {
+        "objectClass": "SkyboxRenderer",
+        "objectID": 215,
+        "entity": {
+            "objectID": 214
+        },
+        "objectProperties": {
+            "active": true,
+            "texture": {},
+            "colour": [
+                0.699999988079071,
+                0.949999988079071,
+                1.0
+            ]
+        }
+    },
+    {
+        "objectClass": "Light",
+        "objectID": 216,
+        "entity": {
+            "objectID": 214
+        },
+        "objectProperties": {
+            "active": true,
+            "type": "Directional",
+            "colour": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "intensity": 6.0,
+            "range": 10.0,
+            "innerConeAngle": 35.0,
+            "outerConeAngle": 45.0,
+            "castShadows": false
+        }
+    }
+]

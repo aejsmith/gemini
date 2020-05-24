@@ -1,0 +1,45 @@
+[
+    {
+        "objectClass": "Material",
+        "objectID": 0,
+        "objectProperties": {},
+        "shaderTechnique": {
+            "asset": "Engine/Techniques/PBRMetallicRoughness"
+        },
+        "arguments": {
+            "baseColourTexture": {
+                "asset": "Game/glTF/Sponza/Texture_57"
+            },
+            "baseColourFactor": [
+                0.5879999995231628,
+                0.5879999995231628,
+                0.5879999995231628,
+                1.0
+            ],
+            "emissiveTexture": {
+                "asset": "Engine/Textures/DummyBlack2D"
+            },
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "metallicRoughnessTexture": {
+                "asset": "Game/glTF/Sponza/Texture_58"
+            },
+            "metallicFactor": 1.0,
+            "normalTexture": {
+                "asset": "Game/glTF/Sponza/Texture_56"
+            },
+            "normalScale": [
+                1.0,
+                -1.0,
+                1.0
+            ],
+            "occlusionTexture": {
+                "asset": "Engine/Textures/DummyWhite2D"
+            },
+            "roughnessFactor": 1.0
+        }
+    }
+]

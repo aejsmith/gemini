@@ -1,0 +1,103 @@
+[
+    {
+        "objectClass": "Mesh",
+        "objectID": 0,
+        "objectProperties": {},
+        "vertexCount": 7,
+        "vertexInputState": {
+            "attributes": [
+                {
+                    "semantic": "Position",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 0,
+                    "offset": 0
+                },
+                {
+                    "semantic": "TexCoord",
+                    "index": 0,
+                    "format": "R32G32_Float",
+                    "buffer": 1,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Normal",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 2,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Tangent",
+                    "index": 0,
+                    "format": "R32G32B32A32_Float",
+                    "buffer": 3,
+                    "offset": 0
+                }
+            ],
+            "buffers": [
+                {
+                    "index": 0,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 1,
+                    "stride": 8,
+                    "perInstance": false
+                },
+                {
+                    "index": 2,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 3,
+                    "stride": 16,
+                    "perInstance": false
+                }
+            ]
+        },
+        "materials": [
+            "Material"
+        ],
+        "vertexData": [
+            {
+                "index": 0,
+                "data": {
+                    "base64": "XZ0BQ5VlIMDjgQ9EGcaiRJVlIMDngQ9EGcaiRJVlIMAm1yDEUVt+w5VlIMDigQ9EopCyxJVlIMDggQ9ENV59wpVlIMCI9SDEopCyxJVlIMDuEyHE"
+                }
+            },
+            {
+                "index": 1,
+                "data": {
+                    "base64": "78knQOF6nsDn+/G/4XqewOf78b8wKom+pSyDQOF6nsBI4QlB4XqewA5PV0BEPoi+SOEJQThFh74="
+                }
+            },
+            {
+                "index": 2,
+                "data": {
+                    "base64": "AAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACA"
+                }
+            },
+            {
+                "index": 3,
+                "data": {
+                    "base64": "AACAvwAAAAA+Nzi0AACAvwAAgL8AAAAAA5BftAAAgL8AAIC/AAAAAC40xrUAAIC/AACAvwAAAAAhNvizAACAvwAAgL8AAAAAvI7VNgAAgL8AAIC/AAAAAI6KNLUAAIC/AACAvwAAAAAs+GY3AACAvw=="
+                }
+            }
+        ],
+        "subMeshes": [
+            {
+                "material": 0,
+                "topology": "TriangleList",
+                "indexed": true,
+                "count": 15,
+                "indexType": "16",
+                "indexData": {
+                    "base64": "AAABAAIAAAACAAMABAADAAIABAACAAUABgAEAAUA"
+                }
+            }
+        ]
+    }
+]

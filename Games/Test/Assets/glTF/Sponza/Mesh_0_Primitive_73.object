@@ -1,0 +1,103 @@
+[
+    {
+        "objectClass": "Mesh",
+        "objectID": 0,
+        "objectProperties": {},
+        "vertexCount": 16,
+        "vertexInputState": {
+            "attributes": [
+                {
+                    "semantic": "Position",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 0,
+                    "offset": 0
+                },
+                {
+                    "semantic": "TexCoord",
+                    "index": 0,
+                    "format": "R32G32_Float",
+                    "buffer": 1,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Normal",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 2,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Tangent",
+                    "index": 0,
+                    "format": "R32G32B32A32_Float",
+                    "buffer": 3,
+                    "offset": 0
+                }
+            ],
+            "buffers": [
+                {
+                    "index": 0,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 1,
+                    "stride": 8,
+                    "perInstance": false
+                },
+                {
+                    "index": 2,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 3,
+                    "stride": 16,
+                    "perInstance": false
+                }
+            ]
+        },
+        "materials": [
+            "Material"
+        ],
+        "vertexData": [
+            {
+                "index": 0,
+                "data": {
+                    "base64": "h+//QxdXBkPv6VnDxOHzQ4KyVUPv6VnDmJTzQ5yDVUO5fF3DW6L/QzEoBkO5fF3DvrDoQ1XABUNUs1vDN4n0Q+VRVUNUs1vDD8zyQ9taVkNUs1vDlvPmQ0vJBkNUs1vDkVMARKjGBkNUs1vDX5n0QwwiVkNUs1vD+9zyQwsUVUNUs1vDver+Q6e4BUNUs1vDtbfnQ1hpBkO5fF3DIlb0Q9KAVUO5fF3DSwn0Q9ixVUPv6VnD4WrnQ16aBkPv6VnD"
+                }
+            },
+            {
+                "index": 1,
+                "data": {
+                    "base64": "308tPwAAgD/fTy0/6UgGwIY4Fj7pSAbAhjgWPgAAgD/fTy0/AACAP2TMLT+zewbAYhAYPnicBsCGOBY+AACAP99PLT8AAIA/308tP+lIBsCGOBY+6UgGwIY4Fj4AAIA/308tPwAAgD8Wai0/EHoGwGKhFj4QegbAhjgWPgAAgD8="
+                }
+            },
+            {
+                "index": 2,
+                "data": {
+                    "base64": "dDhxv6CUkr7a3DE+dDhxv6CUkr7a3DE+dDhxv6CUkr7a3DE+dDhxv6CUkr7a3DE+AAAAgAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAgAAAAAAAAIA/AAAAgAAAAAAAAIA/AAAAgAAAAAAAAIA/AAAAgAAAAAAAAIA/AAAAgAAAAAAAAIA/AAAAgAAAAAAAAIA//C1wPwdLmb5IxDE+/C1wPwdLmb5IxDE+/C1wPwdLmb5IxDE+/C1wPwdLmb5IxDE+"
+                }
+            },
+            {
+                "index": 3,
+                "data": {
+                    "base64": "Ci4qPmfXTj3VG3w/AACAvwouKj5x10491Rt8PwAAgL8KLio+ctdOPdUbfD8AAIC/Ci4qPmbXTj3VG3w/AACAvwhldT+I15G+AAAAAAAAgL9TanY/ksmKvgAAAAAAAIC/CWN2P1P9ir4AAAAAAACAv19ddT8SC5K+AAAAAAAAgL9X8nQ/8tKUPgAAAAAAAIC/SfJ0P03TlD4AAAAAAACAv0vydD9M05Q+AAAAAAAAgL9Y8nQ/8NKUPgAAAAAAAIC/L1spPv4gWL3rHHy/AACAv8VbKT6gGVi96hx8vwAAgL/CWyk+1xlYveocfL8AAIC/K1spPjMhWL3rHHy/AACAvw=="
+                }
+            }
+        ],
+        "subMeshes": [
+            {
+                "material": 0,
+                "topology": "TriangleList",
+                "indexed": true,
+                "count": 24,
+                "indexType": "16",
+                "indexData": {
+                    "base64": "AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8A"
+                }
+            }
+        ]
+    }
+]

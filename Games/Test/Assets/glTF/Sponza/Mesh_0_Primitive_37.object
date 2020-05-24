@@ -1,0 +1,103 @@
+[
+    {
+        "objectClass": "Mesh",
+        "objectID": 0,
+        "objectProperties": {},
+        "vertexCount": 66,
+        "vertexInputState": {
+            "attributes": [
+                {
+                    "semantic": "Position",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 0,
+                    "offset": 0
+                },
+                {
+                    "semantic": "TexCoord",
+                    "index": 0,
+                    "format": "R32G32_Float",
+                    "buffer": 1,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Normal",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 2,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Tangent",
+                    "index": 0,
+                    "format": "R32G32B32A32_Float",
+                    "buffer": 3,
+                    "offset": 0
+                }
+            ],
+            "buffers": [
+                {
+                    "index": 0,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 1,
+                    "stride": 8,
+                    "perInstance": false
+                },
+                {
+                    "index": 2,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 3,
+                    "stride": 16,
+                    "perInstance": false
+                }
+            ]
+        },
+        "materials": [
+            "Material"
+        ],
+        "vertexData": [
+            {
+                "index": 0,
+                "data": {
+                    "base64": "EceiROHDz0MyrQ9EEceiRMbYWEQyrQ9EEceiRGCVHUSteiJCEceiROHDz0OteiJCRcOiRI/eJkTheuZBeb+iRMoQL0S6SVBA4beiRMbYWER2cQjC4reiRIX4MkR2cQjCSrCiRMoQL0TD847CsqiiRMbYWESGKCDEfqyiRNUhJ0QBLcLCsqiiRGCVHUTMrtnCsqiiROHDz0OGKCDEsqiiROHDz0PMrtnCZuayxOHDz0MyrQ9EZuayxMbYWEQyrQ9EEceiRMbYWEQyrQ9EEceiROHDz0MyrQ9EZuayxOHDz0OGKCDEZuayxMbYWESGKCDEZuayxMbYWEQyrQ9EZuayxOHDz0MyrQ9EsqiiROHDz0OGKCDEsqiiRMbYWESGKCDEZuayxMbYWESGKCDEZuayxOHDz0OGKCDEoJCyxLivJ8DuEyHElhIKw7ivJ8DnEyHElhIKw0kuVUPnEyHEoJCyxFW5yUPuEyHEjob8wv9SekNQDCHEI2rJwvSNjUO4BCHENV59wlW5yUOI9SDENV59wmpdlUOJ9SDESNDPwfSNjUNZ5iDEGsaiRFW5yUMm1yDELNS6vhRge0PC3iDETDc2QUkuVUMp1yDEGsaiRLivJ8Am1yDETDc2QbivJ8Ap1yDEoJCyxFW5yUPuEyHEoJCyxFW5yUPggQ9EoJCyxLivJ8DggQ9EoJCyxLivJ8DuEyHEQeH8w9U/iUPigQ9EQeH8w6wN9ELigQ9EoJCyxLivJ8DggQ9EoJCyxFW5yUPggQ9EogQPw7ivJ8DigQ9ESlt+w1W5yUPigQ9ENKizw6wN9ELigQ9ENKizw9U/iUPigQ9EogQPw2/wbEPigQ9EXZ0BQ1W5yUPjgQ9Eb3CiQW/wbEPjgQ9Efi1qQ5dXiUPjgQ9E6Lm+Q5dXiUPjgQ9Efi1qQ14r80LjgQ9EGsaiRFW5yUPngQ9Eb3CiQbivJ8DjgQ9E6Lm+Q14r80LjgQ9EGsaiRLivJ8DngQ9EGsaiRFW5yUPngQ9EGsaiRFW5yUMm1yDEGsaiRLivJ8Am1yDEGsaiRLivJ8DngQ9E"
+                }
+            },
+            {
+                "index": 1,
+                "data": {
+                    "base64": "6Nk0QQAAgD/o2TRB2F+Wvk5iHEG4HsU+TmIcQQAAgD/c1xtBqKSOPgisGkE4PD0+K/YYQdhflr4r9hhBKFwPPuY/F0E4PD0+HVr6QNhflr5AExZBchuNPqCJFUG4HsU+HVr6QAAAgD+giRVBAACAPwMJmUEAAIA/AwmZQdhflr7o2TRB2F+WvujZNEEAAIA/cN+0QQAAgD9w37RB2F+WvgMJmUHYX5a+AwmZQQAAgD8dWvpAAACAPx1a+kDYX5a+AAAAANhflr4AAAAAAACAPwAAAAAAhkk8VFKbQACGSTxUUptAeqVMvwAAAADM7sG/Dr6cQNxocL9O0Z9AuvyHvxpRpEDM7sG/GlGkQHyDj78U0KhAuvyHvwRWJEHM7sG/9+SrQABvcb8OT61AeqVMvwRWJEEAhkk8Dk+tQACGSTz5oO1BzO7BvwP4yEHM7sG/A/jIQQCGSTz5oO1BAIZJPNAzrUEK14O/0DOtQWC66b4D+MhBAIZJPAP4yEHM7sG/hkmiQQCGSTw6o6VBzO7Bv8fLqEFguum+x8uoQQrXg7+GSaJBZohjv00VmkHM7sG/cF+dQWaIY78H8JZB+u2Dv2+BkkH67YO/B/CWQajo6L6amW1BzO7Bv3BfnUEAhkk8b4GSQajo6L6amW1BAIZJPJqZbUHM7sG/BFYkQczuwb8EViRBAIZJPJqZbUEAhkk8"
+                }
+            },
+            {
+                "index": 2,
+                "data": {
+                    "base64": "AACAvwAAAAAAAACA/v9/v24SA7oVt1E58v9/v0lJnbpoEgM6AACAvwAAAAAAAACAuP9/v0ryMLsmSZ06wP9/vwaAt7orSR077P9/vwAAAIAHt9E6tP5/vwAAAIAvb847wP9/vwaAtzorSR07/v9/v24SAzoVt1E5uP9/v0ryMDsmSZ068v9/v0lJnTpoEgM6AACAvwAAAAAAAACAAACAvwAAAAAAAACAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAgAAAAAAAAIA/AAAAgAAAAAAAAIA/CLdRuZibxLru/38/AAAAgBe3UbkAAIA/QhIDus+2Ubuo/38/yO3rusjt67rK/38/mJvEugAAAIDu/38/L2/OuwAAAIC0/n8/yO3rusjt6zrK/38/AAAAgBe3UTkAAIA/QhIDus+2UTuo/38/CLdRuZibxDru/38/AAAAgAAAAAAAAIA/AAAAgAAAAAAAAIA/AACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAAAAAAAAAAAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAIAAAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAACAAACAvwAAAAAAAACAAACAvwAAAAAAAACAAACAvwAAAAAAAACA"
+                }
+            },
+            {
+                "index": 3,
+                "data": {
+                    "base64": "AAAAAHwo+zQAAIA/AACAv9m2UTkF2PI1AACAPwAAgL9+CwM6MY+0OP//fz8AAIC/AAAAAAAAAAAAAIA/AACAvyNJnTpJYdk19f9/PwAAgL+6RR07E1kbOdH/fz8AAIC/CbfROtPr/7Ds/38/AACAvypvzjuPOX6ys/5/PwAAgL+LRR07G6MjudD/fz8AAIC/6rZROR3Rt7UAAIA/AACAv8pJnTq+eLk29f9/PwAAgL/SDAM6AfKRuP7/fz8AAIC/AAAAAM3s+7QAAIA/AACAvwAAAAAAAAAAAACAPwAAgL8AAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAAgL8AAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAAgL8AAIC/AAAAAAAAAAAAAIC/AACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AbOHNgAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD+SvRY3srpROQAAgL8AAIA/WRShNvPAgzAAAIC///9/P6DIpzfAFgM6AACAv+b/fz+684i48enrOgAAgL/t/38/hUTVMZibxDoAAIC/tP5/P5sPCzMrb847AACAv+X/fz8nGG44currOgAAgL8AAIA/UNCVtsQCdTAAAIC///9/P7bduLcwFwM6AACAvwAAgD/qO2o3drFROQAAgL8AAIA/i6qHtgAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAAgL8AAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAgL8AAIC/d8ehtgAAAAAAAIC/AACAvxegirYAAAAAAACAvwAAgL9TWYq3AAAAAAAAgL8AAIC/ISOQtwAAAAAAAIC/AACAv1OYRjgAAAAAAACAvwAAgL8hNDE4AAAAAAAAgL8AAIC/YOEXOAAAAAAAAIC/AACAv9QYVDgAAAAAAACAvwAAgL+XNEU4AAAAAAAAgL8AAIC/lnYtuAAAAAAAAIC/AACAv7zw3rcAAAAAAACAvwAAgL9ENjq4AAAAAAAAgL8AAIC/k1JeNwAAAAAAAIC/AACAvz8NfLcAAAAAAACAvwAAgL8NNYs1AAAAAAAAgL8AAIC/gEeGNgAAAAAAAIC/AACAvzehIDcAAAAAAACAvwAAgL8cy0e2AAAAAAAAgL8AAAAAAAAAAAAAgD8AAIC/AAAAAAAAAAAAAIA/AACAvwAAAAAAAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAIC/"
+                }
+            }
+        ],
+        "subMeshes": [
+            {
+                "material": 0,
+                "topology": "TriangleList",
+                "indexed": true,
+                "count": 162,
+                "indexType": "16",
+                "indexData": {
+                    "base64": "AAABAAIAAAACAAMABAACAAEABQAEAAEABQABAAYABQAGAAcABgAIAAcABgAJAAgACgAIAAkACwAKAAkADAALAAkADAANAAsADgAPABAADgAQABEAEgATABQAEgAUABUAFgAXABgAFgAYABkAGgAbABwAGgAcAB0AHgAdABwAHwAdAB4AIAAdAB8AIAAfACEAIgAgACEAIgAjACAAJAAjACIAJQAjACQAJgAjACUAJgAlACcAKAApACoAKAAqACsALAAtAC4ALAAuAC8AMAAuAC0AMQAsAC8AMAAtADIAMQAzACwAMAAyADQAMwA0ADIAMwAxADQANQA0ADEANQA2ADQANQA3ADYAOAA3ADUAOQA2ADcAOAA1ADoAOQA7ADYAPAA4ADoAOwA5ADwAPAA6AD0AOwA8AD0APgA/AEAAPgBAAEEA"
+                }
+            }
+        ]
+    }
+]

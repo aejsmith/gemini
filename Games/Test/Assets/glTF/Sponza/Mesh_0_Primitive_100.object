@@ -1,0 +1,103 @@
+[
+    {
+        "objectClass": "Mesh",
+        "objectID": 0,
+        "objectProperties": {},
+        "vertexCount": 50,
+        "vertexInputState": {
+            "attributes": [
+                {
+                    "semantic": "Position",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 0,
+                    "offset": 0
+                },
+                {
+                    "semantic": "TexCoord",
+                    "index": 0,
+                    "format": "R32G32_Float",
+                    "buffer": 1,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Normal",
+                    "index": 0,
+                    "format": "R32G32B32_Float",
+                    "buffer": 2,
+                    "offset": 0
+                },
+                {
+                    "semantic": "Tangent",
+                    "index": 0,
+                    "format": "R32G32B32A32_Float",
+                    "buffer": 3,
+                    "offset": 0
+                }
+            ],
+            "buffers": [
+                {
+                    "index": 0,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 1,
+                    "stride": 8,
+                    "perInstance": false
+                },
+                {
+                    "index": 2,
+                    "stride": 12,
+                    "perInstance": false
+                },
+                {
+                    "index": 3,
+                    "stride": 16,
+                    "perInstance": false
+                }
+            ]
+        },
+        "materials": [
+            "Material"
+        ],
+        "vertexData": [
+            {
+                "index": 0,
+                "data": {
+                    "base64": "aQzpxI/i/MLwDY7EIQPaRI/i/MLwDY7EIQPaRI/i/MK2o4FEaQzpxI/i/MK2o4FEIQPaRI/i/MK2o4FELFbaRGnfpkTC9oFEdF/pxGnfpkTC9oFEaQzpxI/i/MK2o4FEIQPaRI/i/MLwDY7ELFbaRGnfpkT6YI7ELFbaRGnfpkTC9oFEIQPaRI/i/MK2o4FEaQzpxI/i/MLwDY7EdF/pxGnfpkT6YI7ELFbaRGnfpkT6YI7EIQPaRI/i/MLwDY7EaQzpxI/i/MK2o4FEdF/pxGnfpkTC9oFEdF/pxGnfpkT6YI7EaQzpxI/i/MLwDY7E6JrnxH/K5cJunIzE6JrnxH/K5cI2MoBEoJHYRH/K5cI2MoBEoJHYRH/K5cJunIzEoJHYRH/K5cI2MoBE6JrnxH/K5cI2MoBE6JrnxERmqEQ2MoBEoJHYRERmqEQ2MoBEoJHYRH/K5cJunIzEoJHYRH/K5cI2MoBEoJHYRERmqEQ2MoBEoJHYRERmqERunIzE6JrnxH/K5cJunIzEoJHYRH/K5cJunIzEoJHYRERmqERunIzE6JrnxERmqERunIzE6JrnxH/K5cI2MoBE6JrnxH/K5cJunIzE6JrnxERmqERunIzE6JrnxERmqEQ2MoBELFbaRGnfpkTC9oFEoJHYRERmqEQ2MoBE6JrnxERmqEQ2MoBELFbaRGnfpkT6YI7EdF/pxGnfpkTC9oFEoJHYRERmqERunIzE6JrnxERmqERunIzEdF/pxGnfpkT6YI7EdF/pxGnfpkT6YI7E6JrnxERmqERunIzE"
+                }
+            },
+            {
+                "index": 1,
+                "data": {
+                    "base64": "gEiTQQTF1790tRNBBMXXv3S1E0ENcXRAgEiTQQ1xdEB0tRNBDXF0QHS1E0FRa/JAgEiTQVFr8kCASJNBDXF0QJ2AbkANcXRAnYBuQFFr8kB0tRNBUWvyQHS1E0ENcXRAyXauwA1xdEDJdq7AUWvyQJ2AbkBRa/JAnYBuQA1xdECASJNBDXF0QIBIk0FRa/JA8lK/QVFr8kDyUr9BDXF0QIBIk0EExde/gEiTQQ1xdEB0tRNBDXF0QHS1E0EExde/dLUTQQ1xdECASJNBDXF0QIBIk0FRa/JAdLUTQVFr8kCdgG5ADXF0QHS1E0ENcXRAdLUTQVFr8kCdgG5AUWvyQMl2rsANcXRAnYBuQA1xdECdgG5AUWvyQMl2rsBRa/JAgEiTQQ1xdEDyUr9BDXF0QPJSv0FRa/JAgEiTQVFr8kB0tRNBUWvyQHS1E0FRa/JAgEiTQVFr8kCdgG5AUWvyQIBIk0FRa/JAnYBuQFFr8kDyUr9BUWvyQPJSv0FRa/JAyXauwFFr8kDJdq7AUWvyQA=="
+                }
+            },
+            {
+                "index": 2,
+                "data": {
+                    "base64": "AAAAAAAAgL8AAACAAAAAAAAAgL8AAACAAAAAAAAAgL8AAACAAAAAAAAAgL8AAACAAAAAAOLt67rm/38/AAAAAOLt67rm/38/AAAAAOLt67rm/38/AAAAAOLt67rm/38/5v9/P+Lt67oAAACA5v9/P+Lt67oAAACA5v9/P+Lt67oAAACA5v9/P+Lt67oAAACAAAAAAOLt67rm/3+/AAAAAOLt67rm/3+/AAAAAOLt67rm/3+/AAAAAOLt67rm/3+/5v9/v+Lt67oAAACA5v9/v+Lt67oAAACA5v9/v+Lt67oAAACA5v9/v+Lt67oAAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAgD8AAACAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAACAAACAvwAAAAAAAACAAACAvwAAAAAAAACAAACAvwAAAAAAAACAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACABq+8PuR7Wj8Gr7w+Bq+8PuR7Wj8Gr7w+Bq+8vuR7Wj8Gr7w+Bq+8PuR7Wj8Gr7y+Bq+8vuR7Wj8Gr7w+Bq+8PuR7Wj8Gr7y+Bq+8vuR7Wj8Gr7y+Bq+8vuR7Wj8Gr7y+Bq+8vuR7Wj8Gr7y+Bq+8vuR7Wj8Gr7y+"
+                }
+            },
+            {
+                "index": 3,
+                "data": {
+                    "base64": "AACAvwAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAAgL8AAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAAgL8AAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAIC/AAAAAAAAAAAAAIA/AACAvwAAAAAAAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAAgL8AAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAgL8AAIC/AAAAAAAAAAAAAIA/AACAvwAAAAAAAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAIC/AAAAAAAAAAAAAIA/AACAvwAAAAAAAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAIC/AAAAAAAAAAAAAIA/AACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8AAIA/AAAAAAAAAAAAAIC/AACAPwAAAAAAAAAAAACAvwAAgD8AAAAAAAAAAAAAgL8="
+                }
+            }
+        ],
+        "subMeshes": [
+            {
+                "material": 0,
+                "topology": "TriangleList",
+                "indexed": true,
+                "count": 84,
+                "indexType": "16",
+                "indexData": {
+                    "base64": "AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAGAAZABoAGAAaABsAHAAdAB4AHAAeAB8AIAAhACIAIAAiACMAJAAlACYAJAAmACcAKAApACoAKwApACgAKAAqACwAKwAtACkALAAqAC4ALAAuAC8AMAAtACsAMAAxAC0A"
+                }
+            }
+        ]
+    }
+]
