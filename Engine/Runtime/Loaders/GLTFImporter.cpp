@@ -34,18 +34,22 @@
 
 #include <memory>
 
-static constexpr char kRequiredVersion[]    = "2.0";
+static constexpr char kRequiredVersion[]            = "2.0";
 
-static constexpr uint32_t GL_POINTS         = 0;
-static constexpr uint32_t GL_LINES          = 1;
-static constexpr uint32_t GL_LINE_STRIP     = 3;
-static constexpr uint32_t GL_TRIANGLES      = 4;
-static constexpr uint32_t GL_TRIANGLE_STRIP = 5;
-static constexpr uint32_t GL_TRIANGLE_FAN   = 6;
+static constexpr uint32_t GL_POINTS                 = 0;
+static constexpr uint32_t GL_LINES                  = 1;
+static constexpr uint32_t GL_LINE_STRIP             = 3;
+static constexpr uint32_t GL_TRIANGLES              = 4;
+static constexpr uint32_t GL_TRIANGLE_STRIP         = 5;
+static constexpr uint32_t GL_TRIANGLE_FAN           = 6;
 
-static constexpr uint32_t GL_UNSIGNED_BYTE  = 5121;
-static constexpr uint32_t GL_UNSIGNED_SHORT = 5123;
-static constexpr uint32_t GL_FLOAT          = 5126;
+static constexpr uint32_t GL_UNSIGNED_BYTE          = 5121;
+static constexpr uint32_t GL_UNSIGNED_SHORT         = 5123;
+static constexpr uint32_t GL_FLOAT                  = 5126;
+
+static constexpr uint32_t GL_CLAMP_TO_EDGE          = 33071;
+static constexpr uint32_t GL_MIRRORED_REPEAT        = 33648;
+static constexpr uint32_t GL_REPEAT                 = 10497;
 
 static constexpr uint32_t kInvalidIndex     = std::numeric_limits<uint32_t>::max();
 
@@ -807,17 +811,63 @@ bool GLTFImporter::LoadSamplers()
 
     for (const rapidjson::Value& entry : samplers.GetArray())
     {
-        if (!entry.IsObject())
+        if (!entry.IsObject() ||
+            (entry.HasMember("magFilter") && !entry["magFilter"].IsUint()) ||
+            (entry.HasMember("minFilter") && !entry["minFilter"].IsUint()) ||
+            (entry.HasMember("wrapS")     && !entry["wrapS"].IsUint()) ||
+            (entry.HasMember("wrapT")     && !entry["wrapT"].IsUint()))
         {
             LogError("%s: Sampler has missing/invalid properties", mPath.GetCString());
             return false;
         }
 
-        // TODO: We don't handle non-default sampler properties right now.
-        if (!entry.ObjectEmpty())
+        Sampler& sampler = mSamplers.emplace_back();
+
+        /* We ignore filtering settings at the moment, it is intended that
+         * in future texture filtering behaviour should be driven by engine
+         * settings. TextureLoader will just always use trilinear filtering and
+         * generate mipmaps right now. Not sure if there's ever going to be
+         * any case where we would actually want the glTF settings to override
+         * our settings. */
+        if (entry.HasMember("magFilter"))
         {
-            LogError("%s: Non-default samplers are not currently supported", mPath.GetCString());
-            return false;
+            LogWarning("%s: Sampler filter settings are currently ignored", mPath.GetCString());
+        }
+
+        if (entry.HasMember("minFilter"))
+        {
+            LogWarning("%s: Sampler filter settings are currently ignored", mPath.GetCString());
+        }
+
+        auto ConvertWrapMode = [&] (const uint32_t  wrapMode,
+                                    GPUAddressMode& outMode) -> bool
+        {
+            switch (wrapMode)
+            {
+                case GL_REPEAT:          outMode = kGPUAddressMode_Repeat;  return true;
+                case GL_CLAMP_TO_EDGE:   outMode = kGPUAddressMode_Clamp; return true;
+                case GL_MIRRORED_REPEAT: outMode = kGPUAddressMode_MirroredRepeat; return true;
+
+                default:
+                    LogError("%s: Sampler has unhandled wrap mode %u", mPath.GetCString(), wrapMode);
+                    return false;
+            }
+        };
+
+        if (entry.HasMember("wrapS"))
+        {
+            if (!ConvertWrapMode(entry["wrapS"].GetUint(), sampler.wrapS))
+            {
+                return false;
+            }
+        }
+
+        if (entry.HasMember("wrapT"))
+        {
+            if (!ConvertWrapMode(entry["wrapT"].GetUint(), sampler.wrapT))
+            {
+                return false;
+            }
         }
     }
 
@@ -904,7 +954,8 @@ bool GLTFImporter::LoadTextures()
     for (const rapidjson::Value& entry : textures.GetArray())
     {
         if (!entry.IsObject() ||
-            !entry.HasMember("source") || !entry["source"].IsUint())
+            !entry.HasMember("source")  || !entry["source"].IsUint() ||
+            (entry.HasMember("sampler") && !entry["sampler"].IsUint()))
         {
             LogError("%s: Texture has missing/invalid properties", mPath.GetCString());
             return false;
@@ -918,6 +969,21 @@ bool GLTFImporter::LoadTextures()
         {
             LogError("%s: Image %u does not exist", mPath.GetCString(), texture.image);
             return false;
+        }
+
+        if (entry.HasMember("sampler"))
+        {
+            texture.sampler = entry["sampler"].GetUint();
+
+            if (texture.sampler >= mSamplers.size())
+            {
+                LogError("%s: Sampler %u does not exist", mPath.GetCString(), texture.sampler);
+                return false;
+            }
+        }
+        else
+        {
+            texture.sampler = kInvalidIndex;
         }
     }
 
@@ -1305,6 +1371,10 @@ bool GLTFImporter::GenerateTexture(const uint32_t textureIndex,
 
     const Image& image = mImages[texture.image];
 
+    const Sampler sampler = (texture.sampler != kInvalidIndex)
+                                ? mSamplers[texture.sampler]
+                                : Sampler();
+
     /* We'll just save out the image data into the asset filesystem, since it's
      * either JPEG or PNG and we can load those directly. */
     const Path assetPath = mAssetDir / StringUtils::Format("Texture_%u", textureIndex);
@@ -1356,11 +1426,15 @@ bool GLTFImporter::GenerateTexture(const uint32_t textureIndex,
             "       \"objectClass\": \"%s\",\n"
             "       \"objectID\": 0,\n"
             "       \"objectProperties\": {\n"
+            "           \"addressU\": \"%s\",\n"
+            "           \"addressV\": \"%s\",\n"
             "           \"sRGB\": %s\n"
             "       }\n"
             "   }\n"
             "]\n",
             loaderClass,
+            MetaType::Lookup<GPUAddressMode>().GetEnumConstantName(sampler.wrapS),
+            MetaType::Lookup<GPUAddressMode>().GetEnumConstantName(sampler.wrapT),
             (sRGB) ? "true" : "false");
 
         Path fsPath = baseFSPath + ".loader";

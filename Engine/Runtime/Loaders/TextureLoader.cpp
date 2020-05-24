@@ -17,9 +17,11 @@
 #include "Loaders/TextureLoader.h"
 
 TextureLoader::TextureLoader() :
-    addressMode (kGPUAddressMode_Repeat),
-    sRGB        (true),
-    mFormat     (kPixelFormat_Unknown)
+    addressU (kGPUAddressMode_Repeat),
+    addressV (kGPUAddressMode_Repeat),
+    addressW (kGPUAddressMode_Repeat),
+    sRGB     (true),
+    mFormat  (kPixelFormat_Unknown)
 {
 }
 
@@ -35,9 +37,9 @@ GPUSamplerDesc TextureLoader::GetSamplerDesc() const
     samplerDesc.magFilter     = kGPUFilter_Linear;
     samplerDesc.minFilter     = kGPUFilter_Linear;
     samplerDesc.mipmapFilter  = kGPUFilter_Linear;
-    samplerDesc.addressU      = this->addressMode;
-    samplerDesc.addressV      = this->addressMode;
-    samplerDesc.addressW      = this->addressMode;
+    samplerDesc.addressU      = this->addressU;
+    samplerDesc.addressV      = this->addressV;
+    samplerDesc.addressW      = this->addressW;
 
     return samplerDesc;
 }

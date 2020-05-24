@@ -26,8 +26,10 @@ class TextureLoader : public AssetLoader
     CLASS("constructable": false);
 
 public:
-    /** Addressing mode for sampling the texture (default Clamp). */
-    PROPERTY() GPUAddressMode   addressMode;
+    /** Addressing mode for sampling the texture (default Repeat). */
+    PROPERTY() GPUAddressMode   addressU;
+    PROPERTY() GPUAddressMode   addressV;
+    PROPERTY() GPUAddressMode   addressW;
 
     /** Whether to use an sRGB format (default true). */
     PROPERTY() bool             sRGB;

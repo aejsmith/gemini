@@ -141,9 +141,16 @@ private:
     struct TextureDef
     {
         uint32_t                    image;
+        uint32_t                    sampler;
 
         Texture2DPtr                asset;
         bool                        sRGB;
+    };
+
+    struct Sampler
+    {
+        GPUAddressMode              wrapS = kGPUAddressMode_Repeat;
+        GPUAddressMode              wrapT = kGPUAddressMode_Repeat;
     };
 
 private:
@@ -183,6 +190,7 @@ private:
     std::vector<MeshDef>            mMeshes;
     std::vector<Node>               mNodes;
     std::vector<TextureDef>         mTextures;
+    std::vector<Sampler>            mSamplers;
 
     std::vector<uint32_t>           mScene;
 
