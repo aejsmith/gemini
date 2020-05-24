@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_LIGHTING_H
-#define SHADERS_LIGHTING_H
+#pragma once
 
 #include "LightingDefs.h"
 
@@ -280,5 +279,3 @@ float3 CalculateLight(const LightParams   light,
 
     return result;
 }
-
-#endif /* SHADERS_LIGHTING_H */

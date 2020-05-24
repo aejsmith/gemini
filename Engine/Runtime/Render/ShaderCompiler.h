@@ -47,7 +47,7 @@ public:
         const ShaderTechnique*  technique;
     };
 
-    using SourceList          = std::list<Path>;
+    using SourceSet           = HashSet<Path>;
 
 public:
                                 ShaderCompiler(Options options);
@@ -64,7 +64,7 @@ public:
     GPUShaderCode               MoveCode() const        { Assert(IsCompiled()); return std::move(mCode); }
 
     /** After compilation, gets a list of source files referenced by the shader. */
-    const SourceList&           GetSourceFiles() const  { return mSourceFiles; }
+    const SourceSet&            GetSourceFiles() const  { return mSourceFiles; }
 
     static bool                 CompileFile(Path                 path,
                                             std::string          function,
@@ -88,6 +88,6 @@ private:
     Options                     mOptions;
     std::string                 mSource;
     GPUShaderCode               mCode;
-    SourceList                  mSourceFiles;
+    SourceSet                   mSourceFiles;
 
 };

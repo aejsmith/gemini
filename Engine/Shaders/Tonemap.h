@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_TONEMAP_H
-#define SHADERS_TONEMAP_H
+#pragma once
 
 #include "ShaderDefs.h"
 
@@ -23,5 +22,3 @@
 
 #define kTonemapArguments_SourceTexture 0
 #define kTonemapArgumentsCount          1
-
-#endif /* SHADERS_TONEMAP_H */

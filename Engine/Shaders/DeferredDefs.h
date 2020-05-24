@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_DEFERREDDEFS_H
-#define SHADERS_DEFERREDDEFS_H
+#pragma once
 
 #include "LightingDefs.h"
 
@@ -118,5 +117,3 @@ struct DeferredCullingDebugConstants
     shader_uint2    tileDimensions;
     shader_uint     maxLightCount;
 };
-
-#endif /* SHADERS_DEFERREDDEFS_H */

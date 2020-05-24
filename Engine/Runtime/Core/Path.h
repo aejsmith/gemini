@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "Core/Hash.h"
 #include "Core/String.h"
 
 #include <algorithm>
@@ -214,4 +215,9 @@ inline Path& Path::operator +=(const std::string& string)
 inline Path Path::operator +(const std::string& string) const
 {
     return Path(*this) += string;
+}
+
+inline size_t HashValue(const Path& path)
+{
+    return HashValue(path.GetString());
 }

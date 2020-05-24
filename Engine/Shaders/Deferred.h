@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_DEFERRED_H
-#define SHADERS_DEFERRED_H
+#pragma once
 
 #include "DeferredDefs.h"
 #include "Lighting.h"
@@ -82,5 +81,3 @@ void DecodeGBuffer(const DeferredPSOutput output,
     outMaterial = material;
     outSurface  = CalculateSurfaceParams(position, normal);
 }
-
-#endif /* SHADERS_DEFERRED_H */

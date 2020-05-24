@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_SHADERDEFS_H
-#define SHADERS_SHADERDEFS_H
+#pragma once
 
 /**
  * Compatibility types for code that needs to be shared between C++ and HLSL.
@@ -253,5 +252,3 @@ float3 ViewPixelPositionToWorld(uint2 targetPos, float depth)
     parameterName ## _texture.Sample(parameterName ## _sampler, location)
 
 #endif /* __HLSL__ */
-
-#endif /* SHADERS_SHADERDEFS_H */

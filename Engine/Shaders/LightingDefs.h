@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_LIGHTINGDEFS_H
-#define SHADERS_LIGHTINGDEFS_H
+#pragma once
 
 #include "ShaderDefs.h"
 
@@ -61,5 +60,3 @@ struct LightParams
 #ifdef __cplusplus
 static_assert((sizeof(LightParams) % 16) == 0);
 #endif
-
-#endif /* SHADERS_LIGHTINGDEFS_H */

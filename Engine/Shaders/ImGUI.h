@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_IMGUI_H
-#define SHADERS_IMGUI_H
+#pragma once
 
 #include "ShaderDefs.h"
 
@@ -30,5 +29,3 @@ struct ImGUIConstants
 {
     shader_float4x4 projectionMatrix;
 };
-
-#endif /* SHADERS_IMGUI_H */

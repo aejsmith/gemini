@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_DEBUGPRIMITIVE_H
-#define SHADERS_DEBUGPRIMITIVE_H
+#pragma once
 
 #include "ShaderDefs.h"
 
@@ -25,5 +24,3 @@ struct DebugPrimitiveConstants
 };
 
 CBUFFER(DebugPrimitiveConstants, primitive, ViewEntity, EntityConstants);
-
-#endif /* SHADERS_DEBUGPRIMITIVE_H */

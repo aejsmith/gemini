@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SHADERS_FULLSCREEN_H
-#define SHADERS_FULLSCREEN_H
+#pragma once
 
 struct FullScreenPSInput
 {
@@ -41,5 +40,3 @@ FullScreenPSInput VSFullScreen(const uint vertexID : SV_VertexID)
 
     return output;
 }
-
-#endif /* SHADERS_FULLSCREEN_H */

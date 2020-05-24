@@ -109,9 +109,11 @@ bool ShaderCompiler::LoadSource(const Path&  path,
 
     outSource += StringUtils::Format("#line %zu \"%s\"", lineIndex, from.GetCString());
 
-    mSourceFiles.emplace_back(filePath);
+    const bool result = Preprocess(outSource, filePath, depth + 1);
 
-    return Preprocess(outSource, filePath, depth + 1);
+    mSourceFiles.emplace(filePath);
+
+    return result;
 }
 
 bool ShaderCompiler::Preprocess(std::string& ioSource,
@@ -127,6 +129,9 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
      * source in RenderDoc (we would need to set that up with the necessary
      * include paths on every use). Instead, we handle includes ourselves, and
      * substitute their content into the source passed to shaderc.
+     * 
+     * We also handle "pragma once" here, which prevents us from pasting
+     * multiple copies of the same source file into the output source.
      */
 
     size_t position  = 0;
@@ -149,7 +154,8 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
 
             if (tokens[0] == "#include")
             {
-                if (tokens[1].length() < 2 ||
+                if (tokens.size() < 2 ||
+                    tokens[1].length() < 2 ||
                     tokens[1][0] != '"' ||
                     tokens[1][tokens[1].length() - 1] != '"')
                 {
@@ -175,6 +181,21 @@ bool ShaderCompiler::Preprocess(std::string& ioSource,
                 ioSource.replace(position, newLine - position, includeSource);
 
                 newLine = position + includeSource.length();
+            }
+            else if (tokens[0] == "#pragma")
+            {
+                if (tokens.size() == 2 && tokens[1] == "once")
+                {
+                    if (mSourceFiles.find(path) != mSourceFiles.end())
+                    {
+                        ioSource = std::string();
+                        return true;
+                    }
+                    else
+                    {
+                        ioSource.replace(position, newLine - position, "// #pragma once");
+                    }
+                }
             }
         }
 
