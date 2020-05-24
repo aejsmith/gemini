@@ -32,10 +32,15 @@ class SkyboxRenderer final : public EntityRenderer
 public:
                                 SkyboxRenderer();
 
-    /** Texture to use for the skybox. */
+    /** Texture to use for the skybox. If null, the colour will be used. */
     VPROPERTY(TextureCubePtr, texture);
-    TextureCube*                GetTexture() const { return mTexture; }
+    TextureCube*                GetTexture() const  { return mTexture; }
     void                        SetTexture(TextureCube* const texture);
+
+    /** Solid colour to use when no texture is specified. */
+    VPROPERTY(glm::vec3, colour);
+    const glm::vec3&            GetColour() const   { return mColour; }
+    void                        SetColour(const glm::vec3& colour);
 
 protected:
                                 ~SkyboxRenderer();
@@ -43,7 +48,12 @@ protected:
     RenderEntityArray           CreateRenderEntities() override;
 
 private:
+    void                        UpdateMaterial();
+
+private:
     TextureCubePtr              mTexture;
+    glm::vec3                   mColour;
+
     MaterialPtr                 mMaterial;
 
     friend class SkyboxRenderEntity;

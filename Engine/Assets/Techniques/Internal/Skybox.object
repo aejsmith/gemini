@@ -7,6 +7,14 @@
             {
                 "name": "texture",
                 "type": "TextureCube"
+            },
+            {
+                "name": "colour",
+                "type": "Float3"
+            },
+            {
+                "name": "useTexture",
+                "type": "UInt"
             }
         ],
         "passes": [

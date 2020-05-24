@@ -43,5 +43,12 @@ PSInput VSMain(const uint vertexID : SV_VertexID)
 
 float4 PSMain(PSInput input) : SV_Target0
 {
-    return MaterialSample(texture, input.viewDirection);
+    if (useTexture)
+    {
+        return MaterialSample(texture, input.viewDirection);
+    }
+    else
+    {
+        return float4(colour, 1.0);
+    }
 }

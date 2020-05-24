@@ -45,7 +45,8 @@ SkyboxRenderEntity::SkyboxRenderEntity(const SkyboxRenderer& renderer) :
 {
 }
 
-SkyboxRenderer::SkyboxRenderer()
+SkyboxRenderer::SkyboxRenderer() :
+    mColour (0.0f, 0.0f, 0.0f)
 {
     ShaderTechniquePtr technique = AssetManager::Get().Load<ShaderTechnique>("Engine/Techniques/Internal/Skybox");
 
@@ -82,7 +83,13 @@ void SkyboxRenderer::SetTexture(TextureCube* const texture)
 {
     mTexture = texture;
     mMaterial->SetArgument("texture", mTexture);
+    mMaterial->SetArgument("useTexture", (texture) ? 1u : 0u);
+}
 
+void SkyboxRenderer::SetColour(const glm::vec3& colour)
+{
+    mColour = colour;
+    mMaterial->SetArgument("colour", mColour);
 }
 
 EntityRenderer::RenderEntityArray SkyboxRenderer::CreateRenderEntities()
