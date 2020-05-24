@@ -32,6 +32,8 @@
 
 #include "../../Shaders/ImGUI.h"
 
+#include <SDL.h>
+
 SINGLETON_IMPL(ImGUIManager);
 
 class ImGUIInputHandler final : public InputHandler
@@ -69,7 +71,8 @@ private:
 };
 
 ImGUIManager::ImGUIManager() :
-    mInputtingText  (false)
+    mInputtingText  (false),
+    mClipboardText  (nullptr)
 {
     ImGui::CreateContext();
 
@@ -77,6 +80,10 @@ ImGUIManager::ImGUIManager() :
     io.IniFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
+
+    io.GetClipboardTextFn = GetClipboardText;
+    io.SetClipboardTextFn = SetClipboardText;
+    io.ClipboardUserData  = this;
 
     /* Set up key mapping. */
     io.KeyMap[ImGuiKey_Tab]         = kInputCode_Tab;
@@ -112,6 +119,11 @@ ImGUIManager::ImGUIManager() :
 
 ImGUIManager::~ImGUIManager()
 {
+    if (mClipboardText)
+    {
+        SDL_free(mClipboardText);
+    }
+
     delete mInputHandler;
     delete mRenderer;
 }
@@ -152,6 +164,25 @@ void ImGUIManager::BeginFrame(OnlyCalledBy<Engine>)
 void ImGUIManager::Render(OnlyCalledBy<Engine>)
 {
     mRenderer->Render();
+}
+
+const char* ImGUIManager::GetClipboardText(void* const data)
+{
+    auto self = reinterpret_cast<ImGUIManager*>(data);
+
+    if (self->mClipboardText)
+    {
+        SDL_free(self->mClipboardText);
+    }
+
+    self->mClipboardText = SDL_GetClipboardText();
+    return self->mClipboardText;
+}
+
+void ImGUIManager::SetClipboardText(void* const       data,
+                                    const char* const text)
+{
+    SDL_SetClipboardText(text);
 }
 
 ImGUIInputHandler::ImGUIInputHandler() :

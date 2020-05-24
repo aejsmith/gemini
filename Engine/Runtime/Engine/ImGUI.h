@@ -40,8 +40,14 @@ public:
     void                    SetInputEnabled(const bool enable);
 
 private:
+    static const char*      GetClipboardText(void* const data);
+    static void             SetClipboardText(void* const       data,
+                                             const char* const text);
+
+private:
     ImGUIInputHandler*      mInputHandler;
     ImGUIRenderer*          mRenderer;
     bool                    mInputtingText;
+    char*                   mClipboardText;
 
 };
