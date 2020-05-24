@@ -72,7 +72,7 @@ DeferredPSOutput PSDeferredOpaque(PSInput input)
     material.occlusion  = occlusionSample.r;
 
     float3 normal = PerturbNormal(input.normal,
-                                  normalSample.xyz,
+                                  ((normalSample.xyz * 2.0f) - 1.0f) * normalScale,
                                   input.position,
                                   input.uv);
 

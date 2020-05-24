@@ -40,6 +40,11 @@
                 "default": {"asset": "Engine/Textures/DefaultNormal"}
             },
             {
+                "name": "normalScale",
+                "type": "Float3",
+                "default": [1.0, 1.0, 1.0]
+            },
+            {
                 "name": "occlusionTexture",
                 "type": "Texture2D",
                 "default": {"asset": "Engine/Textures/DummyWhite2D"}

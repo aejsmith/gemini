@@ -131,13 +131,15 @@ GLTFImporter::~GLTFImporter()
 {
 }
 
-bool GLTFImporter::Import(const Path&  path,
-                          const Path&  assetDir,
-                          World* const world)
+bool GLTFImporter::Import(const Path&             path,
+                          const Path&             assetDir,
+                          World* const            world,
+                          const GLTFImporterFlags flags)
 {
     mPath     = path;
     mAssetDir = assetDir;
     mWorld    = world;
+    mFlags    = flags;
 
     /* Parse the file content. */
     {
@@ -1121,6 +1123,11 @@ bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
     asset->SetArgument("emissiveFactor",   material.emissiveFactor);
     asset->SetArgument("metallicFactor",   material.metallicFactor);
     asset->SetArgument("roughnessFactor",  material.roughnessFactor);
+
+    if (material.normalTexture != kInvalidIndex && mFlags & kGLTFImporter_NormalMapYFlip)
+    {
+        asset->SetArgument("normalScale", glm::vec3(1.0f, -1.0f, 1.0f));
+    }
 
     const Path assetPath = mAssetDir / StringUtils::Format("Material_%u", materialIndex);
     if (!AssetManager::Get().SaveAsset(asset, assetPath))

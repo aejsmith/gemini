@@ -70,16 +70,15 @@ struct SurfaceParams
 };
 
 /**
- * Perturb an interpolated vertex normal based on a value sampled from a
- * normal map. Sampled normal is expected to be in the [0,1] range, will be
- * scaled by this function to [-1, 1]. Vertex normal need not be normalized,
- * will be done by this function.
+ * Perturb an interpolated vertex normal based on a tangent space ([-1, 1]
+ * range) normal value. Vertex normal need not be normalized, will be done by
+ * this function.
  *
  * Uses the method described by http://www.thetenthplanet.de/archives/1180 to
  * do this without pre-computed tangent/bitangent vectors.
  */
 float3 PerturbNormal(const float3 vertexNormal,
-                     const float3 sampledNormal,
+                     const float3 tangentNormal,
                      const float3 worldPosition,
                      const float2 uv)
 {
@@ -92,7 +91,6 @@ float3 PerturbNormal(const float3 vertexNormal,
     float3 T = normalize((dyUV.y * dxPos) - (dxUV.y * dyPos));
     float3 B = normalize(cross(N, T));
 
-    float3 tangentNormal = (sampledNormal * 2.0f) - 1.0f;
     return normalize(mul(tangentNormal, float3x3(T, B, N)));
 }
 

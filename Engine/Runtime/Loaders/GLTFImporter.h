@@ -32,6 +32,20 @@
 
 class ByteArray;
 
+/** glTF import behaviour flags. */
+enum GLTFImporterFlags : uint32_t
+{
+    kGLTFImporter_None = 0,
+
+    /**
+     * Although glTF specifies that normal maps should have Y as up, some
+     * models have been seen that have Y as down. This is OK if we were using
+     * precomputed tangents from the model which fix the sign, but we do not
+     * use them. This option can be set to flip the sign to fix these models.
+     */
+    kGLTFImporter_NormalMapYFlip = 1 << 0,
+};
+
 /**
  * Class for importing glTF files. This is different to a normal asset loader:
  * asset loaders are for loading a single asset, whereas glTF files contain
@@ -59,9 +73,10 @@ public:
      * generated during the process will be saved in the directory given by
      * asset manager path assetDir.
      */
-    bool                            Import(const Path&  path,
-                                           const Path&  assetDir,
-                                           World* const world);
+    bool                            Import(const Path&             path,
+                                           const Path&             assetDir,
+                                           World* const            world,
+                                           const GLTFImporterFlags flags = kGLTFImporter_None);
 
 private:
     struct Accessor
@@ -179,6 +194,7 @@ private:
     Path                            mPath;
     Path                            mAssetDir;
     World*                          mWorld;
+    GLTFImporterFlags               mFlags;
 
     rapidjson::Document             mDocument;
 
