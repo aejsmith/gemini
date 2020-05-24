@@ -133,12 +133,12 @@ GLTFImporter::~GLTFImporter()
 
 bool GLTFImporter::Import(const Path&             path,
                           const Path&             assetDir,
-                          World* const            world,
+                          Entity* const           entity,
                           const GLTFImporterFlags flags)
 {
     mPath     = path;
     mAssetDir = assetDir;
-    mWorld    = world;
+    mEntity   = entity;
     mFlags    = flags;
 
     /* Parse the file content. */
@@ -1324,7 +1324,7 @@ bool GLTFImporter::GenerateScene()
         /* If we have just one primitive, we'll create it under the root, else
          * we'll create a parent entity to maintain the transform, and then put
          * each primitive as a child of that. */
-        Entity* const entity = mWorld->CreateEntity(std::move(entityName));
+        Entity* const entity = mEntity->CreateChild(std::move(entityName));
         entity->SetTransform(Transform(node.translation, node.rotation, node.scale));
 
         for (uint32_t primitiveIndex = 0; primitiveIndex < mesh.primitives.size(); primitiveIndex++)

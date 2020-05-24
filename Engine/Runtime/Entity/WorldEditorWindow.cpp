@@ -24,6 +24,8 @@
 #include "Entity/Entity.h"
 #include "Entity/World.h"
 
+#include "Loaders/GLTFImporter.h"
+
 WorldEditorWindow::WorldEditorWindow(World* const world) :
     DebugWindow     ("Entity", "World Editor"),
     mWorld          (world),
@@ -69,6 +71,7 @@ void WorldEditorWindow::RenderMenuBar()
     bool openSave         = false;
     bool openAddChild     = false;
     bool openAddComponent = false;
+    bool openGLTF         = false;
 
     if (ImGui::BeginMenu("World"))
     {
@@ -81,6 +84,7 @@ void WorldEditorWindow::RenderMenuBar()
     {
         openAddChild     = ImGui::MenuItem("Add Child...");
         openAddComponent = ImGui::MenuItem("Add Component...");
+        openGLTF         = ImGui::MenuItem("Import glTF...");
 
         ImGui::EndMenu();
     }
@@ -185,6 +189,63 @@ void WorldEditorWindow::RenderMenuBar()
         }
 
         if (ImGui::Button("Cancel", ImVec2(-1, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (openGLTF)
+    {
+        ImGui::OpenPopup("Import glTF");
+    }
+    if (ImGui::BeginPopupModal("Import glTF", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        static char assetDirBuf[128] = {};
+        static bool normalMapYFlip = false;
+
+        ImGui::Text("glTF file path");
+        ImGui::SameLine(130);
+
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        ImGui::PushItemWidth(-1);
+        ImGui::InputText("##file", &nameBuf[0], ArraySize(nameBuf));
+        ImGui::PopItemWidth();
+
+        ImGui::Text("Asset directory");
+        ImGui::SameLine(130);
+
+        ImGui::PushItemWidth(-1);
+        ImGui::InputText("##asset", &assetDirBuf[0], ArraySize(assetDirBuf));
+        ImGui::PopItemWidth();
+
+        ImGui::Checkbox("Flip normal map Y direction", &normalMapYFlip);
+
+        ImGui::Spacing();
+
+        if (ImGui::Button("OK", ImVec2(180, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+
+            GLTFImporterFlags flags = kGLTFImporter_None;
+
+            if (normalMapYFlip)
+            {
+                flags |= kGLTFImporter_NormalMapYFlip;
+            }
+
+            GLTFImporter importer;
+            importer.Import(nameBuf, assetDirBuf, mCurrentEntity, flags);
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(180, 0)))
         {
             ImGui::CloseCurrentPopup();
         }

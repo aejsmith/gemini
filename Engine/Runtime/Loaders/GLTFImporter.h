@@ -22,7 +22,7 @@
 #include "Engine/Mesh.h"
 #include "Engine/Texture.h"
 
-#include "Entity/World.h"
+#include "Entity/Entity.h"
 
 #include "GPU/GPUDefs.h"
 
@@ -46,6 +46,8 @@ enum GLTFImporterFlags : uint32_t
     kGLTFImporter_NormalMapYFlip = 1 << 0,
 };
 
+DEFINE_ENUM_BITWISE_OPS(GLTFImporterFlags);
+
 /**
  * Class for importing glTF files. This is different to a normal asset loader:
  * asset loaders are for loading a single asset, whereas glTF files contain
@@ -60,7 +62,7 @@ enum GLTFImporterFlags : uint32_t
  * This class is intended to be used as a one-time process to import/convert
  * a glTF file to a set of assets/entities usable by the engine. It will create
  * and save assets for all the textures/meshes/materials in the file, and then
- * create entities in the specified world composing the model.
+ * create entities in the world composing the model.
  */
 class GLTFImporter
 {
@@ -69,13 +71,13 @@ public:
                                     ~GLTFImporter();
 
     /**
-     * Imports the glTF file at the given filesystem path into world. Assets
-     * generated during the process will be saved in the directory given by
-     * asset manager path assetDir.
+     * Imports the glTF file at the given filesystem path into the world as a
+     * child of the specified entity. Assets generated during the process will
+     * be saved in the directory given by asset manager path assetDir.
      */
     bool                            Import(const Path&             path,
                                            const Path&             assetDir,
-                                           World* const            world,
+                                           Entity* const           entity,
                                            const GLTFImporterFlags flags = kGLTFImporter_None);
 
 private:
@@ -193,7 +195,7 @@ private:
 private:
     Path                            mPath;
     Path                            mAssetDir;
-    World*                          mWorld;
+    Entity*                         mEntity;
     GLTFImporterFlags               mFlags;
 
     rapidjson::Document             mDocument;
