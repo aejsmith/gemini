@@ -266,6 +266,14 @@ void Material::SetArgument(const ShaderParameter& parameter,
 
         }
 
+        /* If the argument is set to null, we'll set it back to the default. We
+         * always need valid resource arguments to be able to create argument
+         * sets. */
+        if (!resource)
+        {
+            resource = mShaderTechnique->GetDefaultResources()[parameter.argumentIndex];
+        }
+
         /* When resources change while we have an argument set, we need to
          * recreate it. */
         if (mArgumentSet)
