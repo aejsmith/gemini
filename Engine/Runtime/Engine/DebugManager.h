@@ -77,10 +77,9 @@ public:
      * World-space debug drawing API.
      */
 
-    void                        RenderPrimitives(const RenderView&          view,
-                                                 RenderGraph&               graph,
-                                                 const RenderResourceHandle texture,
-                                                 RenderResourceHandle&      outNewTexture);
+    void                        RenderPrimitives(const RenderView&     view,
+                                                 RenderGraph&          graph,
+                                                 RenderResourceHandle& ioDestTexture);
 
     void                        DrawPrimitive(const BoundingBox& box,
                                               const glm::vec3&   colour);

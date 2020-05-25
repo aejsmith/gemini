@@ -41,11 +41,10 @@ BasicRenderPipeline::~BasicRenderPipeline()
 {
 }
 
-void BasicRenderPipeline::Render(const RenderWorld&         world,
-                                 const RenderView&          view,
-                                 RenderGraph&               graph,
-                                 const RenderResourceHandle texture,
-                                 RenderResourceHandle&      outNewTexture)
+void BasicRenderPipeline::Render(const RenderWorld&    world,
+                                 const RenderView&     view,
+                                 RenderGraph&          graph,
+                                 RenderResourceHandle& ioDestTexture)
 {
     BasicRenderContext* const context = graph.NewTransient<BasicRenderContext>(graph, world, view);
 
@@ -75,10 +74,10 @@ void BasicRenderPipeline::Render(const RenderWorld&         world,
      * been created with. */
     RenderGraphPass& mainPass = graph.AddPass("BasicMain", kRenderGraphPassType_Render);
 
-    RenderTextureDesc colourTextureDesc(graph.GetTextureDesc(texture));
+    RenderTextureDesc colourTextureDesc(graph.GetTextureDesc(ioDestTexture));
     colourTextureDesc.format = kColourFormat;
 
-    RenderTextureDesc depthTextureDesc(graph.GetTextureDesc(texture));
+    RenderTextureDesc depthTextureDesc(graph.GetTextureDesc(ioDestTexture));
     depthTextureDesc.format = kDepthFormat;
 
     RenderResourceHandle colourTexture = graph.CreateTexture(colourTextureDesc);
@@ -94,15 +93,12 @@ void BasicRenderPipeline::Render(const RenderWorld&         world,
 
     /* Blit to the final output. */
     graph.AddBlitPass("BasicBlit",
-                      texture,
+                      ioDestTexture,
                       GPUSubresource{0, 0},
                       colourTexture,
                       GPUSubresource{0, 0},
-                      &outNewTexture);
+                      &ioDestTexture);
 
     /* Render debug primitives for the view. */
-    DebugManager::Get().RenderPrimitives(view,
-                                         graph,
-                                         outNewTexture,
-                                         outNewTexture);
+    DebugManager::Get().RenderPrimitives(view, graph, ioDestTexture);
 }

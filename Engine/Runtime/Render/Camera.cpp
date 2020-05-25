@@ -33,9 +33,8 @@ public:
     std::string             GetName() const override;
 
 protected:
-     void                   AddPasses(RenderGraph&               graph,
-                                      const RenderResourceHandle texture,
-                                      RenderResourceHandle&      outNewTexture) override;
+     void                   AddPasses(RenderGraph&          graph,
+                                      RenderResourceHandle& ioTexture) override;
 
 private:
     const Camera&           mCamera;
@@ -53,9 +52,8 @@ std::string CameraRenderLayer::GetName() const
     return std::string("Camera '") + mCamera.GetEntity()->GetPath() + std::string("'");
 }
 
-void CameraRenderLayer::AddPasses(RenderGraph&               graph,
-                                  const RenderResourceHandle texture,
-                                  RenderResourceHandle&      outNewTexture)
+void CameraRenderLayer::AddPasses(RenderGraph&          graph,
+                                  RenderResourceHandle& ioTexture)
 {
     Assert(mCamera.renderPipeline);
 
@@ -70,8 +68,7 @@ void CameraRenderLayer::AddPasses(RenderGraph&               graph,
     mCamera.renderPipeline->Render(*mCamera.GetEntity()->GetWorld()->GetRenderWorld(),
                                    view,
                                    graph,
-                                   texture,
-                                   outNewTexture);
+                                   ioTexture);
 }
 
 Camera::Camera() :

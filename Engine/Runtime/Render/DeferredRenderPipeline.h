@@ -82,11 +82,10 @@ public:
 
     void                                SetName(std::string name) override;
 
-    void                                Render(const RenderWorld&         world,
-                                               const RenderView&          view,
-                                               RenderGraph&               graph,
-                                               const RenderResourceHandle texture,
-                                               RenderResourceHandle&      outNewTexture) override;
+    void                                Render(const RenderWorld&    world,
+                                               const RenderView&     view,
+                                               RenderGraph&          graph,
+                                               RenderResourceHandle& ioDestTexture) override;
 
     /** Whether FXAA is enabled. */
     VPROPERTY(bool, enableFXAA);
@@ -123,7 +122,7 @@ private:
     void                                CreatePersistentResources();
 
     void                                CreateResources(DeferredRenderContext* const context,
-                                                        const RenderResourceHandle   outputTexture) const;
+                                                        const RenderResourceHandle   destTexture) const;
 
     void                                BuildDrawLists(DeferredRenderContext* const context) const;
     void                                PrepareLights(DeferredRenderContext* const context) const;
@@ -133,10 +132,10 @@ private:
     void                                AddLightingPass(DeferredRenderContext* const context) const;
     void                                AddUnlitPass(DeferredRenderContext* const context) const;
     void                                AddPostPasses(DeferredRenderContext* const context,
-                                                      RenderResourceHandle&        ioNewTexture) const;
+                                                      RenderResourceHandle&        ioDestTexture) const;
 
     void                                AddCullingDebugPass(DeferredRenderContext* const context,
-                                                            RenderResourceHandle&        ioNewTexture) const;
+                                                            RenderResourceHandle&        ioDestTexture) const;
 
     void                                DrawLightVolume(DeferredRenderContext* const context,
                                                         const RenderLight* const     light,

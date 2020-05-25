@@ -63,11 +63,11 @@ protected:
     /**
      * Add render passes to the render graph for this layer. The supplied
      * handle is the texture that the layer output should be written to. If the
-     * layer has anything to render, a new resource handle should be returned.
+     * layer has anything to render, the handle should be overwritten with a
+     * handle to a new version of the resource.
      */
-    virtual void            AddPasses(RenderGraph&               graph,
-                                      const RenderResourceHandle texture,
-                                      RenderResourceHandle&      outNewTexture) = 0;
+    virtual void            AddPasses(RenderGraph&          graph,
+                                      RenderResourceHandle& ioTexture) = 0;
 
 private:
     const uint8_t           mOrder;

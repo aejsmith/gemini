@@ -51,7 +51,7 @@ void RenderOutput::AddPasses(RenderGraph& graph,
     for (RenderLayer* layer : mLayers)
     {
         graph.SetCurrentLayer(layer);
-        layer->AddPasses(graph, outputTexture, outputTexture);
+        layer->AddPasses(graph, outputTexture);
     }
 }
 

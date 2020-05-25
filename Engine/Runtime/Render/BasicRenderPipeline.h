@@ -40,11 +40,10 @@ public:
     PROPERTY()
     glm::vec4               clearColour;
 
-    void                    Render(const RenderWorld&         world,
-                                   const RenderView&          view,
-                                   RenderGraph&               graph,
-                                   const RenderResourceHandle texture,
-                                   RenderResourceHandle&      outNewTexture) override;
+    void                    Render(const RenderWorld&    world,
+                                   const RenderView&     view,
+                                   RenderGraph&          graph,
+                                   RenderResourceHandle& ioDestTexture) override;
 
 protected:
                             ~BasicRenderPipeline();

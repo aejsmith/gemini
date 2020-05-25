@@ -321,11 +321,10 @@ void DeferredRenderPipeline::SetEnableFXAA(const bool enable)
     }
 }
 
-void DeferredRenderPipeline::Render(const RenderWorld&         world,
-                                    const RenderView&          view,
-                                    RenderGraph&               graph,
-                                    const RenderResourceHandle texture,
-                                    RenderResourceHandle&      outNewTexture)
+void DeferredRenderPipeline::Render(const RenderWorld&    world,
+                                    const RenderView&     view,
+                                    RenderGraph&          graph,
+                                    RenderResourceHandle& ioDestTexture)
 {
     RENDER_PROFILER_SCOPE("DeferredRenderPipeline");
 
@@ -334,7 +333,7 @@ void DeferredRenderPipeline::Render(const RenderWorld&         world,
     /* Get the visible entities and lights. */
     context->GetWorld().Cull(context->GetView(), kCullFlags_None, context->cullResults);
 
-    CreateResources(context, texture);
+    CreateResources(context, ioDestTexture);
     PrepareLights(context);
     BuildDrawLists(context);
     AddGBufferPasses(context);
@@ -342,38 +341,33 @@ void DeferredRenderPipeline::Render(const RenderWorld&         world,
     AddCullingPass(context);
     AddLightingPass(context);
     AddUnlitPass(context);
-
-    outNewTexture = texture;
-    AddPostPasses(context, outNewTexture);
+    AddPostPasses(context, ioDestTexture);
 
     if (mDebugLightCulling)
     {
-        AddCullingDebugPass(context, outNewTexture);
+        AddCullingDebugPass(context, ioDestTexture);
     }
 
     /* Render debug primitives for the view. */
-    DebugManager::Get().RenderPrimitives(view,
-                                         graph,
-                                         outNewTexture,
-                                         outNewTexture);
+    DebugManager::Get().RenderPrimitives(view, graph, ioDestTexture);
 }
 
 void DeferredRenderPipeline::CreateResources(DeferredRenderContext* const context,
-                                             const RenderResourceHandle   outputTexture) const
+                                             const RenderResourceHandle   destTexture) const
 {
     RenderGraph& graph = context->GetGraph();
 
-    const RenderTextureDesc& outputDesc = graph.GetTextureDesc(outputTexture);
+    const RenderTextureDesc& destDesc = graph.GetTextureDesc(destTexture);
 
     /* Calculate output dimensions in number of tiles. */
-    context->tilesWidth  = RoundUp(outputDesc.width,  static_cast<uint32_t>(kDeferredTileSize)) / kDeferredTileSize;
-    context->tilesHeight = RoundUp(outputDesc.height, static_cast<uint32_t>(kDeferredTileSize)) / kDeferredTileSize;
+    context->tilesWidth  = RoundUp(destDesc.width,  static_cast<uint32_t>(kDeferredTileSize)) / kDeferredTileSize;
+    context->tilesHeight = RoundUp(destDesc.height, static_cast<uint32_t>(kDeferredTileSize)) / kDeferredTileSize;
     context->tilesCount  = context->tilesWidth * context->tilesHeight;
 
     RenderTextureDesc textureDesc;
-    textureDesc.width                = outputDesc.width;
-    textureDesc.height               = outputDesc.height;
-    textureDesc.depth                = outputDesc.depth;
+    textureDesc.width                = destDesc.width;
+    textureDesc.height               = destDesc.height;
+    textureDesc.depth                = destDesc.depth;
 
     textureDesc.name                 = "DeferredColour";
     textureDesc.format               = kColourFormat;
@@ -903,7 +897,7 @@ void DeferredRenderPipeline::AddLightingPass(DeferredRenderContext* const contex
 }
 
 void DeferredRenderPipeline::AddPostPasses(DeferredRenderContext* const context,
-                                           RenderResourceHandle&        ioNewTexture) const
+                                           RenderResourceHandle&        ioDestTexture) const
 {
     RenderGraph& graph = context->GetGraph();
 
@@ -914,14 +908,14 @@ void DeferredRenderPipeline::AddPostPasses(DeferredRenderContext* const context,
 
     if (needIntermediate)
     {
-        RenderTextureDesc intermediateDesc = graph.GetTextureDesc(ioNewTexture);
+        RenderTextureDesc intermediateDesc = graph.GetTextureDesc(ioDestTexture);
         intermediateDesc.name = "PostProcess";
 
         currentTexture = graph.CreateTexture(intermediateDesc);
     }
     else
     {
-        currentTexture = ioNewTexture;
+        currentTexture = ioDestTexture;
     }
 
     mTonemapPass->AddPass(graph, context->colourTexture, currentTexture);
@@ -929,15 +923,15 @@ void DeferredRenderPipeline::AddPostPasses(DeferredRenderContext* const context,
     if (GetEnableFXAA())
     {
         const RenderResourceHandle sourceTexture = currentTexture;
-        currentTexture = ioNewTexture;
+        currentTexture = ioDestTexture;
         mFXAAPass->AddPass(graph, sourceTexture, currentTexture);
     }
 
-    ioNewTexture = currentTexture;
+    ioDestTexture = currentTexture;
 }
 
 void DeferredRenderPipeline::AddCullingDebugPass(DeferredRenderContext* const context,
-                                                 RenderResourceHandle&        ioNewTexture) const
+                                                 RenderResourceHandle&        ioDestTexture) const
 {
     RenderGraph& graph = context->GetGraph();
 
@@ -949,7 +943,7 @@ void DeferredRenderPipeline::AddCullingDebugPass(DeferredRenderContext* const co
     viewDesc.elementCount                     = graph.GetBufferDesc(context->visibleLightCountBuffer).size;
     const RenderViewHandle visibleCountHandle = pass.CreateView(context->visibleLightCountBuffer, viewDesc);
 
-    pass.SetColour(0, ioNewTexture, &ioNewTexture);
+    pass.SetColour(0, ioDestTexture, &ioDestTexture);
 
     pass.SetFunction([=] (const RenderGraph&      graph,
                           const RenderGraphPass&  pass,

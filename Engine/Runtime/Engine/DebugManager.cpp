@@ -295,18 +295,15 @@ void DebugManager::AddOverlayMenu(const char* const     name,
     category.menuFunction = std::move(function);
 }
 
-void DebugManager::RenderPrimitives(const RenderView&          view,
-                                    RenderGraph&               graph,
-                                    const RenderResourceHandle texture,
-                                    RenderResourceHandle&      outNewTexture)
+void DebugManager::RenderPrimitives(const RenderView&     view,
+                                    RenderGraph&          graph,
+                                    RenderResourceHandle& ioDestTexture)
 {
     {
         std::unique_lock lock(mPrimitivesLock);
 
         if (mPrimitives.empty())
         {
-            /* There's nothing to render, just pass through the resource handle. */
-            outNewTexture = texture;
             return;
         }
     }
@@ -315,7 +312,7 @@ void DebugManager::RenderPrimitives(const RenderView&          view,
 
     RenderGraphPass& pass = graph.AddPass("DebugPrimitives", kRenderGraphPassType_Render);
 
-    pass.SetColour(0, texture, &outNewTexture);
+    pass.SetColour(0, ioDestTexture, &ioDestTexture);
 
     pass.SetFunction([this, viewConstants] (const RenderGraph&      graph,
                                             const RenderGraphPass&  pass,
