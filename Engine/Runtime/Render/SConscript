@@ -21,6 +21,7 @@ objects += list(map(env.Object, [
     'DeferredRenderPipeline.cpp',
     'EntityDrawList.cpp',
     'EntityRenderer.cpp',
+    'FXAAPass.cpp',
     'Light.cpp',
     'Material.cpp',
     'MeshRenderer.cpp',

@@ -41,8 +41,7 @@ TonemapPass::~TonemapPass()
 
 void TonemapPass::AddPass(RenderGraph&               graph,
                           const RenderResourceHandle sourceTexture,
-                          const RenderResourceHandle destTexture,
-                          RenderResourceHandle&      outNewDestTexture) const
+                          RenderResourceHandle&      ioDestTexture) const
 {
     RenderGraphPass& pass = graph.AddPass("Tonemap", kRenderGraphPassType_Render);
 
@@ -52,7 +51,7 @@ void TonemapPass::AddPass(RenderGraph&               graph,
 
     const RenderViewHandle viewHandle = pass.CreateView(sourceTexture, viewDesc);
 
-    pass.SetColour(0, destTexture, &outNewDestTexture);
+    pass.SetColour(0, ioDestTexture, &ioDestTexture);
 
     pass.SetFunction([this, viewHandle] (const RenderGraph&      graph,
                                          const RenderGraphPass&  pass,

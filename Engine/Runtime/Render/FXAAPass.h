@@ -18,17 +18,18 @@
 
 #include "GPU/GPUArgumentSet.h"
 #include "GPU/GPUShader.h"
+#include "GPU/GPUState.h"
 
 class RenderGraph;
 
 struct RenderResourceHandle;
 
-/** Render pass for doing tonemapping and gamma correction. */
-class TonemapPass
+/** Render pass for applying FXAA. */
+class FXAAPass
 {
 public:
-                                TonemapPass();
-                                ~TonemapPass();
+                                FXAAPass();
+                                ~FXAAPass();
 
     void                        AddPass(RenderGraph&               graph,
                                         const RenderResourceHandle sourceTexture,
@@ -39,5 +40,6 @@ private:
     GPUShaderPtr                mPixelShader;
 
     GPUArgumentSetLayoutRef     mArgumentSetLayout;
+    GPUSamplerRef               mSampler;
 
 };

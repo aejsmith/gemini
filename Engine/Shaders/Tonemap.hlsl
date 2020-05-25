@@ -42,7 +42,7 @@ float3 ToneMapUncharted(float3 colour)
     return c / whiteScale;
 }
 
-float4 PSMain(FullScreenPSInput input) : SV_TARGET
+float4 PSMain(FullScreenPSInput input) : SV_Target
 {
     float4 result = sourceTexture.Load(input.position);
 

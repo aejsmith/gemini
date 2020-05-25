@@ -24,6 +24,7 @@
 #include "Render/RenderPipeline.h"
 
 class DeferredRenderPipelineWindow;
+class FXAAPass;
 class GPUBuffer;
 class TonemapPass;
 
@@ -87,6 +88,11 @@ public:
                                                const RenderResourceHandle texture,
                                                RenderResourceHandle&      outNewTexture) override;
 
+    /** Whether FXAA is enabled. */
+    VPROPERTY(bool, enableFXAA);
+    bool                                GetEnableFXAA() const { return mFXAAPass != nullptr; }
+    void                                SetEnableFXAA(const bool enable);
+
 public:
     /** Resolution to use for shadow maps. */
     PROPERTY() uint16_t                 shadowMapResolution;
@@ -126,6 +132,8 @@ private:
     void                                AddCullingPass(DeferredRenderContext* const context) const;
     void                                AddLightingPass(DeferredRenderContext* const context) const;
     void                                AddUnlitPass(DeferredRenderContext* const context) const;
+    void                                AddPostPasses(DeferredRenderContext* const context,
+                                                      RenderResourceHandle&        ioNewTexture) const;
 
     void                                AddCullingDebugPass(DeferredRenderContext* const context,
                                                             RenderResourceHandle&        ioNewTexture) const;
@@ -150,6 +158,7 @@ private:
     GPUSamplerRef                       mShadowMapSampler;
 
     UPtr<TonemapPass>                   mTonemapPass;
+    UPtr<FXAAPass>                      mFXAAPass;
 
     /**
      * Debug-only stuff.

@@ -30,6 +30,7 @@
 #include "GPU/GPUStagingResource.h"
 
 #include "Render/EntityDrawList.h"
+#include "Render/FXAAPass.h"
 #include "Render/RenderContext.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderWorld.h"
@@ -113,6 +114,8 @@ DeferredRenderPipeline::DeferredRenderPipeline() :
 
     mDebugWindow                (new DeferredRenderPipelineWindow(this))
 {
+    SetEnableFXAA(true);
+
     CreateShaders();
     CreatePersistentResources();
 }
@@ -303,6 +306,21 @@ void DeferredRenderPipeline::SetName(std::string name)
     mDebugWindow->SetTitle(StringUtils::Format("Render Pipeline '%s'", GetName().c_str()));
 }
 
+void DeferredRenderPipeline::SetEnableFXAA(const bool enable)
+{
+    if (enable != GetEnableFXAA())
+    {
+        if (enable)
+        {
+            mFXAAPass.reset(new FXAAPass);
+        }
+        else
+        {
+            mFXAAPass.reset();
+        }
+    }
+}
+
 void DeferredRenderPipeline::Render(const RenderWorld&         world,
                                     const RenderView&          view,
                                     RenderGraph&               graph,
@@ -325,11 +343,8 @@ void DeferredRenderPipeline::Render(const RenderWorld&         world,
     AddLightingPass(context);
     AddUnlitPass(context);
 
-    /* Tonemap and gamma correct onto the output texture. */
-    mTonemapPass->AddPass(graph,
-                          context->colourTexture,
-                          texture,
-                          outNewTexture);
+    outNewTexture = texture;
+    AddPostPasses(context, outNewTexture);
 
     if (mDebugLightCulling)
     {
@@ -885,6 +900,40 @@ void DeferredRenderPipeline::AddLightingPass(DeferredRenderContext* const contex
 
         cmdList.Dispatch(context->tilesWidth, context->tilesHeight, 1);
     });
+}
+
+void DeferredRenderPipeline::AddPostPasses(DeferredRenderContext* const context,
+                                           RenderResourceHandle&        ioNewTexture) const
+{
+    RenderGraph& graph = context->GetGraph();
+
+    /* Need to use an intermediate texture if we have more than one pass. */
+    const bool needIntermediate = GetEnableFXAA();
+
+    RenderResourceHandle currentTexture;
+
+    if (needIntermediate)
+    {
+        RenderTextureDesc intermediateDesc = graph.GetTextureDesc(ioNewTexture);
+        intermediateDesc.name = "PostProcess";
+
+        currentTexture = graph.CreateTexture(intermediateDesc);
+    }
+    else
+    {
+        currentTexture = ioNewTexture;
+    }
+
+    mTonemapPass->AddPass(graph, context->colourTexture, currentTexture);
+
+    if (GetEnableFXAA())
+    {
+        const RenderResourceHandle sourceTexture = currentTexture;
+        currentTexture = ioNewTexture;
+        mFXAAPass->AddPass(graph, sourceTexture, currentTexture);
+    }
+
+    ioNewTexture = currentTexture;
 }
 
 void DeferredRenderPipeline::AddCullingDebugPass(DeferredRenderContext* const context,

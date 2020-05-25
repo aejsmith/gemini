@@ -16,28 +16,16 @@
 
 #pragma once
 
-#include "GPU/GPUArgumentSet.h"
-#include "GPU/GPUShader.h"
+#include "ShaderDefs.h"
 
-class RenderGraph;
+#define kArgumentSet_FXAA               0
 
-struct RenderResourceHandle;
+#define kFXAAArguments_SourceTexture    0
+#define kFXAAArguments_SourceSampler    1
+#define kFXAAArguments_Constants        2
+#define kFXAAArgumentsCount             3
 
-/** Render pass for doing tonemapping and gamma correction. */
-class TonemapPass
+struct FXAAConstants
 {
-public:
-                                TonemapPass();
-                                ~TonemapPass();
-
-    void                        AddPass(RenderGraph&               graph,
-                                        const RenderResourceHandle sourceTexture,
-                                        RenderResourceHandle&      ioDestTexture) const;
-
-private:
-    GPUShaderPtr                mVertexShader;
-    GPUShaderPtr                mPixelShader;
-
-    GPUArgumentSetLayoutRef     mArgumentSetLayout;
-
+    shader_float2   rcpFrame;
 };
