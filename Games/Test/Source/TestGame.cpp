@@ -16,29 +16,7 @@
 
 #include "TestGame.h"
 
-#include "PlayerController.h"
-
-#include "Core/Filesystem.h"
-
-#include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
-#include "Engine/JSONSerialiser.h"
-#include "Engine/Mesh.h"
-
-#include "Entity/Entity.h"
-#include "Entity/World.h"
-
-#include "Loaders/GLTFImporter.h"
-
-#include "Physics/CollisionShape.h"
-#include "Physics/RigidBody.h"
-
-#include "Render/Camera.h"
-#include "Render/Light.h"
-#include "Render/Material.h"
-#include "Render/MeshRenderer.h"
-
-#include <memory>
 
 TestGame::TestGame()
 {
@@ -48,108 +26,9 @@ TestGame::~TestGame()
 {
 }
 
-static void ImportGLTFWorld(const Path& path,
-                            const Path& assetDir,
-                            const Path& worldPath)
-{
-    Engine::Get().CreateWorld();
-    World* const world = Engine::Get().GetWorld();
-
-    /* Create a camera, offset along Z behind the model since the model origin
-     * will be at (0, 0). TODO: glTF has optional cameras. */
-    Entity* playerEntity = world->CreateEntity("Player");
-    playerEntity->Translate(glm::vec3(0.0f, 0.0f, 3.0f));
-    playerEntity->SetActive(true);
-
-    Entity* cameraEntity = playerEntity->CreateChild("Camera");
-    cameraEntity->SetActive(true);
-
-    Camera* camera = cameraEntity->CreateComponent<Camera>();
-    camera->SetActive(true);
-
-    PlayerController* controller = playerEntity->CreateComponent<PlayerController>();
-    controller->camera = camera;
-    controller->SetActive(true);
-
-    GLTFImporter importer;
-    if (!importer.Import(path, assetDir, world))
-    {
-        Fatal("Failed to load '%s'", path.GetCString());
-    }
-
-    if (!AssetManager::Get().SaveAsset(world, worldPath))
-    {
-        Fatal("Failed to save world");
-    }
-}
-
 void TestGame::Init()
 {
-#if 0
-    ImportGLTFWorld("Games/Test/AssetSource/glTF/DamagedHelmet/DamagedHelmet.gltf",
-                    "Game/glTF/DamagedHelmet",
-                    "Game/glTF/DamagedHelmet/World");
-#endif
-
-    Engine::Get().LoadWorld("Game/Worlds/PhysicsTest");
-
-#if 0
-    Entity* cubes = Engine::Get().GetWorld()->GetRoot()->FindChild("Cubes");
-    Assert(cubes);
-
-    cubes->VisitActiveChildren(
-        [] (Entity* const entity)
-        {
-            BoxCollisionShape* const shape = entity->CreateComponent<BoxCollisionShape>();
-            shape->SetHalfExtents(glm::vec3(0.5f, 0.5f, 0.5f));
-            shape->SetActive(true);
-
-            RigidBody* const body = entity->CreateComponent<RigidBody>();
-            body->SetMass(20.0f);
-            body->SetActive(true);
-
-            entity->Rotate(rand() * 45.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-            entity->Rotate(rand() * 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-            entity->Rotate(rand() * 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-        });
-#endif
-
-#if 0
-    Entity* parent = Engine::Get().GetWorld()->CreateEntity("Lights");
-
-    int lightIndex = 0;
-
-    static glm::vec3 kColours[] =
-    {
-        { 1.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f },
-    };
-
-    for (int y : { -2, 34 })
-    {
-        for (int x = -18; x <= 18; x+= 4)
-        {
-            for (int z = -18; z <= 18; z+= 4)
-            {
-                Entity* entity = parent->CreateChild(StringUtils::Format("Light_%d_%d_%d", x, y, z));
-                entity->SetPosition(glm::vec3(x, y, z));
-                entity->SetActive(true);
-
-                Light* light = entity->CreateComponent<Light>();
-                light->SetType(kLightType_Point);
-                light->SetColour(kColours[lightIndex % ArraySize(kColours)]);
-                light->SetIntensity(15.0f);
-                light->SetRange(5.0f);
-                light->SetActive(true);
-
-                lightIndex++;
-            }
-        }
-    }
-
-    parent->SetActive(true);
-#endif
+    Engine::Get().LoadWorld("Game/Worlds/Sponza2");
 }
 
 const char* TestGame::GetName() const
