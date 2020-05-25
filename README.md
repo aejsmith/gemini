@@ -2,15 +2,17 @@
 
 Gemini is a hobby 3D engine project.
 
+<a href="https://raw.githubusercontent.com/aejsmith/gemini/master/Documentation/Screenshot.png"><img src="https://raw.githubusercontent.com/aejsmith/gemini/master/Documentation/ScreenshotSmall.png"></a>
+
 It is designed exclusively for modern APIs - currently Vulkan only, but D3D12 support may be added later. It aims to be able to take advantage of the capabilities of those APIs (multithreading, multiple GPU queues, etc.), while also simplifying their usage to allow for fast prototyping of new features.
 
-There is not much to see here yet. Currently, the most interesting parts are the graphics API abstraction, and the render graph which drives the rendering process (handles transient resource allocation, resource state transitions, etc.).
+Currently, the most interesting parts are the graphics API abstraction and the render graph which drives the rendering process (handles transient resource allocation, resource state transitions, etc.).
 
 Both Linux and Windows are supported.
 
 ## License
 
-Gemini is licensed under the [ISC license](https://github.com/aejsmith/gemini/blob/master/Documentation/License.md).
+Gemini is licensed under the [ISC license](/Documentation/License.md).
 
 ## Prerequisites
 
