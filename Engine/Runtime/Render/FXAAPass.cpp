@@ -26,7 +26,7 @@
 
 FXAAPass::FXAAPass()
 {
-    mVertexShader = ShaderManager::Get().GetShader("Engine/FXAA.hlsl", "VSFullScreen", kGPUShaderStage_Vertex);
+    mVertexShader = ShaderManager::Get().GetShader("Engine/FullScreen.hlsl", "VSMain", kGPUShaderStage_Vertex);
     mPixelShader  = ShaderManager::Get().GetShader("Engine/FXAA.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(kFXAAArgumentsCount);

@@ -26,7 +26,7 @@
 
 TonemapPass::TonemapPass()
 {
-    mVertexShader = ShaderManager::Get().GetShader("Engine/Tonemap.hlsl", "VSFullScreen", kGPUShaderStage_Vertex);
+    mVertexShader = ShaderManager::Get().GetShader("Engine/FullScreen.hlsl", "VSMain", kGPUShaderStage_Vertex);
     mPixelShader  = ShaderManager::Get().GetShader("Engine/Tonemap.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
     GPUArgumentSetLayoutDesc argumentLayoutDesc(kTonemapArgumentsCount);

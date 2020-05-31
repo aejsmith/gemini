@@ -237,7 +237,7 @@ void DeferredRenderPipeline::CreateShaders()
 
     /* Culling debug shader. */
     {
-        mCullingDebugVertexShader = ShaderManager::Get().GetShader("Engine/DeferredCullingDebug.hlsl", "VSFullScreen", kGPUShaderStage_Vertex);
+        mCullingDebugVertexShader = ShaderManager::Get().GetShader("Engine/FullScreen.hlsl", "VSMain", kGPUShaderStage_Vertex);
         mCullingDebugPixelShader  = ShaderManager::Get().GetShader("Engine/DeferredCullingDebug.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
         GPUArgumentSetLayoutDesc argumentLayoutDesc(kDeferredCullingDebugArgumentsCount);

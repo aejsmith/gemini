@@ -14,10 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "FullScreen.h"
 
-struct FullScreenPSInput
+/**
+ * Vertex shader which outputs a counter-clockwise full-screen triangle based
+ * on SV_VertexID, no vertex input data is required.
+ */
+FullScreenPSInput VSMain(const uint vertexID : SV_VertexID)
 {
-    float4      position    : SV_Position;
-    float2      uv          : TEXCOORD0;
-};
+    FullScreenPSInput output;
+
+    output.position.x = ((float)(vertexID % 2) * 4.0f) - 1.0f;
+    output.position.y = ((float)(vertexID / 2) * 4.0f) - 1.0f;
+    output.position.z = 0.0f;
+    output.position.w = 1.0f;
+
+    output.uv.x       = (float)(vertexID % 2) * 2.0f;
+    output.uv.y       = 1.0f - ((float)(vertexID / 2) * 2.0f);
+
+    return output;
+}
