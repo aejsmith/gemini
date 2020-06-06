@@ -582,10 +582,8 @@ void DeferredRenderPipeline::AddGBufferPasses(DeferredRenderContext* const conte
 
     /*
      * Colour output is bound as target 3 for emissive materials to output
-     * directly to.
-     *
-     * TODO: We should mask output 3 in the pipeline state for non-emissive
-     * materials.
+     * directly to. Non-emissive materials get the output masked in their
+     * pipeline state by the pass flags.
      */
     pass.SetColour(0, context->GBuffer0Texture, &context->GBuffer0Texture);
     pass.SetColour(1, context->GBuffer1Texture, &context->GBuffer1Texture);

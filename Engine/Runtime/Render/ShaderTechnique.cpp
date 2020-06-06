@@ -60,6 +60,15 @@ static void GetPassStates(const ShaderPassType      passType,
             outDepthStencilDesc.depthWriteEnable = true;
             outDepthStencilDesc.depthCompareOp   = kGPUCompareOp_LessOrEqual;
 
+            /* For non-emissive materials, we mask the emissive output. */
+            if (!(passFlags & kShaderPassFlags_DeferredOpaque_Emissive))
+            {
+                outBlendDesc.attachments[3].maskR = true;
+                outBlendDesc.attachments[3].maskG = true;
+                outBlendDesc.attachments[3].maskB = true;
+                outBlendDesc.attachments[3].maskA = true;
+            }
+
             break;
         }
 

@@ -73,6 +73,13 @@ enum ENUM() ShaderPassType
 enum ENUM() ShaderPassFlags
 {
     kShaderPassFlags_None = 0,
+
+    /**
+     * kShaderPassType_DeferredOpaque
+     */
+
+    /** Material is emissive (causes emissive target output to be enabled). */
+    kShaderPassFlags_DeferredOpaque_Emissive = 1 << 0,
 };
 
 DEFINE_ENUM_BITWISE_OPS(ShaderPassFlags);
