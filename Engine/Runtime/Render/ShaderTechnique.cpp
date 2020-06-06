@@ -113,9 +113,17 @@ ShaderTechnique::ShaderTechnique() :
 
 ShaderTechnique::~ShaderTechnique()
 {
-    for (auto pass : mPasses)
+    for (Pass* pass : mPasses)
     {
-        delete pass;
+        if (pass)
+        {
+            for (ShaderVariant* variant : pass->variants)
+            {
+                delete variant;
+            }
+
+            delete pass;
+        }
     }
 }
 
