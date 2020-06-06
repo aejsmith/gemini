@@ -69,3 +69,17 @@ void GPUShader::RemovePipeline(GPUPipeline* const pipeline,
 {
     mPipelines.erase(pipeline);
 }
+
+void GPUShader::Released()
+{
+    if (mDestroyCallback)
+    {
+        /* See ShaderManager::RemoveShader(). */
+        if (!mDestroyCallback())
+        {
+            return;
+        }
+    }
+
+    RefCounted::Released();
+}

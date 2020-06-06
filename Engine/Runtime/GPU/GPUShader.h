@@ -27,13 +27,6 @@ class GPUPipeline;
 class GPUShader : public GPUObject,
                   public RefCounted
 {
-protected:
-                                GPUShader(GPUDevice&           device,
-                                          const GPUShaderStage stage,
-                                          GPUShaderCode        code);
-
-                                ~GPUShader();
-
 public:
     GPUShaderID                 GetID() const       { return mID; }
     GPUShaderStage              GetStage() const    { return mStage; }
@@ -44,6 +37,19 @@ public:
                                             OnlyCalledBy<GPUDevice>);
     void                        RemovePipeline(GPUPipeline* const pipeline,
                                                OnlyCalledBy<GPUPipeline>);
+
+    /** Used by ShaderManager to remove shaders from the cache when released. */
+    void                        SetDestroyCallback(std::function<bool()> callback)
+                                    { mDestroyCallback = std::move(callback); }
+
+protected:
+                                GPUShader(GPUDevice&           device,
+                                          const GPUShaderStage stage,
+                                          GPUShaderCode        code);
+
+                                ~GPUShader();
+
+    void                        Released() override;
 
 private:
     const GPUShaderID           mID;
@@ -56,6 +62,8 @@ private:
      * device's mPipelineCacheLock.
      */
     HashSet<GPUPipeline*>       mPipelines;
+
+    std::function<bool()>       mDestroyCallback;
 
 };
 

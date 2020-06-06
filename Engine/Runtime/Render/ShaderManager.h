@@ -24,7 +24,27 @@
 
 #include "Render/RenderDefs.h"
 
+#include <shared_mutex>
+
 class ShaderTechnique;
+
+struct ShaderKey
+{
+    Path                    path;
+    std::string             function;
+
+    /* Should be sorted alphabetically. */
+    ShaderDefineArray       defines;
+
+    const ShaderTechnique*  technique;
+    uint32_t                features;
+
+    /* Stage is not needed here - a given source file + function should always
+     * be compiled as the same stage. */
+};
+
+extern size_t HashValue(const ShaderKey& key);
+extern bool operator==(const ShaderKey& a, const ShaderKey& b);
 
 /**
  * Class managing shaders. All shaders are loaded through this class.
@@ -62,12 +82,29 @@ public:
      */
     GPUShaderPtr            GetShader(const Path&                  path,
                                       const std::string&           function,
+                                      const GPUShaderStage         stage);
+    GPUShaderPtr            GetShader(const Path&                  path,
+                                      const std::string&           function,
                                       const GPUShaderStage         stage,
-                                      const ShaderDefineArray&     defines   = {},
+                                      const ShaderDefineArray&     defines,
                                       const ShaderTechnique* const technique = nullptr,
                                       const uint32_t               features  = 0);
 
 private:
+    /**
+     * Cache of loaded shaders. Uses a non-reference-counting pointer, we get a
+     * callback from GPUShader when the reference count reaches 0 to remove
+     * from the cache.
+     */
+    using ShaderMap       = HashMap<ShaderKey, GPUShader*>;
+
+private:
+    bool                    RemoveShader(GPUShader* const shader,
+                                         const ShaderKey& key);
+
+private:
     SearchPathMap           mSearchPaths;
+    ShaderMap               mShaders;
+    std::shared_mutex       mLock;
 
 };

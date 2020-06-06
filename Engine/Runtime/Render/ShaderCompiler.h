@@ -18,9 +18,7 @@
 
 #include "Core/Path.h"
 
-#include "Render/RenderDefs.h"
-
-class ShaderTechnique;
+#include "Render/ShaderManager.h"
 
 /**
  * Class for compiling HLSL shaders to SPIR-V. Note that while we are currently
@@ -31,29 +29,14 @@ class ShaderTechnique;
 class ShaderCompiler
 {
 public:
-    struct Options
-    {
-        Path                    path;
-        std::string             function;
-        GPUShaderStage          stage;
-        ShaderDefineArray       defines;
-
-        /**
-         * Technique that the shader is for. If not null, a preamble will be
-         * inserted in the compiled containing definitions of the technique's
-         * parameters.
-         */
-        const ShaderTechnique*  technique;
-        uint32_t                features;
-    };
 
     using SourceSet           = HashSet<Path>;
 
 public:
-                                ShaderCompiler(Options options);
+                                ShaderCompiler(const ShaderKey&     key,
+                                               const GPUShaderStage stage);
                                 ~ShaderCompiler() {}
 
-public:
     /** Compile the shader. Use IsCompiled() to check the result. */
     void                        Compile();
 
@@ -65,11 +48,6 @@ public:
 
     /** After compilation, gets a list of source files referenced by the shader. */
     const SourceSet&            GetSourceFiles() const  { return mSourceFiles; }
-
-    static bool                 CompileFile(Path                 path,
-                                            std::string          function,
-                                            const GPUShaderStage stage,
-                                            GPUShaderCode&       outCode);
 
 private:
     bool                        LoadSource(const Path&  path,
@@ -85,7 +63,9 @@ private:
     bool                        GenerateSource();
 
 private:
-    Options                     mOptions;
+    const ShaderKey&            mKey;
+    const GPUShaderStage        mStage;
+
     std::string                 mSource;
     GPUShaderCode               mCode;
     SourceSet                   mSourceFiles;

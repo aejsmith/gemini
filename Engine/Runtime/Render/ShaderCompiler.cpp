@@ -30,8 +30,10 @@
 static constexpr char kBuiltInFileName[]     = "<built-in>";
 static constexpr size_t kMaximumIncludeDepth = 16;
 
-ShaderCompiler::ShaderCompiler(Options options) :
-    mOptions (std::move(options))
+ShaderCompiler::ShaderCompiler(const ShaderKey&     key,
+                               const GPUShaderStage stage) :
+    mKey   (key),
+    mStage (stage)
 {
 }
 
@@ -48,14 +50,14 @@ bool ShaderCompiler::LoadSource(const Path&  path,
     }
 
     /* First try the same directory as the current source file. */
-    Path directoryName;
+    Path filePath;
+    bool found = false;
+
     if (from.GetString() != kBuiltInFileName)
     {
-        directoryName = from.GetDirectoryName();
+        filePath = from.GetDirectoryName() / path;
+        found    = Filesystem::Exists(filePath);
     }
-
-    Path filePath = directoryName / path;
-    bool found    = Filesystem::Exists(filePath);
 
     if (!found)
     {
@@ -213,21 +215,21 @@ bool ShaderCompiler::GenerateSource()
 
     mSource += "#define __HLSL__ 1\n";
 
-    for (const std::string& define : mOptions.defines)
+    for (const std::string& define : mKey.defines)
     {
         mSource += StringUtils::Format("#define %s 1\n", define.c_str());
     }
 
-    if (mOptions.technique)
+    if (mKey.technique)
     {
         /* Generate technique parameter definitions. */
-        const ShaderTechnique* const technique = mOptions.technique;
+        const ShaderTechnique* const technique = mKey.technique;
 
         std::string constantBuffer;
 
         for (const ShaderParameter& parameter : technique->GetParameters())
         {
-            const bool enabled = (mOptions.features & parameter.requires) == parameter.requires;
+            const bool enabled = (mKey.features & parameter.requires) == parameter.requires;
 
             if (ShaderParameter::IsConstant(parameter.type))
             {
@@ -306,7 +308,7 @@ bool ShaderCompiler::GenerateSource()
     }
 
     /* Include the real source file, reusing the include logic to do so. */
-    mSource += StringUtils::Format("#include \"%s\"\n", mOptions.path.GetCString());
+    mSource += StringUtils::Format("#include \"%s\"\n", mKey.path.GetCString());
 
     return Preprocess(mSource, kBuiltInFileName, 0);
 }
@@ -335,7 +337,7 @@ void ShaderCompiler::Compile()
     #endif
 
     shaderc_shader_kind shadercKind;
-    switch (mOptions.stage)
+    switch (mStage)
     {
         case kGPUShaderStage_Vertex:    shadercKind = shaderc_vertex_shader; break;
         case kGPUShaderStage_Pixel:     shadercKind = shaderc_fragment_shader; break;
@@ -348,7 +350,7 @@ void ShaderCompiler::Compile()
         compiler.CompileGlslToSpv(mSource.c_str(),
                                   shadercKind,
                                   kBuiltInFileName,
-                                  mOptions.function.c_str(),
+                                  mKey.function.c_str(),
                                   options);
 
     if (module.GetCompilationStatus() != shaderc_compilation_status_success)
