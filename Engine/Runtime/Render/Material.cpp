@@ -25,18 +25,22 @@
 #include "GPU/GPUDevice.h"
 
 Material::Material() :
+    mVariants               {},
     mArgumentSet            (nullptr),
     mGPUConstants           (kGPUConstants_Invalid),
     mGPUConstantsFrameIndex (0)
 {
 }
 
-Material::Material(ShaderTechnique* const shaderTechnique) :
+Material::Material(ShaderTechnique* const               shaderTechnique,
+                   const ShaderTechnique::FeatureArray& features) :
     Material ()
 {
+    const uint32_t mask = shaderTechnique->ConvertFeatureArray(features);
+
     /* Create initial argument set from defaults when we create a material at
      * runtime. */
-    SetShaderTechnique(shaderTechnique, true);
+    SetShaderTechnique(shaderTechnique, mask, true);
 }
 
 Material::~Material()
@@ -50,43 +54,60 @@ void Material::Serialise(Serialiser& serialiser) const
 
     serialiser.Write("shaderTechnique", mShaderTechnique);
 
+    serialiser.BeginArray("features");
+
+    const ShaderTechnique::FeatureArray& features = mShaderTechnique->GetFeatures();
+
+    for (uint32_t i = 0; i < features.size(); i++)
+    {
+        if (mFeatures & (1 << i))
+        {
+            serialiser.Push(features[i]);
+        }
+    }
+
+    serialiser.EndArray();
+
     serialiser.BeginGroup("arguments");
 
     for (const ShaderParameter& parameter : mShaderTechnique->GetParameters())
     {
-        #define WRITE_TYPE(typeEnum, typeName) \
-            case typeEnum: \
-            { \
-                typeName value; \
-                GetArgument(parameter, &value); \
-                serialiser.Write(parameter.name.c_str(), value); \
-                break; \
+        if ((mFeatures & parameter.requires) == parameter.requires)
+        {
+            #define WRITE_TYPE(typeEnum, typeName) \
+                case typeEnum: \
+                { \
+                    typeName value; \
+                    GetArgument(parameter, &value); \
+                    serialiser.Write(parameter.name.c_str(), value); \
+                    break; \
+                }
+
+            switch (parameter.type)
+            {
+                WRITE_TYPE(kShaderParameterType_Int,         int32_t);
+                WRITE_TYPE(kShaderParameterType_Int2,        glm::ivec2);
+                WRITE_TYPE(kShaderParameterType_Int3,        glm::ivec3);
+                WRITE_TYPE(kShaderParameterType_Int4,        glm::ivec4);
+                WRITE_TYPE(kShaderParameterType_UInt,        uint32_t);
+                WRITE_TYPE(kShaderParameterType_UInt2,       glm::uvec2);
+                WRITE_TYPE(kShaderParameterType_UInt3,       glm::uvec3);
+                WRITE_TYPE(kShaderParameterType_UInt4,       glm::uvec4);
+                WRITE_TYPE(kShaderParameterType_Float,       float);
+                WRITE_TYPE(kShaderParameterType_Float2,      glm::vec2);
+                WRITE_TYPE(kShaderParameterType_Float3,      glm::vec3);
+                WRITE_TYPE(kShaderParameterType_Float4,      glm::vec4);
+                WRITE_TYPE(kShaderParameterType_Texture2D,   Texture2DPtr);
+                WRITE_TYPE(kShaderParameterType_TextureCube, TextureCubePtr);
+
+                default:
+                    UnreachableMsg("Unhandled parameter type %d", parameter.type);
+                    break;
+
             }
 
-        switch (parameter.type)
-        {
-            WRITE_TYPE(kShaderParameterType_Int,         int32_t);
-            WRITE_TYPE(kShaderParameterType_Int2,        glm::ivec2);
-            WRITE_TYPE(kShaderParameterType_Int3,        glm::ivec3);
-            WRITE_TYPE(kShaderParameterType_Int4,        glm::ivec4);
-            WRITE_TYPE(kShaderParameterType_UInt,        uint32_t);
-            WRITE_TYPE(kShaderParameterType_UInt2,       glm::uvec2);
-            WRITE_TYPE(kShaderParameterType_UInt3,       glm::uvec3);
-            WRITE_TYPE(kShaderParameterType_UInt4,       glm::uvec4);
-            WRITE_TYPE(kShaderParameterType_Float,       float);
-            WRITE_TYPE(kShaderParameterType_Float2,      glm::vec2);
-            WRITE_TYPE(kShaderParameterType_Float3,      glm::vec3);
-            WRITE_TYPE(kShaderParameterType_Float4,      glm::vec4);
-            WRITE_TYPE(kShaderParameterType_Texture2D,   Texture2DPtr);
-            WRITE_TYPE(kShaderParameterType_TextureCube, TextureCubePtr);
-
-            default:
-                UnreachableMsg("Unhandled parameter type %d", parameter.type);
-                break;
-
+            #undef WRITE_TYPE
         }
-
-        #undef WRITE_TYPE
     }
 
     serialiser.EndGroup();
@@ -102,53 +123,58 @@ void Material::Deserialise(Serialiser& serialiser)
     found = serialiser.Read("shaderTechnique", shaderTechnique);
     Assert(found);
 
+    const uint32_t features = shaderTechnique->DeserialiseFeatureArray(serialiser, "features");
+
     /* Defer argument set creation until the end so we don't end up recreating
      * the set for each argument we deserialise. */
-    SetShaderTechnique(shaderTechnique, false);
+    SetShaderTechnique(shaderTechnique, features, false);
 
     if (serialiser.BeginGroup("arguments"))
     {
         for (const ShaderParameter& parameter : mShaderTechnique->GetParameters())
         {
-            #define READ_TYPE(typeEnum, typeName) \
-                case typeEnum: \
-                { \
-                    typeName value; \
-                    if (serialiser.Read(parameter.name.c_str(), value)) \
+            if ((mFeatures & parameter.requires) == parameter.requires)
+            {
+                #define READ_TYPE(typeEnum, typeName) \
+                    case typeEnum: \
                     { \
-                        SetArgument(parameter, &value); \
-                    } \
-                    else \
-                    { \
-                        LogWarning("%s: Failed to read argument '%s'", GetPath().c_str(), parameter.name.c_str()); \
-                    } \
-                    break; \
+                        typeName value; \
+                        if (serialiser.Read(parameter.name.c_str(), value)) \
+                        { \
+                            SetArgument(parameter, &value); \
+                        } \
+                        else \
+                        { \
+                            LogWarning("%s: Failed to read argument '%s'", GetPath().c_str(), parameter.name.c_str()); \
+                        } \
+                        break; \
+                    }
+
+                switch (parameter.type)
+                {
+                    READ_TYPE(kShaderParameterType_Int,         int32_t);
+                    READ_TYPE(kShaderParameterType_Int2,        glm::ivec2);
+                    READ_TYPE(kShaderParameterType_Int3,        glm::ivec3);
+                    READ_TYPE(kShaderParameterType_Int4,        glm::ivec4);
+                    READ_TYPE(kShaderParameterType_UInt,        uint32_t);
+                    READ_TYPE(kShaderParameterType_UInt2,       glm::uvec2);
+                    READ_TYPE(kShaderParameterType_UInt3,       glm::uvec3);
+                    READ_TYPE(kShaderParameterType_UInt4,       glm::uvec4);
+                    READ_TYPE(kShaderParameterType_Float,       float);
+                    READ_TYPE(kShaderParameterType_Float2,      glm::vec2);
+                    READ_TYPE(kShaderParameterType_Float3,      glm::vec3);
+                    READ_TYPE(kShaderParameterType_Float4,      glm::vec4);
+                    READ_TYPE(kShaderParameterType_Texture2D,   Texture2DPtr);
+                    READ_TYPE(kShaderParameterType_TextureCube, TextureCubePtr);
+
+                    default:
+                        UnreachableMsg("Unhandled parameter type %d", parameter.type);
+                        break;
+
                 }
 
-            switch (parameter.type)
-            {
-                READ_TYPE(kShaderParameterType_Int,         int32_t);
-                READ_TYPE(kShaderParameterType_Int2,        glm::ivec2);
-                READ_TYPE(kShaderParameterType_Int3,        glm::ivec3);
-                READ_TYPE(kShaderParameterType_Int4,        glm::ivec4);
-                READ_TYPE(kShaderParameterType_UInt,        uint32_t);
-                READ_TYPE(kShaderParameterType_UInt2,       glm::uvec2);
-                READ_TYPE(kShaderParameterType_UInt3,       glm::uvec3);
-                READ_TYPE(kShaderParameterType_UInt4,       glm::uvec4);
-                READ_TYPE(kShaderParameterType_Float,       float);
-                READ_TYPE(kShaderParameterType_Float2,      glm::vec2);
-                READ_TYPE(kShaderParameterType_Float3,      glm::vec3);
-                READ_TYPE(kShaderParameterType_Float4,      glm::vec4);
-                READ_TYPE(kShaderParameterType_Texture2D,   Texture2DPtr);
-                READ_TYPE(kShaderParameterType_TextureCube, TextureCubePtr);
-
-                default:
-                    UnreachableMsg("Unhandled parameter type %d", parameter.type);
-                    break;
-
+                #undef READ_TYPE
             }
-
-            #undef READ_TYPE
         }
 
         serialiser.EndGroup();
@@ -158,9 +184,16 @@ void Material::Deserialise(Serialiser& serialiser)
 }
 
 void Material::SetShaderTechnique(ShaderTechnique* const shaderTechnique,
+                                  const uint32_t         features,
                                   const bool             createArguments)
 {
+    /* If ever we want to support changing technique at runtime, we'd have to
+     * propagate this change all the way back to all entities using the material
+     * to recreate their pipelines. */
+    Assert(!mShaderTechnique);
+
     mShaderTechnique = shaderTechnique;
+    mFeatures        = features;
 
     mResources = mShaderTechnique->GetDefaultResources();
 
@@ -172,6 +205,11 @@ void Material::SetShaderTechnique(ShaderTechnique* const shaderTechnique,
     if (createArguments)
     {
         UpdateArgumentSet();
+    }
+
+    for (uint32_t passType = 0; passType < kShaderPassTypeCount; passType++)
+    {
+        mVariants[passType] = mShaderTechnique->GetVariant(static_cast<ShaderPassType>(passType), mFeatures);
     }
 }
 
@@ -228,6 +266,10 @@ void Material::GetArgument(const std::string&        name,
               mShaderTechnique->GetPath().c_str(),
               MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(type),
               MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(parameter->type));
+
+    AssertMsg((mFeatures & parameter->requires) == parameter->requires,
+              "Parameter '%s' is not enabled by material features",
+              name.c_str());
 
     GetArgument(*parameter, outData);
 }
@@ -300,6 +342,10 @@ void Material::SetArgument(const std::string&        name,
               mShaderTechnique->GetPath().c_str(),
               MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(type),
               MetaType::Lookup<ShaderParameterType>().GetEnumConstantName(parameter->type));
+
+    AssertMsg((mFeatures & parameter->requires) == parameter->requires,
+              "Parameter '%s' is not enabled by material features",
+              name.c_str());
 
     SetArgument(*parameter, data);
 }

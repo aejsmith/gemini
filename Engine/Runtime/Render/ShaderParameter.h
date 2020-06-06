@@ -55,6 +55,7 @@ struct ShaderParameter
 {
     std::string                     name;
     ShaderParameterType             type;
+    uint32_t                        requires;
 
     union
     {

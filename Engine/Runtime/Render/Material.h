@@ -31,11 +31,16 @@ class Material : public Asset
     CLASS();
 
 public:
-                                Material(ShaderTechnique* const shaderTechnique);
+                                Material(ShaderTechnique* const               shaderTechnique,
+                                         const ShaderTechnique::FeatureArray& features = {});
 
     ShaderTechnique*            GetShaderTechnique() const  { return mShaderTechnique; }
+    uint32_t                    GetFeatures() const         { return mFeatures; }
     GPUArgumentSet*             GetArgumentSet() const      { return mArgumentSet; }
     bool                        HasConstants() const        { return mConstantData.GetSize() > 0; }
+
+    const ShaderVariant*        GetVariant(const ShaderPassType passType) const
+                                    { return mVariants[passType]; }
 
     void                        GetArgument(const std::string&        name,
                                             const ShaderParameterType type,
@@ -64,6 +69,7 @@ private:
     void                        Deserialise(Serialiser& serialiser) override;
 
     void                        SetShaderTechnique(ShaderTechnique* const shaderTechnique,
+                                                   const uint32_t         features,
                                                    const bool             createArguments);
 
     void                        GetArgument(const ShaderParameter& parameter,
@@ -76,6 +82,9 @@ private:
 
 private:
     ShaderTechniquePtr          mShaderTechnique;
+    uint32_t                    mFeatures;
+
+    const ShaderVariant*        mVariants[kShaderPassTypeCount];
 
     GPUArgumentSet*             mArgumentSet;
 

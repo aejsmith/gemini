@@ -47,7 +47,9 @@ ShaderManager::~ShaderManager()
 GPUShaderPtr ShaderManager::GetShader(const Path&                  path,
                                       const std::string&           function,
                                       const GPUShaderStage         stage,
-                                      const ShaderTechnique* const technique)
+                                      const ShaderDefineArray&     defines,
+                                      const ShaderTechnique* const technique,
+                                      const uint32_t               features)
 {
     /*
      * TODO: Cache of GPUShaders. Would need a weak pointer stored in the cache
@@ -67,7 +69,9 @@ GPUShaderPtr ShaderManager::GetShader(const Path&                  path,
     ShaderCompiler::Options options;
     options.function  = function;
     options.stage     = stage;
+    options.defines   = defines;
     options.technique = technique;
+    options.features  = features;
 
     options.path = Path(searchPath->second) / path.Subset(1);
 

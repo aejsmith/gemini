@@ -28,6 +28,8 @@
 #define RENDER_PROFILER_SCOPE(timer)    PROFILER_SCOPE(RENDER_PROFILER_NAME, timer, RENDER_PROFILER_COLOUR)
 #define RENDER_PROFILER_FUNC_SCOPE()    PROFILER_FUNC_SCOPE(RENDER_PROFILER_NAME, RENDER_PROFILER_COLOUR)
 
+using ShaderDefineArray = std::vector<std::string>;
+
 /**
  * A render pipeline will perform a number of render passes, each of which will
  * need to render a subset of visible entities. The passes that an entity will
@@ -57,6 +59,23 @@ enum ENUM() ShaderPassType
 
     kShaderPassTypeCount
 };
+
+/**
+ * Flags controlling the behaviour of a shader pass. These can be set by shader
+ * techniques (possibly conditionally based on material feature flags) to
+ * adjust the behaviour of the pass type for entities using the
+ * technique/material. For example, these might adjust some of the pipeline
+ * state.
+ *
+ * Note that for the serialisation system, these values need to be unique
+ * across all pass types.
+ */
+enum ENUM() ShaderPassFlags
+{
+    kShaderPassFlags_None = 0,
+};
+
+DEFINE_ENUM_BITWISE_OPS(ShaderPassFlags);
 
 /** Types of light. */
 enum ENUM() LightType

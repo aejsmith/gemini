@@ -213,6 +213,11 @@ bool ShaderCompiler::GenerateSource()
 
     mSource += "#define __HLSL__ 1\n";
 
+    for (const std::string& define : mOptions.defines)
+    {
+        mSource += StringUtils::Format("#define %s 1\n", define.c_str());
+    }
+
     if (mOptions.technique)
     {
         /* Generate technique parameter definitions. */
@@ -222,6 +227,8 @@ bool ShaderCompiler::GenerateSource()
 
         for (const ShaderParameter& parameter : technique->GetParameters())
         {
+            const bool enabled = (mOptions.features & parameter.requires) == parameter.requires;
+
             if (ShaderParameter::IsConstant(parameter.type))
             {
                 if (constantBuffer.empty())
@@ -231,16 +238,28 @@ bool ShaderCompiler::GenerateSource()
                                                           kArgumentSet_Material);
                 }
 
-                /* The parameter array includes constant parameters in order
+                /*
+                 * The parameter array includes constant parameters in order
                  * of offset in the constant buffer. Offsets have taken care of
                  * HLSL packing rules, so we can just declare in order of
-                 * appearence here. */
-                constantBuffer += StringUtils::Format("    %s %s;\n",
+                 * appearence here.
+                 *
+                 * For parameters which are not enabled in this variant, we'll
+                 * still declare them since the constant buffer layout is the
+                 * same for all variants, however we'll rename them to make
+                 * using them in the shader an error.
+                 */
+                constantBuffer += StringUtils::Format("    %s %s%s;\n",
                                                       ShaderParameter::GetHLSLType(parameter.type),
+                                                      (enabled) ? "" : "_disabled_",
                                                       parameter.name.c_str());
             }
-            else
+            else if (enabled)
             {
+                /* There's no need to declare disabled resource parameters at
+                 * all. The same argument set layout is used for all variants,
+                 * since it's in there we don't need a declaration. */
+
                 bool needsSampler = false;
 
                 switch (parameter.type)

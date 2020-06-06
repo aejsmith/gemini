@@ -26,17 +26,16 @@
 
 #include "Render/ShaderParameter.h"
 
-#include <map>
 #include <vector>
 
 /**
- * Implementation of a shader technique for a specific pass type. Defines the
- * shaders to use and some pipeline state. Note that we cannot create a final
- * PSO here: that is dependent on vertex input state, which is dependent on the
- * specific entity. Therefore PSO creation is managed by each entity's
- * EntityRenderer component.
+ * Implementation of a shader technique for a specific pass type and material
+ * feature set. Defines the shaders to use and some pipeline state. Note that
+ * we cannot create a final PSO here: that is dependent on vertex input state,
+ * which is dependent on the specific entity. Therefore PSO creation is managed
+ * by each entity's EntityRenderer component.
  */
-class ShaderPass
+class ShaderVariant
 {
 public:
     GPUShader*                      GetShader(const GPUShaderStage stage) const
@@ -48,8 +47,10 @@ public:
     GPURenderTargetStateRef         GetRenderTargetState() const    { return mRenderTargetState; }
 
 private:
-                                    ShaderPass();
-                                    ~ShaderPass();
+                                    ShaderVariant() {}
+                                    ~ShaderVariant() {}
+
+    uint32_t                        mFeatures;
 
     GPUShaderPtr                    mShaders[kGPUShaderStage_NumGraphics];
 
@@ -75,13 +76,15 @@ public:
     /** Array of parameter details. */
     using ParameterArray          = std::vector<ShaderParameter>;
 
+    /** Array of feature names. */
+    using FeatureArray            = std::vector<std::string>;
+
 public:
-    /**
-     * Get a pass of a given type. Returns null if the technique doesn't
-     * support the pass type.
-     */
-    const ShaderPass*               GetPass(const ShaderPassType type) const
-                                        { return mPasses[type]; }
+    const FeatureArray&             GetFeatures() const             { return mFeatures; }
+
+    /** Get the index of a named feature. Returns false if it doesn't exist. */
+    bool                            FindFeature(const std::string& name,
+                                                uint32_t&          outIndex) const;
 
     /**
      * Return an array of parameters for the technique. Constant parameters
@@ -92,8 +95,15 @@ public:
 
     size_t                          GetParameterCount() const       { return mParameters.size(); }
 
-    /** Get a named parameter. Returns null if doesn't exist. */
+    /** Get a named parameter. Returns null if it doesn't exist. */
     const ShaderParameter*          FindParameter(const std::string& name) const;
+
+    /**
+     * Get a shader variant for a given pass type and feature set. Returns null
+     * if the technique doesn't support the pass type.
+     */
+    const ShaderVariant*            GetVariant(const ShaderPassType passType,
+                                               const uint32_t       features);
 
     GPUArgumentSetLayoutRef         GetArgumentSetLayout() const    { return mArgumentSetLayout; }
     uint32_t                        GetConstantsSize() const        { return mConstantsSize; }
@@ -102,6 +112,43 @@ public:
     const std::vector<ObjPtr<>>&    GetDefaultResources() const     { return mDefaultResources; }
     const ByteArray&                GetDefaultConstantData() const  { return mDefaultConstantData; }
 
+    /**
+     * Helper functions for converting/deserialising arrays of feature strings
+     * to a feature bitmask for this technique.
+     */
+    uint32_t                        ConvertFeatureArray(const FeatureArray& features) const;
+    uint32_t                        DeserialiseFeatureArray(Serialiser&       serialiser,
+                                                            const char* const name) const;
+
+private:
+    /**
+     * Properties for a variant declared in the asset. The final ShaderVariant
+     * used by a material is actually a combination of the properties for all
+     * variant declarations that match the material's features. We do not
+     * generate all the possible combinations when loading the technique - we
+     * only generate them when needed by a material, otherwise we could
+     * potentially generate a bunch of shaders that aren't needed.
+     */
+    struct VariantProps
+    {
+        uint32_t                    requires;
+        ShaderPassFlags             flags;
+        ShaderDefineArray           defines;
+    };
+
+    struct Shader
+    {
+        std::string                 source;
+        std::string                 function;
+    };
+
+    struct Pass
+    {
+        Shader                      shaders[kGPUShaderStage_NumGraphics];
+        std::vector<VariantProps>   variantProps;
+        std::vector<ShaderVariant*> variants;
+    };
+
 private:
                                     ShaderTechnique();
                                     ~ShaderTechnique();
@@ -109,14 +156,20 @@ private:
     void                            Serialise(Serialiser& serialiser) const override;
     void                            Deserialise(Serialiser& serialiser) override;
 
+    void                            DeserialiseFeatures(Serialiser& serialiser);
     void                            DeserialiseParameters(Serialiser& serialiser);
     void                            DeserialisePasses(Serialiser& serialiser);
 
 private:
-    ShaderPass*                     mPasses[kShaderPassTypeCount];
+    Pass*                           mPasses[kShaderPassTypeCount];
 
-    // TODO: Boolean "feature" flags, which use shader variants. Parameters can
-    // be set to only be enabled when a feature is enabled.
+    /**
+     * Features supported by the technique. Features are internally referred to
+     * by a number, which is an index into this array to give the name of the
+     * feature. Sets of features are represented as bitmasks, where each bit
+     * index corresponds to an entry in this array.
+     */
+    FeatureArray                    mFeatures;
 
     ParameterArray                  mParameters;
 

@@ -20,8 +20,6 @@
 
 #include "Render/RenderDefs.h"
 
-#include <list>
-
 class ShaderTechnique;
 
 /**
@@ -38,6 +36,7 @@ public:
         Path                    path;
         std::string             function;
         GPUShaderStage          stage;
+        ShaderDefineArray       defines;
 
         /**
          * Technique that the shader is for. If not null, a preamble will be
@@ -45,6 +44,7 @@ public:
          * parameters.
          */
         const ShaderTechnique*  technique;
+        uint32_t                features;
     };
 
     using SourceSet           = HashSet<Path>;

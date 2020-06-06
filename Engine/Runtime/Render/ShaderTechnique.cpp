@@ -27,11 +27,12 @@
 #include "Render/DeferredRenderPipeline.h"
 #include "Render/ShaderManager.h"
 
-static void GetDefaultStates(const ShaderPassType      passType,
-                             GPUBlendStateDesc&        outBlendDesc,
-                             GPUDepthStencilStateDesc& outDepthStencilDesc,
-                             GPURasterizerStateDesc&   outRasterizerDesc,
-                             GPURenderTargetStateDesc& outRenderTargetDesc)
+static void GetPassStates(const ShaderPassType      passType,
+                          const ShaderPassFlags     passFlags,
+                          GPUBlendStateDesc&        outBlendDesc,
+                          GPUDepthStencilStateDesc& outDepthStencilDesc,
+                          GPURasterizerStateDesc&   outRasterizerDesc,
+                          GPURenderTargetStateDesc& outRenderTargetDesc)
 {
     switch (passType)
     {
@@ -93,19 +94,6 @@ static void GetDefaultStates(const ShaderPassType      passType,
     }
 }
 
-
-ShaderPass::ShaderPass() :
-    mBlendState         (nullptr),
-    mDepthStencilState  (nullptr),
-    mRasterizerState    (nullptr),
-    mRenderTargetState  (nullptr)
-{
-}
-
-ShaderPass::~ShaderPass()
-{
-}
-
 ShaderTechnique::ShaderTechnique() :
     mPasses             {},
     mArgumentSetLayout  (nullptr),
@@ -125,6 +113,59 @@ ShaderTechnique::~ShaderTechnique()
 void ShaderTechnique::Serialise(Serialiser& serialiser) const
 {
     LogError("TODO");
+}
+
+void ShaderTechnique::DeserialiseFeatures(Serialiser& serialiser)
+{
+    if (serialiser.BeginArray("features"))
+    {
+        std::string name;
+        while (serialiser.Pop(name))
+        {
+            mFeatures.emplace_back(std::move(name));
+        }
+
+        serialiser.EndArray();
+    }
+}
+
+uint32_t ShaderTechnique::ConvertFeatureArray(const FeatureArray& features) const
+{
+    uint32_t mask = 0;
+
+    for (const std::string& feature : features)
+    {
+        uint32_t index;
+        const bool found = FindFeature(feature, index);
+        AssertMsg(found, "Feature '%s' not found", feature.c_str());
+
+        mask |= 1 << index;
+    }
+
+    return mask;
+}
+
+uint32_t ShaderTechnique::DeserialiseFeatureArray(Serialiser&       serialiser,
+                                                  const char* const name) const
+{
+    uint32_t mask = 0;
+
+    if (serialiser.BeginArray(name))
+    {
+        std::string feature;
+        while (serialiser.Pop(feature))
+        {
+            uint32_t index;
+            const bool found = FindFeature(feature, index);
+            AssertMsg(found, "Feature '%s' not found", feature.c_str());
+
+            mask |= 1 << index;
+        }
+
+        serialiser.EndArray();
+    }
+
+    return mask;
 }
 
 void ShaderTechnique::DeserialiseParameters(Serialiser& serialiser)
@@ -147,6 +188,8 @@ void ShaderTechnique::DeserialiseParameters(Serialiser& serialiser)
             found = serialiser.Read("type", parameter.type);
             Assert(found);
             Assert(parameter.type < kShaderParameterTypeCount);
+
+            parameter.requires = DeserialiseFeatureArray(serialiser, "requires");
 
             if (ShaderParameter::IsResource(parameter.type))
             {
@@ -282,7 +325,7 @@ void ShaderTechnique::DeserialisePasses(Serialiser& serialiser)
         Assert(found);
         Assert(passType < kShaderPassTypeCount);
 
-        auto pass = new ShaderPass();
+        auto pass = new Pass();
         mPasses[passType] = pass;
 
         found = serialiser.BeginArray("shaders");
@@ -295,38 +338,53 @@ void ShaderTechnique::DeserialisePasses(Serialiser& serialiser)
             Assert(found);
             Assert(stage < kGPUShaderStage_NumGraphics);
 
-            std::string source;
-            found = serialiser.Read("source", source);
+            found = serialiser.Read("source", pass->shaders[stage].source);
             Assert(found);
 
-            std::string function;
-            found = serialiser.Read("function", function);
+            found = serialiser.Read("function", pass->shaders[stage].function);
             Assert(found);
-
-            pass->mShaders[stage] = ShaderManager::Get().GetShader(source, function, stage, this);
 
             serialiser.EndGroup();
         }
 
         serialiser.EndArray();
 
-        GPUBlendStateDesc blendDesc;
-        GPUDepthStencilStateDesc depthStencilDesc;
-        GPURasterizerStateDesc rasterizerDesc;
-        GPURenderTargetStateDesc renderTargetDesc;
+        if (serialiser.BeginArray("variants"))
+        {
+            while (serialiser.BeginGroup())
+            {
+                VariantProps& props = pass->variantProps.emplace_back();
 
-        GetDefaultStates(passType,
-                         blendDesc,
-                         depthStencilDesc,
-                         rasterizerDesc,
-                         renderTargetDesc);
+                props.requires = DeserialiseFeatureArray(serialiser, "requires");
+                props.flags    = kShaderPassFlags_None;
 
-        /* TODO: Allow overriding some states in the asset. */
+                if (serialiser.BeginArray("flags"))
+                {
+                    ShaderPassFlags flag;
+                    while (serialiser.Pop(flag))
+                    {
+                        props.flags |= flag;
+                    }
 
-        pass->mBlendState        = GPUBlendState::Get(blendDesc);
-        pass->mDepthStencilState = GPUDepthStencilState::Get(depthStencilDesc);
-        pass->mRasterizerState   = GPURasterizerState::Get(rasterizerDesc);
-        pass->mRenderTargetState = GPURenderTargetState::Get(renderTargetDesc);
+                    serialiser.EndArray();
+                }
+
+                if (serialiser.BeginArray("defines"))
+                {
+                    std::string define;
+                    while (serialiser.Pop(define))
+                    {
+                        props.defines.emplace_back(std::move(define));
+                    }
+
+                    serialiser.EndArray();
+                }
+
+                serialiser.EndGroup();
+            }
+
+            serialiser.EndArray();
+        }
 
         serialiser.EndGroup();
     }
@@ -336,8 +394,24 @@ void ShaderTechnique::DeserialisePasses(Serialiser& serialiser)
 
 void ShaderTechnique::Deserialise(Serialiser& serialiser)
 {
+    DeserialiseFeatures(serialiser);
     DeserialiseParameters(serialiser);
     DeserialisePasses(serialiser);
+}
+
+bool ShaderTechnique::FindFeature(const std::string& name,
+                                  uint32_t&          outIndex) const
+{
+    for (size_t i = 0; i < mFeatures.size(); i++)
+    {
+        if (mFeatures[i] == name)
+        {
+            outIndex = i;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 const ShaderParameter* ShaderTechnique::FindParameter(const std::string& name) const
@@ -354,4 +428,85 @@ const ShaderParameter* ShaderTechnique::FindParameter(const std::string& name) c
     }
 
     return nullptr;
+}
+
+const ShaderVariant* ShaderTechnique::GetVariant(const ShaderPassType passType,
+                                                 const uint32_t       features)
+{
+    // TODO: Reference counting for variants to destroy variants once they are
+    // no longer needed by any loaded materials.
+
+    Pass* const pass = mPasses[passType];
+
+    if (!pass)
+    {
+        return nullptr;
+    }
+
+    /* See if we already have this variant. We're using a simple array here
+     * rather than a map since this is only hit at material load time so lookup
+     * time isn't critical. */
+    for (const ShaderVariant* variant : pass->variants)
+    {
+        if (variant->mFeatures == features)
+        {
+            return variant;
+        }
+    }
+
+    /* Not found, create it. */
+    auto variant = pass->variants.emplace_back(new ShaderVariant());
+    variant->mFeatures = features;
+
+    /* Combine matching variant properties. */
+    ShaderPassFlags passFlags = kShaderPassFlags_None;
+    ShaderDefineArray defines;
+
+    for (const VariantProps& props : pass->variantProps)
+    {
+        if ((features & props.requires) == props.requires)
+        {
+            passFlags |= props.flags;
+            defines.insert(defines.end(), props.defines.begin(), props.defines.end());
+        }
+    }
+
+    /* Compile shaders. */
+    for (uint32_t stage = 0; stage < kGPUShaderStage_NumGraphics; stage++)
+    {
+        const Shader& shader = pass->shaders[stage];
+
+        if (!shader.source.empty())
+        {
+            variant->mShaders[stage] =
+                ShaderManager::Get().GetShader(shader.source,
+                                               shader.function,
+                                               static_cast<GPUShaderStage>(stage),
+                                               defines,
+                                               this,
+                                               features);
+        }
+    }
+
+    /* Get GPU states. */
+    GPUBlendStateDesc blendDesc;
+    GPUDepthStencilStateDesc depthStencilDesc;
+    GPURasterizerStateDesc rasterizerDesc;
+    GPURenderTargetStateDesc renderTargetDesc;
+
+    GetPassStates(passType,
+                  passFlags,
+                  blendDesc,
+                  depthStencilDesc,
+                  rasterizerDesc,
+                  renderTargetDesc);
+
+    /* TODO: Allow overriding some states in the asset. */
+
+    variant->mBlendState        = GPUBlendState::Get(blendDesc);
+    variant->mDepthStencilState = GPUDepthStencilState::Get(depthStencilDesc);
+    variant->mRasterizerState   = GPURasterizerState::Get(rasterizerDesc);
+    variant->mRenderTargetState = GPURenderTargetState::Get(renderTargetDesc);
+
+    return variant;
 }

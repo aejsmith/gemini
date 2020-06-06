@@ -43,24 +43,24 @@ void RenderEntity::CreatePipelines()
 
     for (uint32_t passType = 0; passType < kShaderPassTypeCount; passType++)
     {
-        const ShaderPass* const pass = technique->GetPass(static_cast<ShaderPassType>(passType));
+        const ShaderVariant* const variant = mMaterial.GetVariant(static_cast<ShaderPassType>(passType));
 
-        if (pass)
+        if (variant)
         {
             GPUPipelineDesc pipelineDesc;
 
             for (uint32_t stage = 0; stage < kGPUShaderStage_NumGraphics; stage++)
             {
-                pipelineDesc.shaders[stage] = pass->GetShader(static_cast<GPUShaderStage>(stage));
+                pipelineDesc.shaders[stage] = variant->GetShader(static_cast<GPUShaderStage>(stage));
             }
 
             pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity] = RenderManager::Get().GetViewEntityArgumentSetLayout();
             pipelineDesc.argumentSetLayouts[kArgumentSet_Material]   = technique->GetArgumentSetLayout();
 
-            pipelineDesc.blendState        = pass->GetBlendState();
-            pipelineDesc.depthStencilState = pass->GetDepthStencilState();
-            pipelineDesc.rasterizerState   = pass->GetRasterizerState();
-            pipelineDesc.renderTargetState = pass->GetRenderTargetState();
+            pipelineDesc.blendState        = variant->GetBlendState();
+            pipelineDesc.depthStencilState = variant->GetDepthStencilState();
+            pipelineDesc.rasterizerState   = variant->GetRasterizerState();
+            pipelineDesc.renderTargetState = variant->GetRenderTargetState();
             pipelineDesc.vertexInputState  = GetVertexInputState();
             pipelineDesc.topology          = GetPrimitiveTopology();
 

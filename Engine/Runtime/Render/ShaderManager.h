@@ -63,7 +63,9 @@ public:
     GPUShaderPtr            GetShader(const Path&                  path,
                                       const std::string&           function,
                                       const GPUShaderStage         stage,
-                                      const ShaderTechnique* const technique = nullptr);
+                                      const ShaderDefineArray&     defines   = {},
+                                      const ShaderTechnique* const technique = nullptr,
+                                      const uint32_t               features  = 0);
 
 private:
     SearchPathMap           mSearchPaths;
