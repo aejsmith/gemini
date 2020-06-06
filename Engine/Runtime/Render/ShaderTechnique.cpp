@@ -147,6 +147,7 @@ uint32_t ShaderTechnique::ConvertFeatureArray(const FeatureArray& features) cons
         uint32_t index;
         const bool found = FindFeature(feature, index);
         AssertMsg(found, "Feature '%s' not found", feature.c_str());
+        Unused(found);
 
         mask |= 1 << index;
     }
@@ -167,6 +168,7 @@ uint32_t ShaderTechnique::DeserialiseFeatureArray(Serialiser&       serialiser,
             uint32_t index;
             const bool found = FindFeature(feature, index);
             AssertMsg(found, "Feature '%s' not found", feature.c_str());
+            Unused(found);
 
             mask |= 1 << index;
         }
