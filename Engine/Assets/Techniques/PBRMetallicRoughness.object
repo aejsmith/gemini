@@ -3,6 +3,10 @@
         "objectClass": "ShaderTechnique",
         "objectID": 0,
         "objectProperties": {},
+        "features": [
+            "emissive",
+            "occlusion"
+        ],
         "parameters": [
             {
                 "name": "baseColourTexture",
@@ -17,11 +21,13 @@
             {
                 "name": "emissiveTexture",
                 "type": "Texture2D",
+                "requires": ["emissive"],
                 "default": {"asset": "Engine/Textures/DummyBlack2D"}
             },
             {
                 "name": "emissiveFactor",
                 "type": "Float3",
+                "requires": ["emissive"],
                 "default": [0.0, 0.0, 0.0]
             },
             {
@@ -47,6 +53,7 @@
             {
                 "name": "occlusionTexture",
                 "type": "Texture2D",
+                "requires": ["occlusion"],
                 "default": {"asset": "Engine/Textures/DummyWhite2D"}
             },
             {
@@ -73,6 +80,17 @@
             },
             {
                 "type": "DeferredOpaque",
+                "variants": [
+                    {
+                        "requires": ["emissive"],
+                        "flags": ["DeferredOpaque_Emissive"],
+                        "defines": ["EMISSIVE"]
+                    },
+                    {
+                        "requires": ["occlusion"],
+                        "defines": ["OCCLUSION"]
+                    }
+                ],
                 "shaders": [
                     {
                         "stage": "Vertex",

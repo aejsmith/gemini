@@ -60,16 +60,32 @@ DeferredPSOutput PSDeferredOpaque(PSInput input)
 {
     float4 baseColourSample        = MaterialSample(baseColourTexture, input.uv);
     float4 metallicRoughnessSample = MaterialSample(metallicRoughnessTexture, input.uv);
-    float4 emissiveSample          = MaterialSample(emissiveTexture, input.uv);
     float4 normalSample            = MaterialSample(normalTexture, input.uv);
-    float4 occlusionSample         = MaterialSample(occlusionTexture, input.uv);
+
+    #if OCCLUSION
+        float4 occlusionSample     = MaterialSample(occlusionTexture, input.uv);
+    #endif
+
+    #if EMISSIVE
+        float4 emissiveSample      = MaterialSample(emissiveTexture, input.uv);
+    #endif
 
     MaterialParams material;
     material.baseColour = baseColourSample * baseColourFactor;
     material.metallic   = metallicRoughnessSample.b * metallicFactor;
     material.roughness  = metallicRoughnessSample.g * roughnessFactor;
-    material.emissive   = float3(emissiveSample) * emissiveFactor;
-    material.occlusion  = occlusionSample.r;
+
+    #if OCCLUSION
+        material.occlusion = occlusionSample.r;
+    #else
+        material.occlusion = 1.0f;
+    #endif
+
+    #if EMISSIVE
+        material.emissive = float3(emissiveSample) * emissiveFactor;
+    #else
+        material.emissive = float3(0.0f);
+    #endif
 
     float3 normal = PerturbNormal(input.normal,
                                   ((normalSample.xyz * 2.0f) - 1.0f) * normalScale,

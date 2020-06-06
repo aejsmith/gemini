@@ -1090,7 +1090,16 @@ bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
         return false;
     }
 
-    MaterialPtr asset(new Material(shaderTechnique));
+    const bool occlusion = material.occlusionTexture != kInvalidIndex;
+    const bool emissive  = material.emissiveTexture != kInvalidIndex &&
+                           material.emissiveFactor  != glm::vec3(0.0f, 0.0f, 0.0f);
+
+    ShaderTechnique::FeatureArray features;
+
+    if (occlusion) features.emplace_back("occlusion");
+    if (emissive)  features.emplace_back("emissive");
+
+    MaterialPtr asset(new Material(shaderTechnique, features));
     material.asset = asset;
 
     auto SetTexture = [&] (const char* const name,
@@ -1114,15 +1123,23 @@ bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
 
     /* Base colour and emissive are in sRGB space. */
     if (!SetTexture("baseColourTexture",        material.baseColourTexture,        true))  return false;
-    if (!SetTexture("emissiveTexture",          material.emissiveTexture,          true))  return false;
     if (!SetTexture("metallicRoughnessTexture", material.metallicRoughnessTexture, false)) return false;
     if (!SetTexture("normalTexture",            material.normalTexture,            false)) return false;
-    if (!SetTexture("occlusionTexture",         material.occlusionTexture,         false)) return false;
 
     asset->SetArgument("baseColourFactor", material.baseColourFactor);
-    asset->SetArgument("emissiveFactor",   material.emissiveFactor);
     asset->SetArgument("metallicFactor",   material.metallicFactor);
     asset->SetArgument("roughnessFactor",  material.roughnessFactor);
+
+    if (occlusion)
+    {
+        if (!SetTexture("occlusionTexture", material.occlusionTexture, false)) return false;
+    }
+
+    if (emissive)
+    {
+        if (!SetTexture("emissiveTexture", material.emissiveTexture, true)) return false;
+        asset->SetArgument("emissiveFactor", material.emissiveFactor);
+    }
 
     if (material.normalTexture != kInvalidIndex && mFlags & kGLTFImporter_NormalMapYFlip)
     {

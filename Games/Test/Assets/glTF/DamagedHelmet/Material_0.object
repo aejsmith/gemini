@@ -6,6 +6,10 @@
         "shaderTechnique": {
             "asset": "Engine/Techniques/PBRMetallicRoughness"
         },
+        "features": [
+            "emissive",
+            "occlusion"
+        ],
         "arguments": {
             "baseColourTexture": {
                 "asset": "Game/glTF/DamagedHelmet/Texture_0"

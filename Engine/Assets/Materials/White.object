@@ -6,6 +6,7 @@
         "shaderTechnique": {
             "asset": "Engine/Techniques/PBRMetallicRoughness"
         },
+        "features": [],
         "arguments": {
             "baseColourTexture": {
                 "asset": "Engine/Textures/DummyWhite2D"
@@ -16,23 +17,12 @@
                 1.0,
                 1.0
             ],
-            "emissiveTexture": {
-                "asset": "Engine/Textures/DummyBlack2D"
-            },
-            "emissiveFactor": [
-                0.0,
-                0.0,
-                0.0
-            ],
             "metallicRoughnessTexture": {
                 "asset": "Engine/Textures/DummyWhite2D"
             },
             "metallicFactor": 0.0,
             "normalTexture": {
                 "asset": "Engine/Textures/DefaultNormal"
-            },
-            "occlusionTexture": {
-                "asset": "Engine/Textures/DummyWhite2D"
             },
             "roughnessFactor": 1.0
         }

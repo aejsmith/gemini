@@ -6,6 +6,7 @@
         "shaderTechnique": {
             "asset": "Engine/Techniques/PBRMetallicRoughness"
         },
+        "features": [],
         "arguments": {
             "baseColourTexture": {
                 "asset": "Game/glTF/Sponza/Texture_52"
@@ -15,14 +16,6 @@
                 0.5879999995231628,
                 0.5879999995231628,
                 1.0
-            ],
-            "emissiveTexture": {
-                "asset": "Engine/Textures/DummyBlack2D"
-            },
-            "emissiveFactor": [
-                0.0,
-                0.0,
-                0.0
             ],
             "metallicRoughnessTexture": {
                 "asset": "Game/glTF/Sponza/Texture_48"
@@ -36,9 +29,6 @@
                 -1.0,
                 1.0
             ],
-            "occlusionTexture": {
-                "asset": "Engine/Textures/DummyWhite2D"
-            },
             "roughnessFactor": 1.0
         }
     }
