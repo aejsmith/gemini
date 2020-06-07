@@ -1315,6 +1315,10 @@ bool GLTFImporter::GenerateMesh(const uint32_t meshIndex)
                     indexType = kGPUIndexType_16;
                     break;
 
+                case kGPUAttributeFormat_R32_UInt:
+                    indexType = kGPUIndexType_32;
+                    break;
+
                 default:
                     LogError("%s: Accessor %u has unhandled index format", mPath.GetCString(), primitive.indices);
                     return false;
