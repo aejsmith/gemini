@@ -24,6 +24,11 @@
             "normalTexture": {
                 "asset": "Engine/Textures/DefaultNormal"
             },
+            "normalScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
             "roughnessFactor": 1.0
         }
     }

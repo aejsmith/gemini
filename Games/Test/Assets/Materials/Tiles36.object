@@ -24,6 +24,11 @@
             "normalTexture": {
                 "asset": "Game/Textures/Tiles36/Normal"
             },
+            "normalScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
             "roughnessFactor": 1.0
         }
     }
