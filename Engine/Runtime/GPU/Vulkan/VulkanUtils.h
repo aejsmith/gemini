@@ -230,6 +230,11 @@ namespace VulkanUtils
             case kGPUAttributeFormat_R16G16B16_UInt:        return VK_FORMAT_R16G16B16_UINT;
             case kGPUAttributeFormat_R16G16B16A16_UInt:     return VK_FORMAT_R16G16B16A16_UINT;
 
+            case kGPUAttributeFormat_R32_UInt:              return VK_FORMAT_R32_UINT;
+            case kGPUAttributeFormat_R32G32_UInt:           return VK_FORMAT_R32G32_UINT;
+            case kGPUAttributeFormat_R32G32B32_UInt:        return VK_FORMAT_R32G32B32_UINT;
+            case kGPUAttributeFormat_R32G32B32A32_UInt:     return VK_FORMAT_R32G32B32A32_UINT;
+
             case kGPUAttributeFormat_R32_Float:             return VK_FORMAT_R32_SFLOAT;
             case kGPUAttributeFormat_R32G32_Float:          return VK_FORMAT_R32G32_SFLOAT;
             case kGPUAttributeFormat_R32G32B32_Float:       return VK_FORMAT_R32G32B32_SFLOAT;

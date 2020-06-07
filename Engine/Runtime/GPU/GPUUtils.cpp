@@ -40,6 +40,11 @@ size_t GPUUtils::GetAttributeSize(const GPUAttributeFormat format)
         case kGPUAttributeFormat_R16G16B16_UInt:        return 6;
         case kGPUAttributeFormat_R16G16B16A16_UInt:     return 8;
 
+        case kGPUAttributeFormat_R32_UInt:              return 4;
+        case kGPUAttributeFormat_R32G32_UInt:           return 8;
+        case kGPUAttributeFormat_R32G32B32_UInt:        return 12;
+        case kGPUAttributeFormat_R32G32B32A32_UInt:     return 16;
+
         case kGPUAttributeFormat_R32_Float:             return 4;
         case kGPUAttributeFormat_R32G32_Float:          return 8;
         case kGPUAttributeFormat_R32G32B32_Float:       return 12;

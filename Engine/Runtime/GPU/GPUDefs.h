@@ -650,6 +650,11 @@ enum ENUM() GPUAttributeFormat : uint8_t
     kGPUAttributeFormat_R16G16B16_UInt,
     kGPUAttributeFormat_R16G16B16A16_UInt,
 
+    kGPUAttributeFormat_R32_UInt,
+    kGPUAttributeFormat_R32G32_UInt,
+    kGPUAttributeFormat_R32G32B32_UInt,
+    kGPUAttributeFormat_R32G32B32A32_UInt,
+
     kGPUAttributeFormat_R32_Float,
     kGPUAttributeFormat_R32G32_Float,
     kGPUAttributeFormat_R32G32B32_Float,

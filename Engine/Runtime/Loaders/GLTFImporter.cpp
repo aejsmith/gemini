@@ -45,6 +45,7 @@ static constexpr uint32_t GL_TRIANGLE_FAN           = 6;
 
 static constexpr uint32_t GL_UNSIGNED_BYTE          = 5121;
 static constexpr uint32_t GL_UNSIGNED_SHORT         = 5123;
+static constexpr uint32_t GL_UNSIGNED_INT           = 5125;
 static constexpr uint32_t GL_FLOAT                  = 5126;
 
 static constexpr uint32_t GL_CLAMP_TO_EDGE          = 33071;
@@ -273,7 +274,9 @@ bool GLTFImporter::LoadAccessors()
 
         if ((componentType != GL_UNSIGNED_BYTE &&
              componentType != GL_UNSIGNED_SHORT &&
+             componentType != GL_UNSIGNED_INT &&
              componentType != GL_FLOAT) ||
+            (componentType == GL_UNSIGNED_INT && normalized) ||
             (componentType == GL_FLOAT && normalized))
         {
             LogError("%s: Accessor has unhandled component type", mPath.GetCString());
@@ -290,6 +293,10 @@ bool GLTFImporter::LoadAccessors()
 
                 case GL_UNSIGNED_SHORT:
                     accessor.format = (normalized) ? kGPUAttributeFormat_R16_UNorm : kGPUAttributeFormat_R16_UInt;
+                    break;
+
+                case GL_UNSIGNED_INT:
+                    accessor.format = kGPUAttributeFormat_R32_UInt;
                     break;
 
                 case GL_FLOAT:
@@ -310,6 +317,10 @@ bool GLTFImporter::LoadAccessors()
                     accessor.format = (normalized) ? kGPUAttributeFormat_R16G16_UNorm : kGPUAttributeFormat_R16G16_UInt;
                     break;
 
+                case GL_UNSIGNED_INT:
+                    accessor.format = kGPUAttributeFormat_R32G32_UInt;
+                    break;
+
                 case GL_FLOAT:
                     accessor.format = kGPUAttributeFormat_R32G32_Float;
                     break;
@@ -328,6 +339,10 @@ bool GLTFImporter::LoadAccessors()
                     accessor.format = (normalized) ? kGPUAttributeFormat_R16G16B16_UNorm : kGPUAttributeFormat_R16G16B16_UInt;
                     break;
 
+                case GL_UNSIGNED_INT:
+                    accessor.format = kGPUAttributeFormat_R32G32B32_UInt;
+                    break;
+
                 case GL_FLOAT:
                     accessor.format = kGPUAttributeFormat_R32G32B32_Float;
                     break;
@@ -344,6 +359,10 @@ bool GLTFImporter::LoadAccessors()
 
                 case GL_UNSIGNED_SHORT:
                     accessor.format = (normalized) ? kGPUAttributeFormat_R16G16B16A16_UNorm : kGPUAttributeFormat_R16G16B16A16_UInt;
+                    break;
+
+                case GL_UNSIGNED_INT:
+                    accessor.format = kGPUAttributeFormat_R32G32B32A32_UInt;
                     break;
 
                 case GL_FLOAT:
