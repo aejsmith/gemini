@@ -579,13 +579,14 @@ bool GLTFImporter::LoadMaterials()
             const rapidjson::Value& texture = parentValue[name];
 
             if (!texture.IsObject() ||
-                !texture.HasMember("index") || !texture["index"].IsUint())
+                !texture.HasMember("index") || !texture["index"].IsUint() ||
+                (texture.HasMember("texCoord") && !texture["texCoord"].IsUint()))
             {
                 LogError("%s: Material texture has missing/invalid properties", mPath.GetCString());
                 return false;
             }
 
-            if (texture.HasMember("texCoord"))
+            if (texture.HasMember("texCoord") && texture["texCoord"].GetUint() != 0)
             {
                 LogError("%s: Multiple texture coordinates are unsupported", mPath.GetCString());
                 return false;
