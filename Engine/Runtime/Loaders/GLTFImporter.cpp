@@ -1302,8 +1302,7 @@ bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
     }
 
     const bool occlusion = material.occlusionTexture != kInvalidIndex;
-    const bool emissive  = material.emissiveTexture != kInvalidIndex &&
-                           material.emissiveFactor  != glm::vec3(0.0f, 0.0f, 0.0f);
+    const bool emissive  = material.emissiveFactor != glm::vec3(0.0f, 0.0f, 0.0f);
 
     ShaderTechnique::FeatureArray features;
 

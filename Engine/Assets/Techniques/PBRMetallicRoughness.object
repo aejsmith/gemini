@@ -22,7 +22,7 @@
                 "name": "emissiveTexture",
                 "type": "Texture2D",
                 "requires": ["emissive"],
-                "default": {"asset": "Engine/Textures/DummyBlack2D"}
+                "default": {"asset": "Engine/Textures/DummyWhite2D"}
             },
             {
                 "name": "emissiveFactor",
