@@ -1,22 +1,4 @@
 {
-    "env": {
-        "engineIncludePath": [
-            "${workspaceFolder}/Engine/Runtime",
-            "${workspaceFolder}/Engine/3rdParty/xxHash/Include",
-            "${workspaceFolder}/Engine/3rdParty/glm/Include",
-            "${workspaceFolder}/Engine/3rdParty/glm/Repo",
-            "${workspaceFolder}/Engine/3rdParty/imgui/Repo",
-            "${workspaceFolder}/Engine/3rdParty/microprofile/Include",
-            "${workspaceFolder}/Engine/3rdParty/microprofile/Repo",
-            "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
-            "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
-            "${workspaceFolder}/Engine/3rdParty/stb/Repo",
-            "${workspaceFolder}/Engine/3rdParty/SPIRV-Reflect/Repo",
-            "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
-            "${workspaceFolder}/Dependencies/Common/shaderc/Include",
-            "${workspaceFolder}/Dependencies/Common/Bullet/Include"
-        ]
-    },
     "configurations": [
         {
             "name": "Linux",
@@ -27,7 +9,20 @@
                 "limitSymbolsToIncludedHeaders": true
             },
             "includePath": [
-                "${engineIncludePath}",
+                "${workspaceFolder}/Engine/Runtime",
+                "${workspaceFolder}/Engine/3rdParty/xxHash/Include",
+                "${workspaceFolder}/Engine/3rdParty/glm/Include",
+                "${workspaceFolder}/Engine/3rdParty/glm/Repo",
+                "${workspaceFolder}/Engine/3rdParty/imgui/Repo",
+                "${workspaceFolder}/Engine/3rdParty/microprofile/Include",
+                "${workspaceFolder}/Engine/3rdParty/microprofile/Repo",
+                "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
+                "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
+                "${workspaceFolder}/Engine/3rdParty/stb/Repo",
+                "${workspaceFolder}/Engine/3rdParty/SPIRV-Reflect/Repo",
+                "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
+                "${workspaceFolder}/Dependencies/Common/shaderc/Include",
+                "${workspaceFolder}/Dependencies/Common/Bullet/Include",
                 "/usr/include/SDL2"
             ],
             "defines": [
@@ -48,7 +43,20 @@
                 "limitSymbolsToIncludedHeaders": true
             },
             "includePath": [
-                "${engineIncludePath}",
+                "${workspaceFolder}/Engine/Runtime",
+                "${workspaceFolder}/Engine/3rdParty/xxHash/Include",
+                "${workspaceFolder}/Engine/3rdParty/glm/Include",
+                "${workspaceFolder}/Engine/3rdParty/glm/Repo",
+                "${workspaceFolder}/Engine/3rdParty/imgui/Repo",
+                "${workspaceFolder}/Engine/3rdParty/microprofile/Include",
+                "${workspaceFolder}/Engine/3rdParty/microprofile/Repo",
+                "${workspaceFolder}/Engine/3rdParty/Mustache/Include",
+                "${workspaceFolder}/Engine/3rdParty/RapidJSON/Repo/include",
+                "${workspaceFolder}/Engine/3rdParty/stb/Repo",
+                "${workspaceFolder}/Engine/3rdParty/SPIRV-Reflect/Repo",
+                "${workspaceFolder}/Engine/3rdParty/VulkanMemoryAllocator/Repo/src",
+                "${workspaceFolder}/Dependencies/Common/shaderc/Include",
+                "${workspaceFolder}/Dependencies/Common/Bullet/Include",
                 "${workspaceFolder}/Dependencies/Win32/SDL/Include",
                 "${workspaceFolder}/Dependencies/Win32/libclang/Include",
                 "${VULKAN_SDK}/Include"
