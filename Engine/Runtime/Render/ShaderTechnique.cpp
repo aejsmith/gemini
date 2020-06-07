@@ -357,6 +357,8 @@ void ShaderTechnique::DeserialisePasses(Serialiser& serialiser)
             Assert(found);
             Assert(stage < kGPUShaderStage_NumGraphics);
 
+            pass->shaders[stage].requires = DeserialiseFeatureArray(serialiser, "requires");
+
             found = serialiser.Read("source", pass->shaders[stage].source);
             Assert(found);
 
@@ -490,12 +492,13 @@ const ShaderVariant* ShaderTechnique::GetVariant(const ShaderPassType passType,
         }
     }
 
-    /* Compile shaders. */
+    /* Compile shaders which are enabled for this variant. */
     for (uint32_t stage = 0; stage < kGPUShaderStage_NumGraphics; stage++)
     {
         const Shader& shader = pass->shaders[stage];
 
-        if (!shader.source.empty())
+        if (!shader.source.empty() &&
+            (features & shader.requires) == shader.requires)
         {
             variant->mShaders[stage] =
                 ShaderManager::Get().GetShader(shader.source,

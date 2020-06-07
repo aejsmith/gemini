@@ -131,8 +131,8 @@ private:
      */
     struct VariantProps
     {
-        uint32_t                    requires;
-        ShaderPassFlags             flags;
+        uint32_t                    requires = 0;
+        ShaderPassFlags             flags    = kShaderPassFlags_None;
         ShaderDefineArray           defines;
     };
 
@@ -140,6 +140,7 @@ private:
     {
         std::string                 source;
         std::string                 function;
+        uint32_t                    requires = 0;
     };
 
     struct Pass
