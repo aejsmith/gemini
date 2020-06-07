@@ -790,7 +790,8 @@ bool GLTFImporter::LoadNodes()
             (entry.HasMember("mesh")        && !entry["mesh"].IsUint()) ||
             (entry.HasMember("translation") && (!entry["translation"].IsArray() || entry["translation"].Size() != 3)) ||
             (entry.HasMember("scale")       && (!entry["scale"].IsArray()       || entry["scale"].Size() != 3)) ||
-            (entry.HasMember("rotation")    && (!entry["rotation"].IsArray()    || entry["rotation"].Size() != 4)))
+            (entry.HasMember("rotation")    && (!entry["rotation"].IsArray()    || entry["rotation"].Size() != 4)) ||
+            (entry.HasMember("children")    && !entry["children"].IsArray()))
         {
             LogError("%s: Node has missing/invalid properties", mPath.GetCString());
             return false;
@@ -816,6 +817,20 @@ bool GLTFImporter::LoadNodes()
         node.translation = GetVec3(entry, "translation", glm::vec3(0.0f, 0.0f, 0.0f));
         node.scale       = GetVec3(entry, "scale",       glm::vec3(1.0f, 1.0f, 1.0f));
         node.rotation    = GetQuat(entry, "rotation",    glm::quat(0.0f, 0.0f, 0.0f, 1.0f));
+
+        if (entry.HasMember("children"))
+        {
+            for (const rapidjson::Value& child : entry["children"].GetArray())
+            {
+                if (!child.IsUint())
+                {
+                    LogError("%s: Child node is invalid", mPath.GetCString());
+                    return false;
+                }
+
+                node.children.emplace_back(child.GetUint());
+            }
+        }
     }
 
     return true;
@@ -1348,8 +1363,15 @@ bool GLTFImporter::GenerateMesh(const uint32_t meshIndex)
 
 bool GLTFImporter::GenerateScene()
 {
-    for (const uint32_t nodeIndex : mScene)
+    std::function<bool (uint32_t, Entity*)>AddNode = [&] (const uint32_t nodeIndex,
+                                                          Entity* const  parentEntity) -> bool
     {
+        if (nodeIndex >= mNodes.size())
+        {
+            LogError("%s: Node %u does not exist", mPath.GetCString(), nodeIndex);
+            return false;
+        }
+
         const Node& node = mNodes[nodeIndex];
 
         // TODO: Use names from the glTF if they're there?
@@ -1358,7 +1380,7 @@ bool GLTFImporter::GenerateScene()
         /* If we have just one primitive, we'll create it under the root, else
          * we'll create a parent entity to maintain the transform, and then put
          * each primitive as a child of that. */
-        Entity* const entity = mEntity->CreateChild(std::move(entityName));
+        Entity* const entity = parentEntity->CreateChild(std::move(entityName));
         entity->SetTransform(Transform(node.translation, node.rotation, node.scale));
 
         if (node.mesh != kInvalidIndex)
@@ -1402,7 +1424,26 @@ bool GLTFImporter::GenerateScene()
             }
         }
 
+        /* Add child nodes. */
+        for (const uint32_t childIndex : node.children)
+        {
+            if (!AddNode(childIndex, entity))
+            {
+                return false;
+            }
+        }
+
         entity->SetActive(true);
+
+        return true;
+    };
+
+    for (const uint32_t nodeIndex : mScene)
+    {
+        if (!AddNode(nodeIndex, mEntity))
+        {
+            return false;
+        }
     }
 
     return true;

@@ -153,6 +153,7 @@ private:
         glm::vec3                   translation;
         glm::vec3                   scale;
         glm::quat                   rotation;
+        std::vector<uint32_t>       children;
     };
 
     struct TextureDef
