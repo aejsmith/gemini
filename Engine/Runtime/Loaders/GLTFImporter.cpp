@@ -787,7 +787,7 @@ bool GLTFImporter::LoadNodes()
     for (const rapidjson::Value& entry : nodes.GetArray())
     {
         if (!entry.IsObject() ||
-            !entry.HasMember("mesh")        || !entry["mesh"].IsUint() ||
+            (entry.HasMember("mesh")        && !entry["mesh"].IsUint()) ||
             (entry.HasMember("translation") && (!entry["translation"].IsArray() || entry["translation"].Size() != 3)) ||
             (entry.HasMember("scale")       && (!entry["scale"].IsArray()       || entry["scale"].Size() != 3)) ||
             (entry.HasMember("rotation")    && (!entry["rotation"].IsArray()    || entry["rotation"].Size() != 4)))
@@ -798,14 +798,19 @@ bool GLTFImporter::LoadNodes()
 
         Node& node = mNodes.emplace_back();
 
-        // TODO: Mesh is optional, but I think this is for animation which we
-        // don't support yet.
-        node.mesh = entry["mesh"].GetUint();
-
-        if (node.mesh >= mMeshes.size())
+        if (entry.HasMember("mesh"))
         {
-            LogError("%s: Mesh %u does not exist", mPath.GetCString(), node.mesh);
-            return false;
+            node.mesh = entry["mesh"].GetUint();
+
+            if (node.mesh >= mMeshes.size())
+            {
+                LogError("%s: Mesh %u does not exist", mPath.GetCString(), node.mesh);
+                return false;
+            }
+        }
+        else
+        {
+            node.mesh = kInvalidIndex;
         }
 
         node.translation = GetVec3(entry, "translation", glm::vec3(0.0f, 0.0f, 0.0f));
@@ -1347,14 +1352,6 @@ bool GLTFImporter::GenerateScene()
     {
         const Node& node = mNodes[nodeIndex];
 
-        /* Generates the meshes if they haven't already been. */
-        if (!GenerateMesh(node.mesh))
-        {
-            return false;
-        }
-
-        const MeshDef& mesh = mMeshes[node.mesh];
-
         // TODO: Use names from the glTF if they're there?
         std::string entityName = StringUtils::Format("%s_%u", mPath.GetBaseFileName().c_str(), nodeIndex);
 
@@ -1364,34 +1361,45 @@ bool GLTFImporter::GenerateScene()
         Entity* const entity = mEntity->CreateChild(std::move(entityName));
         entity->SetTransform(Transform(node.translation, node.rotation, node.scale));
 
-        for (uint32_t primitiveIndex = 0; primitiveIndex < mesh.primitives.size(); primitiveIndex++)
+        if (node.mesh != kInvalidIndex)
         {
-            Entity* primEntity;
-            if (mesh.primitives.size() > 1)
-            {
-                const std::string primName = StringUtils::Format("Primitive_%u", primitiveIndex);
-                primEntity = entity->CreateChild(std::move(primName));
-                primEntity->SetActive(true);
-            }
-            else
-            {
-                primEntity = entity;
-            }
-
-            const Primitive& primitive = mesh.primitives[primitiveIndex];
-
-            /* Generates the material if not already done. */
-            if (!GenerateMaterial(primitive.material))
+            /* Generates the meshes if they haven't already been. */
+            if (!GenerateMesh(node.mesh))
             {
                 return false;
             }
 
-            const MaterialDef& material = mMaterials[primitive.material];
+            const MeshDef& mesh = mMeshes[node.mesh];
 
-            MeshRenderer* const meshRenderer = primEntity->CreateComponent<MeshRenderer>();
-            meshRenderer->SetMesh(primitive.asset);
-            meshRenderer->SetMaterial(0, material.asset);
-            meshRenderer->SetActive(true);
+            for (uint32_t primitiveIndex = 0; primitiveIndex < mesh.primitives.size(); primitiveIndex++)
+            {
+                Entity* primEntity;
+                if (mesh.primitives.size() > 1)
+                {
+                    const std::string primName = StringUtils::Format("Primitive_%u", primitiveIndex);
+                    primEntity = entity->CreateChild(std::move(primName));
+                    primEntity->SetActive(true);
+                }
+                else
+                {
+                    primEntity = entity;
+                }
+
+                const Primitive& primitive = mesh.primitives[primitiveIndex];
+
+                /* Generates the material if not already done. */
+                if (!GenerateMaterial(primitive.material))
+                {
+                    return false;
+                }
+
+                const MaterialDef& material = mMaterials[primitive.material];
+
+                MeshRenderer* const meshRenderer = primEntity->CreateComponent<MeshRenderer>();
+                meshRenderer->SetMesh(primitive.asset);
+                meshRenderer->SetMaterial(0, material.asset);
+                meshRenderer->SetActive(true);
+            }
         }
 
         entity->SetActive(true);
