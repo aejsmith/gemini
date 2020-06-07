@@ -4,6 +4,7 @@
         "objectID": 0,
         "objectProperties": {},
         "features": [
+            "alphaTest",
             "emissive",
             "occlusion"
         ],
@@ -60,11 +61,23 @@
                 "name": "roughnessFactor",
                 "type": "Float",
                 "default": 1.0
+            },
+            {
+                "name": "alphaCutoff",
+                "type": "Float",
+                "requires": ["alphaTest"],
+                "default": 0.5
             }
         ],
         "passes": [
             {
                 "type": "Basic",
+                "variants": [
+                    {
+                        "requires": ["alphaTest"],
+                        "defines": ["ALPHA_TEST"]
+                    }
+                ],
                 "shaders": [
                     {
                         "stage": "Vertex",
@@ -81,6 +94,10 @@
             {
                 "type": "DeferredOpaque",
                 "variants": [
+                    {
+                        "requires": ["alphaTest"],
+                        "defines": ["ALPHA_TEST"]
+                    },
                     {
                         "requires": ["emissive"],
                         "flags": ["DeferredOpaque_Emissive"],
@@ -106,11 +123,23 @@
             },
             {
                 "type": "ShadowMap",
+                "variants": [
+                    {
+                        "requires": ["alphaTest"],
+                        "defines": ["ALPHA_TEST"]
+                    }
+                ],
                 "shaders": [
                     {
                         "stage": "Vertex",
-                        "source": "Engine/ShadowMap.hlsl",
-                        "function": "VSMain"
+                        "source": "Engine/PBR.hlsl",
+                        "function": "VSShadowMap"
+                    },
+                    {
+                        "stage": "Pixel",
+                        "requires": ["alphaTest"],
+                        "source": "Engine/PBR.hlsl",
+                        "function": "PSShadowMap"
                     }
                 ]
             }

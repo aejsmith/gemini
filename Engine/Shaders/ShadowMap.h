@@ -16,14 +16,7 @@
 
 #include "ShaderDefs.h"
 
-struct VSInput
+float4 ShadowMapPosition(float3 entityPosition)
 {
-    float3      position        : POSITION;
-    float3      normal          : NORMAL;
-};
-
-float4 VSMain(VSInput input) : SV_Position
-{
-    // TODO: Bias
-    return EntityPositionToClip(input.position);
+    return EntityPositionToClip(entityPosition);
 }

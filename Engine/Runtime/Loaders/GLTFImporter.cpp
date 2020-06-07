@@ -693,7 +693,9 @@ bool GLTFImporter::LoadMaterials()
     for (const rapidjson::Value& entry : materials.GetArray())
     {
         if (!entry.IsObject() ||
-            !entry.HasMember("pbrMetallicRoughness") || !entry["pbrMetallicRoughness"].IsObject())
+            !entry.HasMember("pbrMetallicRoughness") || !entry["pbrMetallicRoughness"].IsObject() ||
+            (entry.HasMember("alphaMode")            && !entry["alphaMode"].IsString()) ||
+            (entry.HasMember("alphaCutoff")          && !entry["alphaCutoff"].IsNumber()))
         {
             LogError("%s: Material has missing/invalid properties", mPath.GetCString());
             return false;
@@ -755,6 +757,31 @@ bool GLTFImporter::LoadMaterials()
         material.emissiveFactor   = GetVec3 (entry, "emissiveFactor",  glm::vec3(0.0f, 0.0f, 0.0f));
         material.metallicFactor   = GetFloat(pbr,   "metallicFactor",  1.0f);
         material.roughnessFactor  = GetFloat(pbr,   "roughnessFactor", 1.0f);
+
+        material.alphaCutoff = 0.0f;
+
+        if (entry.HasMember("alphaMode"))
+        {
+            const char* const alphaMode = entry["alphaMode"].GetString();
+
+            if (strcmp(alphaMode, "OPAQUE") == 0)
+            {
+                material.alphaCutoff = 0.0f;
+            }
+            else if (strcmp(alphaMode, "MASK") == 0)
+            {
+                material.alphaCutoff = GetFloat(entry, "alphaCutoff", 0.5f);
+            }
+            else if (strcmp(alphaMode, "BLEND") == 0)
+            {
+                LogWarning("%s: Alpha blending is unsupported, will render opaque", mPath.GetCString());
+            }
+            else
+            {
+                LogError("%s: 'alphaMode' property is invalid", mPath.GetCString());
+                return false;
+            }
+        }
     }
 
     return true;
@@ -1301,11 +1328,13 @@ bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
         return false;
     }
 
+    const bool alphaTest = material.alphaCutoff != 0.0f;
     const bool occlusion = material.occlusionTexture != kInvalidIndex;
     const bool emissive  = material.emissiveFactor != glm::vec3(0.0f, 0.0f, 0.0f);
 
     ShaderTechnique::FeatureArray features;
 
+    if (alphaTest) features.emplace_back("alphaTest");
     if (occlusion) features.emplace_back("occlusion");
     if (emissive)  features.emplace_back("emissive");
 
@@ -1339,6 +1368,11 @@ bool GLTFImporter::GenerateMaterial(const uint32_t materialIndex)
     asset->SetArgument("baseColourFactor", material.baseColourFactor);
     asset->SetArgument("metallicFactor",   material.metallicFactor);
     asset->SetArgument("roughnessFactor",  material.roughnessFactor);
+
+    if (alphaTest)
+    {
+        asset->SetArgument("alphaCutoff", material.alphaCutoff);
+    }
 
     if (occlusion)
     {

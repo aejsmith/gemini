@@ -37,7 +37,7 @@
 /** Input material parameters using the metallic-roughness model. */
 struct MaterialParams
 {
-    float4      baseColour;
+    float3      baseColour;
     float       metallic;
     float       roughness;
     float3      emissive;

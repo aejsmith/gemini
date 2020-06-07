@@ -16,13 +16,12 @@
 
 #include "Deferred.h"
 #include "Lighting.h"
+#include "ShadowMap.h"
 
 /*
  * TODO:
- *  - Shader variants for when we are missing certain maps, e.g. emissive and
- *    occlusion. Currently supply dummy textures for these when they're
- *    unwanted, but we could remove the texture samples using variants.
- *  - Option to use mesh-provided tangents.
+ *  - Option to use mesh-provided tangents. Needs support for variants based
+ *    on the mesh used with a material.
  */
 
 struct VSInput
@@ -40,6 +39,24 @@ struct PSInput
     float2      uv              : TEXCOORD;
 };
 
+struct VSShadowMapInput
+{
+    float3      position        : POSITION;
+
+    #if ALPHA_TEST
+    float2      uv              : TEXCOORD;
+    #endif
+};
+
+struct PSShadowMapInput
+{
+    float4      shadowPosition  : SV_Position;
+
+    #if ALPHA_TEST
+    float2      uv              : TEXCOORD;
+    #endif
+};
+
 PSInput VSMain(VSInput input)
 {
     PSInput output;
@@ -50,15 +67,41 @@ PSInput VSMain(VSInput input)
     return output;
 }
 
+PSShadowMapInput VSShadowMap(VSShadowMapInput input)
+{
+    PSShadowMapInput output;
+    output.shadowPosition = ShadowMapPosition(input.position);
+
+    #if ALPHA_TEST
+        output.uv = input.uv;
+    #endif
+
+    return output;
+}
+
+float3 GetBaseColour(float2 uv)
+{
+    float4 baseColour = MaterialSample(baseColourTexture, uv) * baseColourFactor;
+
+    #if ALPHA_TEST
+        if (baseColour.a < alphaCutoff)
+        {
+            discard;
+        }
+    #endif
+
+    return baseColour.rgb;
+}
+
 float4 PSBasic(PSInput input) : SV_Target0
 {
     /* Basic pass has no lighting, just output the base colour. */
-    return float4(MaterialSample(baseColourTexture, input.uv).xyz, 1.0f);
+    return float4(GetBaseColour(input.uv), 1.0f);
 }
 
 DeferredPSOutput PSDeferredOpaque(PSInput input)
 {
-    float4 baseColourSample        = MaterialSample(baseColourTexture, input.uv);
+    float3 baseColour              = GetBaseColour(input.uv);
     float4 metallicRoughnessSample = MaterialSample(metallicRoughnessTexture, input.uv);
     float4 normalSample            = MaterialSample(normalTexture, input.uv);
 
@@ -71,7 +114,7 @@ DeferredPSOutput PSDeferredOpaque(PSInput input)
     #endif
 
     MaterialParams material;
-    material.baseColour = baseColourSample * baseColourFactor;
+    material.baseColour = baseColour;
     material.metallic   = metallicRoughnessSample.b * metallicFactor;
     material.roughness  = metallicRoughnessSample.g * roughnessFactor;
 
@@ -94,3 +137,14 @@ DeferredPSOutput PSDeferredOpaque(PSInput input)
 
     return EncodeGBuffer(material, normal);
 }
+
+#if ALPHA_TEST
+
+void PSShadowMap(PSShadowMapInput input)
+{
+    /* Does the alpha test and discards if fails. We don't have any colour
+     * output in this pass. */
+    GetBaseColour(input.uv);
+}
+
+#endif

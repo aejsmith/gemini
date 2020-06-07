@@ -122,6 +122,8 @@ private:
         float                       metallicFactor;
         float                       roughnessFactor;
 
+        float                       alphaCutoff;
+
         MaterialPtr                 asset;
     };
 
