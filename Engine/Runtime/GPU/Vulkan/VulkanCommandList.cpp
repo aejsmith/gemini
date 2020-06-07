@@ -373,6 +373,12 @@ void VulkanGraphicsCommandList::PreDraw(const bool isIndexed)
                           VK_PIPELINE_BIND_POINT_GRAPHICS,
                           pipeline->GetHandle());
 
+        if (pipeline->NeedsDummyVertexBuffer())
+        {
+            const uint32_t value = 0;
+            WriteVertexBuffer(pipeline->GetDummyVertexBuffer(), &value, sizeof(value));
+        }
+
         mDirtyState &= ~kDirtyState_Pipeline;
     }
 

@@ -29,12 +29,18 @@ public:
 
                             ~VulkanPipeline();
 
-    VkPipeline              GetHandle() const { return mHandle; }
-    VkPipelineLayout        GetLayout() const { return mLayout; }
+    VkPipeline              GetHandle() const       { return mHandle; }
+    VkPipelineLayout        GetLayout() const       { return mLayout; }
+
+    uint32_t                GetDummyVertexBuffer() const  { return mDummyVertexBuffer; }
+    bool                    NeedsDummyVertexBuffer() const
+                                { return mDummyVertexBuffer != kMaxVertexAttributes; }
 
 private:
     VkPipeline              mHandle;
     VkPipelineLayout        mLayout;
+
+    uint32_t                mDummyVertexBuffer;
 
 };
 

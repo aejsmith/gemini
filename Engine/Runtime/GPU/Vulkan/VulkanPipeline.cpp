@@ -62,58 +62,106 @@ static void ConvertShaderState(const GPUPipelineDesc&           desc,
 static void ConvertVertexInputState(const GPUPipelineDesc&                desc,
                                     VkPipelineVertexInputStateCreateInfo& outVertexInputInfo,
                                     VkVertexInputAttributeDescription*    outVertexAttributes,
-                                    VkVertexInputBindingDescription*      outVertexBindings)
+                                    VkVertexInputBindingDescription*      outVertexBindings,
+                                    uint32_t&                             outDummyBuffer)
 {
     const auto& stateDesc = desc.vertexInputState->GetDesc();
     const auto shader     = static_cast<VulkanShader*>(desc.shaders[kGPUShaderStage_Vertex]);
 
     outVertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    bool isReferenced[kMaxVertexAttributes] = {};
+    GPUVertexBufferBitset isReferenced;
+    GPUVertexAttributeBitset needDummy;
 
-    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    /* Iterate over the inputs the shader wants from SPIR-V reflection and
+     * match to our attributes. */
+    for (const auto& input : shader->GetVertexInputs())
     {
-        auto& attribute = stateDesc.attributes[i];
+        Assert(input.semantic != kGPUAttributeSemantic_Unknown);
 
-        if (attribute.semantic != kGPUAttributeSemantic_Unknown)
+        bool matched = false;
+
+        for (const auto& attribute : stateDesc.attributes)
         {
-            /* Match to a location reflected from the SPIR-V binary. Don't need
-             * to bother checking whether all required inputs are provided here,
-             * Vulkan validation will pick it up. */
-            for (const auto& input : shader->GetVertexInputs())
+            matched = input.semantic == attribute.semantic && input.index == attribute.index;
+
+            if (matched)
             {
-                if (input.semantic == attribute.semantic && input.index == attribute.index)
-                {
-                    isReferenced[attribute.buffer] = true;
+                isReferenced.Set(attribute.buffer);
 
-                    outVertexInputInfo.pVertexAttributeDescriptions = outVertexAttributes;
+                outVertexInputInfo.pVertexAttributeDescriptions = outVertexAttributes;
 
-                    auto& outAttribute = outVertexAttributes[outVertexInputInfo.vertexAttributeDescriptionCount++];
-                    outAttribute.location = input.location;
-                    outAttribute.binding  = attribute.buffer;
-                    outAttribute.format   = VulkanUtils::ConvertAttributeFormat(attribute.format);
-                    outAttribute.offset   = attribute.offset;
-                }
+                auto& outAttribute = outVertexAttributes[outVertexInputInfo.vertexAttributeDescriptionCount++];
+                outAttribute.location = input.location;
+                outAttribute.binding  = attribute.buffer;
+                outAttribute.format   = VulkanUtils::ConvertAttributeFormat(attribute.format);
+                outAttribute.offset   = attribute.offset;
+
+                break;
             }
+        }
+
+        /* If we don't have a match, then we'll bind a dummy zero buffer to the
+         * input. This was added as a quick and dirty solution to deal with
+         * glTF meshes that do not provide UVs. The alternative is to generate
+         * shader variants based on the meshes used with a material, but I'd
+         * like to avoid this for now. */
+        if (!matched)
+        {
+            LogWarning("Shader '%s' requires input %u[%u] which is not provided, will read as 0",
+                       shader->GetName().c_str(),
+                       input.semantic,
+                       input.index);
+
+            needDummy.Set(input.location);
         }
     }
 
-    for (size_t i = 0; i < kMaxVertexAttributes; i++)
+    /* Add buffer definitions. */
+    for (size_t bufferIndex = 0; bufferIndex < kMaxVertexAttributes; bufferIndex++)
     {
-        if (isReferenced[i])
+        if (isReferenced.Test(bufferIndex))
         {
-            auto& buffer = stateDesc.buffers[i];
+            auto& buffer = stateDesc.buffers[bufferIndex];
 
             outVertexInputInfo.pVertexBindingDescriptions = outVertexBindings;
 
             auto& outBinding = outVertexBindings[outVertexInputInfo.vertexBindingDescriptionCount++];
-            outBinding.binding   = i;
+            outBinding.binding   = bufferIndex;
             outBinding.stride    = buffer.stride;
             outBinding.inputRate = (buffer.perInstance)
                                        ? VK_VERTEX_INPUT_RATE_INSTANCE
                                        : VK_VERTEX_INPUT_RATE_VERTEX;
         }
+        else if (needDummy.Any())
+        {
+            outDummyBuffer = bufferIndex;
+
+            outVertexInputInfo.pVertexBindingDescriptions = outVertexBindings;
+
+            /* Dummy buffer uses a stride of 0 so we only need to provide 1
+             * value regardless of vertex count. */
+            auto& outBinding = outVertexBindings[outVertexInputInfo.vertexBindingDescriptionCount++];
+            outBinding.binding   = bufferIndex;
+            outBinding.stride    = 0;
+            outBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            for (size_t inputLocation = needDummy.FindFirst();
+                 inputLocation < kMaxVertexAttributes;
+                 inputLocation = needDummy.Clear(inputLocation).FindFirst())
+            {
+                outVertexInputInfo.pVertexAttributeDescriptions = outVertexAttributes;
+
+                auto& outAttribute = outVertexAttributes[outVertexInputInfo.vertexAttributeDescriptionCount++];
+                outAttribute.location = inputLocation;
+                outAttribute.binding  = bufferIndex;
+                outAttribute.format   = VK_FORMAT_R8G8B8A8_UNORM;
+                outAttribute.offset   = 0;
+            }
+        }
     }
+
+    AssertMsg(!needDummy.Any(), "No spare buffer slots for dummy buffer");
 }
 
 static void ConvertInputAssemblyState(const GPUPipelineDesc&                  desc,
@@ -215,9 +263,10 @@ static void ConvertBlendState(const GPUPipelineDesc&               desc,
 
 VulkanPipeline::VulkanPipeline(VulkanDevice&          device,
                                const GPUPipelineDesc& desc) :
-    GPUPipeline (device, desc),
-    mHandle     (VK_NULL_HANDLE),
-    mLayout     (VK_NULL_HANDLE)
+    GPUPipeline        (device, desc),
+    mHandle            (VK_NULL_HANDLE),
+    mLayout            (VK_NULL_HANDLE),
+    mDummyVertexBuffer (kMaxVertexAttributes)
 {
     VulkanPipelineLayoutKey layoutKey;
     memcpy(layoutKey.argumentSetLayouts, desc.argumentSetLayouts, sizeof(layoutKey.argumentSetLayouts));
@@ -237,7 +286,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice&          device,
     VkGraphicsPipelineCreateInfo           createInfo                                        = {};
 
     ConvertShaderState(mDesc, stageInfo, createInfo.stageCount);
-    ConvertVertexInputState(mDesc, vertexInputInfo, vertexAttributes, vertexBindings);
+    ConvertVertexInputState(mDesc, vertexInputInfo, vertexAttributes, vertexBindings, mDummyVertexBuffer);
     ConvertInputAssemblyState(mDesc, inputAssemblyInfo);
     ConvertViewportState(mDesc, viewportInfo);
     ConvertRasterizerState(mDesc, rasterizationInfo, multisampleInfo);
