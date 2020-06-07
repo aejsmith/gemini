@@ -150,6 +150,7 @@ private:
     struct Node
     {
         uint32_t                    mesh;
+        uint32_t                    light;
         glm::vec3                   translation;
         glm::vec3                   scale;
         glm::quat                   rotation;
@@ -171,11 +172,22 @@ private:
         GPUAddressMode              wrapT = kGPUAddressMode_Repeat;
     };
 
+    struct LightDef
+    {
+        LightType                   type;
+        glm::vec3                   colour;
+        float                       intensity;
+        float                       range;
+        Radians                     innerConeAngle;
+        Radians                     outerConeAngle;
+    };
+
 private:
     bool                            LoadAccessors();
     bool                            LoadBuffers();
     bool                            LoadBufferViews();
     bool                            LoadImages();
+    bool                            LoadLights();
     bool                            LoadMaterials();
     bool                            LoadMeshes();
     bool                            LoadNodes();
@@ -205,6 +217,7 @@ private:
     std::vector<ByteArray>          mBuffers;
     std::vector<BufferView>         mBufferViews;
     std::vector<Image>              mImages;
+    std::vector<LightDef>           mLights;
     std::vector<MaterialDef>        mMaterials;
     std::vector<MeshDef>            mMeshes;
     std::vector<Node>               mNodes;

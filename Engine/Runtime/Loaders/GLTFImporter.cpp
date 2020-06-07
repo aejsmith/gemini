@@ -26,6 +26,7 @@
 
 #include "GPU/GPUUtils.h"
 
+#include "Render/Light.h"
 #include "Render/MeshRenderer.h"
 
 #include <rapidjson/error/en.h>
@@ -53,6 +54,13 @@ static constexpr uint32_t GL_MIRRORED_REPEAT        = 33648;
 static constexpr uint32_t GL_REPEAT                 = 10497;
 
 static constexpr uint32_t kInvalidIndex     = std::numeric_limits<uint32_t>::max();
+
+static constexpr char kLightsPunctualExtensionName[] = "KHR_lights_punctual";
+
+static const char* const kSupportedExtensions[] =
+{
+    kLightsPunctualExtensionName,
+};
 
 static float GetFloat(const rapidjson::Value& entry,
                       const char* const       name,
@@ -190,15 +198,46 @@ bool GLTFImporter::Import(const Path&             path,
     }
     else if (strcmp(asset["version"].GetString(), kRequiredVersion) != 0)
     {
-        LogError("%s: Asset version '%s' is unsupported", asset["version"].GetString());
+        LogError("%s: Asset version '%s' is unsupported", mPath.GetCString(), asset["version"].GetString());
         return false;
     }
 
     if (mDocument.HasMember("extensionsRequired"))
     {
-        // TODO
-        LogError("%s: Extensions are required which are not currently supported", mPath.GetCString());
-        return false;
+        const rapidjson::Value& extensions = mDocument["extensionsRequired"];
+
+        if (!extensions.IsArray())
+        {
+            LogError("%s: 'extensionsRequired' property is invalid", mPath.GetCString());
+            return false;
+        }
+
+        for (const rapidjson::Value& extension : extensions.GetArray())
+        {
+            if (!extension.IsString())
+            {
+                LogError("%s: 'extensionsRequired' property is invalid", mPath.GetCString());
+                return false;
+            }
+
+            bool found = false;
+
+            for (const char* const supported : kSupportedExtensions)
+            {
+                found = strcmp(extension.GetString(), supported) == 0;
+
+                if (found)
+                {
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                LogError("%s: Required extension '%s' is not supported", mPath.GetCString(), extension.GetString());
+                return false;
+            }
+        }
     }
 
     /* Load and validate everything from the file bottom-up. */
@@ -210,6 +249,7 @@ bool GLTFImporter::Import(const Path&             path,
     if (!LoadTextures())    return false;
     if (!LoadMaterials())   return false;
     if (!LoadMeshes())      return false;
+    if (!LoadLights())      return false;
     if (!LoadNodes())       return false;
     if (!LoadScene())       return false;
 
@@ -538,6 +578,103 @@ bool GLTFImporter::LoadImages()
     return true;
 }
 
+bool GLTFImporter::LoadLights()
+{
+    if (!mDocument.HasMember("extensions"))
+    {
+        return true;
+    }
+
+    const rapidjson::Value& extensions = mDocument["extensions"];
+
+    if (!extensions.IsObject())
+    {
+        LogError("%s: 'extensions' property is invalid", mPath.GetCString());
+        return false;
+    }
+    else if (!extensions.HasMember(kLightsPunctualExtensionName))
+    {
+        return true;
+    }
+
+    const rapidjson::Value& lightExtension = extensions[kLightsPunctualExtensionName];
+
+    if (!lightExtension.IsObject())
+    {
+        LogError("%s: '%s' property is invalid", kLightsPunctualExtensionName, mPath.GetCString());
+        return false;
+    }
+    else if (!lightExtension.HasMember("lights"))
+    {
+        return true;
+    }
+
+    const rapidjson::Value& lights = lightExtension["lights"];
+
+    if (!lights.IsArray())
+    {
+        LogError("%s: 'light' property is invalid", mPath.GetCString());
+        return false;
+    }
+
+    for (const rapidjson::Value& entry : lights.GetArray())
+    {
+        if (!entry.IsObject() ||
+            !entry.HasMember("type")      || !entry["type"].IsString() ||
+            (entry.HasMember("color")     && (!entry["color"].IsArray() || entry["color"].Size() != 3)) ||
+            (entry.HasMember("intensity") && !entry["intensity"].IsNumber()) ||
+            (entry.HasMember("range")     && !entry["range"].IsNumber()) ||
+            (entry.HasMember("spot")      && !entry["spot"].IsObject()))
+        {
+            LogError("%s: Light has missing/invalid properties", mPath.GetCString());
+            return false;
+        }
+
+        LightDef& light = mLights.emplace_back();
+
+        const char* const type = entry["type"].GetString();
+
+        if (strcmp(type, "directional") == 0)
+        {
+            light.type = kLightType_Directional;
+        }
+        else if (strcmp(type, "point") == 0)
+        {
+            light.type = kLightType_Point;
+        }
+        else if (strcmp(type, "spot") == 0)
+        {
+            light.type = kLightType_Spot;
+        }
+        else
+        {
+            LogError("%s: Light has invalid type '%s'", mPath.GetCString(), type);
+            return false;
+        }
+
+        light.colour    = GetVec3 (entry, "color",     glm::vec3(1.0f, 1.0f, 1.0f));
+        light.intensity = GetFloat(entry, "intensity", 1.0f);
+        light.range     = GetFloat(entry, "range",     0.0f);
+
+        if (light.type == kLightType_Spot && entry.HasMember("spot"))
+        {
+            const rapidjson::Value& spot = entry["spot"];
+
+            if ((spot.HasMember("innerConeAngle") && !spot["innerConeAngle"].IsNumber()) ||
+                (spot.HasMember("outerConeAngle") && !spot["outerConeAngle"].IsNumber()))
+            {
+                LogError("%s: Light has missing/invalid properties", mPath.GetCString());
+                return false;
+            }
+
+            light.innerConeAngle = GetFloat(entry, "innerConeAngle", 0.0f);
+            light.outerConeAngle = GetFloat(entry, "outerConeAngle", glm::pi<float>() / 4.0f);
+        }
+    }
+
+    return true;
+}
+
 bool GLTFImporter::LoadMaterials()
 {
     if (!mDocument.HasMember("materials"))
@@ -799,6 +936,9 @@ bool GLTFImporter::LoadNodes()
 
         Node& node = mNodes.emplace_back();
 
+        node.mesh  = kInvalidIndex;
+        node.light = kInvalidIndex;
+
         if (entry.HasMember("mesh"))
         {
             node.mesh = entry["mesh"].GetUint();
@@ -809,14 +949,45 @@ bool GLTFImporter::LoadNodes()
                 return false;
             }
         }
-        else
-        {
-            node.mesh = kInvalidIndex;
-        }
 
         node.translation = GetVec3(entry, "translation", glm::vec3(0.0f, 0.0f, 0.0f));
         node.scale       = GetVec3(entry, "scale",       glm::vec3(1.0f, 1.0f, 1.0f));
         node.rotation    = GetQuat(entry, "rotation",    glm::quat(0.0f, 0.0f, 0.0f, 1.0f));
+
+        if (entry.HasMember("extensions"))
+        {
+            const rapidjson::Value& extensions = entry["extensions"];
+
+            if (!extensions.IsObject())
+            {
+                LogError("%s: 'extensions' property is invalid", mPath.GetCString());
+                return false;
+            }
+
+            if (extensions.HasMember(kLightsPunctualExtensionName))
+            {
+                const rapidjson::Value& lightExtension = extensions[kLightsPunctualExtensionName];
+
+                if (!lightExtension.IsObject())
+                {
+                    LogError("%s: '%s' property is invalid", kLightsPunctualExtensionName, mPath.GetCString());
+                    return false;
+                }
+                else if (!lightExtension.HasMember("light") || !lightExtension["light"].IsUint())
+                {
+                    LogError("%s: 'light' property is missing/invalid", mPath.GetCString());
+                    return false;
+                }
+
+                node.light = lightExtension["light"].GetUint();
+
+                if (node.light >= mLights.size())
+                {
+                    LogError("%s: Light %u does not exist", mPath.GetCString(), node.light);
+                    return false;
+                }
+            }
+        }
 
         if (entry.HasMember("children"))
         {
@@ -1421,11 +1592,30 @@ bool GLTFImporter::GenerateScene()
 
                 const MaterialDef& material = mMaterials[primitive.material];
 
-                MeshRenderer* const meshRenderer = primEntity->CreateComponent<MeshRenderer>();
-                meshRenderer->SetMesh(primitive.asset);
-                meshRenderer->SetMaterial(0, material.asset);
-                meshRenderer->SetActive(true);
+                MeshRenderer* const component = primEntity->CreateComponent<MeshRenderer>();
+                component->SetMesh(primitive.asset);
+                component->SetMaterial(0, material.asset);
+                component->SetActive(true);
             }
+        }
+
+        if (node.light != kInvalidIndex)
+        {
+            const LightDef& light = mLights[node.light];
+
+            Light* const component = entity->CreateComponent<Light>();
+            component->SetType(light.type);
+            component->SetColour(light.colour);
+            component->SetIntensity(light.intensity);
+            component->SetRange(light.range);
+
+            if (light.type == kLightType_Spot)
+            {
+                component->SetInnerConeAngle(glm::degrees<Degrees>(light.innerConeAngle));
+                component->SetOuterConeAngle(glm::degrees<Degrees>(light.outerConeAngle));
+            }
+
+            component->SetActive(true);
         }
 
         /* Add child nodes. */
