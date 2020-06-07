@@ -117,14 +117,22 @@ GPUShaderPtr ShaderManager::GetShader(const Path&                  path,
                                                    compiler.MoveCode(),
                                                    function);
 
+            std::string name = path.GetString();
+
+            for (const std::string& define : key.defines)
+            {
+                name += '+';
+                name += define;
+            }
+
+            shader->SetName(name);
+
             std::unique_lock lock(mLock);
 
             auto ret = mShaders.emplace(std::move(key), shader.Get());
 
             if (ret.second)
             {
-                shader->SetName(path.GetString());
-
                 shader->SetDestroyCallback(
                     [this, shaderPtr = shader.Get(), mapKey = &ret.first->first] ()
                     {
