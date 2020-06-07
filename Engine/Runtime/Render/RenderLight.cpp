@@ -87,6 +87,8 @@ void RenderLight::SetCastShadows(const bool castShadows)
 
 bool RenderLight::Cull(const Frustum& frustum) const
 {
+    /* TODO: Improve zero range culling for spot lights, should still be
+     * possible to test if the cone won't intersect the view frustum. */
     if (mType == kLightType_Directional || mRange == 0.0f)
     {
         return true;

@@ -112,7 +112,7 @@ bool IsLightVisible(Frustum frustum,
     /* Directional lights are always visible. */
     bool visible = true;
 
-    if (light.type != kShaderLightType_Directional)
+    if (light.type != kShaderLightType_Directional && light.range != 0.0f)
     {
         /* Sphere/frustum intersection test. */
         float3 position = light.boundingSphere.xyz;
