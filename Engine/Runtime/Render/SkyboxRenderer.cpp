@@ -45,14 +45,6 @@ SkyboxRenderEntity::SkyboxRenderEntity(const SkyboxRenderer& renderer) :
 {
 }
 
-SkyboxRenderer::SkyboxRenderer() :
-    mColour (0.0f, 0.0f, 0.0f)
-{
-    ShaderTechniquePtr technique = AssetManager::Get().Load<ShaderTechnique>("Engine/Techniques/Internal/Skybox");
-
-    mMaterial = new Material(technique);
-}
-
 BoundingBox SkyboxRenderEntity::GetLocalBoundingBox()
 {
     /* Don't want to cull the skybox. */
@@ -75,15 +67,48 @@ void SkyboxRenderEntity::GetGeometry(EntityDrawCall& ioDrawCall) const
     ioDrawCall.vertexCount = 3;
 }
 
+SkyboxRenderer::SkyboxRenderer() :
+    mColour (0.0f, 0.0f, 0.0f)
+{
+    CreateMaterial();
+}
+
 SkyboxRenderer::~SkyboxRenderer()
 {
 }
 
+void SkyboxRenderer::CreateMaterial()
+{
+    ShaderTechniquePtr technique = AssetManager::Get().Load<ShaderTechnique>("Engine/Techniques/Internal/Skybox");
+
+    std::vector<std::string> features;
+
+    if (mTexture)
+    {
+        features.emplace_back("textured");
+    }
+
+    mMaterial = new Material(technique, features);
+}
+
 void SkyboxRenderer::SetTexture(TextureCube* const texture)
 {
+    const bool haveOldTexture = mTexture != nullptr;
+    const bool haveNewTexture = texture != nullptr;
+
     mTexture = texture;
-    mMaterial->SetArgument("texture", mTexture);
-    mMaterial->SetArgument("useTexture", (texture) ? 1u : 0u);
+
+    if (haveOldTexture != haveNewTexture)
+    {
+        /* Need to recreate the material. */
+        ScopedComponentDeactivation deactivate(this);
+        CreateMaterial();
+    }
+
+    if (mTexture)
+    {
+        mMaterial->SetArgument("texture", mTexture);
+    }
 }
 
 void SkyboxRenderer::SetColour(const glm::vec3& colour)

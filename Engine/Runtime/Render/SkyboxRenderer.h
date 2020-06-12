@@ -48,7 +48,7 @@ protected:
     RenderEntityArray           CreateRenderEntities() override;
 
 private:
-    void                        UpdateMaterial();
+    void                        CreateMaterial();
 
 private:
     TextureCubePtr              mTexture;

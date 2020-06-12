@@ -19,7 +19,10 @@
 struct PSInput
 {
     float4 position : SV_Position;
+
+    #if TEXTURED
     float3 viewDirection;
+    #endif
 };
 
 PSInput VSMain(const uint vertexID : SV_VertexID)
@@ -32,23 +35,22 @@ PSInput VSMain(const uint vertexID : SV_VertexID)
     output.position.z = 1.0f;
     output.position.w = 1.0f;
 
-    /* Calculate the viewing direction into the skybox (interpolated into the
-     * pixel shader). We want to cancel out the translation of the matrix so
-     * subtract the position. */
-    float4 direction = mul(view.inverseViewProjection, output.position);
-    output.viewDirection = (direction.xyz / direction.w) - view.position;
+    #if TEXTURED
+        /* Calculate the viewing direction into the skybox (interpolated into
+         * the pixel shader). We want to cancel out the translation of the
+         * matrix so subtract the position. */
+        float4 direction = mul(view.inverseViewProjection, output.position);
+        output.viewDirection = (direction.xyz / direction.w) - view.position;
+    #endif
 
     return output;
 }
 
 float4 PSMain(PSInput input) : SV_Target0
 {
-    if (useTexture)
-    {
+    #if TEXTURED
         return MaterialSample(texture, input.viewDirection);
-    }
-    else
-    {
+    #else
         return float4(colour, 1.0);
-    }
+    #endif
 }

@@ -3,23 +3,29 @@
         "objectClass": "ShaderTechnique",
         "objectID": 0,
         "objectProperties": {},
+        "features": [
+            "textured"
+        ],
         "parameters": [
             {
                 "name": "texture",
-                "type": "TextureCube"
+                "type": "TextureCube",
+                "requires": ["textured"]
             },
             {
                 "name": "colour",
                 "type": "Float3"
-            },
-            {
-                "name": "useTexture",
-                "type": "UInt"
             }
         ],
         "passes": [
             {
                 "type": "Basic",
+                "variants": [
+                    {
+                        "requires": ["textured"],
+                        "defines": ["TEXTURED"]
+                    }
+                ],
                 "shaders": [
                     {
                         "stage": "Vertex",
@@ -35,6 +41,12 @@
             },
             {
                 "type": "DeferredUnlit",
+                "variants": [
+                    {
+                        "requires": ["textured"],
+                        "defines": ["TEXTURED"]
+                    }
+                ],
                 "shaders": [
                     {
                         "stage": "Vertex",
