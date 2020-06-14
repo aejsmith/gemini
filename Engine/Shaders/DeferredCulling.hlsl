@@ -183,27 +183,31 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID,
     minDepth = clamp(minDepth, 0.0f, 1.0f);
     maxDepth = clamp(maxDepth, 0.0f, 1.0f);
 
-    /* Calculate tile frustum planes. */
-    Frustum frustum;
-    CalculateTileFrustum(tileID, minDepth, maxDepth, frustum);
-
-    /* Iterate over lights. Each thread processes a single light. */
-    uint lightCount     = constants.lightCount;
-    uint lightLoopCount = (lightCount + (threadCount - 1)) / threadCount;
-
-    for (uint i = 0; i < lightLoopCount; i++)
+    /* Don't bother doing anything for background (e.g. sky) tiles. */
+    if (minDepth < 1.0f)
     {
-        uint lightIndex = (i * threadCount) + threadIndex;
+        /* Calculate tile frustum planes. */
+        Frustum frustum;
+        CalculateTileFrustum(tileID, minDepth, maxDepth, frustum);
 
-        /* Since we rounded up the light count to a multiple of the group size,
-         * threads in the last iteration may be outside the count. */
-        if (lightIndex < lightCount)
+        /* Iterate over lights. Each thread processes a single light. */
+        uint lightCount     = constants.lightCount;
+        uint lightLoopCount = (lightCount + (threadCount - 1)) / threadCount;
+
+        for (uint i = 0; i < lightLoopCount; i++)
         {
-            if (IsLightVisible(frustum, lightIndex))
+            uint lightIndex = (i * threadCount) + threadIndex;
+
+            /* Since we rounded up the light count to a multiple of the group size,
+            * threads in the last iteration may be outside the count. */
+            if (lightIndex < lightCount)
             {
-                uint outputIndex;
-                InterlockedAdd(tileLightCount, 1, outputIndex);
-                tileLightIndices[outputIndex] = lightIndex;
+                if (IsLightVisible(frustum, lightIndex))
+                {
+                    uint outputIndex;
+                    InterlockedAdd(tileLightCount, 1, outputIndex);
+                    tileLightIndices[outputIndex] = lightIndex;
+                }
             }
         }
     }
