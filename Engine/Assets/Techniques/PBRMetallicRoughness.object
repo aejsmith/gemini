@@ -63,6 +63,11 @@
                 "default": 1.0
             },
             {
+                "name": "uvScale",
+                "type": "Float2",
+                "default": [1.0, 1.0]
+            },
+            {
                 "name": "alphaCutoff",
                 "type": "Float",
                 "requires": ["alphaTest"],

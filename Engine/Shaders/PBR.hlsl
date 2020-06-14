@@ -63,7 +63,7 @@ PSInput VSMain(VSInput input)
     output.clipPosition = EntityPositionToClip(input.position);
     output.position     = EntityPositionToWorld(input.position);
     output.normal       = EntityNormalToWorld(input.normal);
-    output.uv           = input.uv;
+    output.uv           = input.uv * uvScale;
     return output;
 }
 
