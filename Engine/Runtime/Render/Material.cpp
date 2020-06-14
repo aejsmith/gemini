@@ -143,10 +143,6 @@ void Material::Deserialise(Serialiser& serialiser)
                         { \
                             SetArgument(parameter, &value); \
                         } \
-                        else \
-                        { \
-                            LogWarning("%s: Failed to read argument '%s'", GetPath().c_str(), parameter.name.c_str()); \
-                        } \
                         break; \
                     }
 
