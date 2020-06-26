@@ -538,7 +538,7 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
 
             if (box.GetMaximum() != glm::vec3(FLT_MAX))
             {
-                DebugManager::Get().DrawPrimitive(box, glm::vec3(0.0f, 0.0f, 1.0f));
+                DebugManager::Get().DrawPrimitive(box, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
             }
         }
     }

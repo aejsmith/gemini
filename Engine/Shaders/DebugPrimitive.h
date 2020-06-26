@@ -20,7 +20,7 @@
 
 struct DebugPrimitiveConstants
 {
-    shader_float3   colour;
+    shader_float4   colour;
 };
 
 CBUFFER(DebugPrimitiveConstants, primitive, ViewEntity, EntityConstants);

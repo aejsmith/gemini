@@ -134,7 +134,7 @@ void RenderLight::UpdateBoundingSphere()
 
 void RenderLight::DrawDebugPrimitive() const
 {
-    static constexpr glm::vec3 kLightColour(0.0f, 1.0f, 0.0f);
+    static constexpr glm::vec4 kLightColour(0.0f, 1.0f, 0.0f, 1.0f);
 
     switch (mType)
     {

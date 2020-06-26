@@ -126,16 +126,6 @@ DebugManager::DebugManager() :
     mVertexShader = ShaderManager::Get().GetShader("Engine/DebugPrimitive.hlsl", "VSMain", kGPUShaderStage_Vertex);
     mPixelShader  = ShaderManager::Get().GetShader("Engine/DebugPrimitive.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
-    GPURasterizerStateDesc rasterizerDesc;
-    rasterizerDesc.polygonMode = kGPUPolygonMode_Line;
-    rasterizerDesc.cullMode    = kGPUCullMode_None;
-
-    mRasterizerState = GPURasterizerState::Get(rasterizerDesc);
-
-    rasterizerDesc.polygonMode = kGPUPolygonMode_Fill;
-
-    mFillRasterizerState = GPURasterizerState::Get(rasterizerDesc);
-
     GPUVertexInputStateDesc vertexInputDesc;
     vertexInputDesc.buffers[0].stride = sizeof(glm::vec3);
     vertexInputDesc.attributes[0].semantic = kGPUAttributeSemantic_Position;
@@ -324,14 +314,12 @@ void DebugManager::RenderPrimitives(const RenderView&     view,
         pipelineDesc.shaders[kGPUShaderStage_Vertex]             = mVertexShader;
         pipelineDesc.shaders[kGPUShaderStage_Pixel]              = mPixelShader;
         pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity] = RenderManager::Get().GetViewEntityArgumentSetLayout();
-        pipelineDesc.blendState                                  = GPUBlendState::GetDefault();
         pipelineDesc.depthStencilState                           = GPUDepthStencilState::GetDefault();
-        pipelineDesc.rasterizerState                             = mRasterizerState;
         pipelineDesc.renderTargetState                           = cmdList.GetRenderTargetState();
         pipelineDesc.vertexInputState                            = mVertexInputState;
 
         DebugPrimitiveConstants constants;
-        constants.colour = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+        constants.colour = glm::vec4(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
 
         std::vector<glm::vec3> vertices;
         std::vector<uint16_t> indices;
@@ -344,35 +332,78 @@ void DebugManager::RenderPrimitives(const RenderView&     view,
             switch (primitive.type)
             {
                 case kPrimitiveType_BoundingBox:
+                case kPrimitiveType_Frustum:
                 {
-                    pipelineDesc.topology = kGPUPrimitiveTopology_LineList;
-
-                    const glm::vec3& minimum = primitive.boundingBox.GetMinimum();
-                    const glm::vec3& maximum = primitive.boundingBox.GetMaximum();
-
                     /* Calculate corners (left/right, bottom/top, back/front). */
-                    const glm::vec3 lbb(minimum.x, minimum.y, minimum.z);
-                    const glm::vec3 lbf(minimum.x, minimum.y, maximum.z);
-                    const glm::vec3 ltb(minimum.x, maximum.y, minimum.z);
-                    const glm::vec3 ltf(minimum.x, maximum.y, maximum.z);
-                    const glm::vec3 rbb(maximum.x, minimum.y, minimum.z);
-                    const glm::vec3 rbf(maximum.x, minimum.y, maximum.z);
-                    const glm::vec3 rtb(maximum.x, maximum.y, minimum.z);
-                    const glm::vec3 rtf(maximum.x, maximum.y, maximum.z);
+                    glm::vec3 lbb, lbf, ltb, ltf, rbb, rbf, rtb, rtf;
 
-                    /* Draw a line for each side. */
-                    vertices.emplace_back(lbb); vertices.emplace_back(rbb);
-                    vertices.emplace_back(rbb); vertices.emplace_back(rbf);
-                    vertices.emplace_back(rbf); vertices.emplace_back(lbf);
-                    vertices.emplace_back(lbf); vertices.emplace_back(lbb);
-                    vertices.emplace_back(ltb); vertices.emplace_back(rtb);
-                    vertices.emplace_back(rtb); vertices.emplace_back(rtf);
-                    vertices.emplace_back(rtf); vertices.emplace_back(ltf);
-                    vertices.emplace_back(ltf); vertices.emplace_back(ltb);
-                    vertices.emplace_back(lbb); vertices.emplace_back(ltb);
-                    vertices.emplace_back(rbb); vertices.emplace_back(rtb);
-                    vertices.emplace_back(rbf); vertices.emplace_back(rtf);
-                    vertices.emplace_back(lbf); vertices.emplace_back(ltf);
+                    if (primitive.type == kPrimitiveType_BoundingBox)
+                    {
+                        const glm::vec3& minimum = primitive.boundingBox.GetMinimum();
+                        const glm::vec3& maximum = primitive.boundingBox.GetMaximum();
+
+                        lbb = glm::vec3(minimum.x, minimum.y, minimum.z);
+                        lbf = glm::vec3(minimum.x, minimum.y, maximum.z);
+                        ltb = glm::vec3(minimum.x, maximum.y, minimum.z);
+                        ltf = glm::vec3(minimum.x, maximum.y, maximum.z);
+                        rbb = glm::vec3(maximum.x, minimum.y, minimum.z);
+                        rbf = glm::vec3(maximum.x, minimum.y, maximum.z);
+                        rtb = glm::vec3(maximum.x, maximum.y, minimum.z);
+                        rtf = glm::vec3(maximum.x, maximum.y, maximum.z);
+                    }
+                    else
+                    {
+                        lbb = primitive.frustum.GetCorner(Frustum::kCorner_FarBottomLeft);
+                        lbf = primitive.frustum.GetCorner(Frustum::kCorner_NearBottomLeft);
+                        ltb = primitive.frustum.GetCorner(Frustum::kCorner_FarTopLeft);
+                        ltf = primitive.frustum.GetCorner(Frustum::kCorner_NearTopLeft);
+                        rbb = primitive.frustum.GetCorner(Frustum::kCorner_FarBottomRight);
+                        rbf = primitive.frustum.GetCorner(Frustum::kCorner_NearBottomRight);
+                        rtb = primitive.frustum.GetCorner(Frustum::kCorner_FarTopRight);
+                        rtf = primitive.frustum.GetCorner(Frustum::kCorner_NearTopRight);
+                    }
+
+                    if (primitive.fill)
+                    {
+                        /* Draw 2 triangles for each face. */
+                        pipelineDesc.topology = kGPUPrimitiveTopology_TriangleList;
+
+                        vertices.emplace_back(lbb); vertices.emplace_back(ltb); vertices.emplace_back(rbb);
+                        vertices.emplace_back(rbb); vertices.emplace_back(ltb); vertices.emplace_back(rtb);
+
+                        vertices.emplace_back(rbf); vertices.emplace_back(rtf); vertices.emplace_back(lbf);
+                        vertices.emplace_back(lbf); vertices.emplace_back(rtf); vertices.emplace_back(ltf);
+
+                        vertices.emplace_back(lbf); vertices.emplace_back(ltf); vertices.emplace_back(lbb);
+                        vertices.emplace_back(lbb); vertices.emplace_back(ltf); vertices.emplace_back(ltb);
+
+                        vertices.emplace_back(rbb); vertices.emplace_back(rtb); vertices.emplace_back(rbf);
+                        vertices.emplace_back(rbf); vertices.emplace_back(rtb); vertices.emplace_back(rtf);
+
+                        vertices.emplace_back(rtf); vertices.emplace_back(rtb); vertices.emplace_back(ltf);
+                        vertices.emplace_back(ltf); vertices.emplace_back(rtb); vertices.emplace_back(ltb);
+
+                        vertices.emplace_back(rbb); vertices.emplace_back(rbf); vertices.emplace_back(lbb);
+                        vertices.emplace_back(lbb); vertices.emplace_back(rbf); vertices.emplace_back(lbf);
+                    }
+                    else
+                    {
+                        /* Draw a line for each side. */
+                        pipelineDesc.topology = kGPUPrimitiveTopology_LineList;
+
+                        vertices.emplace_back(lbb); vertices.emplace_back(rbb);
+                        vertices.emplace_back(rbb); vertices.emplace_back(rbf);
+                        vertices.emplace_back(rbf); vertices.emplace_back(lbf);
+                        vertices.emplace_back(lbf); vertices.emplace_back(lbb);
+                        vertices.emplace_back(ltb); vertices.emplace_back(rtb);
+                        vertices.emplace_back(rtb); vertices.emplace_back(rtf);
+                        vertices.emplace_back(rtf); vertices.emplace_back(ltf);
+                        vertices.emplace_back(ltf); vertices.emplace_back(ltb);
+                        vertices.emplace_back(lbb); vertices.emplace_back(ltb);
+                        vertices.emplace_back(rbb); vertices.emplace_back(rtb);
+                        vertices.emplace_back(rbf); vertices.emplace_back(rtf);
+                        vertices.emplace_back(lbf); vertices.emplace_back(ltf);
+                    }
 
                     break;
                 }
@@ -411,9 +442,24 @@ void DebugManager::RenderPrimitives(const RenderView&     view,
                 }
             }
 
-            pipelineDesc.rasterizerState = (primitive.fill)
-                                               ? mFillRasterizerState
-                                               : mRasterizerState;
+            GPURasterizerStateDesc rasterizerDesc;
+            rasterizerDesc.polygonMode = (primitive.fill) ? kGPUPolygonMode_Fill : kGPUPolygonMode_Line;
+            rasterizerDesc.cullMode    = (primitive.fill) ? kGPUCullMode_Back : kGPUCullMode_None;
+
+            pipelineDesc.rasterizerState = GPURasterizerState::Get(rasterizerDesc);
+
+            GPUBlendStateDesc blendDesc;
+
+            if (primitive.colour.a != 1.0f)
+            {
+                blendDesc.attachments[0].enable          = true;
+                blendDesc.attachments[0].srcColourFactor = kGPUBlendFactor_SrcAlpha;
+                blendDesc.attachments[0].dstColourFactor = kGPUBlendFactor_OneMinusSrcAlpha;
+                blendDesc.attachments[0].srcAlphaFactor  = kGPUBlendFactor_SrcAlpha;
+                blendDesc.attachments[0].dstAlphaFactor  = kGPUBlendFactor_OneMinusSrcAlpha;
+            }
+
+            pipelineDesc.blendState = GPUBlendState::Get(blendDesc);
 
             cmdList.SetPipeline(pipelineDesc);
 
@@ -455,7 +501,8 @@ DebugManager::Primitive::Primitive(const Primitive& other)
 }
 
 void DebugManager::DrawPrimitive(const BoundingBox& box,
-                                 const glm::vec3&   colour)
+                                 const glm::vec4&   colour,
+                                 const bool         fill)
 {
     std::unique_lock lock(mPrimitivesLock);
 
@@ -463,11 +510,24 @@ void DebugManager::DrawPrimitive(const BoundingBox& box,
     primitive.type        = kPrimitiveType_BoundingBox;
     primitive.boundingBox = box;
     primitive.colour      = colour;
-    primitive.fill        = false;
+    primitive.fill        = fill;
+}
+
+void DebugManager::DrawPrimitive(const Frustum&     frustum,
+                                 const glm::vec4&   colour,
+                                 const bool         fill)
+{
+    std::unique_lock lock(mPrimitivesLock);
+
+    Primitive& primitive = mPrimitives.emplace_back();
+    primitive.type    = kPrimitiveType_Frustum;
+    primitive.frustum = frustum;
+    primitive.colour  = colour;
+    primitive.fill    = fill;
 }
 
 void DebugManager::DrawPrimitive(const Cone&      cone,
-                                 const glm::vec3& colour,
+                                 const glm::vec4& colour,
                                  const bool       fill)
 {
     std::unique_lock lock(mPrimitivesLock);
@@ -480,7 +540,7 @@ void DebugManager::DrawPrimitive(const Cone&      cone,
 }
 
 void DebugManager::DrawPrimitive(const Line&      line,
-                                 const glm::vec3& colour)
+                                 const glm::vec4& colour)
 {
     std::unique_lock lock(mPrimitivesLock);
 
@@ -492,7 +552,7 @@ void DebugManager::DrawPrimitive(const Line&      line,
 }
 
 void DebugManager::DrawPrimitive(const Sphere&    sphere,
-                                 const glm::vec3& colour,
+                                 const glm::vec4& colour,
                                  const bool       fill)
 {
     std::unique_lock lock(mPrimitivesLock);

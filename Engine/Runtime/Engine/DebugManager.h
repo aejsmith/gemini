@@ -18,6 +18,7 @@
 
 #include "Core/Math/BoundingBox.h"
 #include "Core/Math/Cone.h"
+#include "Core/Math/Frustum.h"
 #include "Core/Math/Line.h"
 #include "Core/Math/Sphere.h"
 #include "Core/Singleton.h"
@@ -82,14 +83,18 @@ public:
                                                  RenderResourceHandle& ioDestTexture);
 
     void                        DrawPrimitive(const BoundingBox& box,
-                                              const glm::vec3&   colour);
+                                              const glm::vec4&   colour,
+                                              const bool         fill = false);
+    void                        DrawPrimitive(const Frustum&     frustum,
+                                              const glm::vec4&   colour,
+                                              const bool         fill = false);
     void                        DrawPrimitive(const Cone&        cone,
-                                              const glm::vec3&   colour,
-                                              const bool         fll = false);
+                                              const glm::vec4&   colour,
+                                              const bool         fill = false);
     void                        DrawPrimitive(const Line&        line,
-                                              const glm::vec3&   colour);
+                                              const glm::vec4&   colour);
     void                        DrawPrimitive(const Sphere&      sphere,
-                                              const glm::vec3&   colour,
+                                              const glm::vec4&   colour,
                                               const bool         fill = false);
 
 private:
@@ -103,6 +108,7 @@ private:
     enum PrimitiveType
     {
         kPrimitiveType_BoundingBox,
+        kPrimitiveType_Frustum,
         kPrimitiveType_Cone,
         kPrimitiveType_Line,
         kPrimitiveType_Sphere,
@@ -113,13 +119,14 @@ private:
         union
         {
             BoundingBox         boundingBox;
+            Frustum             frustum;
             Cone                cone;
             Line                line;
             Sphere              sphere;
         };
 
         PrimitiveType           type;
-        glm::vec3               colour;
+        glm::vec4               colour;
         bool                    fill;
 
     public:
@@ -147,8 +154,6 @@ private:
 
     GPUShaderPtr                mVertexShader;
     GPUShaderPtr                mPixelShader;
-    GPURasterizerStateRef       mRasterizerState;
-    GPURasterizerStateRef       mFillRasterizerState;
     GPUVertexInputStateRef      mVertexInputState;
 
     std::mutex                  mPrimitivesLock;
