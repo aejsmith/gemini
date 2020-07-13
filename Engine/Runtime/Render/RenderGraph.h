@@ -312,6 +312,7 @@ private:
     struct Attachment
     {
         RenderViewHandle            view;
+        bool                        cleared;
         GPUTextureClearData         clearData;
     };
 

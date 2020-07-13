@@ -57,6 +57,13 @@
  *  - Render pass combining. If we have passes that execute consecutively and
  *    have the same render target configuration, combine them into one pass,
  *    which avoids unnecessary store/load between the passes.
+ *  - Optimisation of load/store actions. If the first pass to use a subresource
+ *    as a render target does not explicitly clear it, we use load as the load
+ *    action. This can be optimised to don't care. Additionally, currently we
+ *    only set the store action to discard for the very last pass to touch a
+ *    resource as a whole, which does not handle multi-subresource resources
+ *    properly (I can't actually think of a use case where this will matter,
+ *    though).
  */
 
 class RenderGraphWindow : public DebugWindow
@@ -254,12 +261,9 @@ void RenderGraphPass::SetColour(const uint8_t              index,
                                 const RenderResourceHandle handle,
                                 RenderResourceHandle*      outNewHandle)
 {
-    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(handle);
-
     RenderViewDesc viewDesc;
     viewDesc.type   = kGPUResourceViewType_Texture2D;
     viewDesc.state  = kGPUResourceState_RenderTarget;
-    viewDesc.format = textureDesc.format;
 
     SetColour(index, handle, viewDesc, outNewHandle);
 }
@@ -273,14 +277,14 @@ void RenderGraphPass::SetColour(const uint8_t              index,
     Assert(index < kMaxRenderPassColourAttachments);
     Assert(mGraph.GetResourceType(handle) == kRenderResourceType_Texture);
     Assert(desc.state == kGPUResourceState_RenderTarget);
-    Assert(PixelFormatInfo::IsColour(desc.format));
     Assert(outNewHandle);
 
     Attachment& attachment = mColour[index];
     attachment.view = CreateView(handle, desc, outNewHandle);
 
-    /* If this is the first version of the resource, it will be cleared, so set
-     * a default clear value. */
+    Assert(PixelFormatInfo::IsColour(mViews[attachment.view.index].desc.format));
+
+    attachment.cleared          = false;
     attachment.clearData.type   = GPUTextureClearData::kColour;
     attachment.clearData.colour = glm::vec4(0.0f);
 }
@@ -289,12 +293,9 @@ void RenderGraphPass::SetDepthStencil(const RenderResourceHandle handle,
                                       const GPUResourceState     state,
                                       RenderResourceHandle*      outNewHandle)
 {
-    const RenderTextureDesc& textureDesc = mGraph.GetTextureDesc(handle);
-
     RenderViewDesc viewDesc;
     viewDesc.type   = kGPUResourceViewType_Texture2D;
     viewDesc.state  = state;
-    viewDesc.format = textureDesc.format;
 
     SetDepthStencil(handle, viewDesc, outNewHandle);
 }
@@ -306,12 +307,12 @@ void RenderGraphPass::SetDepthStencil(const RenderResourceHandle handle,
     Assert(mType == kRenderGraphPassType_Render);
     Assert(mGraph.GetResourceType(handle) == kRenderResourceType_Texture);
     Assert(desc.state & kGPUResourceState_AllDepthStencil && IsOnlyOneBitSet(desc.state));
-    Assert(PixelFormatInfo::IsDepth(desc.format));
 
     mDepthStencil.view = CreateView(handle, desc, outNewHandle);
 
-    /* If this is the first version of the resource, it will be cleared, so set
-     * a default clear value. */
+    Assert(PixelFormatInfo::IsDepth(mViews[mDepthStencil.view.index].desc.format));
+
+    mDepthStencil.cleared           = false;
     mDepthStencil.clearData.type    = (PixelFormatInfo::IsDepthStencil(desc.format))
                                           ? GPUTextureClearData::kDepthStencil
                                           : GPUTextureClearData::kDepth;
@@ -327,10 +328,23 @@ void RenderGraphPass::ClearColour(const uint8_t    index,
     Attachment& attachment = mColour[index];
     Assert(attachment.view);
 
-    View& view = mViews[attachment.view.index];
-    Assert(view.resource.version == 0);
-    Unused(view);
+    /*
+     * Should only clear a resource on first use, since clearing a whole
+     * resource means any prior writes are pointless - should create a new
+     * resource handle rather than reusing an existing one, which would allow
+     * useless prior writes to be culled from the graph.
+     *
+     * It's more complicated to detect this for resources with multiple
+     * subresources though, since the clear is only referring to a specific
+     * subresource. So, we don't bother trying to detect this for now.
+     */
+    #if GEMINI_BUILD_DEBUG
+        const View& view = mViews[attachment.view.index];
+        const RenderTextureDesc& desc = mGraph.GetTextureDesc(view.resource);
+        Assert(desc.arraySize > 1 || desc.numMipLevels > 1 || view.resource.version == 0);
+    #endif
 
+    attachment.cleared          = true;
     attachment.clearData.colour = value;
 }
 
@@ -338,10 +352,13 @@ void RenderGraphPass::ClearDepth(const float value)
 {
     Assert(mDepthStencil.view);
 
-    View& view = mViews[mDepthStencil.view.index];
-    Assert(view.resource.version == 0);
-    Unused(view);
+    #if GEMINI_BUILD_DEBUG
+        const View& view = mViews[mDepthStencil.view.index];
+        const RenderTextureDesc& desc = mGraph.GetTextureDesc(view.resource);
+        Assert(desc.arraySize > 1 || desc.numMipLevels > 1 || view.resource.version == 0);
+    #endif
 
+    mDepthStencil.cleared         = true;
     mDepthStencil.clearData.depth = value;
 }
 
@@ -349,10 +366,13 @@ void RenderGraphPass::ClearStencil(const uint32_t value)
 {
     Assert(mDepthStencil.view);
 
-    View& view = mViews[mDepthStencil.view.index];
-    Assert(view.resource.version == 0);
-    Unused(view);
+    #if GEMINI_BUILD_DEBUG
+        const View& view = mViews[mDepthStencil.view.index];
+        const RenderTextureDesc& desc = mGraph.GetTextureDesc(view.resource);
+        Assert(desc.arraySize > 1 || desc.numMipLevels > 1 || view.resource.version == 0);
+    #endif
 
+    mDepthStencil.cleared           = true;
     mDepthStencil.clearData.stencil = value;
 }
 
@@ -930,13 +950,12 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
 
                     renderPass.SetColour(i, view.view);
 
-                    /* If this is the first pass to use the resource, clear it.
-                     * If it is the last, discard it, unless it is an imported
-                     * resource. TODO: Wouldn't always want to clear imported
-                     * resources, but do sometimes. */
+                    /* Clear the resource if necessary, and discard on last use
+                     * of non-imported resources (see TODO at top of file
+                     * regarding load/store actions). */
                     Resource* const resource = mResources[view.resource.index];
 
-                    if (resource->firstPass == &pass)
+                    if (colourAtt.cleared)
                     {
                         renderPass.ClearColour(i, colourAtt.clearData.colour);
                     }
@@ -958,7 +977,7 @@ void RenderGraph::ExecutePass(RenderGraphPass& pass)
 
                 Resource* const resource = mResources[view.resource.index];
 
-                if (resource->firstPass == &pass)
+                if (depthAtt.cleared)
                 {
                     renderPass.ClearDepth(depthAtt.clearData.depth);
 
