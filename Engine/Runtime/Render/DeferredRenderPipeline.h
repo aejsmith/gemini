@@ -93,9 +93,6 @@ public:
     void                                SetEnableFXAA(const bool enable);
 
 public:
-    /** Resolution to use for shadow maps. */
-    PROPERTY() uint16_t                 shadowMapResolution;
-
     /**
      * Maximum number of shadow casting lights per-frame. The world as a whole
      * can have any number of them, this just limits the number that can be in
@@ -144,7 +141,7 @@ private:
 private:
     GPUShaderPtr                        mCullingShader;
     GPUShaderPtr                        mLightingShader;
-    GPUShaderPtr                        mShadowMaskVertexShader;
+    GPUShaderPtr                        mShadowMaskVertexShaders[kLightTypeCount];
     GPUShaderPtr                        mShadowMaskPixelShaders[kLightTypeCount];
 
     UPtr<GPUComputePipeline>            mCullingPipeline;

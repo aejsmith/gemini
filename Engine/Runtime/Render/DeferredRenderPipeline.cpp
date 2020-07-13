@@ -53,16 +53,20 @@ private:
 
 };
 
+struct ShadowLight
+{
+    const RenderLight*          light;
+    std::vector<RenderView>     views;
+    float                       splitDepths[RenderPipeline::kMaxShadowCascades] = {};
+    std::vector<EntityDrawList> drawLists;
+};
+
+static_assert(kDeferredMaxShadowCascades == RenderPipeline::kMaxShadowCascades,
+              "Mismatch between shader definition and code definition");
+
 struct DeferredRenderContext : public RenderContext
 {
     using RenderContext::RenderContext;
-
-    struct ShadowLight
-    {
-        const RenderLight*      light;
-        RenderView              view;
-        EntityDrawList          drawList;
-    };
 
     CullResults                 cullResults;
     EntityDrawList              opaqueDrawList;
@@ -101,7 +105,6 @@ struct DeferredRenderContext : public RenderContext
 };
 
 DeferredRenderPipeline::DeferredRenderPipeline() :
-    shadowMapResolution         (512),
     maxShadowLights             (4),
     shadowBiasConstant          (0.0005f),
 
@@ -126,9 +129,11 @@ DeferredRenderPipeline::~DeferredRenderPipeline()
 
 void DeferredRenderPipeline::CreateShaders()
 {
+    auto& shaderMan = ShaderManager::Get();
+
     /* Light culling compute shader. */
     {
-        mCullingShader = ShaderManager::Get().GetShader("Engine/DeferredCulling.hlsl", "CSMain", kGPUShaderStage_Compute);
+        mCullingShader = shaderMan.GetShader("Engine/DeferredCulling.hlsl", "CSMain", kGPUShaderStage_Compute);
 
         GPUArgumentSetLayoutDesc argumentLayoutDesc(kDeferredCullingArgumentsCount);
         argumentLayoutDesc.arguments[kDeferredCullingArguments_DepthTexture]      = kGPUArgumentType_Texture;
@@ -149,7 +154,7 @@ void DeferredRenderPipeline::CreateShaders()
 
     /* Lighting compute shader. */
     {
-        mLightingShader = ShaderManager::Get().GetShader("Engine/DeferredLighting.hlsl", "CSMain", kGPUShaderStage_Compute);
+        mLightingShader = shaderMan.GetShader("Engine/DeferredLighting.hlsl", "CSMain", kGPUShaderStage_Compute);
 
         GPUArgumentSetLayoutDesc argumentLayoutDesc(kDeferredLightingArgumentsCount);
         argumentLayoutDesc.arguments[kDeferredLightingArguments_GBuffer0Texture]   = kGPUArgumentType_Texture;
@@ -175,10 +180,11 @@ void DeferredRenderPipeline::CreateShaders()
 
     /* Shadow mask shaders. */
     {
-        // TODO: Other light types.
+        mShadowMaskVertexShaders[kLightType_Directional] = shaderMan.GetShader("Engine/DeferredShadowMask.hlsl", "VSDirectional", kGPUShaderStage_Vertex);
+        mShadowMaskPixelShaders[kLightType_Directional]  = shaderMan.GetShader("Engine/DeferredShadowMask.hlsl", "PSDirectional", kGPUShaderStage_Pixel);
 
-        mShadowMaskVertexShader                  = ShaderManager::Get().GetShader("Engine/DeferredShadowMask.hlsl", "VSMain", kGPUShaderStage_Vertex);
-        mShadowMaskPixelShaders[kLightType_Spot] = ShaderManager::Get().GetShader("Engine/DeferredShadowMask.hlsl", "PSSpotLight", kGPUShaderStage_Pixel);
+        mShadowMaskVertexShaders[kLightType_Spot]        = shaderMan.GetShader("Engine/DeferredShadowMask.hlsl", "VSSpot", kGPUShaderStage_Vertex);
+        mShadowMaskPixelShaders[kLightType_Spot]         = shaderMan.GetShader("Engine/DeferredShadowMask.hlsl", "PSSpot", kGPUShaderStage_Pixel);
 
         GPUArgumentSetLayoutDesc argumentLayoutDesc(kDeferredShadowMaskArgumentsCount);
         argumentLayoutDesc.arguments[kDeferredShadowMaskArguments_DepthTexture]     = kGPUArgumentType_Texture;
@@ -188,14 +194,15 @@ void DeferredRenderPipeline::CreateShaders()
 
         const GPUArgumentSetLayoutRef argumentLayout = GPUDevice::Get().GetArgumentSetLayout(std::move(argumentLayoutDesc));
 
+        GPURenderTargetStateDesc renderTargetDesc;
+        renderTargetDesc.colour[0]    = kShadowMaskFormat;
+        renderTargetDesc.depthStencil = kDepthFormat;
+
         /*
-         * For spot/point lights we want to render the back face of the light
-         * volume geometry, so that it will still be rendered even if the view
-         * is inside the light volume.
-         *
-         * Test for depth greater than or equal to the back face of the light
-         * volume so that only pixels in front of it are touched. Additionally,
-         * enable depth clamping so that the light volume is not clipped.
+         * All light types test for depth greater than or equal to the back
+         * face of the light volume so that only pixels in front of it are
+         * touched (directional lights are a fullscreen triangle with depth set
+         * as the maximum shadow draw distance).
          *
          * TODO: Use depth bounds test if available to cull pixels that are
          * outside the light volume in front of it (depth test only culls ones
@@ -206,39 +213,59 @@ void DeferredRenderPipeline::CreateShaders()
         depthDesc.depthWriteEnable = false;
         depthDesc.depthCompareOp   = kGPUCompareOp_GreaterOrEqual;
 
-        GPURasterizerStateDesc rasterizerDesc;
-        rasterizerDesc.cullMode         = kGPUCullMode_Front;
-        rasterizerDesc.depthClampEnable = true;
-
-        GPURenderTargetStateDesc renderTargetDesc;
-        renderTargetDesc.colour[0]    = kShadowMaskFormat;
-        renderTargetDesc.depthStencil = kDepthFormat;
-
-        GPUVertexInputStateDesc vertexDesc;
-        vertexDesc.buffers[0].stride      = sizeof(glm::vec3);
-        vertexDesc.attributes[0].semantic = kGPUAttributeSemantic_Position;
-        vertexDesc.attributes[0].format   = kGPUAttributeFormat_R32G32B32_Float;
-
         GPUPipelineDesc pipelineDesc;
-        pipelineDesc.shaders[kGPUShaderStage_Vertex] = mShadowMaskVertexShader;
-        pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mShadowMaskPixelShaders[kLightType_Spot];
-        pipelineDesc.blendState                      = GPUBlendState::GetDefault();
-        pipelineDesc.depthStencilState               = GPUDepthStencilState::Get(depthDesc);
-        pipelineDesc.rasterizerState                 = GPURasterizerState::Get(rasterizerDesc);
-        pipelineDesc.renderTargetState               = GPURenderTargetState::Get(renderTargetDesc);
-        pipelineDesc.vertexInputState                = GPUVertexInputState::Get(vertexDesc);
-        pipelineDesc.topology                        = kGPUPrimitiveTopology_TriangleList;
+        pipelineDesc.blendState        = GPUBlendState::GetDefault();
+        pipelineDesc.depthStencilState = GPUDepthStencilState::Get(depthDesc);
+        pipelineDesc.renderTargetState = GPURenderTargetState::Get(renderTargetDesc);
+        pipelineDesc.topology          = kGPUPrimitiveTopology_TriangleList;
 
         pipelineDesc.argumentSetLayouts[kArgumentSet_ViewEntity]         = RenderManager::Get().GetViewEntityArgumentSetLayout();
         pipelineDesc.argumentSetLayouts[kArgumentSet_DeferredShadowMask] = argumentLayout;
 
-        mShadowMaskPipelines[kLightType_Spot] = GPUDevice::Get().GetPipeline(pipelineDesc);
+        /* Directional lights. */
+        {
+            /* These output a fullscreen triangle from the vertex shader. */
+            pipelineDesc.rasterizerState                 = GPURasterizerState::GetDefault();
+            pipelineDesc.vertexInputState                = GPUVertexInputState::GetDefault();
+            pipelineDesc.shaders[kGPUShaderStage_Vertex] = mShadowMaskVertexShaders[kLightType_Directional];
+            pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mShadowMaskPixelShaders[kLightType_Directional];
+
+            mShadowMaskPipelines[kLightType_Directional] = GPUDevice::Get().GetPipeline(pipelineDesc);
+        }
+
+        /* Spot/point lights. */
+        {
+            /*
+             * For these we want to render the back face of the light volume
+             * geometry, so that it will still be rendered even if the view is
+             * inside the light volume. Additionally, enable depth clamping so
+             * that the light volume is not clipped.
+             */
+            GPURasterizerStateDesc rasterizerDesc;
+            rasterizerDesc.cullMode         = kGPUCullMode_Front;
+            rasterizerDesc.depthClampEnable = true;
+
+            /* We have volume geometry supplied in a vertex buffer. */
+            GPUVertexInputStateDesc vertexDesc;
+            vertexDesc.buffers[0].stride      = sizeof(glm::vec3);
+            vertexDesc.attributes[0].semantic = kGPUAttributeSemantic_Position;
+            vertexDesc.attributes[0].format   = kGPUAttributeFormat_R32G32B32_Float;
+
+            pipelineDesc.rasterizerState                 = GPURasterizerState::Get(rasterizerDesc);
+            pipelineDesc.vertexInputState                = GPUVertexInputState::Get(vertexDesc);
+            pipelineDesc.shaders[kGPUShaderStage_Vertex] = mShadowMaskVertexShaders[kLightType_Spot];
+            pipelineDesc.shaders[kGPUShaderStage_Pixel]  = mShadowMaskPixelShaders[kLightType_Spot];
+
+            mShadowMaskPipelines[kLightType_Spot] = GPUDevice::Get().GetPipeline(pipelineDesc);
+
+            // TODO: Point lights
+        }
     }
 
     /* Culling debug shader. */
     {
-        mCullingDebugVertexShader = ShaderManager::Get().GetShader("Engine/FullScreen.hlsl", "VSMain", kGPUShaderStage_Vertex);
-        mCullingDebugPixelShader  = ShaderManager::Get().GetShader("Engine/DeferredCullingDebug.hlsl", "PSMain", kGPUShaderStage_Pixel);
+        mCullingDebugVertexShader = shaderMan.GetShader("Engine/FullScreen.hlsl", "VSMain", kGPUShaderStage_Vertex);
+        mCullingDebugPixelShader  = shaderMan.GetShader("Engine/DeferredCullingDebug.hlsl", "PSMain", kGPUShaderStage_Pixel);
 
         GPUArgumentSetLayoutDesc argumentLayoutDesc(kDeferredCullingDebugArgumentsCount);
         argumentLayoutDesc.arguments[kDeferredCullingDebugArguments_VisibleLightCount] = kGPUArgumentType_Buffer;
@@ -453,16 +480,18 @@ void DeferredRenderPipeline::PrepareLights(DeferredRenderContext* const context)
 
                 shadowLight.light = light;
 
+                /* TODO: Once the render graph is capable of reusing memory, we
+                 * should just create a new shadow map texture for each light.
+                 * The graph would figure out that it can reuse the memory after
+                 * each light's shadow pass. This current approach could use
+                 * more memory by forcing shadow maps for multiple light types
+                 * to be alive at once. */
                 if (!context->shadowMapTextures[type])
                 {
-                    context->shadowMapTextures[type] = CreateShadowMap(graph,
-                                                                       type,
-                                                                       this->shadowMapResolution);
+                    context->shadowMapTextures[type] = CreateShadowMap(graph, type);
                 }
 
-                CreateShadowView(light,
-                                 this->shadowMapResolution,
-                                 shadowLight.view);
+                CreateShadowViews(*light, context->GetView(), shadowLight.views, shadowLight.splitDepths);
             }
             else
             {
@@ -552,26 +581,31 @@ void DeferredRenderPipeline::BuildDrawLists(DeferredRenderContext* const context
     /* Build shadow map draw lists. */
     for (auto& shadowLight : context->shadowLights)
     {
-        CullResults cullResults;
-        context->GetWorld().Cull(shadowLight.view, kCullFlags_NoLights, cullResults);
+        shadowLight.drawLists.resize(shadowLight.views.size());
 
-        shadowLight.drawList.Reserve(cullResults.entities.size());
-
-        for (const RenderEntity* entity : cullResults.entities)
+        for (size_t i = 0; i < shadowLight.views.size(); i++)
         {
-            if (entity->SupportsPassType(kShaderPassType_ShadowMap))
+            CullResults cullResults;
+            context->GetWorld().Cull(shadowLight.views[i], kCullFlags_NoLights, cullResults);
+
+            shadowLight.drawLists[i].Reserve(cullResults.entities.size());
+
+            for (const RenderEntity* entity : cullResults.entities)
             {
-                const GPUPipelineRef pipeline = entity->GetPipeline(kShaderPassType_ShadowMap);
+                if (entity->SupportsPassType(kShaderPassType_ShadowMap))
+                {
+                    const GPUPipelineRef pipeline = entity->GetPipeline(kShaderPassType_ShadowMap);
 
-                // TODO: Sort based on depth instead.
-                const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
-                EntityDrawCall& drawCall = shadowLight.drawList.Add(sortKey);
+                    // TODO: Sort based on depth instead.
+                    const EntityDrawSortKey sortKey = EntityDrawSortKey::GetOpaque(pipeline);
+                    EntityDrawCall& drawCall = shadowLight.drawLists[i].Add(sortKey);
 
-                entity->GetDrawCall(kShaderPassType_ShadowMap, shadowLight.view, drawCall);
+                    entity->GetDrawCall(kShaderPassType_ShadowMap, shadowLight.views[i], drawCall);
+                }
             }
-        }
 
-        shadowLight.drawList.Sort();
+            shadowLight.drawLists[i].Sort();
+        }
     }
 }
 
@@ -626,6 +660,15 @@ void DeferredRenderPipeline::DrawLightVolume(DeferredRenderContext* const contex
 
     switch (light->GetType())
     {
+        case kLightType_Directional:
+        {
+            /* We just output a fullscreen triangle from the shader. */
+            isIndexed = false;
+            count     = 3;
+
+            break;
+        }
+
         case kLightType_Spot:
         {
             isIndexed = true;
@@ -645,7 +688,7 @@ void DeferredRenderPipeline::DrawLightVolume(DeferredRenderContext* const contex
 
         default:
         {
-            Fatal("TODO: Point/Directional shadows");
+            Fatal("TODO: Point shadows");
         }
     }
 
@@ -682,14 +725,20 @@ void DeferredRenderPipeline::AddShadowPasses(DeferredRenderContext* const contex
         RenderResourceHandle& mapTexture = context->shadowMapTextures[shadowLight.light->GetType()];
 
         /* Render the shadow map. */
+        for (size_t i = 0; i < shadowLight.views.size(); i++)
         {
-            RenderGraphPass& mapPass = graph.AddPass(StringUtils::Format("ShadowMap_%zu", maskLayer), kRenderGraphPassType_Render);
+            RenderGraphPass& mapPass = graph.AddPass(StringUtils::Format("ShadowMap_%zu_%zu", maskLayer, i), kRenderGraphPassType_Render);
 
-            mapPass.SetDepthStencil(mapTexture, kGPUResourceState_DepthStencilWrite, &mapTexture);
+            RenderViewDesc viewDesc;
+            viewDesc.type          = kGPUResourceViewType_Texture2D;
+            viewDesc.state         = kGPUResourceState_DepthStencilWrite;
+            viewDesc.elementOffset = i;
+
+            mapPass.SetDepthStencil(mapTexture, viewDesc, &mapTexture);
 
             mapPass.ClearDepth(1.0f);
 
-            shadowLight.drawList.Draw(mapPass);
+            shadowLight.drawLists[i].Draw(mapPass);
         }
 
         /* Render the shadow map into the shadow mask. */
@@ -716,6 +765,22 @@ void DeferredRenderPipeline::AddShadowPasses(DeferredRenderContext* const contex
             viewDesc.elementOffset             = 0;
             const RenderViewHandle depthHandle = maskPass.CreateView(context->depthTexture, viewDesc);
 
+            switch (shadowLight.light->GetType())
+            {
+                case kShaderLightType_Directional:
+                    viewDesc.type         = kGPUResourceViewType_Texture2DArray;
+                    viewDesc.elementCount = shadowLight.views.size();
+                    break;
+
+                case kShaderLightType_Spot:
+                    break;
+
+                default:
+                    LogWarning("TODO");
+                    break;
+
+            }
+
             const RenderViewHandle mapHandle = maskPass.CreateView(mapTexture, viewDesc);
 
             maskPass.SetFunction([=] (const RenderGraph&      graph,
@@ -739,10 +804,26 @@ void DeferredRenderPipeline::AddShadowPasses(DeferredRenderContext* const contex
                 constants.direction    = shadowLight.light->GetDirection();
                 constants.biasConstant = this->shadowBiasConstant;
 
-                if (shadowLight.light->GetType() == kShaderLightType_Spot)
+                for (size_t i = 0; i < shadowLight.views.size(); i++)
                 {
-                    constants.cosSpotAngle        = cosf(shadowLight.light->GetConeAngle());
-                    constants.worldToShadowMatrix = shadowLight.view.GetViewProjectionMatrix();
+                    constants.worldToShadowMatrix[i] = shadowLight.views[i].GetViewProjectionMatrix();
+                }
+
+                switch (shadowLight.light->GetType())
+                {
+                    case kShaderLightType_Directional:
+                        constants.directionalMaxDistance = directionalShadowMaxDistance;
+                        memcpy(&constants.directionalSplitDepths, shadowLight.splitDepths, sizeof(shadowLight.splitDepths));
+                        break;
+
+                    case kShaderLightType_Spot:
+                        constants.cosSpotAngle = cosf(shadowLight.light->GetConeAngle());
+                        break;
+
+                    default:
+                        LogWarning("TODO");
+                        break;
+
                 }
 
                 cmdList.WriteConstants(kArgumentSet_DeferredShadowMask,

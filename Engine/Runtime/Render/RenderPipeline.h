@@ -42,7 +42,8 @@ class RenderPipeline : public Object
     CLASS();
 
 public:
-    static constexpr PixelFormat    kShadowMapFormat  = kPixelFormat_Depth32;
+    static constexpr PixelFormat    kShadowMapFormat   = kPixelFormat_Depth32;
+    static constexpr uint8_t        kMaxShadowCascades = 4;
 
 public:
     /**
@@ -61,19 +62,54 @@ public:
     virtual void                    SetName(std::string name)
                                         { mName = std::move(name); }
 
+    /** For directional light CSMs, the number of cascades to use (1 to 4). */
+    VPROPERTY(uint8_t, directionalShadowCascades);
+    uint8_t                         GetDirectionalShadowCascades() const { return mDirectionalShadowCascades; }
+    void                            SetDirectionalShadowCascades(const uint8_t cascades);
+
+    /**
+     * For directional light CSMs, the factor which determines distribution of
+     * cascade splits. 0 will give exactly linear distribution of splits, 1 will
+     * give exactly exponential distribution. Values in between interpolate
+     * between the two.
+     */
+    VPROPERTY(float, directionalShadowSplitFactor);
+    float                           GetDirectionalShadowSplitFactor() const { return mDirectionalShadowSplitFactor; }
+    void                            SetDirectionalShadowSplitFactor(const float factor);
+
+public:
+    /**
+     * Maximum visible distance for directional shadows. It is recommended to
+     * keep this fairly short both for performance reasons (cost of rendering
+     * objects to the shadow maps), but also to get better distribution of the
+     * distance across shadow cascades.
+     */
+    PROPERTY() float                directionalShadowMaxDistance;
+
+    /** Resolution to use for shadow maps. */
+    PROPERTY() uint16_t             shadowMapResolution;
+
 protected:
                                     RenderPipeline();
                                     ~RenderPipeline();
 
     RenderResourceHandle            CreateShadowMap(RenderGraph&    graph,
-                                                    const LightType lightType,
-                                                    const uint16_t  resolution) const;
+                                                    const LightType lightType) const;
 
-    void                            CreateShadowView(const RenderLight* const light,
-                                                     const uint16_t           resolution,
-                                                     RenderView&              outView) const;
+    /**
+     * Calculate all the views to render into the shadow map. Output array is
+     * indexed by the array layer of the shadow map that each view should be
+     * rendered to.
+     */
+    void                            CreateShadowViews(const RenderLight&       light,
+                                                      const RenderView&        cameraView,
+                                                      std::vector<RenderView>& outViews,
+                                                      float* const             outSplitDepths) const;
 
 private:
     std::string                     mName;
+
+    uint8_t                         mDirectionalShadowCascades;
+    float                           mDirectionalShadowSplitFactor;
 
 };

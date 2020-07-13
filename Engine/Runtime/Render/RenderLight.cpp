@@ -23,10 +23,13 @@
 
 #include "../../Shaders/LightingDefs.h"
 
+/* Light direction is the local negative Z axis. */
+static constexpr glm::vec3 kBaseDirection(0.0f, 0.0f, -1.0f);
+
 RenderLight::RenderLight() :
     /* Parent Light object should initialise everything else. */
     mPosition   (0.0f, 0.0f, 0.0f),
-    mDirection  (0.0f, 0.0f, -1.0f)
+    mDirection  (kBaseDirection)
 {
 }
 
@@ -73,9 +76,10 @@ void RenderLight::SetPosition(const glm::vec3& position)
     UpdateBoundingSphere();
 }
 
-void RenderLight::SetDirection(const glm::vec3& direction)
+void RenderLight::SetOrientation(const glm::quat& orientation)
 {
-    mDirection = glm::normalize(direction);
+    mOrientation = orientation;
+    mDirection   = glm::normalize(orientation * kBaseDirection);
 
     UpdateBoundingSphere();
 }

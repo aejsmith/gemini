@@ -85,6 +85,8 @@ struct DeferredLightingConstants
 #define kDeferredShadowMaskArguments_Constants              3
 #define kDeferredShadowMaskArgumentsCount                   4
 
+#define kDeferredMaxShadowCascades                          4
+
 struct DeferredShadowMaskConstants
 {
     /**
@@ -97,9 +99,13 @@ struct DeferredShadowMaskConstants
     shader_float3   direction;
     shader_float    cosSpotAngle;
 
-    shader_float4x4 worldToShadowMatrix;
+    shader_float4x4 worldToShadowMatrix[kDeferredMaxShadowCascades];
 
     shader_float    biasConstant;
+    shader_float    directionalMaxDistance;
+    shader_float2    _pad;
+
+    shader_float4   directionalSplitDepths;
 };
 
 /**

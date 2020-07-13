@@ -60,8 +60,10 @@ public:
     const glm::vec3&            GetPosition() const { return mPosition; }
     void                        SetPosition(const glm::vec3& position);
 
+    const glm::quat&            GetOrientation() const { return mOrientation; }
+    void                        SetOrientation(const glm::quat& orientation);
+
     const glm::vec3&            GetDirection() const { return mDirection; }
-    void                        SetDirection(const glm::vec3& direction);
 
     bool                        GetCastShadows() const { return mCastShadows; }
     void                        SetCastShadows(const bool castShadows);
@@ -92,6 +94,7 @@ private:
 
     /** World space transformation. */
     glm::vec3                   mPosition;
+    glm::quat                   mOrientation;
     glm::vec3                   mDirection;
 
     /**

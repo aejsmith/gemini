@@ -35,10 +35,29 @@ public:
                                               const Radians     verticalFOV,
                                               const float       zNear,
                                               const float       zFar,
-                                              const glm::uvec2& targetSize);
+                                              const glm::uvec2& targetSize,
+                                              const bool        createConstants = true);
+
+    /** Create a view with an orthographic projection. */
+    static RenderView       CreateOrthographic(const glm::vec3&  position,
+                                               const glm::quat&  orientation,
+                                               const float       left,
+                                               const float       right,
+                                               const float       bottom,
+                                               const float       top,
+                                               const float       zNear,
+                                               const float       zFar,
+                                               const glm::uvec2& targetSize,
+                                               const bool        createConstants = true);
+
+    bool                    IsPerspective() const
+                                { return mVerticalFOV != 0.0f; }
 
     const glm::vec3&        GetPosition() const                     { return mPosition; }
     const glm::quat&        GetOrientation() const                  { return mOrientation; }
+    Radians                 GetVerticalFOV() const                  { return mVerticalFOV; }
+    float                   GetZNear() const                        { return mZNear; }
+    float                   GetZFar() const                         { return mZFar; }
     const glm::uvec2&       GetTargetSize() const                   { return mTargetSize; }
     const glm::mat4&        GetViewMatrix() const                   { return mViewMatrix; }
     const glm::mat4&        GetProjectionMatrix() const             { return mProjectionMatrix; }
@@ -49,10 +68,12 @@ public:
     GPUConstants            GetConstants() const                    { return mConstants; }
 
 private:
-    void                    CreateConstants();
+    void                    InitView(const bool createConstants);
 
+private:
     glm::vec3               mPosition;
     glm::quat               mOrientation;
+    Radians                 mVerticalFOV;
     float                   mZNear;
     float                   mZFar;
     glm::uvec2              mTargetSize;

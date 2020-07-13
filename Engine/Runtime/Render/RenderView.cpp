@@ -24,48 +24,82 @@ RenderView RenderView::CreatePerspective(const glm::vec3&  position,
                                          const Radians     verticalFOV,
                                          const float       zNear,
                                          const float       zFar,
-                                         const glm::uvec2& targetSize)
+                                         const glm::uvec2& targetSize,
+                                         const bool        createConstants)
 {
     RenderView view;
 
     view.mPosition    = position;
     view.mOrientation = orientation;
+    view.mVerticalFOV = verticalFOV;
     view.mZNear       = zNear;
     view.mZFar        = zFar;
     view.mTargetSize  = targetSize;
 
-    /* Calculate the view matrix. This is a world-to-view transformation, so we
-     * want the inverse of the given position and orientation. */
-    const glm::mat4 positionMatrix    = glm::translate(glm::mat4(), -position);
-    const glm::mat4 orientationMatrix = glm::mat4_cast(glm::inverse(orientation));
-    view.mViewMatrix                  = orientationMatrix * positionMatrix;
-
     const float aspect = static_cast<float>(targetSize.x) / static_cast<float>(targetSize.y);
-    view.mProjectionMatrix = glm::perspective(verticalFOV,
-                                              aspect,
-                                              zNear,
-                                              zFar);
+    view.mProjectionMatrix = glm::perspective(verticalFOV, aspect, zNear, zFar);
 
-    view.mViewProjectionMatrix        = view.mProjectionMatrix * view.mViewMatrix;
-    view.mInverseViewProjectionMatrix = glm::inverse(view.mViewProjectionMatrix);
+    view.InitView(createConstants);
 
-    view.mFrustum = Frustum(view.mViewProjectionMatrix, view.mInverseViewProjectionMatrix);
-
-    view.CreateConstants();
     return view;
 }
 
-void RenderView::CreateConstants()
+RenderView RenderView::CreateOrthographic(const glm::vec3&  position,
+                                          const glm::quat&  orientation,
+                                          const float       left,
+                                          const float       right,
+                                          const float       bottom,
+                                          const float       top,
+                                          const float       zNear,
+                                          const float       zFar,
+                                          const glm::uvec2& targetSize,
+                                          const bool        createConstants)
 {
-    ViewConstants constants;
-    constants.view                  = mViewMatrix;
-    constants.projection            = mProjectionMatrix;
-    constants.viewProjection        = mViewProjectionMatrix;
-    constants.inverseViewProjection = mInverseViewProjectionMatrix;
-    constants.position              = mPosition;
-    constants.zNear                 = mZNear;
-    constants.zFar                  = mZFar;
-    constants.targetSize            = mTargetSize;
+    RenderView view;
 
-    mConstants = GPUDevice::Get().GetConstantPool().Write(&constants, sizeof(constants));
+    view.mPosition    = position;
+    view.mOrientation = orientation;
+    view.mVerticalFOV = 0.0f;
+    view.mZNear       = zNear;
+    view.mZFar        = zFar;
+    view.mTargetSize  = targetSize;
+
+    view.mProjectionMatrix = glm::ortho(left, right, bottom, top, zNear, zFar);
+
+    view.InitView(createConstants);
+
+    return view;
+}
+
+void RenderView::InitView(const bool createConstants)
+{
+    /* Calculate the view matrix. This is a world-to-view transformation, so we
+     * want the inverse of the given position and orientation. */
+    const glm::mat4 positionMatrix    = glm::translate(glm::mat4(), -mPosition);
+    const glm::mat4 orientationMatrix = glm::mat4_cast(glm::inverse(mOrientation));
+    mViewMatrix                       = orientationMatrix * positionMatrix;
+    mViewProjectionMatrix             = mProjectionMatrix * mViewMatrix;
+    mInverseViewProjectionMatrix      = glm::inverse(mViewProjectionMatrix);
+    mFrustum                          = Frustum(mViewProjectionMatrix, mInverseViewProjectionMatrix);
+
+    if (createConstants)
+    {
+        ViewConstants constants;
+        constants.view                  = mViewMatrix;
+        constants.projection            = mProjectionMatrix;
+        constants.viewProjection        = mViewProjectionMatrix;
+        constants.inverseView           = glm::inverse(mViewMatrix);
+        constants.inverseProjection     = glm::inverse(mProjectionMatrix);
+        constants.inverseViewProjection = mInverseViewProjectionMatrix;
+        constants.position              = mPosition;
+        constants.zNear                 = mZNear;
+        constants.zFar                  = mZFar;
+        constants.targetSize            = mTargetSize;
+
+        mConstants = GPUDevice::Get().GetConstantPool().Write(&constants, sizeof(constants));
+    }
+    else
+    {
+        mConstants = kGPUConstants_Invalid;
+    }
 }

@@ -128,8 +128,5 @@ void Light::Deactivated()
 void Light::Transformed()
 {
     mRenderLight.SetPosition(GetWorldPosition());
-
-    /* Light direction is the local negative Z axis. */
-    const glm::vec3 kBaseDirection(0.0f, 0.0f, -1.0f);
-    mRenderLight.SetDirection(GetWorldOrientation() * kBaseDirection);
+    mRenderLight.SetOrientation(GetWorldOrientation());
 }

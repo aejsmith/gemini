@@ -1,0 +1,39 @@
+[
+    {
+        "objectClass": "Material",
+        "objectID": 0,
+        "objectProperties": {},
+        "shaderTechnique": {
+            "asset": "Engine/Techniques/PBRMetallicRoughness"
+        },
+        "features": [],
+        "arguments": {
+            "baseColourTexture": {
+                "asset": "Game/Textures/Tiles36/BaseColour"
+            },
+            "baseColourFactor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "metallicRoughnessTexture": {
+                "asset": "Game/Textures/Tiles36/MetallicRoughness"
+            },
+            "metallicFactor": 0.0,
+            "normalTexture": {
+                "asset": "Game/Textures/Tiles36/Normal"
+            },
+            "normalScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "roughnessFactor": 1.0,
+            "uvScale": [
+                4.0,
+                4.0
+            ]
+        }
+    }
+]

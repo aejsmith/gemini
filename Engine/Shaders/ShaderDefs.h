@@ -137,6 +137,8 @@ struct ViewConstants
     shader_float4x4     view;
     shader_float4x4     projection;
     shader_float4x4     viewProjection;
+    shader_float4x4     inverseView;
+    shader_float4x4     inverseProjection;
     shader_float4x4     inverseViewProjection;
     shader_float3       position;
     shader_float        _pad0;
@@ -210,6 +212,18 @@ float3 ViewNDCPositionToWorld(float3 ndcPos)
     return ViewNDCPositionToWorld(float4(ndcPos, 1.0f));
 }
 
+/** Transform a NDC position for the current view to a view-space position. */
+float3 ViewNDCPositionToView(float4 ndcPos)
+{
+    float4 homogeneousPos = mul(view.inverseProjection, ndcPos);
+    return homogeneousPos.xyz / homogeneousPos.w;
+}
+
+float3 ViewNDCPositionToView(float3 ndcPos)
+{
+    return ViewNDCPositionToView(float4(ndcPos, 1.0f));
+}
+
 /**
  * Given an integer pixel coordinate on the current view, return corresponding
  * NDC X/Y coordinates.
@@ -235,6 +249,15 @@ float4 ViewPixelPositionToNDC(uint2 targetPos, float depth)
 float3 ViewPixelPositionToWorld(uint2 targetPos, float depth)
 {
     return ViewNDCPositionToWorld(ViewPixelPositionToNDC(targetPos, depth));
+}
+
+/**
+ * Given an integer pixel coordinate on the current view and a depth value,
+ * return corresponding view-space coordinates.
+ */
+float3 ViewPixelPositionToView(uint2 targetPos, float depth)
+{
+    return ViewNDCPositionToView(ViewPixelPositionToNDC(targetPos, depth));
 }
 
 /**
