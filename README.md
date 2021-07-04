@@ -4,15 +4,18 @@ Gemini is a hobby 3D engine project.
 
 <a href="https://raw.githubusercontent.com/aejsmith/gemini/master/Documentation/Screenshot.png"><img src="https://raw.githubusercontent.com/aejsmith/gemini/master/Documentation/ScreenshotSmall.png"></a>
 
-It is designed exclusively for modern APIs - currently Vulkan only, but D3D12 support may be added later. It aims to be able to take advantage of the capabilities of those APIs (multithreading, multiple GPU queues, etc.), while also simplifying their usage to allow for fast prototyping of new features.
+It is designed exclusively for modern APIs (currently Vulkan is supported), and aims to be able to take advantage of the capabilities of those APIs (multithreading, multiple GPU queues, pre-baked pipeline state objects, etc.).
 
-Currently, the most interesting parts are the graphics API abstraction and the render graph which drives the rendering process (handles transient resource allocation, resource state transitions, etc.).
+Features:
 
-Both Linux and Windows are supported.
-
-## License
-
-Gemini is licensed under the [ISC license](/Documentation/License.md).
+* Tile-based deferred lighting
+* Physically-based shading
+* Shadow mapping
+* Render graph for automatically handling GPU synchronization and transient resource allocation
+* Physics (using Bullet)
+* Runtime object reflection/serialization, driven by code annotations used with a custom code generation tool
+* glTF model importer
+* Linux and Windows support
 
 ## Prerequisites
 
@@ -52,3 +55,7 @@ Options can be passed to SCons to configure the build, which will be saved until
 Example:
 
     $ scons BUILD=Debug
+
+## License
+
+Gemini is licensed under the [ISC license](/Documentation/License.md).
