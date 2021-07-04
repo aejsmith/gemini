@@ -1,10 +1,10 @@
 # Gemini
 
-Gemini is a hobby 3D engine project.
+Gemini is a hobby 3D engine project. It is designed exclusively for modern APIs (currently Vulkan is supported), and aims to be able to take advantage of the capabilities of those APIs (multithreading, multiple GPU queues, pre-baked pipeline state objects, etc.).
 
 <a href="https://raw.githubusercontent.com/aejsmith/gemini/master/Documentation/Screenshot.png"><img src="https://raw.githubusercontent.com/aejsmith/gemini/master/Documentation/ScreenshotSmall.png"></a>
 
-It is designed exclusively for modern APIs (currently Vulkan is supported), and aims to be able to take advantage of the capabilities of those APIs (multithreading, multiple GPU queues, pre-baked pipeline state objects, etc.).
+More screenshots and videos in the [Screenshot Archive](/Documentation/Screenshots.md).
 
 Features:
 
