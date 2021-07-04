@@ -24,6 +24,8 @@
 
 #include "Render/ShaderCompiler.h"
 
+#include <mutex>
+
 SINGLETON_IMPL(ShaderManager);
 
 size_t HashValue(const ShaderKey& key)
