@@ -18,6 +18,10 @@
 
 #include "Core/Utility.h"
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 /** Implementation of a fixed size bitmap. */
 template <size_t N>
 class Bitset
@@ -52,6 +56,9 @@ private:
     static size_t               GetElement(const size_t bit);
     static size_t               GetOffset(const size_t bit);
     static Element              GetValue(const size_t bit);
+
+    static size_t               CTZ(const Element val);
+    static size_t               CLZ(const Element val);
 
 private:
     Element                     mData[kNumElements];
@@ -143,7 +150,7 @@ inline size_t Bitset<N>::FindFirst() const
     {
         if (mData[i])
         {
-            return __builtin_ctzll(mData[i]) + (i * kBitsPerElement);
+            return CTZ(mData[i]) + (i * kBitsPerElement);
         }
     }
 
@@ -157,9 +164,31 @@ inline size_t Bitset<N>::FindLast() const
     {
         if (mData[i])
         {
-            return (kBitsPerElement - 1 - __builtin_clzll(mData[i])) + (i * kBitsPerElement);
+            return (kBitsPerElement - 1 - CLZ(mData[i])) + (i * kBitsPerElement);
         }
     }
 
     return kNumBits;
+}
+
+template <size_t N>
+inline size_t Bitset<N>::CTZ(const Element val)
+{
+    #ifdef _MSC_VER
+        unsigned long ret;
+        _BitScanForward64(&ret, val);
+        return static_cast<size_t>(ret);
+    #else
+        return __builtin_ctzll(val);
+    #endif
+}
+
+template <size_t N>
+inline size_t Bitset<N>::CLZ(const Element val)
+{
+    #ifdef _MSC_VER
+        return static_cast<size_t>(__lzcnt64(val));
+    #else
+        return __builtin_clzll(val);
+    #endif
 }
