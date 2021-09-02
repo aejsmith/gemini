@@ -36,8 +36,9 @@
 
 #include "Core/Utility.h"
 
-#include <unordered_set>
+#include <iterator>
 #include <limits>
+#include <unordered_set>
 #include <vector>
 
 static const char* kRequiredDeviceExtensions[] =

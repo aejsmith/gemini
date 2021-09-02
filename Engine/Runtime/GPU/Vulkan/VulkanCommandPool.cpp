@@ -19,6 +19,7 @@
 #include "VulkanDevice.h"
 
 #include <algorithm>
+#include <iterator>
 
 /* TODO: Picked mostly arbitrarily, should allocate new pools dynamically if
  * needed. */
